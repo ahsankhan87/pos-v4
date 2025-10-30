@@ -93,7 +93,8 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new M_sale_items();
         $productModel = new M_products();
         $inventoryModel = new M_inventory();
-
+        $invoiceNo = $this->request->getPost('invoice_no') ?? $salesModel->generateSalesInvoiceNo();
+        $draftId = (int) ($this->request->getPost('draft_id') ?? 0);
         $invoiceNo = $this->request->getPost('invoice_no') ?? $salesModel->generateSalesInvoiceNo();
         $customer_id = (int) ($this->request->getPost('customer_id') ?: 0);
         $cart_data = $this->request->getPost('cart_data');
@@ -221,114 +222,142 @@ class Sales extends \CodeIgniter\Controller
             // Start DB transaction
             $db = $salesModel->db;
             $db->transStart();
+
+            $isDraftCompletion = ($draftId > 0);
+            $effectiveInvoiceNo = $invoiceNo;
             try {
-                // Create sale record
-                $saleData = [
-                    'customer_id' => $customer_id,
-                    'total' => $total,
-                    'total_discount' => $totalDiscount,
-                    'discount_type' => $discount_type,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'payment_method' => $payment_method,
-                    'store_id' => session('store_id') ?? 0, // Store ID from session
-                    'user_id' => $userId, // Assuming you have user authentication
-                    'invoice_no' => $invoiceNo,
-                    'total_tax' => $total_tax,
-                    'amount_tendered' => $amount_tendered,
-                    'change_amount' => $change_amount,
-                    'employee_id' => $employee_id ?? 0,
-                    'commission_amount' => $commission_amount,
-                    'status' => 'completed', // Default status
-                    'payment_type' => $payment_type,
-                    'payment_status' => $payment_status,
-                    'due_amount' => $due_amount ?? 0,
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-            } catch (\Exception $e) {
-                log_message('error', 'Error creating sale: ' . $e->getMessage());
-                $db->transRollback();
-                return redirect()->back()->with('error', 'Failed to create sale. Please try again. ' . $e->getMessage());
-            }
-
-            $sale_id = $salesModel->insert($saleData);
-            if (!$sale_id) {
-                $dbError = $db->error();
-                $modelErrors = $salesModel->errors();
-                $db->transRollback();
-                $errMsg = 'Failed to create sale. ';
-                if (!empty($modelErrors)) {
-                    $errMsg .= 'Validation: ' . json_encode($modelErrors) . ' ';
-                }
-                if (!empty($dbError) && ($dbError['code'] ?? 0)) {
-                    $errMsg .= 'DB: [' . ($dbError['code'] ?? '') . '] ' . ($dbError['message'] ?? '');
-                }
-                return redirect()->back()->withInput()->with('error', trim($errMsg));
-            }
-
-            // Ledger entry for credit sale
-            if ($payment_type === 'credit') {
-                $ledgerModel = new \App\Models\CustomerLedgerModel();
-                $ledgerModel->insert([
-                    'customer_id' => $customer_id,
-                    'sale_id' => $sale_id,
-                    'date' => date('Y-m-d H:i:s'),
-                    'description' => 'Credit Sale Invoice #' . $invoiceNo,
-                    // Record only the due amount as outstanding
-                    'debit' => $due_amount,
-                    'credit' => 0,
-                    'balance' => $ledgerModel->getCustomerBalance($customer_id) + $due_amount,
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
-            }
-            // Log the sale creation
-            logAction('sale_created', 'Sale ID: ' . $sale_id . ', Customer ID: ' . $customer_id . ', Total: ' . $total);
-
-            // Reward points to customer based on total
-            // After sale is inserted and $sale_id is available
-            $points = floor($total / 1000); // Example: 1 point per 1000 currency spent
-
-            $customerModel = new M_customers();
-            $customer = $customerModel->forStore()->find($customer_id);
-            $currentPoints = isset($customer['points']) ? $customer['points'] : 0;
-
-            $customerModel->update($customer_id, [
-                'points' => $currentPoints + $points
-            ]);
-
-            foreach ($items as $item) {
-                $product = $productModel->find($item['id']);
-                if ($product && $product['quantity'] >= $item['quantity']) {
-                    // Insert sale item
-                    $saleItemsModel->insert([
-                        'sale_id' => $sale_id,
-                        'product_id' => $item['id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        'cost_price' => $item['cost_price'],
-                        'subtotal' => $item['price'] * $item['quantity'],
-                    ]);
-
-                    // Update product stock
-                    $productModel->adjustStock($item['id'], $item['quantity'], 'out');
-
-                    // Update inventory for each item sold
-                    $inventoryModel->logStockChange(
-                        $item['id'],
-                        $userId,
-                        $item['quantity'],
-                        'out',
-                        session('store_id') ?? '', // Store ID from session
-                        "Sold in sale #{$sale_id}",
-                        $item['cost_price'] ?? 0,
-                        $item['price'] ?? 0,
-                        $invoiceNo,
-                        date('Y-m-d H:i:s')
-                    );
+                if ($isDraftCompletion) {
+                    // Validate draft
+                    $existing = $salesModel->forStore()->find($draftId);
+                    if (!$existing || ($existing['status'] ?? '') !== 'draft') {
+                        throw new \Exception('Draft not found or already completed.');
+                    }
+                    // Generate new invoice for completion
+                    $effectiveInvoiceNo = $salesModel->generateSalesInvoiceNo();
+                    // Update existing sale to completed
+                    $saleData = [
+                        'customer_id' => $customer_id,
+                        'payment_type' => $payment_type,
+                        'payment_method' => $payment_method,
+                        'total' => $total,
+                        'total_discount' => $totalDiscount,
+                        'discount_type' => $discount_type,
+                        'total_tax' => $total_tax,
+                        'amount_tendered' => $amount_tendered,
+                        'change_amount' => $change_amount,
+                        'due_amount' => $due_amount,
+                        'payment_status' => $payment_status,
+                        'employee_id' => $employee_id ?? 0,
+                        'commission_amount' => $commission_amount,
+                        'user_id' => $userId,
+                        'status' => 'completed',
+                        'invoice_no' => $effectiveInvoiceNo,
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ];
+                    $salesModel->update($draftId, $saleData);
+                    $sale_id = $draftId;
                 } else {
-                    // Handle out-of-stock error
-                    $db->transRollback();
-                    return redirect()->back()->with('error', 'Insufficient stock for ' . ($product ? $product['name'] : 'Unknown Product'));
+                    // Insert new sale
+                    $saleData = [
+                        'customer_id' => $customer_id,
+                        'total' => $total,
+                        'total_discount' => $totalDiscount,
+                        'discount_type' => $discount_type,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'payment_method' => $payment_method,
+                        'store_id' => session('store_id') ?? 0, // Store ID from session
+                        'user_id' => $userId, // Assuming you have user authentication
+                        'invoice_no' => $invoiceNo,
+                        'total_tax' => $total_tax,
+                        'amount_tendered' => $amount_tendered,
+                        'change_amount' => $change_amount,
+                        'employee_id' => $employee_id ?? 0,
+                        'commission_amount' => $commission_amount,
+                        'status' => 'completed', // Default status
+                        'payment_type' => $payment_type,
+                        'payment_status' => $payment_status,
+                        'due_amount' => $due_amount ?? 0,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $sale_id = $salesModel->insert($saleData);
+                    if (!$sale_id) {
+                        $dbError = $db->error();
+                        $modelErrors = $salesModel->errors();
+                        throw new \Exception('Failed to create sale. ' . (!empty($modelErrors) ? ('Validation: ' . json_encode($modelErrors) . ' ') : '') . (!empty($dbError) && ($dbError['code'] ?? 0) ? ('DB: [' . ($dbError['code'] ?? '') . '] ' . ($dbError['message'] ?? '')) : ''));
+                    }
                 }
+
+                // Ledger entry for credit sale
+                if ($payment_type === 'credit') {
+                    $ledgerModel = new \App\Models\CustomerLedgerModel();
+                    $ledgerModel->insert([
+                        'customer_id' => $customer_id,
+                        'sale_id' => $sale_id,
+                        'date' => date('Y-m-d H:i:s'),
+                        'description' => 'Credit Sale Invoice #' . $effectiveInvoiceNo,
+                        'debit' => $due_amount,
+                        'credit' => 0,
+                        'balance' => $ledgerModel->getCustomerBalance($customer_id) + $due_amount,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
+                // Log the sale creation/completion
+                logAction('sale_created', 'Sale ID: ' . $sale_id . ', Customer ID: ' . $customer_id . ', Total: ' . $total . ($isDraftCompletion ? ' (completed draft)' : ''));
+
+                // For draft completion, clear any existing draft items
+                if ($isDraftCompletion) {
+                    $saleItemsModel->where('sale_id', $sale_id)->delete();
+                }
+
+                // Insert items and adjust inventory
+                foreach ($items as $item) {
+                    $product = $productModel->find($item['id']);
+                    if ($product && $product['quantity'] >= $item['quantity']) {
+                        $saleItemsModel->insert([
+                            'sale_id' => $sale_id,
+                            'product_id' => $item['id'],
+                            'quantity' => $item['quantity'],
+                            'price' => $item['price'],
+                            'cost_price' => $item['cost_price'],
+                            'subtotal' => $item['price'] * $item['quantity'],
+                        ]);
+
+                        $productModel->adjustStock($item['id'], $item['quantity'], 'out');
+                        $inventoryModel->logStockChange(
+                            $item['id'],
+                            $userId,
+                            $item['quantity'],
+                            'out',
+                            session('store_id') ?? '',
+                            $isDraftCompletion ? ("Sold in completed draft #{$sale_id}") : ("Sold in sale #{$sale_id}"),
+                            $item['cost_price'] ?? 0,
+                            $item['price'] ?? 0,
+                            $effectiveInvoiceNo,
+                            date('Y-m-d H:i:s')
+                        );
+                    } else {
+                        throw new \Exception('Insufficient stock for ' . ($product ? $product['name'] : 'Unknown Product'));
+                    }
+                }
+
+                // Reward points to customer based on total
+                try {
+                    $points = (int) floor(((float)$total) / 1000);
+                    if ($points > 0 && $customer_id) {
+                        $customerModel = new \App\Models\M_customers();
+                        $customer = $customerModel->forStore()->find($customer_id);
+                        $currentPoints = isset($customer['points']) ? (int)$customer['points'] : 0;
+                        $customerModel->update($customer_id, [
+                            'points' => $currentPoints + $points
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    // Non-fatal: do not block sale on loyalty update failure
+                    log_message('warning', 'Failed updating loyalty points for customer ' . $customer_id . ': ' . $e->getMessage());
+                }
+            } catch (\Throwable $e) {
+                $db->transRollback();
+                return redirect()->back()->with('error', 'Failed to create sale. ' . $e->getMessage());
             }
 
             // Commit transaction
@@ -1321,6 +1350,80 @@ class Sales extends \CodeIgniter\Controller
         return view('sales/drafts', $data);
     }
 
+    // Resume editing a draft sale in the POS new sale screen
+    public function resumeDraft($id)
+    {
+        $salesModel = new M_sales();
+        $saleItemsModel = new M_sale_items();
+        $productModel = new M_products();
+        $customerModel = new M_customers();
+
+        $sale = $salesModel->forStore()->find($id);
+        if (!$sale || ($sale['status'] ?? '') !== 'draft') {
+            return redirect()->to(site_url('sales/drafts'))->with('error', 'Draft sale not found.');
+        }
+
+        $items = $saleItemsModel->where('sale_id', $id)->findAll();
+        $products = $productModel->forStore()->findAll();
+        $productLookup = [];
+        foreach ($products as $p) {
+            $productLookup[$p['id']] = $p;
+        }
+
+        $cartItems = [];
+        $subtotal = 0.0;
+        foreach ($items as $line) {
+            $prod = $productLookup[$line['product_id']] ?? $productModel->find($line['product_id']);
+            $name = $prod['name'] ?? 'Unknown product';
+            $code = $prod['code'] ?? '';
+            $price = (float)($line['price'] ?? 0);
+            $qty = (float)($line['quantity'] ?? 0);
+            $costPrice = isset($line['cost_price']) ? (float)$line['cost_price'] : (float)($prod['cost_price'] ?? 0);
+            $stock = (float)($prod['quantity'] ?? 0);
+            $cartItems[] = [
+                'id' => (int)$line['product_id'],
+                'name' => $name,
+                'code' => $code,
+                'price' => $price,
+                'cost_price' => $costPrice,
+                'quantity' => $qty,
+                'stock' => $stock,
+                'barcode' => $prod['barcode'] ?? '',
+            ];
+            $subtotal += $price * $qty;
+        }
+
+        $totalDiscount = (float)($sale['total_discount'] ?? 0);
+        $discountType = $sale['discount_type'] ?? 'fixed';
+        $discountInput = $discountType === 'percentage' && $subtotal > 0
+            ? round(($totalDiscount / $subtotal) * 100, 2)
+            : $totalDiscount;
+        $taxAmount = (float)($sale['total_tax'] ?? 0);
+        $taxBase = max(0.0, $subtotal - $totalDiscount);
+        $taxRate = $taxBase > 0 ? round(($taxAmount / $taxBase) * 100, 4) : 0.0;
+
+        $employees = $this->employeeModel->forStore()->findAll();
+        $userRole = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
+        $customers = $customerModel->forStore()->findAll();
+
+        return view('sales/new', [
+            'title' => 'Resume Draft',
+            'invoiceNo' => $sale['invoice_no'] ?? ($salesModel->generateSalesInvoiceNo()),
+            'customers' => $customers,
+            'employees' => $employees,
+            'userRole' => $userRole,
+            // Prefill data
+            'resumeDraftId' => $sale['id'] ?? $id,
+            'prefillCartItems' => $cartItems,
+            'prefillCustomerId' => (int)($sale['customer_id'] ?? 0),
+            'prefillEmployeeId' => (int)($sale['employee_id'] ?? 0),
+            'prefillPaymentMethod' => $sale['payment_method'] ?? null,
+            'prefillDiscountType' => $discountType,
+            'prefillDiscountValue' => $discountInput,
+            'prefillTaxRate' => $taxRate,
+        ]);
+    }
+
     // Complete a draft sale
     public function completeDraft($id)
     {
@@ -1372,6 +1475,21 @@ class Sales extends \CodeIgniter\Controller
 
         // Log the sale creation
         logAction('sale_created', 'Sale ID: ' . $id . ', InvoiceNo: ' . $newInvoiceNo . ', Customer ID: ' . $sale['customer_id'] . ', Total: ' . $sale['total']);
+
+        // Reward points to customer based on total (for completed drafts)
+        try {
+            $points = (int) floor(((float)($sale['total'] ?? 0)) / 1000);
+            if ($points > 0 && !empty($sale['customer_id'])) {
+                $customerModel = new \App\Models\M_customers();
+                $customer = $customerModel->forStore()->find($sale['customer_id']);
+                $currentPoints = isset($customer['points']) ? (int)$customer['points'] : 0;
+                $customerModel->update($sale['customer_id'], [
+                    'points' => $currentPoints + $points
+                ]);
+            }
+        } catch (\Throwable $e) {
+            log_message('warning', 'Failed updating loyalty points for completed draft sale ' . $id . ': ' . $e->getMessage());
+        }
 
         return redirect()->to(site_url('sales/receipt/' . $id))->with('success', 'Draft sale completed.');
     }
@@ -1529,6 +1647,8 @@ class Sales extends \CodeIgniter\Controller
         if ($storeId !== null) {
             $baseBuilder->where('store_id', $storeId);
         }
+        //$baseBuilder->where('status', 'draft');
+
         $totalRecords = (clone $baseBuilder)->countAllResults();
 
         $filteredBuilder = $db->table('pos_sales ps')
@@ -1537,6 +1657,7 @@ class Sales extends \CodeIgniter\Controller
         if ($storeId !== null) {
             $filteredBuilder->where('ps.store_id', $storeId);
         }
+        $filteredBuilder->where('ps.status !=', 'draft');
 
         if ($search !== '') {
             $filteredBuilder->groupStart()

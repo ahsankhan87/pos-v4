@@ -3,6 +3,7 @@
 
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/buttons.dataTables.min.css">
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -57,6 +58,7 @@
 
 <!-- DataTables JS -->
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/dataTables.buttons.min.js"></script>
 <script>
     $(document).ready(function() {
         const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
@@ -77,6 +79,14 @@
             },
             lengthMenu: [25, 50, 100, 200],
             pageLength: 25,
+            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"Blf>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
+            buttons: [{
+                text: '<i class="fas fa-file-excel"></i> Export Excel',
+                className: 'btn btn-success',
+                action: function() {
+                    window.location.href = <?= json_encode(site_url('products/export')) ?>;
+                }
+            }],
             order: [
                 [0, 'desc']
             ],

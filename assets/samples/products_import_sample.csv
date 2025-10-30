@@ -1,0 +1,3 @@
+name,code,barcode,price,cost_price,quantity,stock_alert,description
+Sample Product,SP-001,1234567890123,150,120,10,2,Sample item
+Another Product,AP-002,9876543210987,200,130,5,1,Optional desc

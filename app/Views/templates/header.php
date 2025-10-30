@@ -178,6 +178,10 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <a href="<?= site_url('categories') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-tags mr-2"></i> Categories
                                             </a>
+                                            <a href="<?= site_url('units') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-ruler mr-2"></i> Units
+                                            </a>
+
                                         </div>
                                     </div>
                                 </div>

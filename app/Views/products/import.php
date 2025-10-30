@@ -23,7 +23,7 @@
     <?php endif; ?>
 
     <div class="bg-white shadow rounded p-4">
-        <form action="<?= site_url('products/import') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
+        <form id="products-import-form" action="<?= site_url('products/import') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
             <?= csrf_field() ?>
             <div>
                 <label class="block text-sm font-medium text-gray-700">CSV File</label>
@@ -46,31 +46,30 @@
                     <i class="fa-solid fa-file-import"></i>
                     Import
                 </button>
-                <a href="#" onclick="downloadSample(); return false;" class="ml-3 text-indigo-700 hover:underline text-sm">Download sample CSV</a>
+                <a href="<?= base_url('assets/samples/products_import_sample.csv') ?>" class="ml-3 text-indigo-700 hover:underline text-sm" download>Download sample CSV</a>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function downloadSample() {
-        const rows = [
-            ['name', 'code', 'barcode', 'price', 'cost_price', 'quantity', 'stock_alert', 'description'],
-            ['Sample Product', 'SP-001', '1234567890123', '150', '120', '10', '2', 'Sample item'],
-            ['Another Product', 'AP-002', '9876543210987', '200', '130', '5', '1', 'Optional desc']
-        ];
-        let csv = rows.map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\r\n');
-        const blob = new Blob([csv], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'products_import_sample.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+    // Client-side guard to ensure a file is selected
+    document.getElementById('products-import-form')?.addEventListener('submit', function(e) {
+        const input = this.querySelector('input[type="file"][name="csv_file"]');
+        if (!input || !input.files || input.files.length === 0) {
+            e.preventDefault();
+            alert('Please choose a CSV file to upload.');
+            input && input.focus();
+            return false;
+        }
+        const file = input.files[0];
+        const allowed = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
+        const extOk = /\.(csv|txt)$/i.test(file.name);
+        if (!extOk) {
+            e.preventDefault();
+            alert('Invalid file type. Please upload a .csv or .txt file.');
+            return false;
+        }
+    });
 </script>
 <?= $this->endSection() ?>

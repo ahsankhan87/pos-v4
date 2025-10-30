@@ -196,6 +196,9 @@
     <form method="post" action="<?= site_url('sales/create') ?>" class="max-w-full mx-auto px-2 py-2">
         <?= csrf_field() ?>
         <input type="hidden" name="invoice_no" value="<?= $invoiceNo ?>">
+        <?php if (isset($resumeDraftId)): ?>
+            <input type="hidden" name="draft_id" id="draft_id" value="<?= (int) $resumeDraftId ?>">
+        <?php endif; ?>
 
         <div class="grid grid-cols-1 xl:grid-cols-4 gap-2">
             <!-- Left Side - Product Search & Cart (75% width) -->
@@ -690,6 +693,15 @@
             }, 100);
         });
 
+        // Prefill from resumed draft if provided by server
+        const prefillCart = <?= isset($prefillCartItems) ? json_encode($prefillCartItems) : 'null' ?>;
+        const prefillDiscountType = <?= isset($prefillDiscountType) ? json_encode($prefillDiscountType) : 'null' ?>;
+        const prefillDiscountValue = <?= isset($prefillDiscountValue) ? json_encode($prefillDiscountValue) : 'null' ?>;
+        const prefillTaxRate = <?= isset($prefillTaxRate) ? json_encode($prefillTaxRate) : 'null' ?>;
+        const prefillCustomerId = <?= isset($prefillCustomerId) ? (int)$prefillCustomerId : 'null' ?>;
+        const prefillEmployeeId = <?= isset($prefillEmployeeId) ? (int)$prefillEmployeeId : 'null' ?>;
+        const prefillPaymentMethod = <?= isset($prefillPaymentMethod) ? json_encode($prefillPaymentMethod) : 'null' ?>;
+
         // Cart management
         let cart = [];
         let lastGrandTotal = 0; // Track latest computed total for tendered/change
@@ -1007,8 +1019,48 @@
             }
         };
 
-        // Initial render
-        renderCart();
+        // Initial render or prefill
+        if (Array.isArray(prefillCart) && prefillCart.length > 0) {
+            cart = prefillCart.map(function(it) {
+                // Ensure numeric types
+                return {
+                    id: parseInt(it.id),
+                    name: it.name || '',
+                    code: it.code || '',
+                    price: parseFloat(it.price || 0),
+                    cost_price: parseFloat(it.cost_price || 0),
+                    quantity: parseFloat(it.quantity || 0),
+                    stock: parseFloat(it.stock || 0),
+                    barcode: it.barcode || ''
+                };
+            });
+
+            // Set form fields if available
+            if (prefillDiscountType) {
+                $('#discount_type').val(prefillDiscountType).trigger('change');
+            }
+            if (prefillDiscountValue !== null) {
+                $('#discount').val(prefillDiscountValue);
+            }
+            if (prefillTaxRate !== null) {
+                $('#taxRate').val(prefillTaxRate);
+            }
+            if (prefillCustomerId) {
+                $('#customer-select').val(prefillCustomerId).trigger('change');
+                $('select[name="customer_id"]').val(prefillCustomerId).trigger('change');
+            }
+            if (prefillEmployeeId) {
+                $('select[name="employee_id"]').val(prefillEmployeeId).trigger('change');
+                $('.select2-employee').val(prefillEmployeeId).trigger('change');
+            }
+            if (prefillPaymentMethod) {
+                $('select[name="payment_method"]').val(prefillPaymentMethod).trigger('change');
+            }
+
+            renderCart();
+        } else {
+            renderCart();
+        }
 
         // Keyboard shortcuts
         $(document).on('keydown', function(e) {

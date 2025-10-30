@@ -142,6 +142,8 @@ class PurchaseModel extends Model
         // Uncomment below lines for debugging
 
         // Insert items
+        $inventoryModel = new \App\Models\M_inventory();
+
         if (!empty($data['items'])) {
             foreach ($data['items'] as $item) {
                 $itemData = [
@@ -162,20 +164,37 @@ class PurchaseModel extends Model
 
                 $itemModel->insert($itemData);
 
-                // // Update product cost price if needed
-                // if (isset($item['update_cost']) && $item['update_cost']) {
-                //     $productModel->update($item['product_id'], [
-                //         'cost_price' => $item['unit_price']
-                //     ]);
-                // }
+                // Update product cost price based on weighted average cost
+                $product = $productModel->find($item['product_id']);
+                if (! $product) {
+                    continue;
+                }
+                $currentQty = isset($product['quantity']) ? (float) $product['quantity'] : 0.0;
+                $currentCost = isset($product['cost_price']) ? (float) $product['cost_price'] : 0.0;
+                $incomingQty = (float) ($item['quantity'] ?? 0);
+                $incomingCost = (float) ($item['cost_price'] ?? 0);
 
-                // Update product quantity
-                $inventoryModel = new \App\Models\M_inventory();
+                $avgCost = $currentCost;
+                if ($incomingQty > 0) {
+                    $totalQty = $currentQty + $incomingQty;
+                    if ($totalQty > 0) {
+                        $totalCost = ($currentCost * $currentQty) + ($incomingCost * $incomingQty);
+                        $avgCost = $totalCost / $totalQty;
+                    } else {
+                        $avgCost = $incomingCost;
+                    }
+                }
 
-                $productModel->update($item['product_id'], [
-                    'cost_price' => $item['cost_price'],
-                    'price' => $item['unit_price'] ?? 0,
-                ]);
+                $updatePayload = [
+                    'cost_price' => round($avgCost, 4),
+                ];
+
+                if (array_key_exists('unit_price', $item)) {
+                    $updatePayload['price'] = $item['unit_price'] ?? ($product['price'] ?? 0);
+                }
+
+                $productModel->update($item['product_id'], $updatePayload);
+                ///////////////////
 
                 // Update product stock
                 $productModel->adjustStock($item['product_id'], $item['quantity'], 'in');

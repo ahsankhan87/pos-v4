@@ -3,11 +3,13 @@
  <div class="container mx-auto p-4">
      <div class="flex justify-between items-center mb-6">
          <h1 class="text-2xl font-bold"><?= $title ?></h1>
+
          <a href="<?= base_url('products') ?>" class="text-blue-600 hover:text-blue-800">Back to Products</a>
      </div>
 
      <!-- Stock History -->
      <div class="mt-8 bg-white p-6 rounded-lg shadow">
+         <p class="text-sm text-grey-500 mb-4">Stock History for Product ID: <?= esc($productId) ?></p>
          <?php if (!empty($history)): ?>
              <div class="overflow-x-auto">
                  <table class="min-w-full divide-y divide-gray-200">

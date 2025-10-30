@@ -65,6 +65,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('return/(:num)', 'Sales::return/$1', ['filter' => 'permission:sales.update']);
     $routes->post('processReturn/(:num)', 'Sales::processReturn/$1', ['filter' => 'permission:sales.update']);
     $routes->get('complete-draft/(:num)', 'Sales::completeDraft/$1', ['filter' => 'permission:sales.update']);
+    $routes->get('resume-draft/(:num)', 'Sales::resumeDraft/$1', ['filter' => 'permission:sales.update']);
     $routes->get('held', 'Sales::listHeldCarts', ['filter' => 'permission:sales.update']);
     $routes->get('recall/(:num)', 'Sales::recallCart/$1', ['filter' => 'permission:sales.update']);
 
@@ -243,10 +244,21 @@ $routes->group('suppliers', ['filter' => 'auth'], function ($routes) {
     $routes->delete('delete/(:num)', 'Suppliers::delete/$1', ['filter' => 'permission:suppliers.delete']);
 });
 
+$routes->group('units', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Units::index', ['filter' => 'permission:products.view']);
+    $routes->get('new', 'Units::new', ['filter' => 'permission:products.create']);
+    $routes->post('create', 'Units::create', ['filter' => 'permission:products.create']);
+    $routes->get('edit/(:num)', 'Units::edit/$1', ['filter' => 'permission:products.update']);
+    $routes->post('update/(:num)', 'Units::update/$1', ['filter' => 'permission:products.update']);
+    $routes->delete('delete/(:num)', 'Units::delete/$1', ['filter' => 'permission:products.delete']);
+});
+
 $routes->group('products', ['filter' => 'auth'], function ($routes) {
     // View
     $routes->get('/', 'Products::index', ['filter' => 'permission:products.view']);
     $routes->get('datatable', 'Products::datatable', ['filter' => 'permission:products.view']);
+    $routes->get('export', 'Products::export', ['filter' => 'permission:products.view']);
+    $routes->get('generate-barcode', 'Products::generateBarcode', ['filter' => 'permission:products.create']);
     $routes->get('(:num)', 'Products::show/$1', ['filter' => 'permission:products.view']);
     $routes->get('stock-movement-history/(:num)', 'Products::stockMovementHistory/$1', ['filter' => 'permission:products.view']);
     $routes->get('barcode_image/(:any)', 'Products::barcode_image/$1'); // Public barcode image endpoint

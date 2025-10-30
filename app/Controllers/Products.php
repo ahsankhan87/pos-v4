@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Models\M_inventory;
 use App\Models\M_products;
+use App\Models\UnitModel;
 
 class Products extends BaseController
 {
@@ -43,7 +45,14 @@ class Products extends BaseController
     public function new()
     {
         helper('form');
-        return view('products/new', ['title' => 'Add New Product']);
+        $unitModel = new UnitModel();
+
+        $units = $unitModel->forStore()->orderBy('name', 'ASC')->findAll();
+
+        return view('products/new', [
+            'title' => 'Add New Product',
+            'units' => $units,
+        ]);
     }
 
     public function create()
@@ -58,10 +67,11 @@ class Products extends BaseController
             'name' => 'required',
             'price' => 'required',
             'cost_price' => 'required',
-            'barcode' => 'required|is_unique[pos_products.barcode]',
+            'barcode' => 'permit_empty|is_unique[pos_products.barcode]',
             'code' => 'permit_empty',
             'stock_alert' => 'permit_empty',
             'description' => 'permit_empty',
+            'unit_id' => 'permit_empty|integer',
 
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
@@ -73,6 +83,12 @@ class Products extends BaseController
         // Gets the validated data.
         $post = $this->validator->getValidated();
 
+        $storeId = session('store_id') ?? '';
+        $barcode = trim((string) ($post['barcode'] ?? ''));
+        if ($barcode === '') {
+            $barcode = $this->generateUniqueBarcode(is_numeric($storeId) ? (int) $storeId : null);
+        }
+
         // Insert the data into the database.
         $data = [
             'name' => $post['name'],
@@ -82,10 +98,11 @@ class Products extends BaseController
             'description' => $post['description'],
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
-            'barcode' => $post['barcode'] ?? '',
-            'store_id' => session('store_id') ?? '',
+            'barcode' => $barcode,
+            'store_id' => $storeId,
             'code' => $post['code'] ?? '',
             'stock_alert' => $post['stock_alert'] ?? 10,
+            'unit_id' => $post['unit_id'] ?? null,
         ];
         // Create a new instance of the model and insert the data.
         $model = new M_products();
@@ -102,6 +119,11 @@ class Products extends BaseController
         helper('form');
 
         $model = new M_products();
+        $unitModel = new UnitModel();
+
+        $units = $unitModel->forStore()->orderBy('name', 'ASC')->findAll();
+
+        $data['units'] = $units;
         $data['product'] = $model->find($id);
         $data['title'] = 'Edit Product';
         // Check if the product exists before rendering the view.
@@ -123,6 +145,7 @@ class Products extends BaseController
             'stock_alert' => 'permit_empty',
             'description' => 'permit_empty',
             'barcode' => 'permit_empty', //'barcode' => 'required|is_unique[pos_products.barcode]',
+            'unit_id' => 'permit_empty|integer',
             'updated_at' => 'permit_empty',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
@@ -156,6 +179,12 @@ class Products extends BaseController
         }
 
         $model->forStore()->delete($id);
+
+        // Delete Inventory logs related to the product
+        $inventoryModel = new M_inventory();
+        $inventoryModel->deleteByProductId($id);
+
+        // Log the action
         logAction('product_deleted', 'Product ID: ' . $id);
         return redirect()->to(site_url('products'))->with('success', 'Product deleted successfully');
     }
@@ -167,6 +196,7 @@ class Products extends BaseController
         $data = [
             'title' => 'Stock Movement History',
             'history' => $history,
+            'productId' => $productId,
         ];
 
         return view('products/stock_movement_history', $data);
@@ -369,13 +399,13 @@ class Products extends BaseController
     {
         helper(['form']);
 
-        if ($this->request->getMethod() === 'get') {
+        if ($this->request->getMethod() === 'GET') {
             return view('products/import', [
                 'title' => 'Import Products',
             ]);
         }
 
-        $validation = \Config\Services::validation();
+        // Validate basic file presence and type
         $rules = [
             'csv_file' => [
                 'label' => 'CSV File',
@@ -383,12 +413,14 @@ class Products extends BaseController
             ],
         ];
         if (! $this->validate($rules)) {
-            return redirect()->back()->with('error', implode('\n', $validation->getErrors()))->withInput();
+            $errors = $this->validator ? $this->validator->getErrors() : ['csv_file' => 'Please upload a valid CSV file.'];
+            return redirect()->back()->with('error', implode("\n", $errors))->withInput();
         }
 
         $file = $this->request->getFile('csv_file');
-        if (! $file->isValid()) {
-            return redirect()->back()->with('error', 'Invalid upload.')->withInput();
+        if (! $file || ! $file->isValid()) {
+            $err = method_exists($file, 'getErrorString') ? ($file->getErrorString() . ' (Error code: ' . $file->getError() . ')') : 'Invalid upload.';
+            return redirect()->back()->with('error', $err)->withInput();
         }
 
         $handle = fopen($file->getTempName(), 'r');
@@ -406,7 +438,14 @@ class Products extends BaseController
         // Normalize headers to lowercase keys
         $map = [];
         foreach ($headers as $idx => $h) {
+            if ($idx === 0) {
+                // Strip UTF-8 BOM if present
+                $h = preg_replace('/^\xEF\xBB\xBF/', '', $h);
+            }
             $key = strtolower(trim($h));
+            if ($key === '') {
+                continue;
+            }
             $map[$key] = $idx;
         }
 
@@ -419,8 +458,10 @@ class Products extends BaseController
         }
 
         $productsModel = new M_products();
+        $inventoryModel = new M_inventory();
         $db = \Config\Database::connect();
         $storeId = session('store_id');
+        $userId = session('user_id') ?? 0;
 
         $inserted = 0;
         $updated = 0;
@@ -433,18 +474,18 @@ class Products extends BaseController
         $rowNum = 1; // start after header
         while (($row = fgetcsv($handle)) !== false) {
             $rowNum++;
-            if (count(array_filter($row, function ($v) {
+            if (count(array_filter($row, static function ($v) {
                 return trim((string) $v) !== '';
             })) === 0) {
                 // skip completely empty rows
                 continue;
             }
 
-            $get = function ($key, $default = null) use ($map, $row) {
-                if (isset($map[$key])) {
-                    return trim((string) ($row[$map[$key]] ?? ''));
+            $get = static function ($key) use ($map, $row) {
+                if (! array_key_exists($key, $map)) {
+                    return null;
                 }
-                return $default;
+                return trim((string) ($row[$map[$key]] ?? ''));
             };
 
             $name = $get('name');
@@ -454,47 +495,69 @@ class Products extends BaseController
                 continue;
             }
 
-            // Determine price (accept price or unit_price)
+            // Determine price (accept price or synonyms)
             $price = null;
+            $priceColumnPresent = false;
+            $priceProvided = false;
             foreach ($priceKeys as $pk) {
+                if (! array_key_exists($pk, $map)) {
+                    continue;
+                }
+                $priceColumnPresent = true;
                 $val = $get($pk);
                 if ($val !== null && $val !== '') {
-                    $price = $val;
+                    $price = (float) $val;
+                    $priceProvided = true;
                     break;
                 }
             }
 
-            // cost_price is optional but supported
-            $costPrice = $get('cost_price');
+            $costPriceColumnPresent = array_key_exists('cost_price', $map);
+            $costPriceProvided = false;
+            $costPrice = null;
+            if ($costPriceColumnPresent) {
+                $costPriceRaw = $get('cost_price');
+                if ($costPriceRaw !== null && $costPriceRaw !== '') {
+                    $costPrice = (float) $costPriceRaw;
+                    $costPriceProvided = true;
+                }
+            }
 
-            // Optional columns
-            $code = $get('code');
-            $barcode = $get('barcode');
-            $quantity = $get('quantity');
-            $stockAlert = $get('stock_alert');
-            $description = $get('description');
+            $hasQuantityColumn = array_key_exists('quantity', $map);
+            $quantityProvided = false;
+            $quantity = null;
+            if ($hasQuantityColumn) {
+                $quantityValue = $get('quantity');
+                if ($quantityValue !== null && $quantityValue !== '') {
+                    $quantity = (float) $quantityValue;
+                    $quantityProvided = true;
+                }
+            }
 
-            // Sanitize numeric fields
-            $price = $price !== null && $price !== '' ? (float) $price : null;
-            $costPrice = $costPrice !== null && $costPrice !== '' ? (float) $costPrice : null;
-            $quantity = $quantity !== null && $quantity !== '' ? (float) $quantity : null;
-            $stockAlert = $stockAlert !== null && $stockAlert !== '' ? (float) $stockAlert : null;
+            $hasStockAlertColumn = array_key_exists('stock_alert', $map);
+            $stockAlertProvided = false;
+            $stockAlert = null;
+            if ($hasStockAlertColumn) {
+                $stockAlertRaw = $get('stock_alert');
+                if ($stockAlertRaw !== null && $stockAlertRaw !== '') {
+                    $stockAlert = (float) $stockAlertRaw;
+                    $stockAlertProvided = true;
+                }
+            }
 
-            // Build data payload
-            $data = [
-                'name' => $name,
-                'price' => $price ?? 0,
-                'cost_price' => $costPrice ?? 0,
-                'quantity' => $quantity ?? 0,
-                'stock_alert' => $stockAlert ?? 10,
-                'description' => $description ?? null,
-                'code' => $code ?? null,
-                'barcode' => $barcode ?? null,
-                'store_id' => $storeId,
-            ];
+            $hasDescriptionColumn = array_key_exists('description', $map);
+            $descriptionRaw = $get('description');
+            $description = $hasDescriptionColumn ? ($descriptionRaw !== '' ? $descriptionRaw : null) : null;
+
+            $hasCodeColumn = array_key_exists('code', $map);
+            $codeRaw = $get('code');
+            $code = $hasCodeColumn ? ($codeRaw !== '' ? $codeRaw : null) : null;
+
+            $hasBarcodeColumn = array_key_exists('barcode', $map);
+            $barcodeRaw = $get('barcode');
+            $barcode = $hasBarcodeColumn ? ($barcodeRaw !== '' ? $barcodeRaw : null) : null;
 
             try {
-                // Upsert by barcode (preferred) or code within store
                 $db->transStart();
 
                 $existing = null;
@@ -505,12 +568,85 @@ class Products extends BaseController
                     $existing = $productsModel->where('store_id', $storeId)->where('code', $code)->first();
                 }
 
+                $data = [
+                    'name' => $name,
+                    'store_id' => $storeId,
+                ];
+
+                if ($priceProvided) {
+                    $data['price'] = $price;
+                } elseif (! $existing) {
+                    $data['price'] = 0;
+                } elseif ($priceColumnPresent) {
+                    // header present but empty -> keep existing value
+                }
+
+                if ($costPriceProvided) {
+                    $data['cost_price'] = $costPrice;
+                } elseif (! $existing) {
+                    $data['cost_price'] = 0;
+                }
+
+                if ($quantityProvided) {
+                    $data['quantity'] = $quantity;
+                } elseif (! $existing) {
+                    $data['quantity'] = 0;
+                }
+
+                if ($stockAlertProvided) {
+                    $data['stock_alert'] = $stockAlert;
+                } elseif (! $existing) {
+                    $data['stock_alert'] = 10;
+                }
+
+                if ($hasDescriptionColumn) {
+                    $data['description'] = $description;
+                } elseif (! $existing) {
+                    $data['description'] = null;
+                }
+
+                if ($hasCodeColumn) {
+                    $data['code'] = $code;
+                } elseif (! $existing) {
+                    $data['code'] = null;
+                }
+
+                if ($hasBarcodeColumn) {
+                    $data['barcode'] = $barcode;
+                } elseif (! $existing) {
+                    $data['barcode'] = null;
+                }
+
+                $productId = null;
+                $quantityDelta = 0.0;
+
                 if ($existing) {
-                    $productsModel->update($existing['id'], $data);
+                    $productId = (int) $existing['id'];
+                    $previousQuantity = (float) ($existing['quantity'] ?? 0);
+                    $productsModel->update($productId, $data);
                     $updated++;
+                    if ($quantityProvided) {
+                        $newQuantity = isset($data['quantity']) ? (float) $data['quantity'] : $previousQuantity;
+                        $quantityDelta = $newQuantity - $previousQuantity;
+                    }
                 } else {
                     $productsModel->insert($data);
+                    $productId = (int) $productsModel->insertID();
                     $inserted++;
+                    $quantityDelta = (float) ($data['quantity'] ?? 0);
+                }
+
+                if ($productId && abs($quantityDelta) > 0.00001) {
+                    $inventoryModel->logStockChange(
+                        $productId,
+                        $userId,
+                        $quantityDelta,
+                        $quantityDelta >= 0 ? 'in' : 'out',
+                        $storeId,
+                        'CSV import row ' . $rowNum,
+                        $data['cost_price'] ?? 0,
+                        $data['price'] ?? 0
+                    );
                 }
 
                 $db->transComplete();
@@ -536,5 +672,112 @@ class Products extends BaseController
 
         return redirect()->to(site_url('products'))
             ->with('success', $summary);
+    }
+
+    /**
+     * Export products to an Excel-compatible file (HTML table opened by Excel).
+     */
+    public function export()
+    {
+        $productsModel = new M_products();
+        $storeId = session('store_id');
+
+        $products = $productsModel
+            ->select('id, name, code, barcode, price, cost_price, quantity, stock_alert, description, created_at, updated_at')
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        $filename = 'products_' . date('Ymd_His') . '.xls';
+
+        $response = service('response');
+        $response->setHeader('Content-Type', 'application/vnd.ms-excel');
+        $response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        $response->setHeader('Pragma', 'no-cache');
+        $response->setHeader('Expires', '0');
+
+        $headings = ['ID', 'Name', 'Code', 'Barcode', 'Price', 'Cost Price', 'Quantity', 'Stock Alert', 'Description', 'Created At', 'Updated At'];
+
+        $escape = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        };
+
+        $output = '<meta charset="UTF-8">';
+        $output .= '<table border="1"><thead><tr>';
+        foreach ($headings as $heading) {
+            $output .= '<th>' . $escape($heading) . '</th>';
+        }
+        $output .= '</tr></thead><tbody>';
+
+        foreach ($products as $product) {
+            $output .= '<tr>';
+            $output .= '<td>' . $escape($product['id'] ?? '') . '</td>';
+            $output .= '<td>' . $escape($product['name'] ?? '') . '</td>';
+            $output .= '<td>' . $escape($product['code'] ?? '') . '</td>';
+            $output .= '<td>' . $escape($product['barcode'] ?? '') . '</td>';
+            $output .= '<td>' . $escape(number_format((float) ($product['price'] ?? 0), 2, '.', '')) . '</td>';
+            $output .= '<td>' . $escape(number_format((float) ($product['cost_price'] ?? 0), 2, '.', '')) . '</td>';
+            $output .= '<td>' . $escape(number_format((float) ($product['quantity'] ?? 0), 2, '.', '')) . '</td>';
+            $output .= '<td>' . $escape(number_format((float) ($product['stock_alert'] ?? 0), 2, '.', '')) . '</td>';
+            $output .= '<td>' . $escape($product['description'] ?? '') . '</td>';
+            $output .= '<td>' . $escape($product['created_at'] ?? '') . '</td>';
+            $output .= '<td>' . $escape($product['updated_at'] ?? '') . '</td>';
+            $output .= '</tr>';
+        }
+
+        if (empty($products)) {
+            $output .= '<tr><td colspan="11">No products found</td></tr>';
+        }
+
+        $output .= '</tbody></table>';
+
+        logAction('products_export', 'Exported ' . count($products) . ' products');
+
+        return $response->setBody($output);
+    }
+
+    public function generateBarcode()
+    {
+        $storeId = session('store_id');
+        $barcode = $this->generateUniqueBarcode(is_numeric($storeId) ? (int) $storeId : null);
+
+        return $this->response->setJSON([
+            'barcode' => $barcode,
+        ]);
+    }
+
+    private function generateUniqueBarcode($storeId = null)
+    {
+        $db = \Config\Database::connect();
+        $storeSegment = str_pad((string) ($storeId ?? 0), 3, '0', STR_PAD_LEFT);
+
+        do {
+            $random = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+            $base = substr($storeSegment, -3) . $random;
+            $checkDigit = $this->calculateEan13Checksum($base);
+            $barcode = $base . $checkDigit;
+
+            $exists = $db->table('pos_products')
+                ->select('id')
+                ->where('barcode', $barcode)
+                ->limit(1)
+                ->get()
+                ->getFirstRow();
+        } while ($exists !== null);
+
+        return $barcode;
+    }
+
+    private function calculateEan13Checksum($base12Digits)
+    {
+        $sum = 0;
+        $base = (string) $base12Digits;
+        $length = strlen($base);
+        for ($i = 0; $i < $length; $i++) {
+            $digit = (int) $base[$i];
+            $sum += ($i % 2 === 0) ? $digit : $digit * 3;
+        }
+
+        return (10 - ($sum % 10)) % 10;
     }
 }

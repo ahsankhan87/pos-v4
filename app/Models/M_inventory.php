@@ -41,12 +41,12 @@ class M_inventory extends Model
             'user_id' => $userId,
             'quantity' => abs($quantity),
             'type' => $type,
-            'notes' => $notes,
+            'notes' => $notes ?? '',
             'store_id' => $storeId,
             'cost_price' => $costPrice,
             'unit_price' => $unitPrice,
-            'invoice_no' => $invoiceNo,
-            'date' => $date,
+            'invoice_no' => $invoiceNo ?? '',
+            'date' => $date ?? date('Y-m-d H:i:s'),
         ];
 
         return $this->insert($data);
@@ -59,6 +59,11 @@ class M_inventory extends Model
             ->where('product_id', $productId)
             ->orderBy('created_at', 'DESC')
             ->forStore()->findAll();
+    }
+
+    public function deleteByProductId($productId)
+    {
+        return $this->where('product_id', $productId)->forStore()->delete();
     }
 
     public function forStore($storeId = null)
