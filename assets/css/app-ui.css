@@ -1,0 +1,404 @@
+:root {
+    --btn-radius: 0.65rem;
+    --btn-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --btn-shadow: 0 12px 24px -12px rgba(37, 99, 235, 0.6);
+    --btn-shadow-soft: 0 12px 24px -14px rgba(15, 23, 42, 0.25);
+    --surface-radius: 1.25rem;
+    --surface-border: 1px solid rgba(148, 163, 184, 0.18);
+    --surface-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.25);
+    --table-header-bg: #f8fafc;
+    --table-row-hover: #f1f5f9;
+    --table-border: rgba(148, 163, 184, 0.3);
+    --accent-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    --accent-primary-solid: #2563eb;
+    --accent-primary-dark: #1d4ed8;
+    --accent-secondary: rgba(37, 99, 235, 0.12);
+    --accent-danger: #dc2626;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: var(--btn-radius);
+    font-family: var(--btn-font);
+    font-weight: 600;
+    font-size: 0.925rem;
+    line-height: 1.2;
+    padding: 0.6rem 1.25rem;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.18s ease;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: var(--btn-shadow-soft);
+    background-color: white;
+    color: #0f172a;
+}
+
+.btn-sm {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+}
+
+.btn i {
+    font-size: 0.9em;
+}
+
+.btn-primary {
+    background-image: var(--accent-primary);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-primary:hover {
+    background-image: linear-gradient(135deg, var(--accent-primary-dark) 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 35px -18px rgba(37, 99, 235, 0.8);
+}
+
+.btn-secondary {
+    background: rgba(15, 23, 42, 0.06);
+    color: #1e293b;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.btn-secondary:hover {
+    background: rgba(15, 23, 42, 0.12);
+    border-color: rgba(37, 99, 235, 0.45);
+    color: #1d4ed8;
+}
+
+.btn-outline {
+    background: transparent;
+    border-color: rgba(37, 99, 235, 0.4);
+    color: #2563eb;
+}
+
+.btn-outline:hover {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: rgba(37, 99, 235, 0.75);
+}
+
+.btn-muted {
+    background: rgba(148, 163, 184, 0.18);
+    color: #1f2937;
+    border: none;
+}
+
+.btn-muted:hover {
+    background: rgba(148, 163, 184, 0.26);
+}
+
+.btn-filter {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: rgba(148, 163, 184, 0.12);
+    color: #475569;
+    box-shadow: none;
+}
+
+.btn-filter:hover {
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+}
+
+.btn-filter.is-active {
+    background: rgba(37, 99, 235, 0.16);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.35);
+}
+
+.table-card {
+    background: #fff;
+    border-radius: var(--surface-radius);
+    border: var(--surface-border);
+    box-shadow: var(--surface-shadow);
+    overflow: hidden;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+}
+
+.data-table thead th {
+    background: var(--table-header-bg);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: #475569;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--table-border);
+}
+
+.data-table tbody td {
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #334155;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    background-color: #fff;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--table-row-hover);
+}
+
+.actions-menu {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 20px 50px -28px rgba(15, 23, 42, 0.45);
+}
+
+.actions-menu .actions-link {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.875rem;
+    color: #334155;
+    transition: background 0.16s ease, color 0.16s ease;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.actions-menu .actions-link i {
+    font-size: 0.85rem;
+    width: 1rem;
+    text-align: center;
+}
+
+.actions-menu .actions-link span {
+    flex: 1;
+}
+
+.actions-menu .actions-link:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+}
+
+.actions-menu .actions-link.actions-link--success {
+    color: #047857;
+}
+
+.actions-menu .actions-link.actions-link--success:hover {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+.actions-menu .actions-link.actions-link--info {
+    color: #1d4ed8;
+}
+
+.actions-menu .actions-link.actions-link--info:hover {
+    color: #1d4ed8;
+}
+
+.actions-menu .actions-link.actions-link--warning {
+    color: #b45309;
+}
+
+.actions-menu .actions-link.actions-link--warning:hover {
+    background: rgba(251, 191, 36, 0.15);
+    color: #92400e;
+}
+
+.actions-menu .actions-link.actions-link--primary {
+    color: #4338ca;
+}
+
+.actions-menu .actions-link.actions-link--primary:hover {
+    background: rgba(129, 140, 248, 0.18);
+    color: #3730a3;
+}
+
+.actions-menu .actions-link.actions-link--danger {
+    color: #b91c1c;
+}
+
+.actions-menu .actions-link.actions-link--danger:hover {
+    background: rgba(248, 113, 113, 0.14);
+    color: #991b1b;
+}
+
+.actions-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.actions-wrapper .actions-menu {
+    min-width: 11rem;
+    padding: 0.35rem 0;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    margin-left: 0.75rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: #fff;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: rgba(37, 99, 235, 0.65);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    outline: none;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    margin: 0 0.4rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    padding: 0.35rem 0.75rem;
+    background: #fff;
+}
+
+.dataTables_wrapper .dataTables_info {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 0.65rem;
+    border: 1px solid transparent;
+    margin: 0 0.15rem;
+    padding: 0.35rem 0.8rem;
+    color: #475569 !important;
+    background: transparent;
+    transition: all 0.15s ease;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: rgba(37, 99, 235, 0.15);
+    color: #1d4ed8 !important;
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.dataTables_wrapper .dt-buttons {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dt-buttons .dt-button {
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #1f2937;
+    border-radius: var(--btn-radius);
+    padding: 0.45rem 0.95rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.16s ease;
+}
+
+.dataTables_wrapper .dt-buttons .dt-button:hover {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: rgba(37, 99, 235, 0.4);
+    color: #1d4ed8;
+}
+
+.dataTables_wrapper .dt-buttons .dt-button span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.dataTables_wrapper .dt-buttons .dt-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.badge i {
+    font-size: 0.8rem;
+}
+
+.badge--success {
+    background: rgba(34, 197, 94, 0.16);
+    color: #047857;
+}
+
+.badge--warning {
+    background: rgba(250, 204, 21, 0.18);
+    color: #b45309;
+}
+
+.badge--danger {
+    background: rgba(248, 113, 113, 0.2);
+    color: #b91c1c;
+}
+
+.badge--info {
+    background: rgba(191, 219, 254, 0.35);
+    color: #1d4ed8;
+}
+
+.row-has-due {
+    background: linear-gradient(90deg, rgba(248, 113, 113, 0.12) 0%, rgba(248, 250, 252, 0) 45%);
+}
+
+@media (max-width: 768px) {
+    .dataTables_wrapper .dt-buttons {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        margin-top: 0.75rem;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

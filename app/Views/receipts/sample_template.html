@@ -1,0 +1,106 @@
+<!-- Sample Receipt Template -->
+<!-- This is a basic 80mm thermal receipt template -->
+<style>
+    body {
+        font-family: 'Courier New', monospace;
+        width: 300px;
+        margin: 0 auto;
+        padding: 10px;
+    }
+    .center {
+        text-align: center;
+    }
+    .bold {
+        font-weight: bold;
+    }
+    .line {
+        border-bottom: 1px dashed #000;
+        margin: 10px 0;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        text-align: left;
+        padding: 2px;
+    }
+    th {
+        border-bottom: 1px solid #000;
+    }
+    .right {
+        text-align: right;
+    }
+    .totals {
+        margin-top: 10px;
+        border-top: 2px solid #000;
+        padding-top: 5px;
+    }
+</style>
+
+<div class="center">
+    <h2 class="bold">{{store_name}}</h2>
+    <p>{{store_address}}</p>
+    <p>Tel: {{store_phone}}</p>
+</div>
+
+<div class="line"></div>
+
+<div>
+    <p><strong>Receipt #:</strong> {{receipt_number}}</p>
+    <p><strong>Date:</strong> {{date}}</p>
+    <p><strong>Cashier:</strong> {{cashier}}</p>
+    {{customer}}
+</div>
+
+<div class="line"></div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th class="right">Qty</th>
+            <th class="right">Price</th>
+            <th class="right">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{items}}
+    </tbody>
+</table>
+
+<div class="totals">
+    <table>
+        <tr>
+            <td><strong>Subtotal:</strong></td>
+            <td class="right">{{subtotal}}</td>
+        </tr>
+        <tr>
+            <td><strong>Discount:</strong></td>
+            <td class="right">-{{total_discount}}</td>
+        </tr>
+        <tr>
+            <td><strong>Tax:</strong></td>
+            <td class="right">{{tax}}</td>
+        </tr>
+        <tr style="border-top: 2px solid #000;">
+            <td><strong>TOTAL:</strong></td>
+            <td class="right"><strong>{{total}}</strong></td>
+        </tr>
+        <tr>
+            <td>Paid:</td>
+            <td class="right">{{paid}}</td>
+        </tr>
+        <tr>
+            <td>Change:</td>
+            <td class="right">{{change}}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="line"></div>
+
+<div class="center">
+    <p>{{store_footer}}</p>
+    <p>Thank you for your business!</p>
+</div>

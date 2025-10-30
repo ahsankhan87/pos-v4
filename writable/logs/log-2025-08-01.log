@@ -1,0 +1,1875 @@
+DEBUG - 2025-08-01 13:49:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 13:49:27 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:49:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 13:49:29 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 13:49:33 --> CSRF token verified.
+WARNING - 2025-08-01 13:49:33 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:49:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:49:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:49:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 13:49:53 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 13:49:53 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 13:49:53 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 13:49:53 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:49:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 13:49:53 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 13:50:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:50:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:50:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 13:51:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:14:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:15:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 14:15:16 --> CSRF token verified.
+DEBUG - 2025-08-01 14:15:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:15:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:48:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:48:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:48:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:50:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:50:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:50:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:51:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 14:51:13 --> CSRF token verified.
+DEBUG - 2025-08-01 14:51:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:51:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:51:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:51:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:51:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:52:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:52:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:52:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:52:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 14:52:28 --> CSRF token verified.
+DEBUG - 2025-08-01 14:52:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:52:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 14:52:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:03:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:04:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 15:04:09 --> Error: Class "App\Models\PurchaseItemsModel" not found
+[Method: GET, Route: purchases/return/22]
+in APPPATH\Controllers\Purchases.php on line 327.
+ 1 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Purchases->return('22')
+ 2 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Purchases))
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 15:04:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:05:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 15:05:09 --> CSRF token verified.
+CRITICAL - 2025-08-01 15:05:09 --> Error: Class "App\Models\PurchaseItemsModel" not found
+[Method: POST, Route: purchases/processReturn/22]
+in APPPATH\Controllers\Purchases.php on line 351.
+ 1 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Purchases->processReturn('22')
+ 2 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Purchases))
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 15:05:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 15:05:19 --> CSRF token verified.
+CRITICAL - 2025-08-01 15:05:19 --> ErrorException: Undefined array key "price"
+[Method: POST, Route: purchases/processReturn/22]
+in APPPATH\Controllers\Purchases.php on line 385.
+ 1 APPPATH\Controllers\Purchases.php(385): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "price"', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Controllers\\Purchases.php', 385)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Purchases->processReturn('22')
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Purchases))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 15:05:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 15:05:46 --> CSRF token verified.
+DEBUG - 2025-08-01 15:05:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:21:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:22:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:22:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:22:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:22:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:22:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:23:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:25:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:57:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:57:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 15:58:23 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 15:58:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:58:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 15:58:59 --> CSRF token verified.
+DEBUG - 2025-08-01 15:58:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 15:58:59 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 15:59:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 15:59:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:03:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:03:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:03:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:03:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:04:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:05:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:05:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:06:43 --> CSRF token verified.
+DEBUG - 2025-08-01 16:06:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 16:06:43 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 16:06:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:06:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:09:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:10:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:10:22 --> CSRF token verified.
+DEBUG - 2025-08-01 16:10:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:10:27 --> CSRF token verified.
+DEBUG - 2025-08-01 16:11:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 16:11:35 --> CodeIgniter\Security\Exceptions\SecurityException: The action you requested is not allowed.
+[Method: POST, Route: sales/receive-payment/79]
+in SYSTEMPATH\Security\Security.php on line 262.
+ 1 SYSTEMPATH\Security\Security.php(262): CodeIgniter\Security\Exceptions\SecurityException::forDisallowedAction()
+ 2 SYSTEMPATH\Filters\CSRF.php(52): CodeIgniter\Security\Security->verify(Object(CodeIgniter\HTTP\IncomingRequest))
+ 3 SYSTEMPATH\Filters\Filters.php(241): CodeIgniter\Filters\CSRF->before(Object(CodeIgniter\HTTP\IncomingRequest), null)
+ 4 SYSTEMPATH\Filters\Filters.php(221): CodeIgniter\Filters\Filters->runBefore([...])
+ 5 SYSTEMPATH\CodeIgniter.php(479): CodeIgniter\Filters\Filters->run('sales/receive-payment/79', 'before')
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 16:11:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:11:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:11:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:11:57 --> CSRF token verified.
+DEBUG - 2025-08-01 16:11:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:12:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:12:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:16:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:16:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:16:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:16:34 --> CSRF token verified.
+ERROR - 2025-08-01 16:16:34 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`)) in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `po...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `po...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `po...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `po...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\BaseModel.php(843): CodeIgniter\Model->doInsert(Array)
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(800): CodeIgniter\BaseModel->insert(Array, true)
+#7 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Sales.php(862): CodeIgniter\Model->insert(Array)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Sales->processReturn('79')
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+#10 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#12 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2025-08-01 16:16:34 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+[Method: POST, Route: sales/processReturn/79]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\Sales.php(862): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('79')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 16:16:34 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'79\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:16:34\', \'1\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'79\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:16:34\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\Sales.php(862): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('79')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 16:16:34 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'79\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:16:34\', \'1\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'79\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:16:34\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'79\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:16:34\', \'1\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\Sales.php(862): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('79')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 16:17:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:17:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:17:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:17:08 --> CSRF token verified.
+ERROR - 2025-08-01 16:17:08 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`)) in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `po...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `po...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `po...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `po...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\BaseModel.php(843): CodeIgniter\Model->doInsert(Array)
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(800): CodeIgniter\BaseModel->insert(Array, true)
+#7 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Sales.php(862): CodeIgniter\Model->insert(Array)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Sales->processReturn('78')
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+#10 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#12 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2025-08-01 16:17:08 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+[Method: POST, Route: sales/processReturn/78]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\Sales.php(862): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('78')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 16:17:08 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'78\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:17:08\', \'1\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'78\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:17:08\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\Sales.php(862): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('78')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 16:17:08 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'78\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:17:08\', \'1\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'78\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:17:08\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'78\', 5, 1, 250, \'\', \'1\', \'2025-08-01 16:17:08\', \'1\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\Sales.php(862): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('78')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 16:18:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:18:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:18:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:19:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:20:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:25:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:30:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:31:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:32:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:32:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:34:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:36:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:40:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:42:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:43:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:43:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:43:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:43:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:43:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:45:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:47:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:47:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:47:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:49:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:49:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:49:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:49:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:50:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:50:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:54:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:55:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:55:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 16:55:12 --> CSRF token verified.
+DEBUG - 2025-08-01 16:55:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:55:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 16:55:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:17:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:17:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:17:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:18:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:18:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:19:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:19:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:19:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 17:19:47 --> CSRF token verified.
+DEBUG - 2025-08-01 17:19:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:19:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:20:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:20:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:25:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:25:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:28:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:28:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:30:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:30:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:31:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:32:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:35:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:35:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:35:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:43:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:43:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:44:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:46:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:46:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:49:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:50:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:50:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:50:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 17:50:30 --> CSRF token verified.
+DEBUG - 2025-08-01 17:50:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:50:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:57:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:58:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 17:59:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:04:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:04:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:04:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:05:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:05:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:05:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 18:05:12 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 18:06:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:07:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:07:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:08:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 18:10:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 19:10:09 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:10:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 19:10:09 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:10:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 19:10:14 --> CSRF token verified.
+WARNING - 2025-08-01 19:10:14 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:10:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:10:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:11:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:11:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 19:11:24 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:11:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 19:11:25 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:11:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 19:11:29 --> CSRF token verified.
+WARNING - 2025-08-01 19:11:29 --> [DEPRECATED] Creation of dynamic property App\Controllers\Auth::$storeModel is deprecated in APPPATH\Controllers\Auth.php on line 16.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Auth->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:11:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:11:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:11:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:11:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:11:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:12:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:12:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:13:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:13:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:13:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:13:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:14:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:14:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:14:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:33:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:33:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:33:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:33:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:33:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:34:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:34:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:34:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:34:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:34:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:34:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:34:54 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:34:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:34:54 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:34:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:34:54 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:34:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:34:54 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:34:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:34:54 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 19:35:10 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:35:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:35:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:35:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:35:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:35:35 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:35:36 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:35:36 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:35:36 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:35:36 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:35:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:40:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:40:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:40:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:40:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:40:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:49 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:49 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:50 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:50 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:40:50 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:40:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:42:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:42:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:42:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:42:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:42:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:42:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:42:38 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:42:39 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:42:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:42:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 19:42:54 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:43:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:43:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:43:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:43:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:43:06 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:43:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:43:06 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:43:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:43:06 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:43:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:43:06 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:43:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:43:06 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:43:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:43:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:45:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:45:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:45:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:45:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:45:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:45:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:46:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:46:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:46:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:46:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:46:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:46:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:46:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:46:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:46:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:46:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:46:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:47:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:47:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 19:47:43 --> CSRF token verified.
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:47:44 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:47:44 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:47:44 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:47:44 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:47:44 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:47:44 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/1]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('1', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('1')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:48:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:48:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:48:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:48:08 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:48:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:48:08 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:48:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:48:08 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:48:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:48:08 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:48:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:48:08 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(243): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:55:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:55:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:55:15 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:55:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:55:15 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:55:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:55:15 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:55:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:55:15 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:55:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:55:15 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:57:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:57:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:57:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:57:13 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:57:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:57:13 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:57:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:57:13 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:57:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:57:13 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:57:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:57:13 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:58:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:23 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:23 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:23 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:23 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:23 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:58:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 19:58:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:46 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:46 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:47 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:47 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 19:58:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 19:58:47 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:01:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:01:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:01:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:01:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:02:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:02:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:02 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:02 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:03 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:02:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:02:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:48 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/4]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('4', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('4')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:48 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/5]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('5', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('5')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:48 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/6]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('6', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('6')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:48 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/7]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('7', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('7')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:02:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-08-01 20:02:48 --> Error: Class "Picqer\Barcode\Exceptions\BarcodeException" not found
+[Method: GET, Route: products/barcode_image/27]
+in APPPATH\Libraries\Barcode\Renderers\PngRenderer.php on line 30.
+ 1 APPPATH\Libraries\Barcode\BarcodeGeneratorPNG.php(26): Picqer\Barcode\Renderers\PngRenderer->__construct()
+ 2 APPPATH\Controllers\Products.php(253): Picqer\Barcode\BarcodeGeneratorPNG->getBarcode('27', 'C128')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Products->barcode_image('27')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Products))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:05:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:06:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:07:10 --> CSRF token verified.
+DEBUG - 2025-08-01 20:07:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:07:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:08:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:08:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:08:30 --> CSRF token verified.
+DEBUG - 2025-08-01 20:08:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 20:08:30 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:08:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:08:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:08:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:11:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:11:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:11:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:11:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:11:56 --> CSRF token verified.
+DEBUG - 2025-08-01 20:11:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 20:11:56 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:12:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:12:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:12:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:12:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:12:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-08-01 20:12:35 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:13:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:13:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:14:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:14:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:14:16 --> CSRF token verified.
+ERROR - 2025-08-01 20:14:16 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`)) in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `po...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `po...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `po...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `po...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\BaseModel.php(843): CodeIgniter\Model->doInsert(Array)
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(800): CodeIgniter\BaseModel->insert(Array, true)
+#7 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Sales.php(1025): CodeIgniter\Model->insert(Array)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+#10 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#12 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2025-08-01 20:14:16 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+[Method: POST, Route: sales/processReturn/82]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:14:16 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'82\', 12, 1, 190, \'\', \'1\', \'2025-08-01 20:14:16\', \'1\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'82\', 12, 1, 190, \'\', \'1\', \'2025-08-01 20:14:16\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:14:16 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'82\', 12, 1, 190, \'\', \'1\', \'2025-08-01 20:14:16\', \'1\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'82\', 12, 1, 190, \'\', \'1\', \'2025-08-01 20:14:16\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (\'82\', 12, 1, 190, \'\', \'1\', \'2025-08-01 20:14:16\', \'1\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:20:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:20:25 --> CSRF token verified.
+ERROR - 2025-08-01 20:20:25 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`)) in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `po...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `po...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `po...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `po...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\BaseModel.php(843): CodeIgniter\Model->doInsert(Array)
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(800): CodeIgniter\BaseModel->insert(Array, true)
+#7 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Sales.php(1025): CodeIgniter\Model->insert(Array)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+#10 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#12 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2025-08-01 20:20:25 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+[Method: POST, Route: sales/processReturn/82]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:20:25 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:20:25\', \'1\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:20:25\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:20:25 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:20:25\', \'1\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:20:25\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:20:25\', \'1\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:22:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:22:18 --> CSRF token verified.
+ERROR - 2025-08-01 20:22:19 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`)) in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `po...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `po...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `po...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `po...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\BaseModel.php(843): CodeIgniter\Model->doInsert(Array)
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(800): CodeIgniter\BaseModel->insert(Array, true)
+#7 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Sales.php(1030): CodeIgniter\Model->insert(Array)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+#10 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#12 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2025-08-01 20:22:19 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+[Method: POST, Route: sales/processReturn/82]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\Sales.php(1030): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:22:19 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:22:19\', \'1\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:22:19\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\Sales.php(1030): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:22:19 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:22:19\', \'1\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:22:19\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 1, 190, \'\', \'1\', \'2025-08-01 20:22:19\', \'1\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\Sales.php(1030): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:22:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:22:30 --> CSRF token verified.
+DEBUG - 2025-08-01 20:23:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:23:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:23:09 --> CSRF token verified.
+ERROR - 2025-08-01 20:23:09 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`)) in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `po...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `po...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `po...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `po...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\BaseModel.php(843): CodeIgniter\Model->doInsert(Array)
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\Model.php(800): CodeIgniter\BaseModel->insert(Array, true)
+#7 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Sales.php(1025): CodeIgniter\Model->insert(Array)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+#10 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#12 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2025-08-01 20:23:09 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+[Method: POST, Route: sales/processReturn/82]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:23:09 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 2, 380, \'sdfsadf\', \'1\', \'2025-08-01 20:23:09\', \'1\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 2, 380, \'sdfsadf\', \'1\', \'2025-08-01 20:23:09\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-08-01 20:23:09 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`pos_db_v4`.`pos_sales_returns`, CONSTRAINT `pos_sales_returns_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `pos_sales` (`id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 2, 380, \'sdfsadf\', \'1\', \'2025-08-01 20:23:09\', \'1\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 2, 380, \'sdfsadf\', \'1\', \'2025-08-01 20:23:09\', \'1\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (82, 12, 2, 380, \'sdfsadf\', \'1\', \'2025-08-01 20:23:09\', \'1\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pos_sales_returns` (`sale_id`, `product_id`, `quantity`, `return_amount`, `reason`, `user_id`, `created_at`, `store_id`) VALUES (:sale_id:, :product_id:, :quantity:, :return_amount:, :reason:, :user_id:, :created_at:, :store_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(843): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(800): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\Sales.php(1025): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Sales->processReturn('82')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Sales))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-08-01 20:23:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-08-01 20:23:34 --> CSRF token verified.
+DEBUG - 2025-08-01 20:23:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:23:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-08-01 20:23:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
