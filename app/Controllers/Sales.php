@@ -72,8 +72,9 @@ class Sales extends \CodeIgniter\Controller
     {
         helper('form');
         $customerModel = new M_customers();
-        $productModel = new M_products();
+        //$productModel = new M_products();
         $salesModel = new M_sales();
+        $settingModel = new \App\Models\SettingsModel();
 
         $data['customers'] = $customerModel->forStore()->findAll();
         //$data['products'] = $productModel->forStore()->getProducts();
@@ -83,6 +84,7 @@ class Sales extends \CodeIgniter\Controller
         $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
         $data['title'] = 'New Sale';
         $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
+        $data['taxRate'] = $settingModel->first()['tax_rate'] ?? 0;
         return view('sales/new', $data);
     }
 
@@ -312,7 +314,7 @@ class Sales extends \CodeIgniter\Controller
                 // Insert items and adjust inventory
                 foreach ($items as $item) {
                     $product = $productModel->find($item['id']);
-                    if ($product && $product['quantity'] >= $item['quantity']) {
+                    if ($product) { //&& $product['quantity'] >= $item['quantity']
                         $saleItemsModel->insert([
                             'sale_id' => $sale_id,
                             'product_id' => $item['id'],
@@ -1522,49 +1524,102 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
         $returnModel = new \App\Models\SalesReturnModel();
+        $inventoryModel = new \App\Models\M_inventory();
 
         $returnItems = $this->request->getPost('return_items'); // [product_id => quantity]
         $reason = $this->request->getPost('reason');
         $userId = session('user_id');
         $store_id = session('store_id');
 
+        // Start transaction
+        // Start DB transaction
+        $db = $salesModel->db;
+        $db->transStart();
 
-        $sale = $salesModel->find($saleId);
-        if (!$sale) {
-            return redirect()->back()->with('error', 'Sale not found.');
-        }
 
-        // Get already returned quantities for each product in this sale
-        $returned = [];
-        foreach ($returnModel->where('sale_id', $saleId)->findAll() as $ret) {
-            $returned[$ret['product_id']] = ($returned[$ret['product_id']] ?? 0) + $ret['quantity'];
-        }
+        try {
 
-        foreach ($returnItems as $productId => $qty) {
-            $qty = (int)$qty;
-            if ($qty > 0) {
-                $item = $saleItemsModel->where('sale_id', $saleId)->where('product_id', $productId)->first();
-                $alreadyReturned = $returned[$productId] ?? 0;
-                $maxReturnable = $item['quantity'] - $alreadyReturned;
-                if ($item && $qty <= $maxReturnable) {
-                    // Update product stock
-                    $productModel->adjustStock($productId, $qty, 'in');
-                    // Log return
-                    $returnModel->insert([
-                        'sale_id' => (int)$saleId,
-                        'product_id' => $productId,
-                        'quantity' => $qty,
-                        'return_amount' => $qty * $item['price'],
-                        'reason' => $reason,
-                        'user_id' => $userId,
-                        'created_at' => date('Y-m-d H:i:s'),
-                        'store_id' => $store_id,
-                    ]);
+            $sale = $salesModel->find($saleId);
+
+            if (!$sale) {
+                return redirect()->back()->with('error', 'Sale not found.');
+            }
+
+            // Get already returned quantities for each product in this sale
+            $returned = [];
+            foreach ($returnModel->where('sale_id', $saleId)->findAll() as $ret) {
+                $returned[$ret['product_id']] = ($returned[$ret['product_id']] ?? 0) + $ret['quantity'];
+            }
+
+            foreach ($returnItems as $productId => $qty) {
+                $qty = (int)$qty;
+                if ($qty > 0) {
+                    $item = $saleItemsModel->where('sale_id', $saleId)->where('product_id', $productId)->first();
+                    $alreadyReturned = $returned[$productId] ?? 0;
+                    $maxReturnable = $item['quantity'] - $alreadyReturned;
+                    if ($item && $qty <= $maxReturnable) {
+                        // Update product stock
+                        $productModel->adjustStock($productId, $qty, 'in');
+                        // Log inventory change
+                        $inventoryModel->logStockChange(
+                            $productId,
+                            $userId,
+                            $qty,
+                            'in',
+                            $store_id,
+                            "Return from Sale #{$saleId}",
+                            $item['cost_price'] ?? 0,
+                            $item['price'] ?? 0,
+                            $sale['invoice_no'] ?? '',
+                            date('Y-m-d H:i:s')
+                        );
+
+                        // Update customer ledger when payment type is credit
+                        if ($sale['payment_type'] === 'credit') {
+                            $customerLedgerModel = new \App\Models\CustomerLedgerModel();
+                            $currentBalance = $customerLedgerModel->getCustomerBalance($sale['customer_id']);
+
+                            $returnAmount = $qty * $item['price'];
+                            $newBalance = $currentBalance - $returnAmount;
+
+                            $customerLedgerModel->insert([
+                                'customer_id' => $sale['customer_id'],
+                                'sale_id' => $saleId,
+                                'date' => date('Y-m-d H:i:s'),
+                                'description' => 'Return for Invoice #' . $sale['invoice_no'],
+                                'debit' => 0,
+                                'credit' => $returnAmount,
+                                'balance' => $newBalance,
+                                'created_at' => date('Y-m-d H:i:s')
+                            ]);
+                        }
+
+                        // Insert audit log
+                        logAction('sale_return', 'Invoice #' . $sale['invoice_no'] . ', Sale ID: ' . $saleId . ', Product ID: ' . $productId . ', Quantity: ' . $qty . ', Reason: ' . $reason);
+
+                        // Log return
+                        $returnModel->insert([
+                            'sale_id' => (int)$saleId,
+                            'product_id' => $productId,
+                            'quantity' => $qty,
+                            'return_amount' => $qty * $item['price'],
+                            'reason' => $reason,
+                            'user_id' => $userId,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'store_id' => $store_id,
+                        ]);
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Failed to return sale. ' . $e->getMessage());
         }
 
-        return redirect()->to(site_url('sales/receipt/' . $saleId))->with('success', 'Sales return processed.');
+        // Commit transaction
+        $db->transComplete();
+
+        return redirect()->to(site_url('sales'))->with('success', 'Sales return processed.');
     }
 
     public function receivePayment($saleId)

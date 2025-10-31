@@ -404,7 +404,15 @@
                 </tr>
                 <tr>
                     <td>Discount:</td>
-                    <td class="text-right">-<?= number_to_currency($purchase['discount'], session()->get('currency_symbol'), 'en_US', 2) ?></td>
+                    <?php
+                    $disount = 0;
+                    if ($purchase['discount_type'] === 'percentage') {
+                        $disount = $purchase['total_amount'] * $purchase['discount'] / 100;
+                    } else {
+                        $disount = $purchase['discount'];
+                    }
+                    ?>
+                    <td class="text-right">-<?= number_to_currency($disount, session()->get('currency_symbol'), 'en_US', 2) ?></td>
                 </tr>
                 <tr>
                     <td>Tax:</td>

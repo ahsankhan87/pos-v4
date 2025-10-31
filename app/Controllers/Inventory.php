@@ -57,20 +57,41 @@ class Inventory extends BaseController
         }
 
         $data = $this->request->getPost();
-        $userId = 1; // Replace with actual user ID // session()->get('user_id'); // Assuming you have user authentication
+        $userId = session()->get('user_id'); // Assuming you have user authentication
 
-        // Update stock quantity
-        $this->productModel->adjustStock($productId, $data['quantity'], $data['type']);
+        // Start transaction
+        // Start DB transaction
+        $db = $this->productModel->db;
+        $db->transStart();
 
-        // Log the change
-        $this->inventoryModel->logStockChange(
-            $productId,
-            $userId,
-            $data['quantity'],
-            $data['type'],
-            session('store_id') ?? '', // Store ID from session
-            $data['notes'] ?? null
-        );
+        try {
+
+            // Update stock quantity
+            $insertResult = $this->productModel->adjustStock($productId, $data['quantity'], $data['type']);
+            if (!$insertResult) {
+                throw new \Exception('Failed to adjust stock');
+            }
+
+            // Log the change
+            $insertLogInvResult =  $this->inventoryModel->logStockChange(
+                $productId,
+                $userId,
+                $data['quantity'],
+                $data['type'],
+                session('store_id') ?? '', // Store ID from session
+                $data['notes'] ?? null
+            );
+
+            if (!$insertLogInvResult) {
+                throw new \Exception('Failed to log stock change');
+            }
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Failed to update stock. ' . $e->getMessage());
+        }
+
+        // Commit transaction
+        $db->transComplete();
 
         return redirect()->to("/inventory/adjust/$productId")->with('message', 'Stock updated successfully');
     }

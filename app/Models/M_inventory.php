@@ -43,8 +43,8 @@ class M_inventory extends Model
             'type' => $type,
             'notes' => $notes ?? '',
             'store_id' => $storeId,
-            'cost_price' => $costPrice,
-            'unit_price' => $unitPrice,
+            'cost_price' => $costPrice ?? 0,
+            'unit_price' => $unitPrice ?? 0,
             'invoice_no' => $invoiceNo ?? '',
             'date' => $date ?? date('Y-m-d H:i:s'),
         ];

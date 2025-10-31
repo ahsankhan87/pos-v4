@@ -304,7 +304,8 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="font-medium">Tax:</span>
-                                    <span id="tax_amount"><?= session()->get('currency_symbol') ?>0.00</span>
+                                    <input id="tax_rate" type="number" id="tax_rate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.01"
+                                        class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="font-medium">Shipping Cost:</span>
@@ -316,6 +317,13 @@
                                     <span>Grand Total:</span>
                                     <span id="grand_total"><?= session()->get('currency_symbol') ?>0.00</span>
                                     <input type="text" id="grand_total" name="grand_total" value="0" hidden>
+                                </div>
+                                <div class="border-t border-gray-300 mt-2 pt-2">
+                                    <div class="flex justify-between">
+                                        <span>Tax Amount:</span>
+                                        <span id="taxAmount"><?= session()->get('currency_symbol') ?>0.00</span>
+                                        <input type="hidden" id="total_tax" name="total_tax" value="0" />
+                                    </div>
                                 </div>
                                 <div class="flex justify-between mt-2">
                                     <span>Amount Paid:</span>
@@ -334,7 +342,7 @@
 
                     <!-- Form Actions -->
                     <div class="mt-6 flex justify-end space-x-3">
-                        <button type="button" id="saveDraftBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Save Draft</button>
+                        <!-- <button type="button" id="saveDraftBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Save Draft</button> -->
                         <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Save Purchase</button>
                     </div>
                 </div>
@@ -368,7 +376,7 @@
 
         // Totals Elements
         const $subtotalEl = $('#subtotal');
-        const $taxAmountEl = $('#tax_amount');
+        const $taxAmountEl = $('#taxAmount');
         const $grandTotalEl = $('#grand_total');
         const $discountEl = $('#discount');
         const $discountTypeEl = $('#discount_type');
@@ -381,11 +389,11 @@
         const $itemsInput = $('#items');
 
         // Tax rates (would normally come from backend)
-        const taxRates = {
-            <?php foreach ($taxes as $tax): ?>
-                <?= $tax['id'] ?>: <?= $tax['rate'] ?>,
-            <?php endforeach; ?>
-        };
+        // const taxRates = {
+        //     <?php foreach ($taxes as $tax): ?>
+        //         <?= $tax['id'] ?>: <?= $tax['rate'] ?>,
+        //     <?php endforeach; ?>
+        // };
 
         // Array to hold all items in the purchase
         let purchaseItems = [];
@@ -533,6 +541,7 @@
             $discountEl.on('change input', calculateTotals);
             $discountTypeEl.on('change', calculateTotals);
             $shippingCostEl.on('change input', calculateTotals);
+            $('#tax_rate').on('change input', calculateTotals);
             $paidAmountEl.on('change input', updatePaymentInfo);
 
             // Initialize any existing items (for edit mode)
@@ -599,8 +608,8 @@
                     unit_price: parseFloat(product.price || 0),
                     discount: 0,
                     discount_type: 'fixed',
-                    tax_rate: taxRates[product.tax_id] || 0,
-                    tax_amount: 0,
+                    tax_rate: 0, // Tax calculated at purchase level
+                    tax_amount: 0, // Tax calculated at purchase level
                     subtotal: parseFloat(product.cost_price || 0),
                     update_cost: false,
                     expiry_date: '',
@@ -721,17 +730,12 @@
             // Ensure discount doesn't exceed subtotal
             discountAmount = Math.min(discountAmount, subtotalBeforeDiscount);
 
-            // Calculate subtotal after discount
-            const subtotalAfterDiscount = subtotalBeforeDiscount - discountAmount;
+            // Calculate subtotal after discount (no item-level tax)
+            const subtotal = subtotalBeforeDiscount - discountAmount;
 
-            // Calculate tax
-            const taxAmount = subtotalAfterDiscount * (item.tax_rate / 100);
-
-            // Calculate final subtotal
-            const subtotal = subtotalAfterDiscount + taxAmount;
-
-            // Update item properties
-            item.tax_amount = taxAmount;
+            // Update item properties (tax is calculated at purchase level, not item level)
+            item.tax_amount = 0;
+            item.tax_rate = 0;
             item.subtotal = subtotal;
         }
 
@@ -748,16 +752,16 @@
 
         function calculateTotals() {
             let subtotal = 0;
-            let tax = 0;
 
-            // Calculate items subtotal and tax
+            // Calculate items subtotal (with item-level discounts)
             purchaseItems.forEach(item => {
-                subtotal += (item.quantity * item.cost_price) - (item.discount_type === 'percentage' ?
-                    (item.quantity * item.cost_price * item.discount / 100) : item.discount);
-                tax += item.tax_amount;
+                const itemSubtotal = item.quantity * item.cost_price;
+                const itemDiscount = item.discount_type === 'percentage' ?
+                    (itemSubtotal * item.discount / 100) : item.discount;
+                subtotal += itemSubtotal - itemDiscount;
             });
 
-            // Apply global discount
+            // Apply purchase-level discount
             const discount = parseFloat($discountEl.val()) || 0;
             let discountAmount = 0;
 
@@ -770,16 +774,28 @@
             // Ensure discount doesn't exceed subtotal
             discountAmount = Math.min(discountAmount, subtotal);
 
+            const subtotalAfterDiscount = subtotal - discountAmount;
+
+            // Calculate purchase-level tax
+            const taxRate = parseFloat($('#tax_rate').val()) || 0;
+            const taxAmount = subtotalAfterDiscount * (taxRate / 100);
+
             // Apply shipping cost
             const shippingCost = parseFloat($shippingCostEl.val()) || 0;
 
             // Calculate grand total
-            const grandTotal = subtotal - discountAmount + tax + shippingCost;
+            const grandTotal = subtotalAfterDiscount + taxAmount + shippingCost;
 
             // Update UI
             $subtotalEl.text(formatCurrency(subtotal));
-            $taxAmountEl.text(formatCurrency(tax));
+            $taxAmountEl.text(formatCurrency(taxAmount));
             $grandTotalEl.text(formatCurrency(grandTotal));
+
+            // Update hidden tax field
+            $('#total_tax').val(taxAmount.toFixed(2));
+
+            // Store grand total for payment calculations
+            $grandTotalEl.data('value', grandTotal);
 
             // Update payment info
             updatePaymentInfo();
@@ -789,9 +805,9 @@
         }
 
         function updatePaymentInfo() {
-            const grandTotal = parseCurrency($grandTotalEl.text());
+            const grandTotal = parseFloat($grandTotalEl.data('value')) || 0;
             const paidAmount = parseFloat($paidAmountEl.val()) || 0;
-            const dueAmount = grandTotal - paidAmount;
+            const dueAmount = Math.max(0, grandTotal - paidAmount);
 
             $paidAmountDisplayEl.text(formatCurrency(paidAmount));
             $dueAmountEl.text(formatCurrency(dueAmount));

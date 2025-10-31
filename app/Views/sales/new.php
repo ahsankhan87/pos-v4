@@ -362,7 +362,7 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5">Tax(%) <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F7</kbd></label>
-                                <input type="number" id="taxRate" name="tax_rate" value="0" min="0" max="100" step="0.01"
+                                <input type="number" id="taxRate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.01"
                                     class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
                                 <input type="hidden" id="total_tax" name="total_tax" value="">
                             </div>
@@ -785,21 +785,21 @@
                     return;
                 }
             } else {
-                if (product.quantity > 0) {
-                    cart.push({
-                        id: product.id,
-                        name: product.name,
-                        code: product.code || '',
-                        price: parseFloat(product.price || 0),
-                        cost_price: product.cost_price || 0,
-                        quantity: 1,
-                        stock: parseInt(product.quantity || 0)
-                    });
-                    //showSuccessMessage(`${product.name} added to cart`);
-                } else {
-                    showFormErrors([`${product.name} is out of stock`]);
-                    return;
-                }
+                //if (product.quantity > 0) {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    code: product.code || '',
+                    price: parseFloat(product.price || 0),
+                    cost_price: product.cost_price || 0,
+                    quantity: 1,
+                    stock: parseInt(product.quantity || 0)
+                });
+                //showSuccessMessage(`${product.name} added to cart`);
+                // } else {
+                //     showFormErrors([`${product.name} is out of stock`]);
+                //     return;
+                // }
             }
 
             renderCart();

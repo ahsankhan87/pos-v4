@@ -159,16 +159,16 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
 
                                             <div class="border-t border-gray-100"></div>
                                             <a href="<?= site_url('products') ?>" accesskey="o" title="Shortcut: Ctrl+Alt+O" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-boxes mr-2"></i> All Products
+                                                <i class="fas fa-boxes mr-2"></i> Products List
                                             </a>
                                             <a href="<?= site_url('products/new') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-plus mr-2"></i> Add New Product
                                             </a>
                                             <a href="<?= site_url('customers') ?>" accesskey="c" title="Shortcut: Ctrl+Alt+C" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-users mr-2"></i> All Customers
+                                                <i class="fas fa-users mr-2"></i> Customers List
                                             </a>
                                             <a href="<?= site_url('employees') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-user-friends mr-2"></i> All Employees
+                                                <i class="fas fa-user-friends mr-2"></i> Employees List
                                             </a>
 
                                             <a href="<?= site_url('inventory') ?>" accesskey="i" title="Shortcut: Ctrl+Alt+I" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
@@ -193,14 +193,14 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     </button>
                                     <div class="absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                                         <div class="py-1">
-                                            <a href="<?= site_url('purchases') ?>" accesskey="p" title="Shortcut: Ctrl+Alt+P" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-shopping-cart mr-2"></i> All Purchases
-                                            </a>
                                             <a href="<?= site_url('purchases/create') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-plus mr-2"></i> Add New Purchase
                                             </a>
+                                            <a href="<?= site_url('purchases') ?>" accesskey="p" title="Shortcut: Ctrl+Alt+P" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-shopping-cart mr-2"></i> Purchases List
+                                            </a>
                                             <a href="<?= site_url('suppliers') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-truck mr-2"></i> All Suppliers
+                                                <i class="fas fa-truck mr-2"></i> Suppliers List
                                             </a>
 
                                         </div>
@@ -422,17 +422,12 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     </button>
                                     <div id="products-menu" class="pl-8 space-y-1 hidden">
                                         <a href="<?= site_url('products') ?>" accesskey="o" title="Shortcut: Ctrl+Alt+O" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            All Products
+                                            Products List
                                         </a>
                                         <a href="<?= site_url('products/new') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
                                             Add New
                                         </a>
-                                        <a href="<?= site_url('inventory') ?>" accesskey="i" title="Shortcut: Ctrl+Alt+I" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Inventory
-                                        </a>
-                                        <a href="<?= site_url('categories') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Categories
-                                        </a>
+
                                     </div>
                                 </div>
 
@@ -446,7 +441,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     </button>
                                     <div id="customers-menu" class="pl-8 space-y-1 hidden">
                                         <a href="<?= site_url('customers') ?>" accesskey="c" title="Shortcut: Ctrl+Alt+C" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            All Customers
+                                            Customers List
                                         </a>
                                         <a href="<?= site_url('customers/new') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
                                             Add New
@@ -467,7 +462,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     </button>
                                     <div id="suppliers-menu" class="pl-8 space-y-1 hidden">
                                         <a href="<?= site_url('suppliers') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            All Suppliers
+                                            Suppliers List
                                         </a>
                                         <a href="<?= site_url('suppliers/new') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
                                             Add New

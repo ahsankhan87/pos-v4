@@ -130,13 +130,16 @@ class Purchases extends BaseController
 
     public function create()
     {
+        $settingModel = new \App\Models\SettingsModel();
+
         $data = [
             'title' => 'Create New Purchase',
             'suppliers' => $this->supplierModel->forStore()->findAll(),
             'products' => $this->productModel->forStore()->findAll(),
             'taxes' => [], //$this->taxModel->findAll(),
             'invoice_no' => $this->purchaseModel->generatePurchaseInvoiceNo(), //['data']['invoice_no'],
-            'today' => date('Y-m-d H:i:s')
+            'today' => date('Y-m-d H:i:s'),
+            'taxRate' => $settingModel->first()['tax_rate'] ?? 0,
         ];
 
         return view('purchases/create', $data);
@@ -178,7 +181,7 @@ class Purchases extends BaseController
             'date' => $this->request->getPost('date'),
             'total_amount' => $totals['total'],
             'discount' => $this->request->getPost('discount') ?? 0,
-            //'discount_type' => $this->request->getPost('discount_type') ?? 'fixed',
+            'discount_type' => $this->request->getPost('discount_type') ?? 'fixed',
             'tax_amount' => $totals['tax'],
             'shipping_cost' => $this->request->getPost('shipping_cost') ?? 0,
             'grand_total' => $totals['grand_total'],
@@ -209,36 +212,48 @@ class Purchases extends BaseController
     protected function calculateTotals(array $items)
     {
         $total = 0;
-        $tax = 0;
 
         foreach ($items as $item) {
             $quantity = (float) $item['quantity'];
             $costPrice = (float) $item['cost_price'];
             $discount = (float) ($item['discount'] ?? 0);
-            $taxRate = (float) ($item['tax_rate'] ?? 0);
 
             $subtotal = $quantity * $costPrice;
 
-            // Apply discount
-            if ($item['discount_type'] ?? 'fixed') {
+            // Apply item-level discount
+            if (($item['discount_type'] ?? 'fixed') === 'percentage') {
                 $discountAmount = $subtotal * ($discount / 100);
             } else {
                 $discountAmount = $discount;
             }
 
             $subtotalAfterDiscount = $subtotal - $discountAmount;
-
-            // Calculate tax
-            $taxAmount = $subtotalAfterDiscount * ($taxRate / 100);
-
             $total += $subtotalAfterDiscount;
-            $tax += $taxAmount;
         }
+
+        // Apply purchase-level discount
+        $purchaseDiscount = (float) ($this->request->getPost('discount') ?? 0);
+        $purchaseDiscountType = $this->request->getPost('discount_type') ?? 'fixed';
+
+        if ($purchaseDiscountType === 'percentage') {
+            $purchaseDiscountAmount = $total * ($purchaseDiscount / 100);
+        } else {
+            $purchaseDiscountAmount = $purchaseDiscount;
+        }
+
+        $totalAfterDiscount = $total - $purchaseDiscountAmount;
+
+        // Calculate purchase-level tax on total after all discounts
+        $taxRate = (float) ($this->request->getPost('tax_rate') ?? 0);
+        $taxAmount = $totalAfterDiscount * ($taxRate / 100);
+
+        // Add shipping cost
+        $shippingCost = (float) ($this->request->getPost('shipping_cost') ?? 0);
 
         return [
             'total' => $total,
-            'tax' => $tax,
-            'grand_total' => $total + $tax
+            'tax' => $taxAmount,
+            'grand_total' => $totalAfterDiscount + $taxAmount + $shippingCost
         ];
     }
 
@@ -596,6 +611,7 @@ class Purchases extends BaseController
         $purchaseItemsModel = new \App\Models\PurchaseItemModel();
         $productModel = new \App\Models\M_products();
         $returnModel = new \App\Models\PurchaseReturnModel();
+        $inventoryModel = new \App\Models\M_inventory();
 
         $returnItems = $this->request->getPost('return_items'); // [product_id => quantity]
         $reason = $this->request->getPost('reason');
@@ -622,6 +638,24 @@ class Purchases extends BaseController
                 if ($item && $qty <= $maxReturnable) {
                     // Update product stock (decrease)
                     $productModel->adjustStock($productId, $qty, 'out');
+                    // Update Inventory 
+                    $inventoryModel->logStockChange(
+                        $productId,
+                        $userId ?? 0,
+                        $qty,
+                        'out',
+                        $store_id ?? '', // Store ID from session
+                        "Return from purchase (ID: {$purchaseId})",
+                        $item['cost_price'],
+                        $item['unit_price'] ?? 0,
+                        $purchase['invoice_no'] ?? '',
+                        date('Y-m-d H:i:s')
+                    );
+
+                    // insert audit log
+                    logAction('purchase_return', 'Returned ' . $qty . ' of product ID: ' . $productId . ' from purchase ID: ' . $purchaseId, ' Product ID', $productId, ' Quantity', $qty, ' Purchase ID', $purchaseId);
+
+                    // 
                     // Log return
                     $returnModel->insert([
                         'purchase_id' => $purchaseId,
@@ -637,6 +671,6 @@ class Purchases extends BaseController
             }
         }
 
-        return redirect()->to(site_url('purchases/view/' . $purchaseId))->with('success', 'Purchase return processed.');
+        return redirect()->to(site_url('purchases'))->with('success', 'Purchase return processed.');
     }
 }

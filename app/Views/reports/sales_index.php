@@ -129,7 +129,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
                     <div id="mCogs" class="text-lg font-bold">-</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-500">Gross</div>
+                    <div class="text-xs text-gray-500">Gross Profit</div>
                     <div id="mGross" class="text-lg font-bold">-</div>
                 </div>
                 <div>

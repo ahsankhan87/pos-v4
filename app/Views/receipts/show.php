@@ -42,7 +42,7 @@
         <div>
             <span class="font-semibold">Shortcuts:</span>
             <span class="ml-1">
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+P</kbd> Print
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Shift+P</kbd> Print
                 <span class="mx-1">·</span>
                 <!-- <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+D</kbd> PDF
                 <span class="mx-1">·</span> -->
@@ -103,7 +103,7 @@
         const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag);
         if (isTyping) return;
         // Ctrl+Alt+P -> Print
-        if ((e.ctrlKey && e.altKey && !e.shiftKey && (e.key === 'p' || e.key === 'P'))) {
+        if ((e.ctrlKey && e.shiftKey && (e.key === 'p' || e.key === 'P'))) {
             e.preventDefault();
             printReceiptOnly();
         }

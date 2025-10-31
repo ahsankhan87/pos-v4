@@ -11,7 +11,7 @@
     <form method="post" action="<?= site_url('settings/update') ?>" enctype="multipart/form-data">
         <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= esc($settings['id'] ?? 1) ?>">
-        <div class="mb-4">
+        <!-- <div class="mb-4">
             <label class="block font-semibold mb-1">Currency Code </label>
             <select name="currency_code" class="w-full border rounded px-3 py-2">
                 <option value="USD" <?= @$settings['currency_code'] == 'USD' ? 'selected' : '' ?>>USD</option>
@@ -19,13 +19,13 @@
                 <option value="PKR" <?= @$settings['currency_code'] == 'PKR' ? 'selected' : '' ?>>PKR</option>
                 <option value="INR" <?= @$settings['currency_code'] == 'INR' ? 'selected' : '' ?>>INR</option>
                 <option value="SAR" <?= @$settings['currency_code'] == 'SAR' ? 'selected' : '' ?>>SAR</option>
-                <!-- Add more as needed -->
+
             </select>
         </div>
         <div class="mb-4">
             <label class="block font-semibold mb-1">Currency Symbol</label>
             <input type="text" name="currency_symbol" value="<?= esc($settings['currency_symbol'] ?? '') ?>" class="w-full border rounded px-3 py-2" required>
-        </div>
+        </div> -->
         <div class="mb-4">
             <label class="block font-semibold mb-1">Tax Rate (%)</label>
             <input type="number" name="tax_rate" value="<?= esc($settings['tax_rate'] ?? '0') ?>" min="0" max="100" class="w-24 border rounded px-2 py-1">

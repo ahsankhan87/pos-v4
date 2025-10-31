@@ -154,8 +154,8 @@ class PurchaseModel extends Model
                     'cost_price' => $item['cost_price'] ?? 0,
                     'discount' => $item['discount'] ?? 0,
                     'discount_type' => $item['discount_type'] ?? 'fixed',
-                    'tax_rate' => $item['tax_rate'] ?? 0,
-                    'tax_amount' => $item['tax_amount'] ?? 0,
+                    'tax_rate' => 0, // Purchase-level tax, not item-level
+                    'tax_amount' => 0, // Purchase-level tax, not item-level
                     'subtotal' => $item['subtotal'],
                     'received_quantity' => $item['received_quantity'] ?? $item['quantity'],
                     'expiry_date' => $item['expiry_date'] ?? null,

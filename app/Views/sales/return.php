@@ -37,6 +37,7 @@
             <input type="text" name="reason" class="w-full border rounded px-3 py-2">
         </div>
         <div class="flex justify-end">
+            <a href="<?= site_url('sales') ?>" class="btn btn-secondary mr-2">Cancel</a>
             <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-bold">Process Return</button>
         </div>
     </form>

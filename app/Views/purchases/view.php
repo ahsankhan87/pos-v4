@@ -188,7 +188,15 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="font-medium">Discount:</span>
-                            <span><?= number_to_currency($purchase['discount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
+                            <?php
+                            $disount = 0;
+                            if ($purchase['discount_type'] === 'percentage') {
+                                $disount = $purchase['total_amount'] * $purchase['discount'] / 100;
+                            } else {
+                                $disount = $purchase['discount'];
+                            }
+                            ?>
+                            <span><?= number_to_currency($disount, session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                         <div class="flex justify-between">
                             <span class="font-medium">Tax:</span>
