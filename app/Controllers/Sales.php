@@ -829,7 +829,7 @@ class Sales extends \CodeIgniter\Controller
         }
 
         $data = [
-            'title' => 'Sales Report',
+            'title' => 'Daily Sales Report',
             'sales' => $sales,
             'from' => $from,
             'to' => $to,
@@ -866,6 +866,7 @@ class Sales extends \CodeIgniter\Controller
         foreach ($items as &$item) {
             $product = $productModel->find($item['product_id']);
             $item['product_name'] = $product ? $product['name'] : 'Unknown';
+            $item['carton_size'] = $product ? ($product['carton_size'] ?? 0) : 0;
         }
 
         $data = [
@@ -912,6 +913,119 @@ class Sales extends \CodeIgniter\Controller
             'to' => $to,
         ];
         return view('sales/reports/customer_report', $data);
+    }
+
+    public function profitLossReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $productModel = new \App\Models\M_products();
+        $salesModel = new \App\Models\M_sales();
+        $purchaseModel = new \App\Models\purchaseModel();
+
+        // Get detailed sale items with product info
+        $items = $saleItemsModel
+            ->select('
+                pos_sale_items.*,
+                pos_products.name as product_name,
+                pos_products.code as product_code,
+                pos_products.cost_price,
+                pos_products.carton_size,
+                pos_sales.created_at,
+                pos_sales.invoice_no
+            ')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId)
+            ->orderBy('pos_products.name', 'ASC')
+            ->findAll();
+
+        // Aggregate by product
+        $productSummary = [];
+        foreach ($items as $item) {
+            $pid = $item['product_id'];
+            if (!isset($productSummary[$pid])) {
+                $productSummary[$pid] = [
+                    'product_id' => $pid,
+                    'product_name' => $item['product_name'],
+                    'product_code' => $item['product_code'],
+                    'carton_size' => $item['carton_size'] ?? 0,
+                    'total_qty_sold' => 0,
+                    'total_revenue' => 0,
+                    'total_cost' => 0,
+                    'gross_profit' => 0,
+                ];
+            }
+
+            $qty = (float)$item['quantity'];
+            $revenue = (float)$item['subtotal'];
+            $cost = (float)$item['cost_price'] * $qty;
+
+            $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
+            $productSummary[$pid]['sale_id'] = $item['sale_id'];
+            $productSummary[$pid]['total_qty_sold'] += $qty;
+            $productSummary[$pid]['total_revenue'] += $revenue;
+            $productSummary[$pid]['total_cost'] += $cost;
+            $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
+        }
+
+        // Calculate totals
+        $totalRevenue = 0;
+        $totalCost = 0;
+        $totalGrossProfit = 0;
+        foreach ($productSummary as $p) {
+            $totalRevenue += $p['total_revenue'];
+            $totalCost += $p['total_cost'];
+            $totalGrossProfit += $p['gross_profit'];
+        }
+
+        // Get operating expenses (from purchases, taxes, discounts)
+        $salesData = $salesModel
+            ->select('
+                SUM(total_discount) as total_discounts,
+                SUM(total_tax) as total_taxes,
+                COUNT(id) as sales_count
+            ')
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59')
+            ->forStore($storeId)
+            ->first();
+
+        $totalDiscounts = (float)($salesData['total_discounts'] ?? 0);
+        $totalTaxes = (float)($salesData['total_taxes'] ?? 0);
+        $salesCount = (int)($salesData['sales_count'] ?? 0);
+
+        // Calculate net profit
+        $netProfit = $totalGrossProfit - $totalDiscounts;
+        $profitMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
+
+        $data = [
+            'title' => 'Profit & Loss Report',
+            'products' => array_values($productSummary),
+            'totalRevenue' => $totalRevenue,
+            'totalCost' => $totalCost,
+            'totalGrossProfit' => $totalGrossProfit,
+            'totalDiscounts' => $totalDiscounts,
+            'totalTaxes' => $totalTaxes,
+            'netProfit' => $netProfit,
+            'profitMargin' => $profitMargin,
+            'salesCount' => $salesCount,
+            'from' => $from,
+            'to' => $to,
+        ];
+
+        return view('sales/reports/profit_loss_report', $data);
     }
 
     public function exportReportExcel()

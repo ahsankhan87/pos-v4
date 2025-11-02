@@ -43,7 +43,7 @@ class M_sales extends Model
             ->first();
 
         $sale['items'] = $this->db->table('pos_sale_items')
-            ->select('pos_sale_items.*, pos_products.name')
+            ->select('pos_sale_items.*, pos_products.name, pos_products.carton_size')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
             ->where('pos_sale_items.sale_id', $saleId)
             ->get()

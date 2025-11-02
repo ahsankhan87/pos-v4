@@ -89,14 +89,40 @@ class Receipts extends BaseController
     {
         $html = '';
         foreach ($items as $item) {
+            $cartonSize = (float)($item['carton_size'] ?? 0);
+            $quantity = (float)($item['quantity'] ?? 0);
+
+            // Show pieces only in item line
+            // to show full carton + pieces breakdown, modify here as needed
+            $qtyDisplay = $this->formatQuantity($quantity, $cartonSize, true);
+
             $html .= '<tr>';
             $html .= '<td>' . $item['name'] . '</td>';
-            $html .= '<td style="text-align: center;">' . $item['quantity'] . '</td>';
+            $html .= '<td style="text-align: center;">' . $qtyDisplay . '</td>';
             $html .= '<td style="text-align: right;">' . number_format($item['price'], 2) . '</td>';
             $html .= '<td style="text-align: right;">' . number_format($item['quantity'] * $item['price'], 2) . '</td>';
             $html .= '</tr>';
         }
         return $html;
+    }
+
+    protected function formatQuantity($pieces, $cartonSize, $showPiecesOnly = false)
+    {
+        if ($showPiecesOnly) {
+            return number_format($pieces, 2);
+        }
+
+        if (!$cartonSize || $cartonSize <= 1) {
+            return number_format($pieces, 2);
+        }
+
+        $cartons = floor($pieces / $cartonSize);
+        $remaining = $pieces - ($cartons * $cartonSize);
+
+        if ($remaining > 0) {
+            return $cartons . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+        }
+        return $cartons . ' ctns';
     }
 
     protected function generatePdf($html)

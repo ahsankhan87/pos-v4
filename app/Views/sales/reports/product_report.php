@@ -16,6 +16,21 @@ function money_fmt($v)
 {
     return number_format((float)$v, 2);
 }
+
+function formatQuantity($pieces, $cartonSize)
+{
+    if (!$cartonSize || $cartonSize <= 1) {
+        return number_format($pieces, 2) . ' pcs';
+    }
+
+    $cartons = floor($pieces / $cartonSize);
+    $remaining = $pieces - ($cartons * $cartonSize);
+
+    if ($remaining > 0) {
+        return number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+    }
+    return number_format($cartons) . ' ctns';
+}
 ?>
 
 <style>
@@ -118,7 +133,7 @@ function money_fmt($v)
                     <?php foreach ($items as $item): ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-3 text-sm text-gray-900"><?= esc($item['product_name']) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((float)($item['total_qty'] ?? 0)) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= formatQuantity((float)($item['total_qty'] ?? 0), (float)($item['carton_size'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($item['total_sales'] ?? 0) ?></td>
                         </tr>
                     <?php endforeach; ?>

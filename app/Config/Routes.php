@@ -27,6 +27,9 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('receipt/(:num)', 'Sales::receipt/$1', ['filter' => 'permission:sales.view']);
     $routes->get('payment-history/(:num)', 'Sales::paymentHistory/$1', ['filter' => 'permission:sales.view']);
     $routes->get('drafts', 'Sales::drafts', ['filter' => 'permission:sales.view']);
+
+    // Reports
+    $routes->get('profit-loss-report', 'Sales::profitLossReport', ['filter' => 'permission:sales.view']);
     $routes->get('report', 'Sales::report', ['filter' => 'permission:sales.view']);
     $routes->get('product-report', 'Sales::productReport', ['filter' => 'permission:sales.view']);
     $routes->get('customer-report', 'Sales::customerReport', ['filter' => 'permission:sales.view']);
@@ -281,6 +284,7 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->get('datatable', 'Purchases::datatable', ['filter' => 'permission:purchases.view']);
     $routes->get('view/(:num)', 'Purchases::view/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('print/(:num)', 'Purchases::print/$1', ['filter' => 'permission:purchases.view']);
+    $routes->get('report', 'Purchases::purchaseReport', ['filter' => 'permission:purchases.view']);
     // Create
     $routes->get('create', 'Purchases::create', ['filter' => 'permission:purchases.create']);
     $routes->post('store', 'Purchases::store', ['filter' => 'permission:purchases.create']);

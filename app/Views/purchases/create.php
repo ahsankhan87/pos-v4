@@ -430,7 +430,8 @@
                                 cost_price: product.cost_price,
                                 price: product.price,
                                 quantity: product.quantity,
-                                tax_id: product.tax_id || 0
+                                tax_id: product.tax_id || 0,
+                                carton_size: product.carton_size
                             })),
                             pagination: {
                                 more: false
@@ -613,7 +614,9 @@
                     subtotal: parseFloat(product.cost_price || 0),
                     update_cost: false,
                     expiry_date: '',
-                    batch_number: ''
+                    batch_number: '',
+                    carton_size: parseFloat(product.carton_size) || 0,
+                    stock: parseFloat(product.quantity) || 0
                 };
 
                 // Calculate initial values
@@ -630,20 +633,33 @@
             const rowId = `item-${item.product_id}-${Date.now()}`;
             item.rowId = rowId;
 
+            const cartonSize = parseFloat(item.carton_size) || 0;
+            const hasCartons = cartonSize > 1;
+            const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' pcs');
+
             const $row = $(`
-            <tr id="${rowId}" class="item-row">
+            <tr id="${rowId}" class="item-row" data-product-id="${item.product_id}">
                 <td class="px-2 py-4">
                     <div class="flex items-center">
                         <div class="ml-4">
-                            <div class="font-medium text-gray-900">${item.name}</div>
-                            <div class="text-sm text-gray-500">${item.code}</div>
+                            <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
+                            <div class="text-sm text-gray-500">${escapeHtml(item.code)}</div>
+                            <div class="text-xs text-gray-400">Stock: ${stockDisplay}</div>
                         </div>
                     </div>
                     <input type="hidden" name="items[${item.product_id}][product_id]" value="${item.product_id}">
                 </td>
                 <td class="px-2 py-4">
-                    <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                        value="${item.quantity}" min="0.01" step="0.01">
+                    <div class="space-y-1">
+                        <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
+                            value="${item.quantity}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
+                        ${hasCartons ? `
+                        <select class="item-unit-selector w-full text-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
+                            <option value="pieces" selected>Pieces</option>
+                            <option value="cartons">Cartons (${cartonSize} pcs)</option>
+                        </select>
+                        ` : '<div class="text-xs text-gray-500">pieces</div>'}
+                    </div>
                 </td>
                 <td class="px-2 py-4">
                     <input type="number" class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
@@ -653,7 +669,7 @@
                 </td>
               
                 <td class="px-2 py-4 font-medium">
-                    <span class="item-subtotal">${item.subtotal.toFixed(2)}</span>
+                    <span class="item-subtotal">${formatCurrency(item.subtotal)}</span>
                     <input type="hidden" class="item-subtotal-input" name="items[${item.product_id}][subtotal]" value="${item.subtotal}">
                 </td>
                 <td class="px-2 py-4">
@@ -665,8 +681,29 @@
         `);
 
             // Add event listeners to the new row
-            $row.find('.item-quantity, .item-cost-price').on('change input', function() {
+            $row.find('.item-quantity').on('change input', function() {
                 updateItemFromRow($row, item);
+            });
+
+            $row.find('.item-cost-price').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            // Unit selector change handler
+            $row.find('.item-unit-selector').on('change', function() {
+                const newUnit = $(this).val();
+                const $qtyInput = $row.find('.item-quantity');
+                const cartonSize = parseFloat($qtyInput.data('carton-size')) || 1;
+
+                // Current quantity is always stored in pieces in the item object
+                const qtyInPieces = item.quantity;
+
+                // Update display based on selected unit
+                if (newUnit === 'cartons' && cartonSize > 1) {
+                    $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
+                } else {
+                    $qtyInput.val(qtyInPieces.toFixed(2));
+                }
             });
 
             $row.find('.item-discount, .item-discount-type').on('change input', function() {
@@ -688,7 +725,17 @@
                 const activeElement = document.activeElement;
 
                 if (!$row.find('.item-quantity').is(activeElement)) {
-                    $row.find('.item-quantity').val(item.quantity);
+                    const $qtyInput = $row.find('.item-quantity');
+                    const cartonSize = parseFloat($qtyInput.data('carton-size')) || 1;
+                    const $unitSelector = $row.find('.item-unit-selector');
+                    const currentUnit = $unitSelector.length ? $unitSelector.val() : 'pieces';
+
+                    // Display quantity based on selected unit
+                    if (currentUnit === 'cartons' && cartonSize > 1) {
+                        $qtyInput.val((item.quantity / cartonSize).toFixed(2));
+                    } else {
+                        $qtyInput.val(item.quantity.toFixed(2));
+                    }
                 }
                 $row.find('.item-unit-price').val(item.unit_price.toFixed(2));
                 if (!$row.find('.item-cost-price').is(activeElement)) {
@@ -704,7 +751,18 @@
         }
 
         function updateItemFromRow($row, item) {
-            item.quantity = parseFloat($row.find('.item-quantity').val()) || 0;
+            let inputQty = parseFloat($row.find('.item-quantity').val()) || 0;
+            const $qtyInput = $row.find('.item-quantity');
+            const cartonSize = parseFloat($qtyInput.data('carton-size')) || 1;
+            const $unitSelector = $row.find('.item-unit-selector');
+            const currentUnit = $unitSelector.length ? $unitSelector.val() : 'pieces';
+
+            // Convert to pieces if input is in cartons
+            if (currentUnit === 'cartons' && cartonSize > 1) {
+                inputQty = inputQty * cartonSize;
+            }
+
+            item.quantity = inputQty;
             item.unit_price = parseFloat($row.find('.item-unit-price').val()) || 0;
             item.cost_price = parseFloat($row.find('.item-cost-price').val()) || 0;
             item.discount = parseFloat($row.find('.item-discount').val()) || 0;
@@ -879,6 +937,33 @@
 
         function parseCurrency(currencyString) {
             return parseFloat(currencyString.replace(/[^0-9.-]+/g, ''));
+        }
+
+        // Helper function to format quantity with carton display
+        function formatQuantity(pieces, cartonSize) {
+            if (!cartonSize || cartonSize <= 1) {
+                return parseFloat(pieces).toFixed(2) + ' pcs';
+            }
+
+            const cartons = Math.floor(pieces / cartonSize);
+            const remaining = pieces - (cartons * cartonSize);
+
+            if (remaining > 0) {
+                return cartons + ' ctns + ' + remaining.toFixed(2) + ' pcs';
+            }
+            return cartons + ' ctns';
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
         // Initialize calculator with default values

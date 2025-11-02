@@ -50,6 +50,26 @@
                 <input type="text" name="barcode" value="<?= esc(old('barcode', $product['barcode'])) ?>" class="w-full border rounded px-3 py-2">
                 <p class="text-xs text-gray-500 mt-1">Leave blank to keep existing barcode or enter a new one.</p>
             </div>
+            <div class="mb-4">
+                <label for="carton_size" class="block text-sm font-medium text-gray-700 mb-1">
+                    Pieces per Carton/Box
+                    <span class="text-gray-500 text-xs">(Optional - for carton tracking)</span>
+                </label>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="carton_size"
+                    id="carton_size"
+                    value="<?= old('carton_size', $product['carton_size'] ?? '') ?>"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., 6 for 6 pieces per carton">
+                <p class="text-xs text-gray-500 mt-1">
+                    Leave empty if product is not sold in cartons. Example: Enter 6 if one carton contains 6 pieces.
+                </p>
+                <?php if (isset($errors['carton_size'])): ?>
+                    <p class="text-red-500 text-xs mt-1"><?= esc($errors['carton_size']) ?></p>
+                <?php endif; ?>
+            </div>
             <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Update</button>
             <a href="<?= site_url('products') ?>" class="ml-4 text-gray-600 hover:underline">Cancel</a>
         </form>

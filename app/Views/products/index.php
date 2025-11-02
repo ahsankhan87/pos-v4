@@ -44,9 +44,9 @@
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Name</th>
+                        <th scope="col">Cost Price</th>
                         <th scope="col">Price</th>
                         <th scope="col">Quantity</th>
-                        <th scope="col">Description</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -100,20 +100,32 @@
                     render: data => escapeHtml(data)
                 },
                 {
+                    data: 'cost_price',
+                    name: 'cost_price',
+                    render: data => currencySymbol + formatNumber(data)
+                },
+                {
                     data: 'price',
                     name: 'price',
                     render: data => currencySymbol + formatNumber(data)
                 },
                 {
                     data: 'quantity',
-                    name: 'quantity',
-                    render: data => formatNumber(data)
+                    render: function(data, type, row) {
+                        // Format quantity with carton display if carton_size exists
+                        if (row.carton_size && row.carton_size > 1) {
+                            const cartons = Math.floor(data / row.carton_size);
+                            const pieces = data - (cartons * row.carton_size);
+
+                            if (pieces > 0) {
+                                return cartons + ' ctns + ' + pieces.toFixed(2) + ' pcs';
+                            }
+                            return cartons + ' ctns';
+                        }
+                        return parseFloat(data).toFixed(2);
+                    }
                 },
-                {
-                    data: 'description',
-                    name: 'description',
-                    render: data => escapeHtml(data || '')
-                },
+
                 {
                     data: null,
                     orderable: false,

@@ -58,10 +58,7 @@ class Products extends BaseController
     public function create()
     {
         helper('form');
-        // $post1 = $this->request->getPost();
-        // var_dump($post1);
 
-        // Validate the form data   
         $validation = \Config\Services::validation();
         if (!$this->validate([
             'name' => 'required',
@@ -72,15 +69,14 @@ class Products extends BaseController
             'stock_alert' => 'permit_empty',
             'description' => 'permit_empty',
             'unit_id' => 'permit_empty|integer',
-
+            'carton_size' => 'permit_empty|decimal', // Added carton_size validation
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
             'updated_at' => 'permit_empty',
-            //'quantity' => 'required',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
-        // Gets the validated data.
+
         $post = $this->validator->getValidated();
 
         $storeId = session('store_id') ?? '';
@@ -89,12 +85,10 @@ class Products extends BaseController
             $barcode = $this->generateUniqueBarcode(is_numeric($storeId) ? (int) $storeId : null);
         }
 
-        // Insert the data into the database.
         $data = [
             'name' => $post['name'],
             'price' => $post['price'],
             'cost_price' => $post['cost_price'],
-            //'quantity' => $post['quantity'],
             'description' => $post['description'],
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
@@ -103,14 +97,13 @@ class Products extends BaseController
             'code' => $post['code'] ?? '',
             'stock_alert' => $post['stock_alert'] ?? 10,
             'unit_id' => $post['unit_id'] ?? null,
+            'carton_size' => !empty($post['carton_size']) ? (float)$post['carton_size'] : null, // Added carton_size
         ];
-        // Create a new instance of the model and insert the data.
+
         $model = new M_products();
         $model->insert($data);
 
-        // Log the action
         logAction('product_created', 'Product Name: ' . $data['name'] . ', ID: ' . $model->insertID());
-        // Redirect to the products index page.
         return redirect()->to(site_url('products'))->with('success', 'Product created successfully');
     }
 
@@ -144,20 +137,19 @@ class Products extends BaseController
             'code' => 'permit_empty',
             'stock_alert' => 'permit_empty',
             'description' => 'permit_empty',
-            'barcode' => 'permit_empty', //'barcode' => 'required|is_unique[pos_products.barcode]',
+            'barcode' => 'permit_empty',
             'unit_id' => 'permit_empty|integer',
+            'carton_size' => 'permit_empty|decimal', // Added carton_size validation
             'updated_at' => 'permit_empty',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
-        // Gets the validated data.
+
         $post = $this->validator->getValidated();
-        // Update the data in the database.
         $model = new M_products();
         $model->update($id, $post);
-        // Log the action
+
         logAction('product_updated', 'Product ID: ' . $id . ', Name: ' . $post['name']);
-        // Redirect to the products index page.
         return redirect()->to(site_url('products'))->with('success', 'Product updated successfully');
     }
 
@@ -213,7 +205,7 @@ class Products extends BaseController
         // Require minimum 1 character to search (performance optimization for large datasets)
         if (empty($q) || strlen(trim($q)) < 1) {
             // Return empty array or top 20 products
-            $products = $model->select('id, name, code, barcode, cost_price, price, quantity')
+            $products = $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size')
                 ->forStore()
                 ->orderBy('name', 'ASC')
                 ->limit(20)
@@ -225,7 +217,7 @@ class Products extends BaseController
                 ->orLike('code', $q)
                 ->orLike('barcode', $q)
                 ->groupEnd()
-                ->select('id, name, code, barcode, cost_price, price, quantity')
+                ->select('id, name, code, barcode, cost_price, price, quantity, carton_size')
                 ->forStore()
                 ->orderBy('name', 'ASC')
                 ->limit(50)
@@ -239,10 +231,11 @@ class Products extends BaseController
                 'name' => $p['name'],
                 'code' => $p['code'] ?? '',
                 'barcode' => $p['barcode'] ?? '',
-                'text' => $p['name'] . ' (Stock: ' . $p['quantity'] . ')',
+                'text' => $p['name'] . ' (Stock: ' . $this->formatQuantityForDisplay($p['quantity'], $p['carton_size']) . ')',
                 'price' => $p['price'],
                 'cost_price' => $p['cost_price'],
                 'quantity' => $p['quantity'],
+                'carton_size' => $p['carton_size'] ?? null,
             ];
         }
         return $this->response->setJSON($results);
@@ -252,7 +245,10 @@ class Products extends BaseController
     {
         $barcode = $this->request->getGet('barcode');
         $model = new \App\Models\M_products();
-        $product = $model->where('barcode', $barcode)->select('id, name, code, cost_price, price, quantity')->forStore()->first();
+        $product = $model->where('barcode', $barcode)
+            ->select('id, name, code, cost_price, price, quantity, carton_size')
+            ->forStore()
+            ->first();
         return $this->response->setJSON($product ?? []);
     }
 
@@ -293,7 +289,7 @@ class Products extends BaseController
 
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
-        $filteredBuilder->select('id, name, cost_price, price, quantity, IFNULL(description, "") as description, code, barcode');
+        $filteredBuilder->select('id, name, cost_price, price, quantity, carton_size, IFNULL(description, "") as description, code, barcode');
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 0);
@@ -779,5 +775,21 @@ class Products extends BaseController
         }
 
         return (10 - ($sum % 10)) % 10;
+    }
+
+    // Add helper method to format quantity
+    private function formatQuantityForDisplay($pieces, $cartonSize)
+    {
+        if (!$cartonSize || $cartonSize <= 1) {
+            return number_format($pieces, 2) . ' pcs';
+        }
+
+        $cartons = floor($pieces / $cartonSize);
+        $remaining = $pieces - ($cartons * $cartonSize);
+
+        if ($remaining > 0) {
+            return $cartons . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+        }
+        return $cartons . ' ctns';
     }
 }

@@ -97,10 +97,59 @@ class Inventory extends BaseController
     }
     public function audit()
     {
-        $products = $this->productModel->forStore()->findAll();
+        // Get filter parameters
+        $search = $this->request->getGet('search');
+        $filter = $this->request->getGet('filter');
+        $fromDate = $this->request->getGet('from_date');
+        $toDate = $this->request->getGet('to_date');
+
+        // Only load products if any search criteria is provided
+        $products = [];
+        $hasSearchCriteria = $search || $filter || $fromDate || $toDate;
+
+        if ($hasSearchCriteria) {
+            $builder = $this->productModel->forStore();
+
+            // Apply search filter
+            if ($search) {
+                $builder->groupStart()
+                    ->like('name', $search)
+                    ->orLike('code', $search)
+                    ->orLike('barcode', $search)
+                    ->groupEnd();
+            }
+
+            // Apply date range filter
+            if ($fromDate) {
+                $builder->where('created_at >=', $fromDate . ' 00:00:00');
+            }
+            if ($toDate) {
+                $builder->where('created_at <=', $toDate . ' 23:59:59');
+            }
+
+            // Apply stock filter
+            if ($filter) {
+                switch ($filter) {
+                    case 'zero-stock':
+                        $builder->where('quantity', 0);
+                        break;
+                    case 'low-stock':
+                        $builder->where('quantity <', 10);
+                        $builder->where('quantity >', 0);
+                        break;
+                }
+            }
+
+            $products = $builder->findAll();
+        }
+
         return view('inventory/audit', [
             'title' => 'Inventory Audit',
-            'products' => $products
+            'products' => $products,
+            'search' => $search,
+            'filter' => $filter,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate
         ]);
     }
 

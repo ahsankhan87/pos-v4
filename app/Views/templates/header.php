@@ -107,6 +107,14 @@
 <?php
 // Determine current page context early for use in attributes and scripts
 $uri = service('uri');
+
+$currentUrl = uri_string();
+$segments = explode('/', $currentUrl);
+$segment1 = $segments[0] ?? '';
+$segment2 = $segments[1] ?? '';
+
+// $segment1 = $uri->getSegment(1) ?? '';
+// $segment2 = $uri->getSegment(2) ?? '';
 $isPosPage = ($uri->getSegment(1) === 'sales' && $uri->getSegment(2) === 'new');
 $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) === 'create');
 ?>
@@ -140,15 +148,15 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
 
                             <!-- Desktop Navigation -->
                             <nav class="hidden md:ml-8 md:flex md:space-x-1">
-                                <a href="<?= site_url('dashboard') ?>" accesskey="d" title="Shortcut: Ctrl+Alt+D" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow">
+                                <a href="<?= site_url('dashboard') ?>" id="dashboard-menu-link" accesskey="d" title="Shortcut: Ctrl+Alt+D" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800">
                                     <i class="fas fa-tachometer-alt mr-2 text-blue-200"></i> Dashboard
                                 </a>
-                                <div class="relative group">
-                                    <button class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow">
+                                <div class="relative dropdown-menu">
+                                    <button class="dropdown-toggle px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" aria-haspopup="true" aria-expanded="false">
                                         <i class="fas fa-cash-register mr-2 text-blue-200"></i> Sales
                                         <i class="fas fa-chevron-down ml-1 text-xs text-blue-200"></i>
                                     </button>
-                                    <div class="absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="dropdown-content absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible transition-all duration-200 z-50">
                                         <div class="py-1">
                                             <a href="<?php echo site_url('sales/new') ?>" accesskey="s" title="Shortcut: Ctrl+Alt+S" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-plus mr-2"></i> New Sale
@@ -186,12 +194,12 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     </div>
                                 </div>
 
-                                <div class="relative group">
-                                    <button class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow">
+                                <div class="relative dropdown-menu">
+                                    <button class="dropdown-toggle px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" aria-haspopup="true" aria-expanded="false">
                                         <i class="fas fa-shopping-cart mr-2 text-blue-200"></i> Purchases
                                         <i class="fas fa-chevron-down ml-1 text-xs text-blue-200"></i>
                                     </button>
-                                    <div class="absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="dropdown-content absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible transition-all duration-200 z-50">
                                         <div class="py-1">
                                             <a href="<?= site_url('purchases/create') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-plus mr-2"></i> Add New Purchase
@@ -208,18 +216,18 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 </div>
 
                                 <!-- Reports Dropdown -->
-                                <div class="relative group">
-                                    <button class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow">
+                                <div class="relative dropdown-menu">
+                                    <button class="dropdown-toggle px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" aria-haspopup="true" aria-expanded="false">
                                         <i class="fas fa-chart-bar mr-2 text-blue-200"></i> Reports
                                         <i class="fas fa-chevron-down ml-1 text-xs text-blue-200"></i>
                                     </button>
-                                    <div class="absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="dropdown-content absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible transition-all duration-200 z-50">
                                         <div class="py-1">
                                             <a href="<?= site_url('reports/sales') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Reports
+                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Reports Summary
                                             </a>
                                             <a href="<?= site_url('reports/purchases') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Reports
+                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Reports Summary
                                             </a>
                                             <a href="<?= site_url('reports/inventory') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-file-alt mr-2"></i> Inventory Reports
@@ -240,6 +248,13 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             </a>
                                             <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-user-friends mr-2"></i> Employee Sales
+                                            </a>
+                                            <div class="border-t border-gray-100"></div>
+                                            <a href="<?= site_url('purchases/report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-shopping-cart mr-2 text-purple-600"></i> <span class="font-semibold">Purchase Report</span>
+                                            </a>
+                                            <a href="<?= site_url('sales/profit-loss-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-chart-line mr-2 text-green-600"></i> <span class="font-semibold">Profit & Loss</span>
                                             </a>
                                         </div>
                                     </div>
@@ -323,28 +338,107 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                         <a href="<?= site_url('dashboard') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                             <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
                         </a>
-                        <a href="<?= site_url('sales') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
-                            <i class="fas fa-cash-register mr-2"></i> Sales
-                        </a>
-                        <a href="<?= site_url('products') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
-                            <i class="fas fa-boxes mr-2"></i> Products
-                        </a>
+
+                        <!-- Mobile Sales Dropdown -->
+                        <div>
+                            <button class="mobile-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600">
+                                <span class="flex items-center">
+                                    <i class="fas fa-cash-register mr-2"></i> Sales
+                                </span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="mobile-dropdown-menu hidden pl-4 mt-1 space-y-1">
+                                <a href="<?= site_url('sales/new') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus mr-2"></i> New Sale
+                                </a>
+                                <a href="<?= site_url('sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-list mr-2"></i> Sales List
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Products Dropdown -->
+                        <div>
+                            <button class="mobile-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600">
+                                <span class="flex items-center">
+                                    <i class="fas fa-boxes mr-2"></i> Products
+                                </span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="mobile-dropdown-menu hidden pl-4 mt-1 space-y-1">
+                                <a href="<?= site_url('products') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-boxes mr-2"></i> Products List
+                                </a>
+                                <a href="<?= site_url('products/new') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus mr-2"></i> Add New Product
+                                </a>
+                                <a href="<?= site_url('categories') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-tags mr-2"></i> Categories
+                                </a>
+                                <a href="<?= site_url('units') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-ruler mr-2"></i> Units
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Customers Link -->
                         <a href="<?= site_url('customers') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                             <i class="fas fa-users mr-2"></i> Customers
                         </a>
+
+                        <!-- Mobile Employees Link -->
+                        <a href="<?= site_url('employees') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                            <i class="fas fa-user-friends mr-2"></i> Employees
+                        </a>
+
+                        <!-- Mobile Purchases Dropdown -->
+                        <div>
+                            <button class="mobile-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600">
+                                <span class="flex items-center">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Purchases
+                                </span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="mobile-dropdown-menu hidden pl-4 mt-1 space-y-1">
+                                <a href="<?= site_url('purchases/create') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus mr-2"></i> Add New Purchase
+                                </a>
+                                <a href="<?= site_url('purchases') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-shopping-cart mr-2"></i> Purchases List
+                                </a>
+                                <a href="<?= site_url('suppliers') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-truck mr-2"></i> Suppliers
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Inventory Link -->
                         <a href="<?= site_url('inventory') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                             <i class="fas fa-warehouse mr-2"></i> Inventory
                         </a>
 
                         <!-- Mobile Reports Dropdown -->
-                        <div class="px-3 py-2">
-                            <button id="mobile-reports-button" class="w-full flex items-center justify-between text-base font-medium text-white hover:bg-blue-600 rounded-md px-3 py-2">
+                        <div>
+                            <button class="mobile-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600">
                                 <span class="flex items-center">
                                     <i class="fas fa-chart-bar mr-2"></i> Reports
                                 </span>
                                 <i class="fas fa-chevron-down text-xs"></i>
                             </button>
-                            <div id="mobile-reports-menu" class="hidden pl-4 mt-1 space-y-1">
+                            <div class="mobile-dropdown-menu hidden pl-4 mt-1 space-y-1">
+                                <a href="<?= site_url('reports/sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Reports
+                                </a>
+                                <a href="<?= site_url('reports/purchases') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Reports
+                                </a>
+                                <a href="<?= site_url('reports/inventory') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-file-alt mr-2"></i> Inventory Reports
+                                </a>
+                                <a href="<?= site_url('analytics') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-chart-line mr-2"></i> Sales Analytics
+                                </a>
+                                <div class="border-t border-blue-600 my-1"></div>
                                 <a href="<?= site_url('sales/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-calendar-day mr-2"></i> Daily Sales
                                 </a>
@@ -354,14 +448,30 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 <a href="<?= site_url('sales/customer-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-user-tie mr-2"></i> Customer Sales
                                 </a>
+                                <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-user-friends mr-2"></i> Employee Sales
+                                </a>
+                                <div class="border-t border-blue-600 my-1"></div>
+                                <a href="<?= site_url('purchases/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-shopping-cart mr-2 text-purple-400"></i> <span class="font-semibold">Purchase Report</span>
+                                </a>
+                                <a href="<?= site_url('sales/profit-loss-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-chart-line mr-2 text-green-400"></i> <span class="font-semibold">Profit & Loss</span>
+                                </a>
                             </div>
                         </div>
 
                         <div class="border-t border-blue-600 pt-2 mt-2">
+                            <!-- Mobile Settings Links -->
+                            <a href="<?= site_url('users') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-users mr-2"></i> Users
+                            </a>
+                            <a href="<?= site_url('roles') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-user-shield mr-2"></i> Roles
+                            </a>
                             <a href="<?= site_url('stores/select') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-exchange-alt mr-2"></i> Switch Store
                             </a>
-
                             <a href="<?= site_url('logout') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
                             </a>
@@ -388,6 +498,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                 <!-- quick access menu -->
                 <?php
                 // $isPosPage and $isPurchasePage already computed above
+                // Get current URL segment for active menu highlighting
                 ?>
                 <?php if (!$isPosPage && !$isPurchasePage) : ?>
                     <!-- Sidebar -->
@@ -401,80 +512,137 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
 
                             <!-- Sidebar Navigation -->
                             <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-                                <a href="<?= site_url('dashboard') ?>" accesskey="d" title="Shortcut: Ctrl+Alt+D" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                    <i class="fas fa-tachometer-alt mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                                    Dashboard
+                                <!-- Most Used Actions -->
+                                <div class="px-3 py-1">
+                                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Most Used</p>
+                                </div>
+
+                                <a href="<?= site_url('sales/new') ?>" accesskey="s" title="Shortcut: Ctrl+Alt+S" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'new') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-cash-register mr-3 <?= ($segment1 == 'sales' && $segment2 == 'new') ? 'text-white' : 'text-blue-500' ?>"></i>
+                                    <span class="<?= ($segment1 == 'sales' && $segment2 == 'new') ? 'font-bold' : 'font-semibold text-gray-700' ?>">New POS Sale</span>
+                                    <?php if ($segment1 == 'sales' && $segment2 == 'new'): ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+S</span>
+                                    <?php else: ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+S</span>
+                                    <?php endif; ?>
                                 </a>
 
-                                <a href="<?= site_url('sales/new') ?>" accesskey="s" title="Shortcut: Ctrl+Alt+S" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                    <i class="fas fa-cash-register mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                                    POS Terminal
-                                    <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">New</span>
+                                <a href="<?= site_url('sales') ?>" accesskey="l" title="Shortcut: Ctrl+Alt+L" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == '') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-list mr-3 <?= ($segment1 == 'sales' && $segment2 == '') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                    <span class="<?= ($segment1 == 'sales' && $segment2 == '') ? 'font-bold' : '' ?>">Sales List</span>
+                                    <?php if ($segment1 == 'sales' && $segment2 == ''): ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+L</span>
+                                    <?php else: ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+L</span>
+                                    <?php endif; ?>
                                 </a>
 
-                                <div class="space-y-1">
-                                    <button id="products-menu-button" class="group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-boxes mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                                            Products
-                                        </div>
-                                        <i class="fas fa-chevron-down text-xs text-gray-400 group-hover:text-blue-500"></i>
-                                    </button>
-                                    <div id="products-menu" class="pl-8 space-y-1 hidden">
-                                        <a href="<?= site_url('products') ?>" accesskey="o" title="Shortcut: Ctrl+Alt+O" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Products List
-                                        </a>
-                                        <a href="<?= site_url('products/new') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Add New
-                                        </a>
+                                <a href="<?= site_url('purchases/create') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'purchases' && $segment2 == 'create') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-shopping-cart mr-3 <?= ($segment1 == 'purchases' && $segment2 == 'create') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                    <span class="<?= ($segment1 == 'purchases' && $segment2 == 'create') ? 'font-bold' : '' ?>">New Purchase</span>
+                                </a>
 
-                                    </div>
-                                </div>
+                                <a href="<?= site_url('products') ?>" accesskey="o" title="Shortcut: Ctrl+Alt+O" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'products' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-boxes mr-3 <?= $segment1 == 'products' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                    <span class="<?= $segment1 == 'products' ? 'font-bold' : '' ?>">Products</span>
+                                    <?php if ($segment1 == 'products' && $segment2 == ''): ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+O</span>
+                                    <?php else: ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+O</span>
+                                    <?php endif; ?>
+                                </a>
 
-                                <div class="space-y-1">
-                                    <button id="customers-menu-button" class="group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-users mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                                            Customers
-                                        </div>
-                                        <i class="fas fa-chevron-down text-xs text-gray-400 group-hover:text-blue-500"></i>
-                                    </button>
-                                    <div id="customers-menu" class="pl-8 space-y-1 hidden">
-                                        <a href="<?= site_url('customers') ?>" accesskey="c" title="Shortcut: Ctrl+Alt+C" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Customers List
-                                        </a>
-                                        <a href="<?= site_url('customers/new') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Add New
-                                        </a>
+                                <a href="<?= site_url('customers') ?>" accesskey="c" title="Shortcut: Ctrl+Alt+C" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'customers' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-users mr-3 <?= $segment1 == 'customers' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                    <span class="<?= $segment1 == 'customers' ? 'font-bold' : '' ?>">Customers</span>
+                                    <?php if ($segment1 == 'customers' && $segment2 == ''): ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+C</span>
+                                    <?php else: ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+C</span>
+                                    <?php endif; ?>
+                                </a>
 
-                                    </div>
-                                </div>
+                                <a href="<?= site_url('inventory') ?>" accesskey="i" title="Shortcut: Ctrl+Alt+I" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'inventory' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-warehouse mr-3 <?= $segment1 == 'inventory' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                    <span class="<?= $segment1 == 'inventory' ? 'font-bold' : '' ?>">Inventory</span>
+                                    <?php if ($segment1 == 'inventory' && $segment2 == ''): ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+I</span>
+                                    <?php else: ?>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+I</span>
+                                    <?php endif; ?>
+                                </a>
 
-
-
-                                <div class="space-y-1">
-                                    <button id="suppliers-menu-button" class="group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-truck mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                                            Suppliers
-                                        </div>
-                                        <i class="fas fa-chevron-down text-xs text-gray-400 group-hover:text-blue-500"></i>
-                                    </button>
-                                    <div id="suppliers-menu" class="pl-8 space-y-1 hidden">
-                                        <a href="<?= site_url('suppliers') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Suppliers List
-                                        </a>
-                                        <a href="<?= site_url('suppliers/new') ?>" class="block px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                            Add New
-                                        </a>
-
-                                    </div>
-                                </div>
-
+                                <!-- Reports Section -->
                                 <div class="border-t border-gray-200 pt-2 mt-2">
-                                    <a href="<?= site_url('settings') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-blue-50 hover:text-blue-600 transition-slow">
-                                        <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                                        Settings
+                                    <div class="px-3 py-1">
+                                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Reports</p>
+                                    </div>
+
+                                    <a href="<?= site_url('dashboard') ?>" accesskey="d" title="Shortcut: Ctrl+Alt+D" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-tachometer-alt mr-3 <?= $segment1 == 'dashboard' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= $segment1 == 'dashboard' ? 'font-bold' : '' ?>">Dashboard</span>
+                                        <?php if ($segment1 == 'dashboard' && $segment2 == ''): ?>
+                                            <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+D</span>
+                                        <?php else: ?>
+                                            <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+D</span>
+                                        <?php endif; ?>
+                                    </a>
+
+                                    <a href="<?= site_url('sales/profit-loss-report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'bg-green-600 text-white' : 'hover:bg-green-50 hover:text-green-600' ?>">
+                                        <i class="fas fa-chart-line mr-3 <?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'text-white' : 'text-gray-400 group-hover:text-green-500' ?>"></i>
+                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'font-bold' : '' ?>">Profit & Loss</span>
+                                    </a>
+
+                                    <a href="<?= site_url('purchases/report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'purchases' && $segment2 == 'report') ? 'bg-purple-600 text-white' : 'hover:bg-purple-50 hover:text-purple-600' ?>">
+                                        <i class="fas fa-shopping-cart mr-3 <?= ($segment1 == 'purchases' && $segment2 == 'report') ? 'text-white' : 'text-gray-400 group-hover:text-purple-500' ?>"></i>
+                                        <span class="<?= ($segment1 == 'purchases' && $segment2 == 'report') ? 'font-bold' : '' ?>">Purchase Report</span>
+                                    </a>
+
+                                    <a href="<?= site_url('sales/product-report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-box mr-3 <?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'font-bold' : '' ?>">Product Sales</span>
+                                    </a>
+
+                                    <a href="<?= site_url('sales/report') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-calendar-day mr-3 <?= ($segment1 == 'sales' && $segment2 == 'report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'report') ? 'font-bold' : '' ?>">Daily Sales</span>
+                                        <?php if ($segment1 == 'sales' && $segment2 == 'report'): ?>
+                                            <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+R</span>
+                                        <?php else: ?>
+                                            <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+R</span>
+                                        <?php endif; ?>
+                                    </a>
+                                </div>
+
+                                <!-- More Options -->
+                                <div class="border-t border-gray-200 pt-2 mt-2">
+                                    <div class="px-3 py-1">
+                                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">More</p>
+                                    </div>
+
+                                    <a href="<?= site_url('purchases') ?>" accesskey="p" title="Shortcut: Ctrl+Alt+P" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'purchases' && $segment2 == '') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-shopping-cart mr-3 <?= ($segment1 == 'purchases' && $segment2 == '') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= ($segment1 == 'purchases' && $segment2 == '') ? 'font-bold' : '' ?>">Purchases List</span>
+                                    </a>
+
+                                    <a href="<?= site_url('suppliers') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'suppliers' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-truck mr-3 <?= $segment1 == 'suppliers' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= $segment1 == 'suppliers' ? 'font-bold' : '' ?>">Suppliers</span>
+                                    </a>
+
+                                    <a href="<?= site_url('employees') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'employees' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-user-friends mr-3 <?= $segment1 == 'employees' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= $segment1 == 'employees' ? 'font-bold' : '' ?>">Employees</span>
+                                    </a>
+
+                                    <a href="<?= site_url('categories') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'categories' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-tags mr-3 <?= $segment1 == 'categories' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= $segment1 == 'categories' ? 'font-bold' : '' ?>">Categories</span>
+                                    </a>
+
+                                    <a href="<?= site_url('units') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'units' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-ruler mr-3 <?= $segment1 == 'units' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                        <span class="<?= $segment1 == 'units' ? 'font-bold' : '' ?>">Units</span>
                                     </a>
                                 </div>
                             </nav>
@@ -485,6 +653,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     <div class="text-sm text-gray-500">Version 2.1.0</div>
                                     <button class="text-gray-400 hover:text-gray-500">
                                         <i class="fas fa-question-circle"></i>
+                                    </button>
+                                    <button type="button" id="shortcut-overlay-btn" onClick="return toggleOverlay()" class="text-gray-400 hover:text-gray-500">
+                                        <i class="fas fa-keyboard mr-2"></i>
                                     </button>
                                 </div>
                             </div>
@@ -559,6 +730,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
             <div class="p-4 text-sm text-gray-700">
                 <ul class="space-y-2">
                     <li><span class="font-medium">Ctrl + Alt + D</span> — Dashboard</li>
+                    <li><span class="font-medium">Ctrl + Alt + Shift + D</span> — Focus Dashboard Menu</li>
                     <li><span class="font-medium">Ctrl + Alt + S</span> — POS Terminal (New Sale)</li>
                     <li><span class="font-medium">Ctrl + Alt + L</span> — Sales List</li>
                     <li><span class="font-medium">Ctrl + Alt + P</span> — Purchases</li>
@@ -596,13 +768,34 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
             menu.classList.toggle('hidden');
         });
 
-        // Mobile reports menu toggle
-        document.getElementById('mobile-reports-button').addEventListener('click', function() {
-            const menu = document.getElementById('mobile-reports-menu');
-            menu.classList.toggle('hidden');
+        // Mobile dropdown menus toggle (universal handler)
+        document.querySelectorAll('.mobile-dropdown-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const menu = this.nextElementSibling;
+                const chevron = this.querySelector('.fa-chevron-down');
+
+                // Close other dropdowns
+                document.querySelectorAll('.mobile-dropdown-menu').forEach(otherMenu => {
+                    if (otherMenu !== menu) {
+                        otherMenu.classList.add('hidden');
+                        const otherChevron = otherMenu.previousElementSibling.querySelector('.fa-chevron-down');
+                        if (otherChevron) {
+                            otherChevron.classList.remove('fa-chevron-up');
+                            otherChevron.classList.add('fa-chevron-down');
+                        }
+                    }
+                });
+
+                // Toggle current menu
+                menu.classList.toggle('hidden');
+
+                // Toggle chevron direction
+                if (chevron) {
+                    chevron.classList.toggle('fa-chevron-down');
+                    chevron.classList.toggle('fa-chevron-up');
+                }
+            });
         });
-
-
 
         // Dark mode toggle (example - would need proper implementation)
         const darkModeToggle = document.getElementById('dark-mode-toggle');
@@ -619,25 +812,102 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
         }
 
         // Sidebar menu toggles
-        document.getElementById('products-menu-button').addEventListener('click', function() {
+        document.getElementById('products-menu-button')?.addEventListener('click', function() {
             const menu = document.getElementById('products-menu');
             menu.classList.toggle('hidden');
         });
 
-        document.getElementById('customers-menu-button').addEventListener('click', function() {
+        document.getElementById('customers-menu-button')?.addEventListener('click', function() {
             const menu = document.getElementById('customers-menu');
             menu.classList.toggle('hidden');
         });
 
-        document.getElementById('suppliers-menu-button').addEventListener('click', function() {
+        document.getElementById('suppliers-menu-button')?.addEventListener('click', function() {
             const menu = document.getElementById('suppliers-menu');
             menu.classList.toggle('hidden');
         });
 
         // Keyboard Shortcuts: Ctrl + Alt + [Key]
         (function() {
+
+            // Dropdown keyboard navigation
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(dropdown => {
+                const toggle = dropdown.querySelector('.dropdown-toggle');
+                const content = dropdown.querySelector('.dropdown-content');
+
+                if (toggle && content) {
+                    // Toggle dropdown on Enter or Space when button is focused
+                    toggle.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            const isOpen = content.classList.contains('opacity-100');
+
+                            // Close all other dropdowns
+                            document.querySelectorAll('.dropdown-content').forEach(dd => {
+                                dd.classList.remove('opacity-100', 'visible');
+                                dd.classList.add('opacity-0', 'invisible');
+                            });
+
+                            if (!isOpen) {
+                                content.classList.remove('opacity-0', 'invisible');
+                                content.classList.add('opacity-100', 'visible');
+                                toggle.setAttribute('aria-expanded', 'true');
+
+                                // Focus first link on ArrowDown
+                                if (e.key === 'ArrowDown') {
+                                    const firstLink = content.querySelector('a');
+                                    if (firstLink) {
+                                        setTimeout(() => firstLink.focus(), 100);
+                                    }
+                                }
+                            } else {
+                                content.classList.remove('opacity-100', 'visible');
+                                content.classList.add('opacity-0', 'invisible');
+                                toggle.setAttribute('aria-expanded', 'false');
+                            }
+                        } else if (e.key === 'Escape') {
+                            content.classList.remove('opacity-100', 'visible');
+                            content.classList.add('opacity-0', 'invisible');
+                            toggle.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+
+                    // Keep dropdown open with hover for mouse users
+                    dropdown.addEventListener('mouseenter', function() {
+                        content.classList.remove('opacity-0', 'invisible');
+                        content.classList.add('opacity-100', 'visible');
+                        toggle.setAttribute('aria-expanded', 'true');
+                    });
+
+                    dropdown.addEventListener('mouseleave', function() {
+                        content.classList.remove('opacity-100', 'visible');
+                        content.classList.add('opacity-0', 'invisible');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown-menu')) {
+                    document.querySelectorAll('.dropdown-content').forEach(dd => {
+                        dd.classList.remove('opacity-100', 'visible');
+                        dd.classList.add('opacity-0', 'invisible');
+                    });
+                    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
             const overlay = document.getElementById('shortcut-overlay');
             const closeBtn = document.getElementById('shortcut-overlay-close');
+
+            document.getElementById('shortcut-overlay-btn')?.addEventListener('click', function() {
+                toggleOverlay();
+            });
+
 
             function toggleOverlay(forceShow) {
                 const shouldShow = typeof forceShow === 'boolean' ? forceShow : overlay.classList.contains('hidden');
@@ -704,7 +974,20 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                 switch (key) {
                     case 'd':
                         e.preventDefault();
-                        go(routes.dashboard);
+                        // If Shift is held, focus the menu link instead of navigating
+                        if (e.shiftKey) {
+                            const dashboardLink = document.getElementById('dashboard-menu-link');
+                            if (dashboardLink) {
+                                dashboardLink.focus();
+                                // Add temporary highlight
+                                dashboardLink.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-blue-800');
+                                setTimeout(() => {
+                                    dashboardLink.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-blue-800');
+                                }, 1000);
+                            }
+                        } else {
+                            go(routes.dashboard);
+                        }
                         break;
                     case 's':
                         e.preventDefault();

@@ -673,4 +673,99 @@ class Purchases extends BaseController
 
         return redirect()->to(site_url('purchases'))->with('success', 'Purchase return processed.');
     }
+
+    /**
+     * Purchase Report - Product-wise analysis
+     */
+    public function purchaseReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+
+        $storeId = session('store_id');
+        $db = \Config\Database::connect();
+
+        // Get purchase items with product details
+        $builder = $db->table('pos_purchase_items pi')
+            ->select('
+                pi.purchase_id,
+                pi.product_id,
+                p.name as product_name,
+                p.code as product_code,
+                p.carton_size,
+                GROUP_CONCAT(DISTINCT pu.invoice_no SEPARATOR ", ") as invoice_numbers,
+                SUM(pi.quantity) as total_quantity,
+                SUM(pi.cost_price * pi.quantity) as total_cost,
+                AVG(pi.cost_price) as avg_cost_price,
+                COUNT(DISTINCT pu.id) as purchase_count
+            ')
+            ->join('pos_purchases pu', 'pu.id = pi.purchase_id')
+            ->join('pos_products p', 'p.id = pi.product_id')
+            ->join('pos_suppliers s', 's.id = pu.supplier_id', 'left')
+            ->where('pu.date >=', $from . ' 00:00:00')
+            ->where('pu.date <=', $to . ' 23:59:59');
+
+        if ($storeId !== null) {
+            $builder->where('pu.store_id', $storeId);
+        }
+
+        $products = $builder
+            ->groupBy('pi.product_id')
+            ->orderBy('total_cost', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        // Calculate totals
+        $totalQuantity = 0;
+        $totalCost = 0;
+        $totalPurchases = 0;
+
+        foreach ($products as &$product) {
+            $totalQuantity += (float)$product['total_quantity'];
+            $totalCost += (float)$product['total_cost'];
+            $product['avg_cost_price'] = (float)$product['avg_cost_price'];
+            $product['purchase_id'] = (int)$product['purchase_id'];
+        }
+
+        // Get purchase summary
+        $summaryBuilder = $db->table('pos_purchases')
+            ->select('
+                COUNT(id) as total_purchases,
+                SUM(grand_total) as total_amount,
+                SUM(paid_amount) as total_paid
+            ')
+            ->where('date >=', $from . ' 00:00:00')
+            ->where('date <=', $to . ' 23:59:59');
+
+        if ($storeId !== null) {
+            $summaryBuilder->where('store_id', $storeId);
+        }
+
+        $summary = $summaryBuilder->get()->getRowArray();
+        $totalPurchases = (int)($summary['total_purchases'] ?? 0);
+        $totalAmount = (float)($summary['total_amount'] ?? 0);
+        $totalPaid = (float)($summary['total_paid'] ?? 0);
+        $totalDue = $totalAmount - $totalPaid;
+
+        $data = [
+            'title' => 'Purchase Report',
+            'products' => $products,
+            'totalQuantity' => $totalQuantity,
+            'totalCost' => $totalCost,
+            'totalPurchases' => $totalPurchases,
+            'totalAmount' => $totalAmount,
+            'totalPaid' => $totalPaid,
+            'totalDue' => $totalDue,
+            'from' => $from,
+            'to' => $to,
+        ];
+
+        return view('purchases/reports/purchase_report', $data);
+    }
 }

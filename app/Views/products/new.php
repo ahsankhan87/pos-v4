@@ -33,11 +33,11 @@
         </div>
         <div class="mb-4">
             <label class="block mb-1 font-semibold">Cost Price</label>
-            <input type="number" name="cost_price" value="<?= set_value('cost_price') ?>" class="w-full border rounded px-3 py-2" required>
+            <input type="number" name="cost_price" value="<?= set_value('cost_price') ?>" step="0.01" class="w-full border rounded px-3 py-2" required>
         </div>
         <div class="mb-4">
             <label class="block mb-1 font-semibold">Retail Price</label>
-            <input type="number" name="price" value="<?= set_value('price') ?>" class="w-full border rounded px-3 py-2" required>
+            <input type="number" name="price" value="<?= set_value('price') ?>" step="0.01" class="w-full border rounded px-3 py-2" required>
         </div>
         <div class="mb-4">
             <label class="block mb-1 font-semibold">Stock Alert</label>
@@ -55,6 +55,26 @@
                 <button type="button" id="generate-barcode" class="bg-slate-600 text-white px-3 py-2 rounded whitespace-nowrap">Generate</button>
             </div>
             <p class="text-xs text-gray-500 mt-1">Leave blank to auto-generate on save.</p>
+        </div>
+        <div class="mb-4">
+            <label for="carton_size" class="block text-sm font-medium text-gray-700 mb-1">
+                Pieces per Carton/Box
+                <span class="text-gray-500 text-xs">(Optional - for carton tracking)</span>
+            </label>
+            <input
+                type="number"
+                step="0.01"
+                name="carton_size"
+                id="carton_size"
+                value="<?= old('carton_size') ?>"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., 6 for 6 pieces per carton">
+            <p class="text-xs text-gray-500 mt-1">
+                Leave empty if product is not sold in cartons. Example: Enter 6 if one carton contains 6 pieces.
+            </p>
+            <?php if (isset($errors['carton_size'])): ?>
+                <p class="text-red-500 text-xs mt-1"><?= esc($errors['carton_size']) ?></p>
+            <?php endif; ?>
         </div>
         <input type="hidden" name="created_at" value="<?= date('Y-m-d H:i:s') ?>">
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save</button>

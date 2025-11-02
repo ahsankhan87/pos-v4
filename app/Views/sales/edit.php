@@ -494,6 +494,41 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 <script src="<?php echo base_url() ?>assets/js/select2/select2.min.js"></script>
 <link href="<?php echo base_url() ?>assets/js/select2/select2.min.css" rel="stylesheet" />
 <script>
+    // Helper functions
+    function formatCurrency(value) {
+        return parseFloat(value || 0).toFixed(2);
+    }
+
+    function parseCurrency(str) {
+        if (typeof str === 'number') return str;
+        return parseFloat(String(str).replace(/[^0-9.-]/g, '')) || 0;
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function formatQuantity(pieces, cartonSize) {
+        if (!cartonSize || cartonSize <= 1) {
+            return parseFloat(pieces).toFixed(2) + ' pcs';
+        }
+
+        const cartons = Math.floor(pieces / cartonSize);
+        const remaining = pieces - (cartons * cartonSize);
+
+        if (remaining > 0) {
+            return cartons + ' ctns + ' + remaining.toFixed(2) + ' pcs';
+        }
+        return cartons + ' ctns';
+    }
+
     $(document).ready(function() {
         // Update time every second
         function updateTime() {
@@ -733,7 +768,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 cost_price: Number(item.cost_price ?? 0),
                 quantity: quantity > 0 ? quantity : 1,
                 stock: stock > 0 ? stock : (quantity > 0 ? quantity : 1),
-                barcode: item.barcode || ''
+                barcode: item.barcode || '',
+                carton_size: Number(item.carton_size ?? 0)
             };
         }
 
@@ -850,7 +886,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         price: parseFloat(product.price || 0),
                         cost_price: product.cost_price || 0,
                         quantity: 1,
-                        stock: parseInt(product.quantity || 0)
+                        stock: parseInt(product.quantity || 0),
+                        carton_size: parseFloat(product.carton_size || 0)
                     });
                     //showSuccessMessage(`${product.name} added to cart`);
                 } else {
@@ -908,6 +945,10 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 const itemTotal = item.price * item.quantity;
                 subtotal += itemTotal;
 
+                const cartonSize = parseFloat(item.carton_size) || 0;
+                const hasCartons = cartonSize > 1;
+                const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' pcs');
+
                 tbody += `
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-2 py-1.5">
@@ -916,39 +957,48 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                                 <i class="fas fa-box text-blue-600 text-xs"></i>
                             </div>
                             <div>
-                                <div class="text-xs font-semibold text-gray-900">${item.name}</div>
-                                <div class="text-xs text-gray-500">${item.code}</div>
+                                <div class="text-xs font-semibold text-gray-900">${escapeHtml(item.name)}</div>
+                                <div class="text-xs text-gray-500">${escapeHtml(item.code)}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <div class="relative">
                             <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><?= session()->get('currency_symbol') ?></span>
-                            <input type="number" min="0" step="0.01" value="${item.price.toFixed(2)}" 
+                            <input type="number" min="0" step="0.01" value="${formatCurrency(item.price)}" 
                                 onchange="updatePrice(${idx}, this.value)" 
                                 class="w-20 pl-3 pr-1 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold focus:ring-1 focus:ring-blue-500">
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <div class="flex items-center justify-center space-x-0.5">
-                            <button type="button" onclick="updateQty(${idx}, ${item.quantity - 1})" 
+                            <button type="button" onclick="decrementQty(${idx})" 
                                 class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors ${item.quantity <= 1 ? 'opacity-50 cursor-not-allowed' : ''}"
                                 ${item.quantity <= 1 ? 'disabled' : ''}>
                                 <i class="fas fa-minus text-xs"></i>
                             </button>
-                            <input type="number" min="1" max="${item.stock}" value="${item.quantity}" 
-                                onchange="updateQty(${idx}, this.value)" 
-                                class="w-10 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
-                            <button type="button" onclick="updateQty(${idx}, ${item.quantity + 1})" 
-                                class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors ${item.quantity >= item.stock ? 'opacity-50 cursor-not-allowed' : ''}"
-                                ${item.quantity >= item.stock ? 'disabled' : ''}>
+                            <input type="number" min="0.01" step="0.01" value="${formatCurrency(item.quantity)}" 
+                                onchange="updateQtyInput(${idx}, this.value)" 
+                                data-cart-idx="${idx}"
+                                data-carton-size="${cartonSize}"
+                                class="cart-qty-input qty-input w-10 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
+                            <button type="button" onclick="incrementQty(${idx})" 
+                                class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
                                 <i class="fas fa-plus text-xs"></i>
                             </button>
                         </div>
-                        <div class="text-xs text-gray-500 mt-0.5">Stock: ${item.stock}</div>
+                        ${hasCartons ? `
+                        <select onchange="changeQtyUnit(${idx}, this.value)" 
+                            data-cart-idx="${idx}"
+                            class="cart-unit-selector unit-selector mt-1 w-full text-[10px] rounded border-gray-300 py-0.5 px-1">
+                            <option value="pieces" selected>Pieces</option>
+                            <option value="cartons">Cartons (${cartonSize} pcs)</option>
+                        </select>
+                        ` : '<div class="text-xs text-gray-500 mt-0.5">pieces</div>'}
+                        <div class="text-xs text-gray-500 mt-0.5">Stock: ${stockDisplay}</div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
-                        <div class="text-xs font-bold text-gray-900"><?= session()->get('currency_symbol') ?>${itemTotal.toFixed(2)}</div>
+                        <div class="text-xs font-bold text-gray-900"><?= session()->get('currency_symbol') ?>${formatCurrency(itemTotal)}</div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <button type="button" onclick="removeItem(${idx})" 
@@ -1076,9 +1126,105 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         }
         $('#tenderedAmountInput').on('input change', updatePaymentSummaries);
 
-        // Global functions
+        // Global functions for quantity management
+        window.incrementQty = function(idx) {
+            skipRefocus = true;
+            const item = cart[idx];
+            const cartonSize = parseFloat(item.carton_size) || 1;
+
+            // Get current unit selector value
+            const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
+            const currentUnit = unitSelector ? unitSelector.value : 'pieces';
+
+            // Increment by 1 piece or 1 carton based on selector
+            if (currentUnit === 'cartons' && cartonSize > 1) {
+                cart[idx].quantity += cartonSize;
+            } else {
+                cart[idx].quantity += 1;
+            }
+
+            // Check stock limit
+            if (cart[idx].quantity > item.stock) {
+                showFormErrors([`Only ${formatQuantity(item.stock, cartonSize)} available in stock`]);
+                cart[idx].quantity = item.stock;
+            }
+
+            renderCart();
+        };
+
+        window.decrementQty = function(idx) {
+            skipRefocus = true;
+            const item = cart[idx];
+            const cartonSize = parseFloat(item.carton_size) || 1;
+
+            // Get current unit selector value
+            const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
+            const currentUnit = unitSelector ? unitSelector.value : 'pieces';
+
+            // Decrement by 1 piece or 1 carton based on selector
+            if (currentUnit === 'cartons' && cartonSize > 1) {
+                cart[idx].quantity = Math.max(0.01, cart[idx].quantity - cartonSize);
+            } else {
+                cart[idx].quantity = Math.max(0.01, cart[idx].quantity - 1);
+            }
+
+            renderCart();
+        };
+
+        window.updateQtyInput = function(idx, inputValue) {
+            skipRefocus = true;
+            const item = cart[idx];
+            const cartonSize = parseFloat(item.carton_size) || 1;
+            let qty = parseFloat(inputValue) || 0.01;
+
+            // Get current unit selector value
+            const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
+            const currentUnit = unitSelector ? unitSelector.value : 'pieces';
+
+            // Convert to pieces if input is in cartons
+            if (currentUnit === 'cartons' && cartonSize > 1) {
+                qty = qty * cartonSize;
+            }
+
+            // Validate
+            if (qty < 0.01) qty = 0.01;
+            if (qty > item.stock) {
+                showFormErrors([`Only ${formatQuantity(item.stock, cartonSize)} available in stock`]);
+                qty = item.stock;
+            }
+
+            cart[idx].quantity = qty;
+            renderCart();
+        };
+
+        window.changeQtyUnit = function(idx, newUnit) {
+            skipRefocus = true;
+            const item = cart[idx];
+            const cartonSize = parseFloat(item.carton_size) || 1;
+
+            // Find the quantity input for this item
+            const qtyInput = document.querySelector(`.cart-qty-input[data-cart-idx="${idx}"]`);
+            if (!qtyInput) return;
+
+            // Current quantity is always stored in pieces
+            const qtyInPieces = cart[idx].quantity;
+
+            // Update the display value based on new unit
+            if (newUnit === 'cartons' && cartonSize > 1) {
+                // Show as cartons
+                const qtyInCartons = qtyInPieces / cartonSize;
+                qtyInput.value = qtyInCartons.toFixed(2);
+            } else {
+                // Show as pieces
+                qtyInput.value = qtyInPieces.toFixed(2);
+            }
+
+            skipRefocus = false;
+        };
+
+        // Legacy updateQty function (kept for compatibility)
         window.updateQty = function(idx, qty) {
-            skipRefocus = true; // Prevent barcode refocus
+            skipRefocus = true;
             qty = parseInt(qty);
             if (qty < 1) qty = 1;
             if (qty > cart[idx].stock) {

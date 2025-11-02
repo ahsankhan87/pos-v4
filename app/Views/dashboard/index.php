@@ -216,7 +216,7 @@
                         <?php foreach ($recentSales as $sale): ?>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                                    <a href="<?= base_url('sales/view/' . $sale['id']) ?>">
+                                    <a href="<?= base_url('receipts/generate/' . esc($sale['id'])) ?>">
                                         #<?= $sale['invoice_no'] ?>
                                     </a>
                                 </td>

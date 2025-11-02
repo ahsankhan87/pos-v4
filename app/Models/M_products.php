@@ -23,7 +23,8 @@ class M_products extends Model
         'category_id',
         'unit_id',
         'picture',
-        'expiry_date'
+        'expiry_date',
+        'carton_size'
     ]; // adjust fields as per your table
 
     public function getProducts($productID = false)
