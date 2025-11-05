@@ -1,32 +1,80 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
-<div class="max-w-lg mx-auto bg-white p-8 rounded shadow">
-    <h2 class="text-2xl font-bold mb-6">Supplier Details</h2>
-    <div class="mb-4">
-        <span class="font-semibold">ID:</span>
-        <span><?= $supplier['id'] ?></span>
+<div class="min-h-screen bg-slate-100">
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="h-12 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded bg-gradient-to-br from-emerald-500 to-green-600 text-white flex items-center justify-center shadow">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h1 class="text-lg font-bold text-gray-900">Supplier Details</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="<?= site_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="<?= site_url('suppliers') ?>" class="btn btn-muted btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mb-4">
-        <span class="font-semibold">Name:</span>
-        <span><?= $supplier['name'] ?></span>
-    </div>
-    <div class="mb-4">
-        <span class="font-semibold">Email:</span>
-        <span><?= $supplier['email'] ?></span>
-    </div>
-    <div class="mb-4">
-        <span class="font-semibold">Phone:</span>
-        <span><?= $supplier['phone'] ?></span>
-    </div>
-    <div class="mb-4">
-        <span class="font-semibold">Address:</span>
-        <span><?= $supplier['address'] ?></span>
-    </div>
-    <div class="mb-6">
-        <span class="font-semibold">Created At:</span>
-        <span><?= $supplier['created_at'] ?></span>
-    </div>
-    <a href="<?= site_url('suppliers') ?>" class="bg-blue-500 text-white px-4 py-2 rounded">Back to List</a>
 
+    <div class="max-w-6xl mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-4 py-2 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-emerald-600"></i> Supplier Info</h3>
+                </div>
+                <div class="p-4 text-sm text-gray-800">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-xs text-gray-500">Name</div>
+                            <div class="font-semibold"><?= esc($supplier['name']) ?></div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Email</div>
+                            <div class="font-semibold"><?= esc($supplier['email']) ?></div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Phone</div>
+                            <div class="font-semibold"><?= esc($supplier['phone']) ?></div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="text-xs text-gray-500">Address</div>
+                            <div class="font-semibold"><?= esc($supplier['address']) ?></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-slate-600"></i> Meta</h3>
+                </div>
+                <div class="p-4 text-sm text-gray-800 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <div class="text-xs text-gray-500">Supplier ID</div>
+                        <div class="font-semibold">#<?= (int) $supplier['id'] ?></div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Created</div>
+                        <div class="font-semibold"><?= esc($supplier['created_at']) ?></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-ellipsis-h text-slate-600"></i> Actions</h3>
+                </div>
+                <div class="p-4 space-y-2">
+                    <a href="<?= site_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-primary w-full"><i class="fas fa-edit"></i> Edit Supplier</a>
+                    <a href="<?= site_url('suppliers') ?>" class="btn btn-muted w-full"><i class="fas fa-arrow-left"></i> Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <?= $this->endSection() ?>

@@ -12,6 +12,7 @@ class Suppliers extends \CodeIgniter\Controller
     public function __construct()
     {
         helper('audit');
+        helper('form');
     }
 
     /**
@@ -126,11 +127,12 @@ class Suppliers extends \CodeIgniter\Controller
     {
         helper('form');
         $data = $this->request->getPost();
+        $action = (string) ($this->request->getPost('submit_action') ?? 'save');
         // Validate the form data
         $validation = \Config\Services::validation();
         if (!$this->validate([
             'name' => 'required',
-            'email' => 'required|valid_email',
+            'email' => 'permit_empty|valid_email',
             'phone' => 'permit_empty',
             'address' => 'permit_empty',
             'store_id' => 'permit_empty',
@@ -155,8 +157,11 @@ class Suppliers extends \CodeIgniter\Controller
         $model->insert($post_data);
         // Log the action
         logAction('supplier_created', 'Supplier Name: ' . $post['name'] . ', ID: ' . $model->insertID());
-        // Redirect to the suppliers list after creation.
-        // You can also add a success message here if needed.
+        // Redirect based on action
+        if ($action === 'save_new') {
+            return redirect()->to(site_url('suppliers/new'))
+                ->with('success', 'Supplier created successfully. You can add another one now.');
+        }
         return redirect()->to(site_url('suppliers'))->with('success', 'Supplier created successfully');
     }
 
@@ -177,9 +182,9 @@ class Suppliers extends \CodeIgniter\Controller
         $validation = \Config\Services::validation();
         if (!$this->validate([
             'name' => 'required',
-            'email' => 'required|valid_email',
-            'phone' => 'required',
-            'address' => 'required',
+            'email' => 'permit_empty|valid_email',
+            'phone' => 'permit_empty',
+            'address' => 'permit_empty',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }

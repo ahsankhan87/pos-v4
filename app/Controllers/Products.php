@@ -70,6 +70,7 @@ class Products extends BaseController
             'description' => 'permit_empty',
             'unit_id' => 'permit_empty|integer',
             'carton_size' => 'permit_empty|decimal', // Added carton_size validation
+            'initial_quantity' => 'permit_empty|decimal',
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
             'updated_at' => 'permit_empty',
@@ -100,10 +101,39 @@ class Products extends BaseController
             'carton_size' => !empty($post['carton_size']) ? (float)$post['carton_size'] : null, // Added carton_size
         ];
 
+        // Handle initial quantity
+        $initialQty = (float) ($this->request->getPost('initial_quantity') ?? 0);
+        if ($initialQty > 0) {
+            $data['quantity'] = $initialQty;
+        }
+
         $model = new M_products();
         $model->insert($data);
 
-        logAction('product_created', 'Product Name: ' . $data['name'] . ', ID: ' . $model->insertID());
+        $productId = (int) $model->insertID();
+
+        // Log initial stock to inventory if provided
+        if ($productId && $initialQty > 0) {
+            $inventoryModel = new M_inventory();
+            $userId = session('user_id') ?? 0;
+            $inventoryModel->logStockChange(
+                $productId,
+                $userId,
+                $initialQty,
+                'in',
+                $storeId,
+                'Initial stock on product create',
+                (float) $data['cost_price'],
+                (float) $data['price']
+            );
+        }
+
+        logAction('product_created', 'Product Name: ' . $data['name'] . ', ID: ' . $productId);
+
+        $action = (string) ($this->request->getPost('submit_action') ?? 'save');
+        if ($action === 'save_new') {
+            return redirect()->to(site_url('products/new'))->with('success', 'Product created successfully');
+        }
         return redirect()->to(site_url('products'))->with('success', 'Product created successfully');
     }
 
@@ -268,7 +298,10 @@ class Products extends BaseController
         $search = $this->request->getVar('search')['value'] ?? '';
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
-        $columns = ['id', 'name', 'cost_price', 'price', 'quantity', 'description'];
+        // Map DataTables column indexes to database columns.
+        // Must align with the client-side columns array in products/index.php:
+        // 0: (checkbox), 1: id, 2: name, 3: code, 4: barcode, 5: cost_price, 6: price, 7: quantity, 8: (actions)
+        $columns = ['', 'id', 'name', 'code', 'barcode', 'cost_price', 'price', 'quantity', ''];
 
         $db = \Config\Database::connect();
         $storeId = session('store_id');
@@ -292,8 +325,12 @@ class Products extends BaseController
         $filteredBuilder->select('id, name, cost_price, price, quantity, carton_size, IFNULL(description, "") as description, code, barcode');
 
         if ($orderRequest) {
-            $orderColumnIndex = (int) ($orderRequest['column'] ?? 0);
+            $orderColumnIndex = (int) ($orderRequest['column'] ?? 1); // default to ID column index
             $orderColumn = $columns[$orderColumnIndex] ?? 'id';
+            // Fallback to id if mapped column is not sortable (e.g., checkbox/actions)
+            if (empty($orderColumn)) {
+                $orderColumn = 'id';
+            }
             $orderDir = strtolower($orderRequest['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
             $filteredBuilder->orderBy($orderColumn, $orderDir);
         } else {
@@ -678,11 +715,21 @@ class Products extends BaseController
         $productsModel = new M_products();
         $storeId = session('store_id');
 
-        $products = $productsModel
+        $builder = $productsModel
             ->select('id, name, code, barcode, price, cost_price, quantity, stock_alert, description, created_at, updated_at')
             ->forStore($storeId)
-            ->orderBy('name', 'ASC')
-            ->findAll();
+            ->orderBy('name', 'ASC');
+
+        // Optional filter by ids for bulk export
+        $idsParam = $this->request->getGet('ids');
+        if ($idsParam) {
+            $ids = array_filter(array_map('intval', explode(',', (string) $idsParam)));
+            if (! empty($ids)) {
+                $builder->whereIn('id', $ids);
+            }
+        }
+
+        $products = $builder->findAll();
 
         $filename = 'products_' . date('Ymd_His') . '.xls';
 
@@ -730,6 +777,157 @@ class Products extends BaseController
         logAction('products_export', 'Exported ' . count($products) . ' products');
 
         return $response->setBody($output);
+    }
+
+    /**
+     * Bulk delete products.
+     * Expects POST with ids[] or ids (comma-separated).
+     */
+    public function bulkDelete()
+    {
+        if (! $this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid request', 'token' => csrf_hash()]);
+        }
+
+        $ids = $this->getIdsFromRequest();
+        if (empty($ids)) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'No products selected', 'token' => csrf_hash()]);
+        }
+
+        $model = new M_products();
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $purchaseItemsModel = new \App\Models\PurchaseItemModel();
+        $inventoryModel = new M_inventory();
+
+        $deleted = 0;
+        $skipped = [];
+
+        foreach ($ids as $id) {
+            // Check for related sales and purchases
+            $salesCount = $saleItemsModel->where('product_id', $id)->countAllResults();
+            $purchasesCount = $purchaseItemsModel->where('product_id', $id)->countAllResults();
+
+            if ($salesCount > 0 || $purchasesCount > 0) {
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => 'Product has related sales or purchases',
+                ];
+                continue;
+            }
+
+            // Delete product (scoped to store via model's forStore if used in delete; otherwise ensure store scope)
+            $model->forStore()->delete($id);
+
+            // Delete Inventory logs related to the product
+            $inventoryModel->deleteByProductId($id);
+
+            $deleted++;
+        }
+
+        logAction('products_bulk_delete', 'Deleted: ' . $deleted . ', Skipped: ' . count($skipped));
+        return $this->response->setJSON([
+            'deleted' => $deleted,
+            'skipped' => $skipped,
+            'token' => csrf_hash(),
+        ]);
+    }
+
+    /**
+     * Bulk adjust stock for selected products.
+     * Expects POST with ids[] or ids (comma-separated), mode (delta|set), value (number), and optional reason.
+     */
+    public function bulkAdjust()
+    {
+        if (! $this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid request', 'token' => csrf_hash()]);
+        }
+
+        $ids = $this->getIdsFromRequest();
+        $mode = strtolower((string) $this->request->getPost('mode'));
+        $value = (float) ($this->request->getPost('value') ?? 0);
+        $reason = trim((string) ($this->request->getPost('reason') ?? 'Bulk stock adjustment'));
+
+        if (empty($ids)) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'No products selected', 'token' => csrf_hash()]);
+        }
+        if (! in_array($mode, ['delta', 'set'], true)) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'Invalid mode', 'token' => csrf_hash()]);
+        }
+
+        $productsModel = new M_products();
+        $inventoryModel = new M_inventory();
+        $storeId = session('store_id');
+        $userId = session('user_id') ?? 0;
+
+        $adjusted = 0;
+        $errors = [];
+
+        foreach ($ids as $id) {
+            $product = $productsModel->forStore()->find($id);
+            if (! $product) {
+                $errors[] = ['id' => $id, 'error' => 'Not found'];
+                continue;
+            }
+
+            $currentQty = (float) ($product['quantity'] ?? 0);
+            $delta = 0.0;
+            if ($mode === 'set') {
+                $delta = $value - $currentQty;
+            } else { // delta mode
+                $delta = $value;
+            }
+
+            if (abs($delta) < 0.00001) {
+                continue; // no change
+            }
+
+            // Update product quantity
+            $newQty = $currentQty + $delta;
+            $productsModel->update($id, ['quantity' => $newQty]);
+
+            // Log inventory
+            $inventoryModel->logStockChange(
+                (int) $id,
+                $userId,
+                abs($delta),
+                $delta >= 0 ? 'in' : 'out',
+                $storeId,
+                $reason,
+                (float) ($product['cost_price'] ?? 0),
+                (float) ($product['price'] ?? 0)
+            );
+            $adjusted++;
+        }
+
+        logAction('products_bulk_adjust', 'Adjusted: ' . $adjusted . ', Errors: ' . count($errors));
+        return $this->response->setJSON([
+            'adjusted' => $adjusted,
+            'errors' => $errors,
+            'token' => csrf_hash(),
+        ]);
+    }
+
+    /**
+     * Helper to get array of integer IDs from POST (ids[] / ids comma list) or GET fallback.
+     * @return int[]
+     */
+    private function getIdsFromRequest(): array
+    {
+        $ids = $this->request->getPost('ids');
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+        if (! is_array($ids)) {
+            $ids = $this->request->getGet('ids');
+            if (is_string($ids)) {
+                $ids = explode(',', $ids);
+            }
+            if (! is_array($ids)) {
+                return [];
+            }
+        }
+        $ids = array_filter(array_map('intval', $ids));
+        return array_values(array_unique($ids));
     }
 
     public function generateBarcode()

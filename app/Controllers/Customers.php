@@ -12,6 +12,7 @@ class Customers extends \CodeIgniter\Controller
     public function __construct()
     {
         helper('audit');
+        helper('form');
     }
 
     /**
@@ -118,13 +119,15 @@ class Customers extends \CodeIgniter\Controller
 
     public function new()
     {
-        helper('form');
+
         $data['title'] = 'Add New Customer';
         return view('customers/new', $data);
     }
 
     public function create()
     {
+        helper('form');
+
         $model = new M_customers();
         $data = $this->request->getPost();
 
@@ -132,13 +135,16 @@ class Customers extends \CodeIgniter\Controller
         $validation = \Config\Services::validation();
         if (!$this->validate([
             'name' => 'required',
-            'email' => 'required|valid_email',
+            'email' => 'permit_empty|valid_email',
             'phone' => 'permit_empty',
             'address' => 'permit_empty',
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
         ], $data)) {
-            return view('customers/new');
+            return view('customers/new', [
+                'title' => 'Add New Customer',
+                'errors' => $validation->getErrors(),
+            ]);
         }
         // Gets the validated data.
         $post = $this->validator->getValidated();
@@ -155,10 +161,11 @@ class Customers extends \CodeIgniter\Controller
 
         // Log the action
         logAction('customer_created', 'Customer ID: ' . $model->insertID() . ', Name: ' . $post['name']);
-        // Log the action
 
-        // Redirect to the customers list after creation.
-        // You can also add a success message here if needed.
+        $action = (string) ($this->request->getPost('submit_action') ?? 'save');
+        if ($action === 'save_new') {
+            return redirect()->to(site_url('customers/new'))->with('success', 'Customer created successfully');
+        }
         return redirect()->to(site_url('customers'))->with('success', 'Customer created successfully');
     }
 

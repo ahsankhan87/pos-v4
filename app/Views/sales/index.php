@@ -472,12 +472,12 @@
             }
 
             return `
-                <div class="actions-wrapper">
+                <div class="actions-wrapper relative">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm" aria-haspopup="true">
                         <span>Actions</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="actions-menu hidden">
+                    <div class="actions-menu hidden absolute right-0 mt-1 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
                         ${menuItems}
                     </div>
                 </div>

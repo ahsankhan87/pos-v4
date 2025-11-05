@@ -244,6 +244,7 @@
 .actions-wrapper .actions-menu {
     min-width: 11rem;
     padding: 0.35rem 0;
+    z-index: 9999; /* ensure dropdown overlays nearby controls */
 }
 
 .dataTables_wrapper .dataTables_filter label {

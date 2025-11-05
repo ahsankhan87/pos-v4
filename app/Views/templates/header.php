@@ -21,8 +21,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="<?= base_url('assets/fontawesome-free-7.0.0-web/css/all.min.css') ?>">
 
-    <!-- Unified UI overrides -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/app-ui.css') ?>">
 
     <!-- Custom configuration -->
     <script>
@@ -224,10 +222,10 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     <div class="dropdown-content absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible transition-all duration-200 z-50">
                                         <div class="py-1">
                                             <a href="<?= site_url('reports/sales') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Reports Summary
+                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Summary
                                             </a>
                                             <a href="<?= site_url('reports/purchases') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Reports Summary
+                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Summary
                                             </a>
                                             <a href="<?= site_url('reports/inventory') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-file-alt mr-2"></i> Inventory Reports
@@ -427,10 +425,10 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                             </button>
                             <div class="mobile-dropdown-menu hidden pl-4 mt-1 space-y-1">
                                 <a href="<?= site_url('reports/sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Reports
+                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Summary
                                 </a>
                                 <a href="<?= site_url('reports/purchases') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Reports
+                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Summary
                                 </a>
                                 <a href="<?= site_url('reports/inventory') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-file-alt mr-2"></i> Inventory Reports
@@ -1028,6 +1026,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
             });
         })();
     </script>
+
+    <!-- Unified UI overrides -->
+    <link rel="stylesheet" href="<?= base_url('assets/css/app-ui.css') ?>">
 
 </body>
 

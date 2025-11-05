@@ -76,6 +76,18 @@ class Sales extends \CodeIgniter\Controller
         $salesModel = new M_sales();
         $settingModel = new \App\Models\SettingsModel();
 
+        // Ensure each browser tab has an isolated sale session id (sid)
+        $sid = $this->request->getGet('sid');
+        if (!$sid) {
+            try {
+                $sid = bin2hex(random_bytes(8));
+            } catch (\Throwable $e) {
+                $sid = uniqid('sid_', true);
+            }
+            // Redirect to embed sid in URL so reloads preserve the same cart for this tab
+            return redirect()->to(site_url('sales/new') . '?sid=' . $sid);
+        }
+
         $data['customers'] = $customerModel->forStore()->findAll();
         //$data['products'] = $productModel->forStore()->getProducts();
         //$data['discounts'] = $this->discountModel->where('is_active', 1)->forStore()->findAll();
@@ -85,7 +97,75 @@ class Sales extends \CodeIgniter\Controller
         $data['title'] = 'New Sale';
         $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
         $data['taxRate'] = $settingModel->first()['tax_rate'] ?? 0;
+
+        // Pass the sid to the view so AJAX can namespace its session writes
+        $data['saleSessionId'] = $sid;
+
+        // Load cart from session for this specific sid (real-time persistence per tab)
+        $posSales = session()->get('pos_sales') ?? [];
+        $data['savedCartData'] = isset($posSales[$sid]['cart']) ? json_encode($posSales[$sid]['cart']) : null;
+        $data['savedFormData'] = $posSales[$sid]['form'] ?? null;
+
         return view('sales/new', $data);
+    }
+
+    // Save cart to session (AJAX endpoint)
+    public function saveCart()
+    {
+        if ($this->request->isAJAX()) {
+            // Get data from POST (FormData)
+            $cartJson = $this->request->getPost('cart');
+            $formDataJson = $this->request->getPost('formData');
+            $sid = $this->request->getPost('sale_session_id') ?: 'default';
+
+            $cart = json_decode($cartJson, true) ?? [];
+            $formData = json_decode($formDataJson, true) ?? [];
+
+            // Namespace cart storage by sale-session id so multiple tabs don't clash
+            $posSales = session()->get('pos_sales') ?? [];
+            $posSales[$sid] = [
+                'cart' => $cart,
+                'form' => $formData,
+            ];
+            session()->set('pos_sales', $posSales);
+
+            // Provide fresh CSRF token for subsequent requests (important when regenerate=true)
+            $newCsrf = csrf_hash();
+
+            return $this->response
+                ->setHeader(config('Security')->headerName, $newCsrf)
+                ->setJSON([
+                    'success' => true,
+                    'message' => 'Cart saved to session',
+                    'csrfHash' => $newCsrf,
+                ]);
+        }
+        return $this->response->setStatusCode(400)->setJSON(['success' => false]);
+    }
+
+    // Clear cart from session (AJAX endpoint)
+    public function clearCart()
+    {
+        if ($this->request->isAJAX()) {
+            $sid = $this->request->getPost('sale_session_id') ?: 'default';
+            $posSales = session()->get('pos_sales') ?? [];
+            if (isset($posSales[$sid])) {
+                unset($posSales[$sid]);
+                session()->set('pos_sales', $posSales);
+            }
+
+            // Provide fresh CSRF token for subsequent requests
+            $newCsrf = csrf_hash();
+
+            return $this->response
+                ->setHeader(config('Security')->headerName, $newCsrf)
+                ->setJSON([
+                    'success' => true,
+                    'message' => 'Cart cleared from session',
+                    'csrfHash' => $newCsrf,
+                ]);
+        }
+        return $this->response->setStatusCode(400)->setJSON(['success' => false]);
     }
 
     // Cart processing and sale creation
@@ -364,6 +444,16 @@ class Sales extends \CodeIgniter\Controller
 
             // Commit transaction
             $db->transComplete();
+
+            // Clear cart from session on successful sale
+            $sid = $this->request->getPost('sale_session_id');
+            if ($sid) {
+                $posSales = session()->get('pos_sales') ?? [];
+                if (isset($posSales[$sid])) {
+                    unset($posSales[$sid]);
+                    session()->set('pos_sales', $posSales);
+                }
+            }
 
             // Generate receipt
             return redirect()->to(site_url("/receipts/generate/{$sale_id}"))
@@ -1528,6 +1618,14 @@ class Sales extends \CodeIgniter\Controller
             'customers' => $customers,
             'employees' => $employees,
             'userRole' => $userRole,
+            // Provide isolated session id for this tab as well
+            'saleSessionId' => (function () {
+                try {
+                    return bin2hex(random_bytes(8));
+                } catch (\Throwable $e) {
+                    return uniqid('sid_', true);
+                }
+            })(),
             // Prefill data
             'resumeDraftId' => $sale['id'] ?? $id,
             'prefillCartItems' => $cartItems,

@@ -183,7 +183,7 @@
                             </div>
 
                             <div>
-                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier *</label>
+                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd></label>
                                 <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Select Supplier</option>
                                     <?php foreach ($suppliers as $supplier): ?>
@@ -220,7 +220,7 @@
                             </div>
 
                             <div>
-                                <label for="paid_amount" class="block text-sm font-medium text-gray-700">Amount Paid</label>
+                                <label for="paid_amount" class="block text-sm font-medium text-gray-700">Amount Paid <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F6</kbd></label>
                                 <input type="number" id="paid_amount" name="paid_amount" value="0" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                         </div>
@@ -244,7 +244,7 @@
                                 <!-- Barcode Scanner -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-barcode mr-1"></i>Barcode Scanner
+                                        <i class="fas fa-barcode mr-1"></i>Barcode Scanner <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd>
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="barcode-input"
@@ -259,7 +259,7 @@
                                 <!-- Product Search -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-search mr-1"></i>Product Search
+                                        <i class="fas fa-search mr-1"></i>Product Search <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F2</kbd>
                                     </label>
                                     <select id="product_select" class="w-full select2-search">
                                         <option></option>
@@ -293,7 +293,7 @@
                                     <span id="subtotal"><?= session()->get('currency_symbol') ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="font-medium">Discount:</span>
+                                    <span class="font-medium">Discount: <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F8</kbd></span>
                                     <div class="flex items-center">
                                         <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" class="w-20 mr-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         <select id="discount_type" name="discount_type" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -343,7 +343,7 @@
                     <!-- Form Actions -->
                     <div class="mt-6 flex justify-end space-x-3">
                         <!-- <button type="button" id="saveDraftBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Save Draft</button> -->
-                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Save Purchase</button>
+                        <button type="submit" class="btn btn-primary">Save Purchase <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd></button>
                     </div>
                 </div>
             </div>
@@ -1043,7 +1043,7 @@
                 // Confirm and submit
                 if (confirm('Save this purchase?')) {
                     updateItemsInput();
-                    $purchaseForm.off('submit');
+                    //$purchaseForm.off('submit');
                     $purchaseForm.submit();
                 }
                 return false;
@@ -1120,6 +1120,12 @@
 
     .select2-container--default .select2-results__option--highlighted[aria-selected] .text-gray-900 {
         color: #111827 !important;
+    }
+
+    /* Keyboard shortcut kbd styling */
+    kbd {
+        font-family: 'Courier New', monospace;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 </style>
 <?= $this->endSection() ?>

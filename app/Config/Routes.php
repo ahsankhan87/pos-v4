@@ -53,6 +53,8 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     // Create
     $routes->get('new', 'Sales::new', ['filter' => 'permission:sales.create']);
     $routes->post('create', 'Sales::create', ['filter' => 'permission:sales.create']);
+    $routes->post('save-cart', 'Sales::saveCart', ['filter' => 'permission:sales.create']);
+    $routes->post('clear-cart', 'Sales::clearCart', ['filter' => 'permission:sales.create']);
     $routes->get('pos', 'Sales::pos', ['filter' => 'permission:sales.create']);
     $routes->post('add-to-cart', 'Sales::addToCart', ['filter' => 'permission:sales.create']);
     $routes->post('complete', 'Sales::complete', ['filter' => 'permission:sales.create']);
@@ -273,9 +275,13 @@ $routes->group('products', ['filter' => 'auth'], function ($routes) {
     $routes->post('create', 'Products::create', ['filter' => 'permission:products.create']);
     // Update
     $routes->get('edit/(:num)', 'Products::edit/$1', ['filter' => 'permission:products.update']);
+    $routes->get('show/(:num)', 'Products::show/$1', ['filter' => 'permission:products.view']);
     $routes->post('update/(:num)', 'Products::update/$1', ['filter' => 'permission:products.update']);
     // Delete
     $routes->delete('delete/(:num)', 'Products::delete/$1', ['filter' => 'permission:products.delete']);
+    $routes->post('bulk-delete', 'Products::bulkDelete', ['filter' => 'permission:products.delete']);
+    $routes->get('bulk-adjust', 'Products::bulkAdjust', ['filter' => 'permission:products.update']);
+    $routes->post('bulk-adjust', 'Products::bulkAdjust', ['filter' => 'permission:products.update']);
 });
 
 $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
