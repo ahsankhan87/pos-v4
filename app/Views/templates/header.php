@@ -257,6 +257,11 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Expenses Link -->
+                                <a href="<?= site_url('expenses') ?>" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800">
+                                    <i class="fas fa-receipt mr-2 text-blue-200"></i> Expenses
+                                </a>
                             </nav>
                         </div>
 
@@ -318,6 +323,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         </a>
                                         <a href="<?= site_url('logs') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                             <i class="fas fa-file-alt mr-2"></i> Audit Log
+                                        </a>
+                                        <a href="<?= site_url('backup') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                            <i class="fas fa-database mr-2"></i> Backup
                                         </a>
                                         <div class="border-t border-gray-100"></div>
                                         <a href="<?= site_url('logout') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
@@ -413,6 +421,11 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                         <!-- Mobile Inventory Link -->
                         <a href="<?= site_url('inventory') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                             <i class="fas fa-warehouse mr-2"></i> Inventory
+                        </a>
+
+                        <!-- Mobile Expenses Link -->
+                        <a href="<?= site_url('expenses') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                            <i class="fas fa-receipt mr-2"></i> Expenses
                         </a>
 
                         <!-- Mobile Reports Dropdown -->
@@ -560,6 +573,11 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     <?php endif; ?>
                                 </a>
 
+                                <a href="<?= site_url('expenses') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'expenses' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-receipt mr-3 <?= $segment1 == 'expenses' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                    <span class="<?= $segment1 == 'expenses' ? 'font-bold' : '' ?>">Expenses</span>
+                                </a>
+
                                 <a href="<?= site_url('inventory') ?>" accesskey="i" title="Shortcut: Ctrl+Alt+I" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= $segment1 == 'inventory' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
                                     <i class="fas fa-warehouse mr-3 <?= $segment1 == 'inventory' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
                                     <span class="<?= $segment1 == 'inventory' ? 'font-bold' : '' ?>">Inventory</span>
@@ -613,7 +631,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 </div>
 
                                 <!-- More Options -->
-                                <div class="border-t border-gray-200 pt-2 mt-2">
+                                <!-- <div class="border-t border-gray-200 pt-2 mt-2">
                                     <div class="px-3 py-1">
                                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">More</p>
                                     </div>
@@ -642,7 +660,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         <i class="fas fa-ruler mr-3 <?= $segment1 == 'units' ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
                                         <span class="<?= $segment1 == 'units' ? 'font-bold' : '' ?>">Units</span>
                                     </a>
-                                </div>
+                                </div> -->
                             </nav>
 
                             <!-- Sidebar Footer -->

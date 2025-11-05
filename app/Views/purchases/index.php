@@ -9,7 +9,7 @@
         </div>
 
         <?php if (can('purchases.create')): ?>
-            <a href="<?= base_url('/purchases/create') ?>" class="btn btn-primary">
+            <a href="<?= base_url('purchases/create') ?>" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> New Purchase
             </a>
         <?php endif; ?>

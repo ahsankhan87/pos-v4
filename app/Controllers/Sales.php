@@ -1873,7 +1873,7 @@ class Sales extends \CodeIgniter\Controller
                 'created_at' => date('Y-m-d H:i:s')
             ]);
 
-            return redirect()->to(site_url('sales/receipt/' . $saleId))->with('success', 'Payment received.');
+            return redirect()->to(site_url('sales/'))->with('success', 'Payment received.');
         }
 
         return view('sales/receive_payment', [

@@ -73,6 +73,7 @@
             view: <?= json_encode(site_url('customers')) ?>,
             edit: <?= json_encode(site_url('customers/edit')) ?>,
             delete: <?= json_encode(site_url('customers/delete')) ?>,
+            viewLedger: <?= json_encode(site_url('customers/ledger')) ?>,
         };
 
         const table = $('#customersTable').DataTable({
@@ -165,6 +166,15 @@
             }
 
             let menuItems = '';
+
+            if (permissions.view) {
+                menuItems += `
+                    <a href="${routes.viewLedger}/${row.id}" class="actions-link actions-link--secondary">
+                        <i class="fas fa-book"></i>
+                        <span>View Ledger</span>
+                    </a>
+                `;
+            }
 
             if (permissions.view) {
                 menuItems += `

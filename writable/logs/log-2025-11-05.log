@@ -617,3 +617,959 @@ DEBUG - 2025-11-05 19:23:52 --> Session: Class initialized using 'CodeIgniter\Se
 DEBUG - 2025-11-05 19:23:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
 DEBUG - 2025-11-05 19:23:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
 DEBUG - 2025-11-05 19:24:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:32:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:45:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:45:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:45:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:45:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:45:56 --> ErrorException: Undefined property: App\Controllers\Customers::$customersModel
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Controllers\Customers.php on line 219.
+ 1 APPPATH\Controllers\Customers.php(219): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined property: App\\Controllers\\Customers::$customersModel', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Controllers\\Customers.php', 219)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:46:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:46:35 --> ErrorException: Undefined property: App\Controllers\Customers::$M_customer
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Controllers\Customers.php on line 219.
+ 1 APPPATH\Controllers\Customers.php(219): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined property: App\\Controllers\\Customers::$M_customer', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Controllers\\Customers.php', 219)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:46:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:46:51 --> ErrorException: Undefined property: App\Controllers\Customers::$M_customers
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Controllers\Customers.php on line 219.
+ 1 APPPATH\Controllers\Customers.php(219): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined property: App\\Controllers\\Customers::$M_customers', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Controllers\\Customers.php', 219)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:48:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:48:29 --> ErrorException: Undefined property: App\Controllers\Customers::$ledgerService
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Controllers\Customers.php on line 231.
+ 1 APPPATH\Controllers\Customers.php(231): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined property: App\\Controllers\\Customers::$ledgerService', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Controllers\\Customers.php', 231)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:49:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:49:47 --> CodeIgniter\Exceptions\BadMethodCallException: Call to undefined method App\Models\CustomerLedgerModel::getCustomerLedger
+[Method: GET, Route: customers/ledger/6]
+in SYSTEMPATH\Model.php on line 930.
+ 1 APPPATH\Controllers\Customers.php(232): CodeIgniter\Model->__call('getCustomerLedger', [...])
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:50:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:50:38 --> ErrorException: Undefined property: CodeIgniter\View\View::$request
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Views\customers\ledger.php on line 5.
+ 1 APPPATH\Views\customers\ledger.php(5): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined property: CodeIgniter\\View\\View::$request', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Views\\customers\\ledger.php', 5)
+ 2 SYSTEMPATH\View\View.php(224): include('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Views\\customers\\ledger.php')
+ 3 SYSTEMPATH\View\View.php(227): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1173): CodeIgniter\View\View->render('customers/ledger', [], true)
+ 5 APPPATH\Controllers\Customers.php(242): view('customers/ledger', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:51:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:51:41 --> ErrorException: Undefined property: CodeIgniter\View\View::$request
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Views\customers\ledger.php on line 5.
+ 1 APPPATH\Views\customers\ledger.php(5): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined property: CodeIgniter\\View\\View::$request', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Views\\customers\\ledger.php', 5)
+ 2 SYSTEMPATH\View\View.php(224): include('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Views\\customers\\ledger.php')
+ 3 SYSTEMPATH\View\View.php(227): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1173): CodeIgniter\View\View->render('customers/ledger', [], true)
+ 5 APPPATH\Controllers\Customers.php(242): view('customers/ledger', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:56:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 19:56:16 --> ErrorException: Undefined variable $title
+[Method: GET, Route: customers/ledger/6]
+in APPPATH\Views\templates\header.php on line 5.
+ 1 APPPATH\Views\templates\header.php(5): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $title', 'D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Views\\templates\\header.php', 5)
+ 2 SYSTEMPATH\View\View.php(224): include('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Views\\templates\\header.php')
+ 3 SYSTEMPATH\View\View.php(227): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\View\View.php(240): CodeIgniter\View\View->render('templates/header', [], true)
+ 5 SYSTEMPATH\Common.php(1173): CodeIgniter\View\View->render('customers/ledger', [], true)
+ 6 APPPATH\Controllers\Customers.php(242): view('customers/ledger', [...])
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledger('6')
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 19:56:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:56:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:56:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:56:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:56:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:56:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:56:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 19:58:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:00:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:00:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:08 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:10 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:11 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:11 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:12 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:13 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:02:29 --> CSRF token verified.
+DEBUG - 2025-11-05 20:02:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 20:02:29 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_sales is deprecated in APPPATH\Controllers\Receipts.php on line 14.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 20:02:29 --> [DEPRECATED] Creation of dynamic property App\Controllers\Receipts::$M_stores is deprecated in APPPATH\Controllers\Receipts.php on line 15.
+ 1 SYSTEMPATH\CodeIgniter.php(903): App\Controllers\Receipts->__construct()
+ 2 SYSTEMPATH\CodeIgniter.php(498): CodeIgniter\CodeIgniter->createController()
+ 3 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 6 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 20:02:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:02:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:07:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:07:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:07:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:13:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:14:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:14:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:14:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:18:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 20:18:16 --> ErrorException: Cannot redeclare App\Controllers\Customers::ledgerExportPdf()
+[Method: GET, Route: customers/ledger/3]
+in APPPATH\Controllers\Customers.php on line 606.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+DEBUG - 2025-11-05 20:27:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:27:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:27:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:51:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:53:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:53:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:54:07 --> CSRF token verified.
+DEBUG - 2025-11-05 20:54:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 20:54:22 --> CSRF token verified.
+DEBUG - 2025-11-05 20:54:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:54:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 20:55:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:03:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:06:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:06:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:07:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 21:08:23 --> CSRF token verified.
+DEBUG - 2025-11-05 21:08:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:08:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:09:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:09:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:09:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:10:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:10:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:10:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:10:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:11:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:12:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:12:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:12:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:12:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:14:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:14:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:14:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:16:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:16:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:16:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 21:16:26 --> CSRF token verified.
+DEBUG - 2025-11-05 21:16:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:16:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 21:16:35 --> CSRF token verified.
+DEBUG - 2025-11-05 21:16:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:16:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 21:16:37 --> CSRF token verified.
+DEBUG - 2025-11-05 21:23:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:25:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:26:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:27:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:27:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:28:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:41:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:42:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 21:42:10 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layouts/header.php"
+[Method: GET, Route: backup]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(212): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layouts/header.php')
+ 2 SYSTEMPATH\View\View.php(240): CodeIgniter\View\View->render('layouts/header', [], true)
+ 3 SYSTEMPATH\Common.php(1173): CodeIgniter\View\View->render('backup/download', [], true)
+ 4 APPPATH\Controllers\Backup.php(10): view('backup/download', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Backup->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Backup))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 21:42:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:42:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:45:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 21:46:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:04:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:04:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:04:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:05:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:08:05 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:08:05 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:08:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:08:11 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:08:11 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:08:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:14:56 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:14:56 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:14:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:15:05 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:15:05 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:15:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:20:49 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:20:49 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:20:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:20:54 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:20:54 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:20:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:22:07 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:22:07 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:22:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:22:08 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:22:08 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:22:08 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:22:08 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:22:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-11-05 23:22:08 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+WARNING - 2025-11-05 23:22:08 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+ 1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
+ 2 APPPATH\Config\Routes.php(231): CodeIgniter\Router\RouteCollection->match([...], 'ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', [...])
+ 3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection->{closure}(Object(CodeIgniter\Router\RouteCollection))
+ 4 APPPATH\Config\Routes.php(225): CodeIgniter\Router\RouteCollection->group('customers', [...], Object(Closure))
+ 5 SYSTEMPATH\Router\RouteCollection.php(339): require('D:\\xampp\\htdocs\\kasbook\\pos-v4\\app\\Config\\Routes.php')
+ 6 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 7 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:27:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:27:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:27:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:27:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-11-05 23:27:29 --> mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list' in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+#7 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-11-05 23:27:29 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+[Method: GET, Route: customers/ledger/datatable/3]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 2 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:27:29 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 4 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:27:29 --> [Caused by] mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 5 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:27:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:27:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-11-05 23:27:38 --> mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list' in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+#7 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-11-05 23:27:38 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+[Method: GET, Route: customers/ledger/datatable/3]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 2 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:27:38 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 4 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:27:38 --> [Caused by] mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 5 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:27:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:28:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:28:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-11-05 23:28:41 --> mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list' in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+#7 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-11-05 23:28:41 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+[Method: GET, Route: customers/ledger/datatable/3]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 2 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:28:41 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 4 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:28:41 --> [Caused by] mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 5 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:32:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:32:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-11-05 23:32:36 --> mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list' in D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 D:\xampp\htdocs\kasbook\pos-v4\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id...', 0)
+#1 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id...')
+#2 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id...')
+#3 D:\xampp\htdocs\kasbook\pos-v4\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id...', Array, false)
+#4 D:\xampp\htdocs\kasbook\pos-v4\app\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+#6 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+#7 D:\xampp\htdocs\kasbook\pos-v4\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(334): CodeIgniter\CodeIgniter->run()
+#9 D:\xampp\htdocs\kasbook\pos-v4\system\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\xampp\htdocs\kasbook\pos-v4\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-11-05 23:32:36 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+[Method: GET, Route: customers/ledger/datatable/3]
+in SYSTEMPATH\Database\BaseConnection.php on line 692.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 2 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:32:36 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 2 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 4 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-11-05 23:32:36 --> [Caused by] mysqli_sql_exception: Unknown column 'cl.ref_no' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(738): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 3 SYSTEMPATH\Database\BaseConnection.php(652): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = 3
+AND `cl`.`customer_id` = 3
+ORDER BY `cl`.`date` DESC
+ LIMIT 25')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `cl`.`id`, `cl`.`date`, `cl`.`ref_no`, `cl`.`description`, `cl`.`type`, `cl`.`debit`, `cl`.`credit`, `cl`.`sale_id`
+FROM `pos_customer_ledger` `cl`
+WHERE `cl`.`customer_id` = :cl.customer_id:
+AND `cl`.`customer_id` = :cl.customer_id.1:
+ORDER BY `cl`.`date` DESC
+ LIMIT 25', [...], false)
+ 5 APPPATH\Controllers\Customers.php(858): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Customers->ledgerDatatable('3')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Customers))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:37:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:37:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:38:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:38:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:38:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 23:52:20 --> Error: Call to undefined function set_value()
+[Method: GET, Route: expenses/new]
+in APPPATH\Views\expenses\new.php on line 20.
+ 1 SYSTEMPATH\View\View.php(224): include()
+ 2 SYSTEMPATH\View\View.php(227): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 3 SYSTEMPATH\Common.php(1173): CodeIgniter\View\View->render('expenses/new', [], true)
+ 4 APPPATH\Controllers\Expenses.php(97): view('expenses/new', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Expenses->new()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Expenses))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:52:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:52:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-11-05 23:52:43 --> Error: Call to undefined function set_value()
+[Method: GET, Route: expenses/new]
+in APPPATH\Views\expenses\new.php on line 20.
+ 1 SYSTEMPATH\View\View.php(224): include()
+ 2 SYSTEMPATH\View\View.php(227): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 3 SYSTEMPATH\Common.php(1173): CodeIgniter\View\View->render('expenses/new', [], true)
+ 4 APPPATH\Controllers\Expenses.php(97): view('expenses/new', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Expenses->new()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Expenses))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2025-11-05 23:53:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:56:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:56:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 23:56:44 --> CSRF token verified.
+DEBUG - 2025-11-05 23:56:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:56:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:56:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:56:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:56:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-11-05 23:57:06 --> CSRF token verified.
+DEBUG - 2025-11-05 23:57:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-11-05 23:57:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

@@ -153,6 +153,9 @@ $routes->group('settings', ['filter' => 'auth'], function ($routes) {
     $routes->get('restore', 'Settings::restoreDatabase', ['filter' => 'permission:settings.update']);
 });
 
+$routes->get('backup', 'Backup::index');
+$routes->get('backup/download', 'Backup::download');
+
 $routes->group('user-stores', ['filter' => 'auth'], function ($routes) {
     $routes->get('manage/(:num)', 'UserStores::manage/$1', ['filter' => 'permission:users.update']);
     $routes->post('update/(:num)', 'UserStores::update/$1', ['filter' => 'permission:users.update']);
@@ -225,6 +228,12 @@ $routes->group('customers', ['filter' => 'auth'], function ($routes) {
     $routes->get('datatable', 'Customers::datatable', ['filter' => 'permission:customers.view']);
     $routes->get('(:num)', 'Customers::show/$1', ['filter' => 'permission:customers.view']);
     $routes->get('ledger/(:num)', 'Customers::ledger/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('ledger/print/(:num)', 'Customers::ledgerPrint/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('ledger/export/(:num)', 'Customers::ledgerExport/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('ledger/export_pdf/(:num)', 'Customers::ledgerExportPdf/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('ledger/print-compact/(:num)', 'Customers::ledgerPrintCompact/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('ledger/export_pdf_compact/(:num)', 'Customers::ledgerExportPdfCompact/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('ledger/datatable/(:num)', 'Customers::ledgerDatatable/$1', ['filter' => 'permission:customers.view']);
     // Create
     $routes->get('new', 'Customers::new', ['filter' => 'permission:customers.create']);
     $routes->post('create', 'Customers::create', ['filter' => 'permission:customers.create']);
@@ -233,6 +242,32 @@ $routes->group('customers', ['filter' => 'auth'], function ($routes) {
     $routes->post('update/(:num)', 'Customers::update/$1', ['filter' => 'permission:customers.update']);
     // Delete
     $routes->delete('delete/(:num)', 'Customers::delete/$1', ['filter' => 'permission:customers.delete']);
+});
+
+$routes->group('expenses', ['filter' => 'auth'], function ($routes) {
+    // View
+    $routes->get('/', 'Expenses::index', ['filter' => 'permission:expenses.view']);
+    $routes->get('datatable', 'Expenses::datatable', ['filter' => 'permission:expenses.view']);
+    $routes->get('show/(:num)', 'Expenses::show/$1', ['filter' => 'permission:expenses.view']);
+    $routes->get('print', 'Expenses::print', ['filter' => 'permission:expenses.view']);
+    $routes->get('export', 'Expenses::export', ['filter' => 'permission:expenses.view']);
+    // Create
+    $routes->get('new', 'Expenses::new', ['filter' => 'permission:expenses.create']);
+    $routes->post('create', 'Expenses::create', ['filter' => 'permission:expenses.create']);
+    // Update
+    $routes->get('edit/(:num)', 'Expenses::edit/$1', ['filter' => 'permission:expenses.update']);
+    $routes->post('edit/(:num)', 'Expenses::update/$1', ['filter' => 'permission:expenses.update']);
+    // Delete
+    $routes->delete('delete/(:num)', 'Expenses::delete/$1', ['filter' => 'permission:expenses.delete']);
+});
+
+$routes->group('expense-categories', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'ExpenseCategories::index', ['filter' => 'permission:expenses.view']);
+    $routes->get('new', 'ExpenseCategories::new', ['filter' => 'permission:expenses.update']);
+    $routes->post('create', 'ExpenseCategories::create', ['filter' => 'permission:expenses.update']);
+    $routes->get('edit/(:num)', 'ExpenseCategories::edit/$1', ['filter' => 'permission:expenses.update']);
+    $routes->post('edit/(:num)', 'ExpenseCategories::update/$1', ['filter' => 'permission:expenses.update']);
+    $routes->delete('delete/(:num)', 'ExpenseCategories::delete/$1', ['filter' => 'permission:expenses.update']);
 });
 $routes->group('suppliers', ['filter' => 'auth'], function ($routes) {
     // View

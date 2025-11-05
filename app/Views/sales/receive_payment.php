@@ -10,7 +10,7 @@
         </div>
         <div class="mb-4">
             <label class="block font-semibold mb-1">Payment Amount</label>
-            <input type="number" name="amount" min="1" max="<?= $sale['due_amount'] ?>" step="0.01" required class="w-full border rounded px-3 py-2">
+            <input type="number" autofocus name="amount" min="1" max="<?= $sale['due_amount'] ?>" step="0.01" required class="w-full border rounded px-3 py-2">
         </div>
         <div class="flex justify-end">
             <a href="<?= site_url('sales') ?>" class="btn btn-secondary mr-2">Cancel</a>
