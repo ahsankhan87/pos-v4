@@ -149,7 +149,7 @@ $currency = session('currency_symbol') ?? '$'; ?>
                         </div>
                         <?php if (!empty($errors['barcode'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['barcode']) ?></p><?php endif; ?>
                         <div id="barcode-preview-wrap" class="mt-2 border border-dashed rounded-lg p-3 bg-gray-50 hidden">
-                            <!-- <img id="barcode-preview" alt="Barcode preview" class="max-h-24 mx-auto"> -->
+                            <img id="barcode-preview" alt="Barcode preview" class="max-h-24 mx-auto">
                         </div>
                         <p class="text-xs text-gray-500">Tip: You can scan or type a barcode. Leave empty to auto-generate.</p>
                     </div>
@@ -268,12 +268,14 @@ $currency = session('currency_symbol') ?? '$'; ?>
         function updatePreview() {
             const code = (input.value || '').trim();
             if (!code) {
-                previewWrap.classList.add('hidden');
-                preview.removeAttribute('src');
+                if (previewWrap) previewWrap.classList.add('hidden');
+                if (preview) preview.removeAttribute('src');
                 return;
             }
-            preview.src = '<?= site_url('products/barcode_image') ?>/' + encodeURIComponent(code);
-            previewWrap.classList.remove('hidden');
+            if (preview) {
+                preview.src = '<?= site_url('products/barcode_image') ?>/' + encodeURIComponent(code);
+            }
+            if (previewWrap) previewWrap.classList.remove('hidden');
         }
         if (input) {
             input.addEventListener('input', () => {
@@ -290,14 +292,24 @@ $currency = session('currency_symbol') ?? '$'; ?>
                             'Accept': 'application/json'
                         }
                     })
-                    .then(response => response.ok ? response.json() : Promise.reject())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data && data.barcode) {
                             input.value = data.barcode;
                             updatePreview();
+                        } else {
+                            throw new Error('Invalid response format');
                         }
                     })
-                    .catch(() => alert('Unable to generate a barcode right now.'))
+                    .catch((error) => {
+                        console.error('Barcode generation error:', error);
+                        alert('Unable to generate a barcode right now.');
+                    })
                     .finally(() => {
                         button.disabled = false;
                         button.textContent = 'Generate';

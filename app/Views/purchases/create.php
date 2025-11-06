@@ -183,7 +183,7 @@
                             </div>
 
                             <div>
-                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd></label>
+                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F3</kbd></label>
                                 <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Select Supplier</option>
                                     <?php foreach ($suppliers as $supplier): ?>
@@ -450,7 +450,7 @@
                                 <div class="text-xs text-gray-500">Code: ${product.code || 'N/A'} • Stock: ${parseFloat(product.quantity || 0).toFixed(2)}</div>
                             </div>
                             <div class="text-right ml-2">
-                                <div class="font-bold text-blue-600 text-sm">$${parseFloat(product.cost_price || 0).toFixed(2)}</div>
+                                <div class="font-bold text-blue-600 text-sm"><?= session()->get('currency_symbol') ?>${parseFloat(product.cost_price || 0).toFixed(2)}</div>
                             </div>
                         </div>
                     `);
@@ -621,7 +621,8 @@
 
                 // Calculate initial values
                 calculateItemTotals(newItem);
-                purchaseItems.push(newItem);
+                // Add newest item to the beginning for DESC order
+                purchaseItems.unshift(newItem);
                 addItemRow(newItem);
             }
 
@@ -714,7 +715,8 @@
                 removeItem(item);
             });
 
-            $itemsTableBody.append($row);
+            // Insert at top so latest item appears first
+            $itemsTableBody.prepend($row);
         }
 
         function updateItemRow(item) {
