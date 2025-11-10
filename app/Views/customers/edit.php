@@ -46,9 +46,21 @@
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Phone</label>
                                     <input type="text" name="phone" value="<?= esc($customer['phone']) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Area</label>
+                                    <input type="text" name="area" value="<?= esc($customer['area'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., Downtown, North Zone">
+                                </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Address</label>
                                     <input type="text" name="address" value="<?= esc($customer['address']) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Opening Balance</label>
+                                    <input type="number" step="0.01" name="opening_balance" value="<?= esc($customer['opening_balance'] ?? '0.00') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Credit Limit</label>
+                                    <input type="number" step="0.01" name="credit_limit" value="<?= esc($customer['credit_limit'] ?? '0.00') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
                                 </div>
                             </div>
                         </div>

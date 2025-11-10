@@ -28,9 +28,24 @@ class Customers extends \CodeIgniter\Controller
         $totalCustomers = $model->forStore($storeId)
             ->countAllResults();
 
+        // Get distinct areas for filter dropdown
+        $db = \Config\Database::connect();
+        $areasBuilder = $db->table('pos_customers');
+        if ($storeId !== null) {
+            $areasBuilder->where('store_id', $storeId);
+        }
+        $areas = $areasBuilder->select('area')
+            ->distinct()
+            ->where('area IS NOT NULL')
+            ->where('area !=', '')
+            ->orderBy('area', 'ASC')
+            ->get()
+            ->getResultArray();
+
         return view('customers/index', [
             'title' => 'Customers List',
             'totalCustomers' => $totalCustomers,
+            'areas' => $areas,
         ]);
     }
 
@@ -46,6 +61,7 @@ class Customers extends \CodeIgniter\Controller
         $length = $length > 0 ? min($length, 200) : 25;
 
         $search = $this->request->getVar('search')['value'] ?? '';
+        $area = $this->request->getVar('area') ?? '';
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
         $columns = [
@@ -53,6 +69,7 @@ class Customers extends \CodeIgniter\Controller
             'c.name',
             'c.email',
             'c.phone',
+            'c.area',
             'c.address',
             'c.created_at',
         ];
@@ -99,18 +116,23 @@ class Customers extends \CodeIgniter\Controller
             $filteredBuilder->where('c.store_id', $storeId);
         }
 
+        if ($area !== '') {
+            $filteredBuilder->where('c.area', $area);
+        }
+
         if ($search !== '') {
             $filteredBuilder->groupStart()
                 ->like('c.name', $search)
                 ->orLike('c.email', $search)
                 ->orLike('c.phone', $search)
+                ->orLike('c.area', $search)
                 ->orLike('c.address', $search)
                 ->groupEnd();
         }
 
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
-        $filteredBuilder->select('c.id, c.name, c.email, c.phone, c.address, c.created_at');
+        $filteredBuilder->select('c.id, c.name, c.email, c.phone, c.area, c.address, c.created_at');
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 0);
@@ -165,7 +187,10 @@ class Customers extends \CodeIgniter\Controller
             'name' => 'required',
             'email' => 'permit_empty|valid_email',
             'phone' => 'permit_empty',
+            'area' => 'permit_empty',
             'address' => 'permit_empty',
+            'opening_balance' => 'permit_empty|decimal',
+            'credit_limit' => 'permit_empty|decimal',
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
         ], $data)) {
@@ -181,7 +206,10 @@ class Customers extends \CodeIgniter\Controller
             'name' => $post['name'],
             'email' => $post['email'],
             'phone' => $post['phone'],
+            'area' => $post['area'] ?? '',
             'address' => $post['address'],
+            'opening_balance' => $post['opening_balance'] ?? 0.00,
+            'credit_limit' => $post['credit_limit'] ?? 0.00,
             'created_at' => date('Y-m-d H:i:s'), // Add created_at timestamp
             'store_id' => session('store_id') ?? '', // Store ID from session
         ];
@@ -251,10 +279,11 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        // Opening balance before $from
-        $openingBalance = 0.0;
+        // Opening balance before $from (includes customer's initial opening balance)
+        $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
+        $openingBalance = $customerOpeningBalance;
         if ($from) {
-            $openingBalance = $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
+            $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
         // Fetch entries with filters applied (date, type, text)
@@ -356,9 +385,10 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        $openingBalance = 0.0;
+        $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
+        $openingBalance = $customerOpeningBalance;
         if ($from) {
-            $openingBalance = $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
+            $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
         $entries = $customerLedgerModel->getCustomerLedger($customerId, $from, $to, $type, $q);
@@ -454,9 +484,10 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        $openingBalance = 0.0;
+        $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
+        $openingBalance = $customerOpeningBalance;
         if ($from) {
-            $openingBalance = $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
+            $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
         $entries = $customerLedgerModel->getCustomerLedger($customerId, $from, $to, $type, $q);
@@ -525,9 +556,10 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        $openingBalance = 0.0;
+        $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
+        $openingBalance = $customerOpeningBalance;
         if ($from) {
-            $openingBalance = $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
+            $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
         $entries = $customerLedgerModel->getCustomerLedger($customerId, $from, $to, $type, $q);
@@ -690,9 +722,10 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        $openingBalance = 0.0;
+        $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
+        $openingBalance = $customerOpeningBalance;
         if ($from) {
-            $openingBalance = $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
+            $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
         $entries = $customerLedgerModel->getCustomerLedger($customerId, $from, $to, $type, $q);
@@ -729,9 +762,10 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        $openingBalance = 0.0;
+        $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
+        $openingBalance = $customerOpeningBalance;
         if ($from) {
-            $openingBalance = $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
+            $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
         $entries = $customerLedgerModel->getCustomerLedger($customerId, $from, $to, $type, $q);

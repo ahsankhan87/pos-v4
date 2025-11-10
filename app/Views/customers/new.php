@@ -66,10 +66,25 @@
                                 <input type="text" name="phone" value="<?= set_value('phone') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <?php if (!empty($errors['phone'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['phone']) ?></p><?php endif; ?>
                             </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Area</label>
+                                <input type="text" name="area" value="<?= set_value('area') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., Downtown, North Zone">
+                                <?php if (!empty($errors['area'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['area']) ?></p><?php endif; ?>
+                            </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Address</label>
                                 <input type="text" name="address" value="<?= set_value('address') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Optional">
                                 <?php if (!empty($errors['address'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['address']) ?></p><?php endif; ?>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Opening Balance</label>
+                                <input type="number" step="0.01" name="opening_balance" value="<?= set_value('opening_balance', '0.00') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                                <?php if (!empty($errors['opening_balance'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['opening_balance']) ?></p><?php endif; ?>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Credit Limit</label>
+                                <input type="number" step="0.01" name="credit_limit" value="<?= set_value('credit_limit', '0.00') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                                <?php if (!empty($errors['credit_limit'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['credit_limit']) ?></p><?php endif; ?>
                             </div>
                         </div>
                     </div>

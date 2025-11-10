@@ -15,7 +15,10 @@ class M_customers extends Model
         'created_at',
         'store_id',
         'updated_at',
-        'points'
+        'points',
+        'area',
+        'opening_balance',
+        'credit_limit',
     ]; // adjust fields as per your table
 
     public function forStore($storeId = null)

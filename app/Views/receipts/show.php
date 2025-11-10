@@ -1,24 +1,47 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 
-<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="max-w-6xl mx-auto px-4 py-6">
     <style>
-        /* Ensure Print prints only the receipt container */
+        /* Print only the iframe content */
         @media print {
+
+            /* Hide everything on the parent page */
             body * {
                 visibility: hidden !important;
             }
 
-            #receipt-html,
-            #receipt-html * {
+            /* Show only iframe and its contents */
+            #preview,
+            #preview * {
                 visibility: visible !important;
             }
 
-            #receipt-html {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+            /* Position iframe to fill page without padding */
+            #preview {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+
+            /* Remove all margins and padding from body and html */
+            html,
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            /* Hide page wrapper padding */
+            .max-w-4xl {
+                margin: 0 !important;
+                padding: 0 !important;
             }
         }
     </style>
@@ -32,7 +55,7 @@
             <a href="<?= site_url('sales/edit/' . ($sale['id'] ?? 0)) ?>" accesskey="e" title="Edit Sale (Alt+Shift+E)" class="btn btn-warning btn-sm"><i class="fas fa-edit mr-1"></i>Edit Sale</a>
             <a href="<?= site_url('sales') ?>" accesskey="l" title="Sales List (Alt+Shift+L)" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i>Sales</a>
             <!-- <a href="<?= site_url('receipts/generate/' . ($sale['id'] ?? 0) . '?output=pdf') ?>" target="_blank" accesskey="d" title="Open PDF (Alt+Shift+D)" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf mr-1"></i>PDF</a> -->
-            <button type="button" accesskey="p" title="Print Receipt (Alt+Shift+P)" onclick="printReceiptOnly()" class="btn btn-primary btn-sm"><i class="fas fa-print mr-1"></i>Print</button>
+            <button type="button" accesskey="p" title="Print Receipt (Ctrl+P)" onclick="printReceiptOnly()" class="btn btn-primary btn-sm"><i class="fas fa-print mr-1"></i>Print</button>
         </div>
     </div>
 
@@ -42,7 +65,9 @@
         <div>
             <span class="font-semibold">Shortcuts:</span>
             <span class="ml-1">
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Shift+P</kbd> Print
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+P</kbd> Print
+                <span class="mx-1">·</span>
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Shift+P</kbd> Browser Print
                 <span class="mx-1">·</span>
                 <!-- <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+D</kbd> PDF
                 <span class="mx-1">·</span> -->
@@ -58,10 +83,8 @@
     </div>
 
     <div class="bg-white shadow rounded p-4 print:shadow-none print:p-0">
-        <!-- Render the generated receipt HTML -->
-        <div id="receipt-html">
-            <?= $receiptHtml ?>
-        </div>
+        <!-- Receipt preview in iframe to isolate CSS -->
+        <iframe id="preview" title="Receipt Preview" style="width: 100%; height: 600px; border: 1px solid #ddd; background: white; border-radius: 4px;"></iframe>
     </div>
 
     <div class="mt-4 text-center">
@@ -70,42 +93,131 @@
 </div>
 
 <script>
-    // Print only the receipt HTML using a new window (avoids printing the entire layout)
-    function printReceiptOnly() {
-        try {
-            const html = document.getElementById('receipt-html').innerHTML;
-            const w = window.open('', 'PRINT', 'height=800,width=800');
-            if (!w) {
-                // fallback to page print with @media print rules
-                window.print();
-                return;
+    // Inject receipt HTML into iframe to isolate styles
+    (function injectReceiptIntoFrame() {
+        const frame = document.getElementById('preview');
+        if (!frame) return;
+        const doc = frame.contentDocument || frame.contentWindow?.document;
+        if (!doc) return;
+
+        const rawHTML = <?= json_encode($receiptHtml ?? '') ?>;
+
+        // If a full document is present, extract <head> styles and <body> content; else use as-is
+        let content = rawHTML || '';
+        let headExtra = '';
+        const fullDocRe = new RegExp('(<\\s*!doctype)|(</\\s*html>)|(</\\s*body>)|(</\\s*head>)', 'i');
+        if (fullDocRe.test(content)) {
+            try {
+                const TMP = document.implementation.createHTMLDocument('tmp');
+                TMP.documentElement.innerHTML = content;
+                // Collect styles and external stylesheets from head (if any)
+                if (TMP.head) {
+                    headExtra = Array.from(TMP.head.querySelectorAll('style,link[rel="stylesheet"]'))
+                        .map(n => n.outerHTML)
+                        .join('');
+                }
+                content = TMP.body ? TMP.body.innerHTML : content;
+            } catch (_) {
+                /* keep content as-is */
             }
-            w.document.write('<html><head><title>Receipt</title>');
-            w.document.write('<style>html,body{margin:0;padding:8px;font-family:Arial,Helvetica,sans-serif;} table{width:100%;border-collapse:collapse;} td,th{font-size:11px;padding:2px;} .text-right{text-align:right} .text-center{text-align:center}</style>');
-            w.document.write('</head><body>');
-            w.document.write('<div id="receipt">' + html + '</div>');
-            w.document.write('</body></html>');
-            w.document.close();
-            w.focus();
-            // Some browsers need a slight delay
-            setTimeout(function() {
-                w.print();
-                w.close();
-            }, 100);
-        } catch (e) {
-            window.print();
         }
+
+        doc.open();
+        doc.write('<!doctype html><html><head>');
+        doc.write('<meta charset="utf-8">');
+        doc.write('<meta name="viewport" content="width=device-width, initial-scale=1">');
+        doc.write('<style>');
+        doc.write('html,body{margin:0;padding:8px;font-family:Arial,Helvetica,sans-serif;color:#111;}');
+        doc.write('table{width:100%;border-collapse:collapse;}');
+        doc.write('td,th{font-size:11px;padding:2px;vertical-align:top;}');
+        doc.write('.text-right{text-align:right}.text-center{text-align:center}');
+        doc.write('@media print { @page { margin: 0;!important } html,body{padding:0!important;margin:0!important;overflow:hidden!important;} #invoice-POS{ width:80mm !important; max-width:80mm !important; margin:0 auto !important; } }');
+        doc.write('</style>');
+        if (headExtra) doc.write(headExtra);
+        doc.write('</head><body>');
+        if (content) doc.write(content);
+        doc.write('</body></html>');
+        doc.close();
+
+        // Mark iframe as ready after content is loaded
+        frame.dataset.ready = 'true';
+
+        // Autosize iframe height to content
+        function resize() {
+            try {
+                const h = Math.max(
+                    doc.body?.scrollHeight || 0,
+                    doc.documentElement?.scrollHeight || 0
+                );
+                if (h) frame.style.height = (h + 16) + 'px';
+            } catch (_) {}
+        }
+        frame.addEventListener('load', resize);
+        setTimeout(resize, 80);
+    })();
+
+    // Print the iframe (isolated)
+    function printReceiptOnly() {
+        const frame = document.getElementById('preview');
+        if (!frame) {
+            console.error('Receipt frame not found');
+            window.print();
+            return;
+        }
+
+        // Wait for iframe to be ready if needed
+        if (!frame.dataset.ready) {
+            console.log('Waiting for iframe to load...');
+            setTimeout(printReceiptOnly, 100);
+            return;
+        }
+
+        if (frame.contentWindow) {
+            try {
+                // Focus and print the iframe
+                frame.contentWindow.focus();
+                setTimeout(function() {
+                    frame.contentWindow.print();
+                }, 50);
+                return;
+            } catch (err) {
+                console.error('Iframe print failed:', err);
+            }
+        }
+        // Fallback to window print if iframe fails
+        console.warn('Falling back to window.print()');
+        window.print();
     }
 
     // Keyboard shortcuts (avoid triggering while typing)
+    // Use capture phase (true) to intercept before browser default
     document.addEventListener('keydown', function(e) {
         const tag = (document.activeElement && document.activeElement.tagName) || '';
         const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag);
         if (isTyping) return;
-        // Ctrl+Alt+P -> Print
-        if ((e.ctrlKey && e.shiftKey && (e.key === 'p' || e.key === 'P'))) {
+
+        // Ctrl+P -> Print iframe only (prevents parent page print with scrollbars)
+        if (e.ctrlKey && !e.altKey && !e.shiftKey && (e.key === 'p' || e.key === 'P')) {
             e.preventDefault();
-            printReceiptOnly();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
+            const frame = document.getElementById('preview');
+            if (frame && frame.contentWindow && frame.dataset.ready) {
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+            } else {
+                printReceiptOnly();
+            }
+            return false;
+        }
+        // Ctrl+Shift+P -> Browser print preview (parent page with @media print rules)
+        if (e.ctrlKey && e.shiftKey && !e.altKey && (e.key === 'p' || e.key === 'P')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            window.print();
+            return false;
         }
         // Ctrl+Alt+D -> PDF
         if ((e.ctrlKey && e.altKey && !e.shiftKey && (e.key === 'd' || e.key === 'D'))) {

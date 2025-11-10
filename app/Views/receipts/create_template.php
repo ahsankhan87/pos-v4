@@ -62,6 +62,7 @@
                         <code>{{change}}</code>
                         <code>{{ItemsCount}}</code>
                         <code>{{payment_type}}</code>
+                        <code>{{currency}}</code>
                     </div>
                 </div>
                 <textarea id="template" name="template" rows="20" required

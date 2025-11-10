@@ -39,9 +39,29 @@
                             <div class="text-xs text-gray-500">Phone</div>
                             <div class="font-semibold"><?= esc($customer['phone']) ?></div>
                         </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Area</div>
+                            <div class="font-semibold">
+                                <?php if (!empty($customer['area'])): ?>
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                                        <i class="fas fa-map-marker-alt mr-1"></i><?= esc($customer['area']) ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-gray-400">Not set</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                         <div class="md:col-span-2">
                             <div class="text-xs text-gray-500">Address</div>
                             <div class="font-semibold"><?= esc($customer['address']) ?></div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Opening Balance</div>
+                            <div class="font-semibold text-green-600"><?= number_format($customer['opening_balance'] ?? 0, 2) ?></div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Credit Limit</div>
+                            <div class="font-semibold text-blue-600"><?= number_format($customer['credit_limit'] ?? 0, 2) ?></div>
                         </div>
                     </div>
                 </div>

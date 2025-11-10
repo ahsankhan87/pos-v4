@@ -62,6 +62,7 @@
                         <code>{{change}}</code>
                         <code>{{ItemsCount}}</code>
                         <code>{{payment_type}}</code>
+                        <code>{{currency}}</code>
                     </div>
                 </div>
                 <textarea id="template" name="template" rows="20" required
@@ -114,7 +115,10 @@
             '{{tax}}': '1.80',
             '{{total}}': '19.80',
             '{{paid}}': '20.00',
-            '{{change}}': '0.20'
+            '{{change}}': '0.20',
+            '{{ItemsCount}}': '1',
+            '{{payment_type}}': 'Cash',
+            '{{currency}}': '$'
         };
 
         for (const [key, value] of Object.entries(sampleData)) {

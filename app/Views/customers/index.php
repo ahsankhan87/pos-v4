@@ -36,9 +36,26 @@
     <?php endif; ?>
 
     <div class="table-card">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Customer Directory</h2>
-            <span class="text-sm text-gray-500">Total: <?= esc($totalCustomers ?? 0) ?></span>
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Customer Directory</h2>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <label for="areaFilter" class="text-sm font-medium text-gray-700">Area:</label>
+                        <select id="areaFilter" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Areas</option>
+                            <?php if (!empty($areas)): ?>
+                                <?php foreach ($areas as $area): ?>
+                                    <?php if (!empty($area['area'])): ?>
+                                        <option value="<?= esc($area['area']) ?>"><?= esc($area['area']) ?></option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <span class="text-sm text-gray-500">Total: <?= esc($totalCustomers ?? 0) ?></span>
+                </div>
+            </div>
         </div>
         <div class="overflow-x-auto">
             <table id="customersTable" class="data-table">
@@ -48,6 +65,7 @@
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Phone</th>
+                        <th scope="col">Area</th>
                         <th scope="col">Address</th>
                         <th scope="col" class="text-right">Actions</th>
                     </tr>
@@ -82,7 +100,10 @@
             deferRender: true,
             ajax: {
                 url: routes.datatable,
-                type: 'GET'
+                type: 'GET',
+                data: function(d) {
+                    d.area = $('#areaFilter').val();
+                }
             },
             lengthMenu: [25, 50, 100, 200],
             pageLength: 25,
@@ -116,6 +137,13 @@
                     name: 'phone',
                     render: function(data) {
                         return escapeHtml(data || 'N/A');
+                    }
+                },
+                {
+                    data: 'area',
+                    name: 'area',
+                    render: function(data) {
+                        return data ? '<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">' + escapeHtml(data) + '</span>' : '<span class="text-gray-400 text-xs">—</span>';
                     }
                 },
                 {
@@ -219,6 +247,11 @@
                 </div>
             `;
         }
+
+        // Area filter change event
+        $('#areaFilter').on('change', function() {
+            table.ajax.reload();
+        });
     });
 
     document.addEventListener('click', function(event) {

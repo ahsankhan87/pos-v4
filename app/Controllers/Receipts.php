@@ -51,7 +51,7 @@ class Receipts extends BaseController
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
-            '{{customer}}' => $sale['customer_id'] ? '<div>Customer: ' . $sale['customer_name'] . '</div>' : '',
+            '{{customer}}' => $sale['customer_id'] ? $sale['customer_name'] : '',
             '{{items}}' => $this->buildItemsHtml($sale['items']),
             '{{subtotal}}' => number_format($subtotal, 2),
             '{{total_discount}}' => number_format($discountAmount, 2),
@@ -63,6 +63,7 @@ class Receipts extends BaseController
             '{{change}}' => number_format($sale['change_amount'], 2),
             '{{ItemsCount}}' => count($sale['items']) ?? 0,
             '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
+            '{{currency}}' => session()->get('currency_symbol') ?? '$'
         ];
 
         // Generate receipt HTML
