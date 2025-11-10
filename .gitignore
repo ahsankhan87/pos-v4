@@ -2,63 +2,43 @@
 /vendor/
 /node_modules/
 
-# Build artifacts (if any)
+# Build artifacts
 /dist/
 /build/
 
-# Environment & secrets
+# Env & secrets
 .env
 .env.*
-# Keep the template env file tracked
 !env
 
 # Composer
 composer.phar
-# Keep composer.lock for reproducible installs
-# composer.lock
 
-# IDE / Editor files
-.vscode/
+# IDE/OS
 .idea/
-*.sublime-project
-*.sublime-workspace
-
-# OS files
+.vscode/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.log
+*.bak
+*.swp
 
 # PHPUnit caches & reports
 .phpunit.result.cache
-/tests/_output/*
-/coverage/*
-/reports/*
+/tests/_output/
+/coverage/
+/reports/
 
-# CodeIgniter 4 writable runtime (cache/logs/session/debugbar/uploads/temp)
-/writable/cache/*
-!/writable/cache/index.html
-/writable/logs/*
-!/writable/logs/index.html
-/writable/debugbar/*
-!/writable/debugbar/index.html
-/writable/session/*
-!/writable/session/index.html
-/writable/uploads/*
-!/writable/uploads/index.html
-/writable/temp/*
-!/writable/temp/index.html
+# Writable (CI4): ignore contents, keep folders and placeholder index.html
+writable/*
+!writable/**/
+writable/**/*
+!writable/**/index.html
 
-# Public uploads (user-generated)
-/public/uploads/*
-!/public/uploads/.gitkeep
-!/public/uploads/index.html
-
-# Misc caches
-/.cache/
-.cache/
-*.cache
-
-# Logs at root (if any)
-*.log
-writable/cache/low_stock_items
-writable/session/ci_session9416f537df92daebac190c7047c74071
+# Public uploads: ignore contents, keep placeholders
+public/uploads/*
+!public/uploads/**/
+public/uploads/**/*
+!public/uploads/**/.gitkeep
+!public/uploads/**/index.html
