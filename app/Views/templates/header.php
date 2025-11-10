@@ -244,6 +244,12 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <a href="<?= site_url('sales/customer-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-user-tie mr-2"></i> Customer Sales
                                             </a>
+                                            <a href="<?= site_url('sales/category-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-tags mr-2"></i> Category Sales
+                                            </a>
+                                            <a href="<?= site_url('sales/unit-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-ruler mr-2"></i> Unit Sales
+                                            </a>
                                             <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-user-friends mr-2"></i> Employee Sales
                                             </a>
@@ -683,7 +689,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
 
                 <!-- Main Content -->
                 <main class="flex-1 overflow-y-auto focus:outline-none bg-gray-50">
-                    <div class="<?= !$isPosPage ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6' : '' ?>">
+                    <div class="<?= !$isPosPage ? 'w-full mx-auto px-4 py-4 ' : '' ?>">
                         <!-- Page Header -->
                         <!-- <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
                             <div>

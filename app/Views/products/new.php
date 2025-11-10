@@ -73,9 +73,38 @@ $currency = session('currency_symbol') ?? '$'; ?>
                                 <?php if (!empty($errors['unit_id'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['unit_id']) ?></p><?php endif; ?>
                             </div>
                             <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Category</label>
+                                <select name="category_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select category</option>
+                                    <?php if (!empty($categories)): ?>
+                                        <?php foreach ($categories as $cat): ?>
+                                            <option value="<?= $cat['id'] ?>" <?= set_select('category_id', $cat['id']) ?>><?= esc($cat['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <?php if (!empty($errors['category_id'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['category_id']) ?></p><?php endif; ?>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Supplier</label>
+                                <select name="supplier_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select supplier</option>
+                                    <?php if (!empty($suppliers)): ?>
+                                        <?php foreach ($suppliers as $sup): ?>
+                                            <option value="<?= $sup['id'] ?>" <?= set_select('supplier_id', $sup['id']) ?>><?= esc($sup['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <?php if (!empty($errors['supplier_id'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['supplier_id']) ?></p><?php endif; ?>
+                            </div>
+                            <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Stock Alert</label>
                                 <input type="number" name="stock_alert" value="<?= set_value('stock_alert', 10) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0" step="0.01">
                                 <?php if (!empty($errors['stock_alert'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['stock_alert']) ?></p><?php endif; ?>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Expiry Date</label>
+                                <input type="date" name="expiry_date" value="<?= set_value('expiry_date') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <?php if (!empty($errors['expiry_date'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['expiry_date']) ?></p><?php endif; ?>
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Description</label>

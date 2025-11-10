@@ -13,6 +13,7 @@ use App\Models\CategoriesModel;
 use App\Models\RoleModel;
 use App\Models\EmployeesModel;
 use App\Models\SalesReturnModel;
+use App\Models\SettingsModel;
 
 class Sales extends \CodeIgniter\Controller
 {
@@ -102,7 +103,6 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new M_sale_items();
         $productModel = new M_products();
         $inventoryModel = new M_inventory();
-        $invoiceNo = $this->request->getPost('invoice_no') ?? $salesModel->generateSalesInvoiceNo();
         $draftId = (int) ($this->request->getPost('draft_id') ?? 0);
         $invoiceNo = $this->request->getPost('invoice_no') ?? $salesModel->generateSalesInvoiceNo();
         $customer_id = (int) ($this->request->getPost('customer_id') ?: 0);
@@ -808,6 +808,7 @@ class Sales extends \CodeIgniter\Controller
         $returnModel = new SalesReturnModel();
 
         $storeId = session('store_id');
+        $employeeId = $this->request->getGet('employee_id');
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
@@ -820,10 +821,14 @@ class Sales extends \CodeIgniter\Controller
         }
 
         // Use range query to preserve potential index usage
-        $sales = $salesModel
+        $salesBuilder = $salesModel
             ->forStore($storeId)
             ->where('created_at >=', $from . ' 00:00:00')
-            ->where('created_at <=', $to . ' 23:59:59')
+            ->where('created_at <=', $to . ' 23:59:59');
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
@@ -845,11 +850,19 @@ class Sales extends \CodeIgniter\Controller
             $sale['net_total'] = $sale['total'] - $total_return_amount;
         }
 
+        // Load employees for filter dropdown
+        $employees = (new \App\Models\EmployeesModel())
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
         $data = [
             'title' => 'Daily Sales Report',
             'sales' => $sales,
             'from' => $from,
             'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
         ];
         return view('sales/reports/report', $data);
     }
@@ -858,6 +871,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -868,13 +882,17 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
 
-        // Get all sale items for the store and date range
-        $items = $saleItemsModel
+        // Get all sale items for the store and date range (optionally filtered by employee)
+        $itemsBuilder = $saleItemsModel
             ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $items = $itemsBuilder
             ->groupBy('product_id')
             ->orderBy('total_sales', 'DESC')
             ->findAll();
@@ -886,11 +904,19 @@ class Sales extends \CodeIgniter\Controller
             $item['carton_size'] = $product ? ($product['carton_size'] ?? 0) : 0;
         }
 
+        // Load employees for filter dropdown
+        $employees = (new \App\Models\EmployeesModel())
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
         $data = [
             'title' => 'Product-wise Sales Report',
             'items' => $items,
             'from' => $from,
             'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
         ];
         return view('sales/reports/product_report', $data);
     }
@@ -900,6 +926,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -910,11 +937,15 @@ class Sales extends \CodeIgniter\Controller
         $salesModel = new \App\Models\M_sales();
         $customerModel = new \App\Models\M_customers();
 
-        $sales = $salesModel
+        $salesBuilder = $salesModel
             ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
             ->where('created_at >=', $from . ' 00:00:00')
             ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId)
+            ->forStore($storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder
             ->groupBy('customer_id')
             ->findAll();
 
@@ -923,13 +954,114 @@ class Sales extends \CodeIgniter\Controller
             $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
         }
 
+        // Load employees for filter dropdown
+        $employees = (new \App\Models\EmployeesModel())
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
         $data = [
             'title' => 'Customer-wise Sales Report',
             'sales' => $sales,
             'from' => $from,
             'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
         ];
         return view('sales/reports/customer_report', $data);
+    }
+
+    public function categoryReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        //$categoriesModel = new \App\Models\CategoriesModel();
+
+        $builder = $saleItemsModel
+            ->select('pos_categories.id as category_id, pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $categoriesData = $builder
+            ->groupBy('pos_categories.id')
+            ->orderBy('total_sales', 'DESC')
+            ->findAll();
+
+        // Load employees for filter dropdown
+        $employees = (new \App\Models\EmployeesModel())
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        return view('sales/reports/category_report', [
+            'title' => 'Category-wise Sales Report',
+            'rows' => $categoriesData,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+        ]);
+    }
+
+    public function unitReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $unitModel = new \App\Models\UnitModel();
+
+        $builder = $saleItemsModel
+            ->select('pos_units.id as unit_id, pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $unitsData = $builder
+            ->groupBy('pos_units.id')
+            ->orderBy('total_sales', 'DESC')
+            ->findAll();
+
+        $employees = (new \App\Models\EmployeesModel())
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        return view('sales/reports/unit_report', [
+            'title' => 'Unit-wise Sales Report',
+            'rows' => $unitsData,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+        ]);
     }
 
     public function profitLossReport()
@@ -937,6 +1069,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -949,8 +1082,8 @@ class Sales extends \CodeIgniter\Controller
         $salesModel = new \App\Models\M_sales();
         $purchaseModel = new \App\Models\purchaseModel();
 
-        // Get detailed sale items with product info
-        $items = $saleItemsModel
+        // Get detailed sale items with product info (optionally filter by employee)
+        $saleItemsBuilder = $saleItemsModel
             ->select('
                 pos_sale_items.*,
                 pos_products.name as product_name,
@@ -958,13 +1091,18 @@ class Sales extends \CodeIgniter\Controller
                 pos_products.cost_price,
                 pos_products.carton_size,
                 pos_sales.created_at,
-                pos_sales.invoice_no
+                pos_sales.invoice_no,
+                pos_sales.employee_id
             ')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $saleItemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $items = $saleItemsBuilder
             ->orderBy('pos_products.name', 'ASC')
             ->findAll();
 
@@ -997,18 +1135,86 @@ class Sales extends \CodeIgniter\Controller
             $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
         }
 
-        // Calculate totals
-        $totalRevenue = 0;
-        $totalCost = 0;
-        $totalGrossProfit = 0;
+        // Calculate gross totals (before returns)
+        $grossRevenue = 0;
+        $grossCost = 0;
+        $grossGrossProfit = 0;
         foreach ($productSummary as $p) {
-            $totalRevenue += $p['total_revenue'];
-            $totalCost += $p['total_cost'];
-            $totalGrossProfit += $p['gross_profit'];
+            $grossRevenue += $p['total_revenue'];
+            $grossCost += $p['total_cost'];
+            $grossGrossProfit += $p['gross_profit'];
         }
 
+        // Sales returns impact (deduct from revenue, adjust cost)
+        $salesReturnModel = new \App\Models\SalesReturnModel();
+        $returnsAggBuilder = $salesReturnModel
+            ->select('SUM(pos_sales_returns.return_amount) as total_return_amount, SUM(pos_sales_returns.quantity * pos_products.cost_price) as total_return_cost')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnsAggBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnsAgg = $returnsAggBuilder->first();
+
+        $totalReturns = (float)($returnsAgg['total_return_amount'] ?? 0);
+        $totalReturnCost = (float)($returnsAgg['total_return_cost'] ?? 0);
+
+        // Map returns per product for row-level adjustment
+        $returnItemsBuilder = $salesReturnModel
+            ->select('pos_sales_returns.product_id, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned, SUM(pos_sales_returns.quantity * pos_products.cost_price) as cost_returned')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnItemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnItems = $returnItemsBuilder
+            ->groupBy('pos_sales_returns.product_id')
+            ->findAll();
+        $returnsByProduct = [];
+        foreach ($returnItems as $ri) {
+            $returnsByProduct[$ri['product_id']] = [
+                'qty_returned' => (float)($ri['qty_returned'] ?? 0),
+                'amount_returned' => (float)($ri['amount_returned'] ?? 0),
+                'cost_returned' => (float)($ri['cost_returned'] ?? 0),
+            ];
+        }
+
+        // Adjust productSummary rows to show net values after returns
+        foreach ($productSummary as $pid => &$row) {
+            if (isset($returnsByProduct[$pid])) {
+                $r = $returnsByProduct[$pid];
+                $row['returns_qty'] = $r['qty_returned'];
+                $row['returns_revenue'] = $r['amount_returned'];
+                $row['returns_cost'] = $r['cost_returned'];
+                // Net calculations
+                $row['net_qty_sold'] = max(0, $row['total_qty_sold'] - $r['qty_returned']);
+                $row['net_revenue'] = max(0, $row['total_revenue'] - $r['amount_returned']);
+                $row['net_cost'] = max(0, $row['total_cost'] - $r['cost_returned']);
+                $row['net_gross_profit'] = $row['net_revenue'] - $row['net_cost'];
+            } else {
+                $row['returns_qty'] = 0;
+                $row['returns_revenue'] = 0;
+                $row['returns_cost'] = 0;
+                $row['net_qty_sold'] = $row['total_qty_sold'];
+                $row['net_revenue'] = $row['total_revenue'];
+                $row['net_cost'] = $row['total_cost'];
+                $row['net_gross_profit'] = $row['gross_profit'];
+            }
+        }
+
+        // Net figures after returns
+        $totalRevenue = max(0, $grossRevenue - $totalReturns);
+        $totalCost = max(0, $grossCost - $totalReturnCost);
+        $totalGrossProfit = $totalRevenue - $totalCost;
+
         // Get operating expenses (from purchases, taxes, discounts)
-        $salesData = $salesModel
+        $salesDataBuilder = $salesModel
             ->select('
                 SUM(total_discount) as total_discounts,
                 SUM(total_tax) as total_taxes,
@@ -1016,20 +1222,30 @@ class Sales extends \CodeIgniter\Controller
             ')
             ->where('created_at >=', $from . ' 00:00:00')
             ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId)
-            ->first();
+            ->forStore($storeId);
+        if (!empty($employeeId)) {
+            $salesDataBuilder->where('employee_id', (int)$employeeId);
+        }
+        $salesData = $salesDataBuilder->first();
 
         $totalDiscounts = (float)($salesData['total_discounts'] ?? 0);
         $totalTaxes = (float)($salesData['total_taxes'] ?? 0);
         $salesCount = (int)($salesData['sales_count'] ?? 0);
 
-        // Calculate net profit
+        // Calculate net profit after returns and discounts
         $netProfit = $totalGrossProfit - $totalDiscounts;
         $profitMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
+
+        // Load employees for filter dropdown
+        $employees = (new \App\Models\EmployeesModel())
+            ->forStore($storeId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
 
         $data = [
             'title' => 'Profit & Loss Report',
             'products' => array_values($productSummary),
+            // Net totals
             'totalRevenue' => $totalRevenue,
             'totalCost' => $totalCost,
             'totalGrossProfit' => $totalGrossProfit,
@@ -1038,8 +1254,16 @@ class Sales extends \CodeIgniter\Controller
             'netProfit' => $netProfit,
             'profitMargin' => $profitMargin,
             'salesCount' => $salesCount,
+            // Gross totals and returns for display
+            'grossRevenue' => $grossRevenue,
+            'grossCost' => $grossCost,
+            'grossGrossProfit' => $grossGrossProfit,
+            'totalReturns' => $totalReturns,
+            'totalReturnCost' => $totalReturnCost,
             'from' => $from,
             'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
         ];
 
         return view('sales/reports/profit_loss_report', $data);
@@ -1139,6 +1363,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -1149,12 +1374,16 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
 
-        $items = $saleItemsModel
+        $itemsBuilder = $saleItemsModel
             ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $items = $itemsBuilder
             ->groupBy('product_id')
             ->orderBy('total_sales', 'DESC')
             ->findAll();
@@ -1182,6 +1411,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -1192,12 +1422,16 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
 
-        $items = $saleItemsModel
+        $itemsBuilder = $saleItemsModel
             ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $items = $itemsBuilder
             ->groupBy('product_id')
             ->orderBy('total_sales', 'DESC')
             ->findAll();
@@ -1228,6 +1462,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -1238,11 +1473,15 @@ class Sales extends \CodeIgniter\Controller
         $salesModel = new \App\Models\M_sales();
         $customerModel = new \App\Models\M_customers();
 
-        $sales = $salesModel
+        $salesBuilder = $salesModel
             ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
             ->where('created_at >=', $from . ' 00:00:00')
             ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId)
+            ->forStore($storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder
             ->groupBy('customer_id')
             ->findAll();
 
@@ -1273,6 +1512,7 @@ class Sales extends \CodeIgniter\Controller
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
             $tmp = $from;
             $from = $to;
@@ -1283,11 +1523,15 @@ class Sales extends \CodeIgniter\Controller
         $salesModel = new \App\Models\M_sales();
         $customerModel = new \App\Models\M_customers();
 
-        $sales = $salesModel
+        $salesBuilder = $salesModel
             ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
             ->where('created_at >=', $from . ' 00:00:00')
             ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId)
+            ->forStore($storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder
             ->groupBy('customer_id')
             ->findAll();
 
@@ -1307,6 +1551,172 @@ class Sales extends \CodeIgniter\Controller
             ]);
         }
         fclose($output);
+        exit;
+    }
+
+    public function exportCategoryReportExcel()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+
+        $builder = $saleItemsModel
+            ->select('pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $rows = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+
+        header('Content-Type: application/vnd.ms-excel');
+        $filename = $from === $to ? ('category_sales_report_' . $from . '.xls') : ('category_sales_report_' . $from . '_to_' . $to . '.xls');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Category', 'Sales Count', 'Total Quantity', 'Total Sales']);
+        foreach ($rows as $r) {
+            fputcsv($out, [$r['category_name'] ?? 'Uncategorized', $r['sale_count'] ?? 0, $r['total_qty'] ?? 0, $r['total_sales'] ?? 0]);
+        }
+        fclose($out);
+        exit;
+    }
+
+    public function exportCategoryReportPDF()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+
+        $builder = $saleItemsModel
+            ->select('pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $rows = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
+        $pdf = new \TCPDF();
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 10);
+        $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
+        $html = '<h2>Category-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr><th>Category</th><th>Sales Count</th><th>Total Quantity</th><th>Total Sales</th></tr>';
+        foreach ($rows as $r) {
+            $html .= '<tr><td>' . ($r['category_name'] ?? 'Uncategorized') . '</td><td>' . ($r['sale_count'] ?? 0) . '</td><td>' . ($r['total_qty'] ?? 0) . '</td><td>' . ($r['total_sales'] ?? 0) . '</td></tr>';
+        }
+        $html .= '</table>';
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $filename = $from === $to ? ('category_sales_report_' . $from . '.pdf') : ('category_sales_report_' . $from . '_to_' . $to . '.pdf');
+        $pdf->Output($filename, 'D');
+        exit;
+    }
+
+    public function exportUnitReportExcel()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+
+        $builder = $saleItemsModel
+            ->select('pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $rows = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+
+        header('Content-Type: application/vnd.ms-excel');
+        $filename = $from === $to ? ('unit_sales_report_' . $from . '.xls') : ('unit_sales_report_' . $from . '_to_' . $to . '.xls');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Unit', 'Sales Count', 'Total Quantity', 'Total Sales']);
+        foreach ($rows as $r) {
+            $unitLabel = trim(($r['unit_name'] ?? '') . (!empty($r['abbreviation']) ? (' (' . $r['abbreviation'] . ')') : ''));
+            fputcsv($out, [$unitLabel ?: '—', $r['sale_count'] ?? 0, $r['total_qty'] ?? 0, $r['total_sales'] ?? 0]);
+        }
+        fclose($out);
+        exit;
+    }
+
+    public function exportUnitReportPDF()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+
+        $builder = $saleItemsModel
+            ->select('pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $rows = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
+        $pdf = new \TCPDF();
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 10);
+        $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
+        $html = '<h2>Unit-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr><th>Unit</th><th>Sales Count</th><th>Total Quantity</th><th>Total Sales</th></tr>';
+        foreach ($rows as $r) {
+            $unitLabel = trim(($r['unit_name'] ?? '') . (!empty($r['abbreviation']) ? (' (' . $r['abbreviation'] . ')') : ''));
+            $html .= '<tr><td>' . ($unitLabel ?: '—') . '</td><td>' . ($r['sale_count'] ?? 0) . '</td><td>' . ($r['total_qty'] ?? 0) . '</td><td>' . ($r['total_sales'] ?? 0) . '</td></tr>';
+        }
+        $html .= '</table>';
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $filename = $from === $to ? ('unit_sales_report_' . $from . '.pdf') : ('unit_sales_report_' . $from . '_to_' . $to . '.pdf');
+        $pdf->Output($filename, 'D');
         exit;
     }
     // Employee-wise sales and commission report
@@ -1410,9 +1820,7 @@ class Sales extends \CodeIgniter\Controller
 
         // Validation
         $errors = [];
-        if (!$customer_id) {
-            $errors[] = 'Customer is required.';
-        }
+
         if (!$payment_method) {
             $errors[] = 'Payment method is required.';
         }
@@ -1428,6 +1836,21 @@ class Sales extends \CodeIgniter\Controller
         }
         if (!empty($errors)) {
             return redirect()->back()->withInput()->with('error', implode(' ', $errors));
+        }
+
+        // Walk-in customer handling: create/find default Walk-in per store when not selected
+        if (!$customer_id) {
+            $storeId = session('store_id') ?? 0;
+            $walkin = $this->customerModel->where('store_id', $storeId)->where('name', 'Walk-in Customer')->first();
+            if (!$walkin) {
+                $this->customerModel->insert([
+                    'name' => 'Walk-in Customer',
+                    'store_id' => $storeId,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+                $walkin = $this->customerModel->where('store_id', $storeId)->where('name', 'Walk-in Customer')->first();
+            }
+            $customer_id = $walkin['id'] ?? 0;
         }
 
         if ($employee_id) {
@@ -1475,7 +1898,12 @@ class Sales extends \CodeIgniter\Controller
     public function drafts()
     {
         $salesModel = new M_sales();
-        $drafts = $salesModel->where('status', 'draft')->forStore()->orderBy('created_at', 'DESC')->findAll();
+        $drafts = $salesModel->select(
+            'pos_sales.*,pos_sales.customer_id, COALESCE(c.name, "Walk-in Customer") AS customer_name'
+        )->join('pos_customers c', 'c.id = pos_sales.customer_id', 'left')
+            ->where('status', 'draft')
+            ->where('pos_sales.store_id', session('store_id'))
+            ->orderBy('pos_sales.created_at', 'DESC')->findAll();
         $data = [
             'title' => 'Draft Sales',
             'drafts' => $drafts
@@ -1490,6 +1918,7 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsModel = new M_sale_items();
         $productModel = new M_products();
         $customerModel = new M_customers();
+        $settingModel = new SettingsModel();
 
         $sale = $salesModel->forStore()->find($id);
         if (!$sale || ($sale['status'] ?? '') !== 'draft') {
@@ -1513,6 +1942,7 @@ class Sales extends \CodeIgniter\Controller
             $qty = (float)($line['quantity'] ?? 0);
             $costPrice = isset($line['cost_price']) ? (float)$line['cost_price'] : (float)($prod['cost_price'] ?? 0);
             $stock = (float)($prod['quantity'] ?? 0);
+            $cartonSize = isset($prod['carton_size']) ? (float)$prod['carton_size'] : 0.0;
             $cartItems[] = [
                 'id' => (int)$line['product_id'],
                 'name' => $name,
@@ -1521,6 +1951,7 @@ class Sales extends \CodeIgniter\Controller
                 'cost_price' => $costPrice,
                 'quantity' => $qty,
                 'stock' => $stock,
+                'carton_size' => $cartonSize,
                 'barcode' => $prod['barcode'] ?? '',
             ];
             $subtotal += $price * $qty;
@@ -1545,9 +1976,17 @@ class Sales extends \CodeIgniter\Controller
             'customers' => $customers,
             'employees' => $employees,
             'userRole' => $userRole,
+            // Use computed effective tax rate from draft
+            'taxRate' => $taxRate,
             // Prefill data used only to show draft info on server-render (no client cart prefill)
             'resumeDraftId' => $sale['id'] ?? $id,
-            // Remove client prefill payloads (cart starts empty on client)
+            // Client-side prefill payload
+            'prefillCartJson' => json_encode($cartItems),
+            'prefillDiscountValue' => $discountInput,
+            'prefillDiscountType' => $discountType,
+            'prefillCustomerId' => (int)($sale['customer_id'] ?? 0),
+            'prefillEmployeeId' => (int)($sale['employee_id'] ?? 0),
+            'prefillPaymentMethod' => $sale['payment_method'] ?? 'cash',
         ]);
     }
 
@@ -1661,7 +2100,6 @@ class Sales extends \CodeIgniter\Controller
         $db = $salesModel->db;
         $db->transStart();
 
-
         try {
 
             $sale = $salesModel->find($saleId);
@@ -1675,6 +2113,8 @@ class Sales extends \CodeIgniter\Controller
             foreach ($returnModel->where('sale_id', $saleId)->findAll() as $ret) {
                 $returned[$ret['product_id']] = ($returned[$ret['product_id']] ?? 0) + $ret['quantity'];
             }
+
+            $totalReturnAmountCreditSale = 0.0; // Sum of return amounts to reduce due for credit sales
 
             foreach ($returnItems as $productId => $qty) {
                 $qty = (int)$qty;
@@ -1706,6 +2146,7 @@ class Sales extends \CodeIgniter\Controller
 
                             $returnAmount = $qty * $item['price'];
                             $newBalance = $currentBalance - $returnAmount;
+                            $totalReturnAmountCreditSale += $returnAmount; // Track amount to offset due
 
                             $customerLedgerModel->insert([
                                 'customer_id' => $sale['customer_id'],
@@ -1734,6 +2175,21 @@ class Sales extends \CodeIgniter\Controller
                             'store_id' => $store_id,
                         ]);
                     }
+                }
+            }
+
+            // Adjust outstanding due for credit sales based on returned items
+            if ($sale['payment_type'] === 'credit' && $totalReturnAmountCreditSale > 0) {
+                $oldDue = (float)($sale['due_amount'] ?? 0);
+                if ($oldDue > 0) {
+                    $newDue = max(0.0, $oldDue - $totalReturnAmountCreditSale);
+                    // Only update status to paid if due fully cleared; otherwise keep existing status (due/partial)
+                    $newStatus = $newDue <= 0 ? 'paid' : $sale['payment_status'];
+                    $salesModel->update($saleId, [
+                        'due_amount' => $newDue,
+                        'payment_status' => $newStatus,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
                 }
             }
         } catch (\Throwable $e) {
@@ -1807,6 +2263,7 @@ class Sales extends \CodeIgniter\Controller
         $length = $length > 0 ? min($length, 200) : 25;
 
         $search = $this->request->getVar('search')['value'] ?? '';
+        $statusFilter = trim((string) ($this->request->getVar('status') ?? ''));
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
         $columns = [
@@ -1814,6 +2271,8 @@ class Sales extends \CodeIgniter\Controller
             'ps.invoice_no',
             'c.name',
             'ps.total',
+            'return_total',
+            'net_total',
             'ps.created_at',
             'ps.payment_type',
             'ps.payment_status',
@@ -1848,10 +2307,33 @@ class Sales extends \CodeIgniter\Controller
                 ->groupEnd();
         }
 
+        // Apply explicit payment status filter from UI buttons
+        if ($statusFilter !== '') {
+            // accept only allowed values to prevent injection
+            $allowed = ['paid', 'partial', 'due'];
+            if (in_array(strtolower($statusFilter), $allowed, true)) {
+                $filteredBuilder->where('ps.payment_status', strtolower($statusFilter));
+            }
+        }
+
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
+        // Pre-aggregate returns per sale for accurate net values
+        $storeIdInt = (int) ($storeId ?? 0);
+        $returnsSubquery = '(
+            SELECT sale_id, SUM(return_amount) AS total_return
+            FROM pos_sales_returns
+            ' . ($storeId !== null ? ('WHERE store_id = ' . $storeIdInt) : '') . '
+            GROUP BY sale_id
+        ) r';
+
+        $filteredBuilder->join($returnsSubquery, 'r.sale_id = ps.id', 'left', false);
+
         $filteredBuilder->select(
-            'ps.id, ps.invoice_no, ps.total, ps.created_at, ps.payment_type, ps.payment_status, ps.due_amount, ' .
+            'ps.id, ps.invoice_no, ps.total, ' .
+                'COALESCE(r.total_return, 0) AS return_total, ' .
+                '(ps.total - COALESCE(r.total_return, 0)) AS net_total, ' .
+                'ps.created_at, ps.payment_type, ps.payment_status, ps.due_amount, ' .
                 'ps.customer_id, COALESCE(c.name, "Walk-in Customer") AS customer_name'
         );
 

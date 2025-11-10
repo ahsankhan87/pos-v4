@@ -122,9 +122,12 @@
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Product Code</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Product Name</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Invoice(s)</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Quantity</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Purchased (Gross)</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Returns</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Net Purchased</th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Avg Cost</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Cost</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Returns Value</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Cost (Net)</th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Orders</th>
                             </tr>
                         </thead>
@@ -134,6 +137,8 @@
                             foreach ($products as $idx => $product):
                                 $cartonSize = (float)($product['carton_size'] ?? 0);
                                 $quantity = (float)$product['total_quantity'];
+                                $returnsQty = (float)($product['returns_qty'] ?? 0);
+                                $netQty = (float)($product['net_quantity'] ?? $quantity);
 
                                 // Format quantity
                                 if ($cartonSize > 1) {
@@ -172,14 +177,42 @@
                                             </a>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-right">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" title="Gross Purchased Quantity">
                                             <?= $qtyDisplay ?>
                                         </span>
                                     </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <?php if ($returnsQty > 0): ?>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700" title="Returned Quantity">
+                                                -<?= number_format($returnsQty, 2) ?> pcs
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-xs text-gray-400">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700" title="Net Purchased Quantity">
+                                            <?php
+                                            if ($cartonSize > 1) {
+                                                $nCartons = floor($netQty / $cartonSize);
+                                                $nRem = $netQty - ($nCartons * $cartonSize);
+                                                echo $nRem > 0
+                                                    ? ($nCartons . ' ctns + ' . number_format($nRem, 2) . ' pcs')
+                                                    : ($nCartons . ' ctns');
+                                            } else {
+                                                echo number_format($netQty, 2) . ' pcs';
+                                            }
+                                            ?>
+                                        </span>
+                                    </td>
                                     <td class="px-4 py-3 text-right text-sm text-gray-900"><?= $currency ?><?= number_format($product['avg_cost_price'], 2) ?></td>
+                                    <td class="px-4 py-3 text-right text-sm text-red-600">
+                                        <?php $retAmt = (float)($product['returns_amount'] ?? 0); ?>
+                                        <?= $retAmt > 0 ? ('(' . $currency . number_format($retAmt, 2) . ')') : '—' ?>
+                                    </td>
                                     <td class="px-4 py-3 text-right">
-                                        <span class="text-sm font-bold text-gray-900"><?= $currency ?><?= number_format($product['total_cost'], 2) ?></span>
+                                        <span class="text-sm font-bold text-gray-900"><?= $currency ?><?= number_format($product['net_cost'] ?? $product['total_cost'], 2) ?></span>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
@@ -191,8 +224,23 @@
                         </tbody>
                         <tfoot class="bg-gray-50">
                             <tr>
-                                <th colspan="6" class="px-4 py-3 text-right text-sm font-bold text-gray-700">Total:</th>
-                                <th class="px-4 py-3 text-right text-sm font-bold text-gray-900"><?= $currency ?><?= number_format($totalCost, 2) ?></th>
+                                <th colspan="4" class="px-4 py-3 text-right text-sm font-bold text-gray-700">Totals:</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-900" title="Gross Quantity">
+                                    <?= number_format($totalQuantity ?? 0, 2) ?> pcs
+                                </th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-red-600" title="Returned Quantity">
+                                    -<?= number_format($totalReturnQty ?? 0, 2) ?> pcs
+                                </th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-green-700" title="Net Quantity">
+                                    <?= number_format($totalNetQty ?? 0, 2) ?> pcs
+                                </th>
+                                <th class="px-4 py-3 text-right text-sm font-bold text-gray-700"></th>
+                                <th class="px-4 py-3 text-right text-sm font-bold text-red-600" title="Returns Value">
+                                    (<?= $currency ?><?= number_format($totalReturnAmount ?? 0, 2) ?>)
+                                </th>
+                                <th class="px-4 py-3 text-right text-sm font-bold text-gray-900" title="Total Net Cost">
+                                    <?= $currency ?><?= number_format($totalNetCost ?? $totalCost, 2) ?>
+                                </th>
                                 <th></th>
                             </tr>
                         </tfoot>
@@ -237,6 +285,14 @@
                                 <td class="py-2 text-sm text-gray-900"><strong><?= session()->get('currency_symbol') ?><?= number_format($totalAmount, 2) ?></strong></td>
                             </tr>
                             <tr>
+                                <td class="py-2 text-sm font-semibold text-gray-700 pl-4">Less: Purchase Returns</td>
+                                <td class="py-2 text-sm text-red-600">(<strong><?= session()->get('currency_symbol') ?><?= number_format($totalReturnAmount ?? 0, 2) ?></strong>)</td>
+                            </tr>
+                            <tr class="bg-blue-50">
+                                <td class="py-2 text-sm font-semibold text-gray-700">Net Purchase Value:</td>
+                                <td class="py-2 text-sm text-gray-900"><strong><?= session()->get('currency_symbol') ?><?= number_format($netTotalAmount ?? $totalAmount, 2) ?></strong></td>
+                            </tr>
+                            <tr>
                                 <td class="py-2 text-sm font-semibold text-gray-700">Amount Paid:</td>
                                 <td class="py-2 text-sm text-green-600"><strong><?= session()->get('currency_symbol') ?><?= number_format($totalPaid, 2) ?></strong></td>
                             </tr>
@@ -248,6 +304,10 @@
                             </tr>
                         </tbody>
                     </table>
+                    <tr>
+                        <td class="py-2 text-sm font-semibold text-gray-700">Returned Qty:</td>
+                        <td class="py-2 text-sm text-gray-900"><strong><?= number_format($totalReturnQty ?? 0, 2) ?></strong></td>
+                    </tr>
                 </div>
             </div>
         </div>
@@ -263,8 +323,8 @@
         $('#productPurchaseTable').DataTable({
             pageLength: 25,
             order: [
-                [6, 'desc']
-            ], // Sort by Total Cost descending (column index 6 now due to invoice column)
+                [9, 'desc']
+            ], // Sort by Total Cost (Net) descending
             responsive: true,
             dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
             language: {

@@ -28,7 +28,11 @@ class SalesReports
         $cache = Services::cache();
         $cacheKey = 'rep_sales_summary_' . md5(json_encode([$storeId, $start, $end]));
         if ($cached = $cache->get($cacheKey)) {
-            return $cached;
+            // If cached result is empty returns (all zeros), bypass to allow fresh data soon after returns are recorded
+            if (($cached['returns_total'] ?? 0) > 0 || ($cached['returns_qty'] ?? 0) > 0 || ($cached['count'] ?? 0) > 0) {
+                $cached['cached'] = true;
+                return $cached;
+            }
         }
 
         $builder = $this->db->table('pos_sales');
@@ -265,18 +269,43 @@ class SalesReports
     public function getReturnsSummary(array $filters = []): array
     {
         [$storeId, $start, $end] = $this->baseFilters($filters);
+
+        // Cache key (include store/date range)
+        $cache = Services::cache();
+        $cacheKey = 'rep_returns_summary_' . md5(json_encode([$storeId, $start, $end]));
+        if ($cached = $cache->get($cacheKey)) {
+            // Only use cache if it contains non-zero data to avoid sticky zeros
+            if (($cached['returns_total'] ?? 0) > 0 || ($cached['returns_qty'] ?? 0) > 0 || ($cached['count'] ?? 0) > 0) {
+                $cached['cached'] = true;
+                return $cached;
+            }
+        }
+
         $builder = $this->db->table('pos_sales_returns r');
-        $builder->select('COALESCE(SUM(r.return_amount),0) as returns_total, COALESCE(SUM(r.quantity),0) as returns_qty, COUNT(*) as rows')
-            ->where('DATE(r.created_at) >=', $start)
-            ->where('DATE(r.created_at) <=', $end);
+        $builder->select('COALESCE(SUM(r.return_amount),0) as returns_total'
+            . ', COALESCE(SUM(r.quantity),0) as returns_qty'
+            . ', COUNT(*) as return_count')
+            //. ', COALESCE(SUM(r.quantity * p.cost_price),0) as returns_cost')
+            // ->join('pos_products p', 'p.id = r.product_id', 'left')
+            ->where('r.created_at >=', $start . ' 00:00:00')
+            ->where('r.created_at <=', $end . ' 23:59:59');
         if ($storeId !== null) {
             $builder->where('r.store_id', $storeId);
         }
         $row = $builder->get()->getRowArray() ?? [];
-        return [
+        $result = [
             'returns_total' => round((float)($row['returns_total'] ?? 0), 2),
-            'returns_qty' => (int)($row['returns_qty'] ?? 0),
-            'count' => (int)($row['rows'] ?? 0),
+            //'returns_qty' => (float)($row['returns_qty'] ?? 0),
+            //'returns_cost' => round((float)($row['returns_cost'] ?? 0), 2),
+            'count' => (int)($row['return_count'] ?? 0),
+            'start_date' => $start,
+            'end_date' => $end,
+            'store_id' => $storeId,
         ];
+        // Cache only if there is at least one return row or some monetary value; avoids stale zero showing indefinitely
+        if ($result['count'] > 0 || $result['returns_total'] > 0 || $result['returns_qty'] > 0) {
+            $cache->save($cacheKey, $result, 300); // 5 minutes
+        }
+        return $result;
     }
 }

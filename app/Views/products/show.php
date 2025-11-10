@@ -43,6 +43,14 @@
                                 <div class="text-gray-500">Code</div>
                                 <div class="font-medium text-gray-900"><?= esc($product['code'] ?? '') ?></div>
                             </div>
+                            <div>
+                                <div class="text-gray-500">Category</div>
+                                <div class="font-medium text-gray-900"><?= esc($product['category_name'] ?? '—') ?></div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Supplier</div>
+                                <div class="font-medium text-gray-900"><?= esc($product['supplier_name'] ?? '—') ?></div>
+                            </div>
                             <div class="md:col-span-2">
                                 <div class="text-gray-500">Description</div>
                                 <div class="font-medium text-gray-900"><?= esc($product['description'] ?? '') ?></div>

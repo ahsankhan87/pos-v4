@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\M_suppliers;
+use App\Models\SuppliersModel;
 
 class Suppliers extends \CodeIgniter\Controller
 {
@@ -22,7 +22,7 @@ class Suppliers extends \CodeIgniter\Controller
      */
     public function index()
     {
-        $model = new M_suppliers();
+        $model = new SuppliersModel();
         $storeId = session('store_id');
 
         $totalSuppliers = $model->forStore($storeId)->countAllResults();
@@ -106,7 +106,7 @@ class Suppliers extends \CodeIgniter\Controller
 
     public function show($id = null)
     {
-        $model = new M_suppliers();
+        $model = new SuppliersModel();
         $data['supplier'] = $model->forStore()
             ->find($id);
         $data['title'] = 'Supplier Details';
@@ -153,7 +153,7 @@ class Suppliers extends \CodeIgniter\Controller
             'store_id' => session('store_id') ?? '', // Store ID from session
         ];
 
-        $model = new M_suppliers();
+        $model = new SuppliersModel();
         $model->insert($post_data);
         // Log the action
         logAction('supplier_created', 'Supplier Name: ' . $post['name'] . ', ID: ' . $model->insertID());
@@ -169,7 +169,7 @@ class Suppliers extends \CodeIgniter\Controller
     {
         helper('form');
         $data['title'] = 'Edit Supplier';
-        $model = new M_suppliers();
+        $model = new SuppliersModel();
         $data['supplier'] = $model->find($id);
         if (!$data['supplier']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Supplier not found');
@@ -190,7 +190,7 @@ class Suppliers extends \CodeIgniter\Controller
         }
         // Gets the validated data.
         $post = $this->validator->getValidated();
-        $model = new M_suppliers();
+        $model = new SuppliersModel();
         $model->update($id, $post);
         // Log the action
         logAction('supplier_updated', 'Supplier ID: ' . $id . ', Name: ' . $post['name']);
@@ -201,7 +201,7 @@ class Suppliers extends \CodeIgniter\Controller
 
     public function delete($id = null)
     {
-        $model = new M_suppliers();
+        $model = new SuppliersModel();
         $model->forStore()
             ->delete($id);
         // Log the action

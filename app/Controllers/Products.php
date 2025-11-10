@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\M_inventory;
 use App\Models\M_products;
 use App\Models\UnitModel;
+use App\Models\CategoriesModel;
 
 class Products extends BaseController
 {
@@ -33,7 +34,14 @@ class Products extends BaseController
     public function show($id = null)
     {
         $model = new M_products();
-        $data['product'] = $model->find($id);
+        // Fetch product with category and supplier name
+        $data['product'] = $model
+            ->select('pos_products.*, pos_categories.name as category_name, pos_suppliers.name as supplier_name')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->join('pos_suppliers', 'pos_suppliers.id = pos_products.supplier_id', 'left')
+            ->where('pos_products.id', $id)
+            ->where('pos_products.store_id', session('store_id'))
+            ->first();
         $data['title'] = 'Product Details';
         // Check if the product exists before rendering the view.
         if (!$data['product']) {
@@ -46,12 +54,19 @@ class Products extends BaseController
     {
         helper('form');
         $unitModel = new UnitModel();
+        $categoriesModel = new CategoriesModel();
+        $suppliersModel = new \App\Models\SuppliersModel();
 
         $units = $unitModel->forStore()->orderBy('name', 'ASC')->findAll();
+        $categories = $categoriesModel->forStore()->orderBy('name', 'ASC')->findAll();
+
+        $suppliers = $suppliersModel->forStore()->orderBy('name', 'ASC')->findAll();
 
         return view('products/new', [
             'title' => 'Add New Product',
             'units' => $units,
+            'categories' => $categories,
+            'suppliers' => $suppliers,
         ]);
     }
 
@@ -69,6 +84,9 @@ class Products extends BaseController
             'stock_alert' => 'permit_empty',
             'description' => 'permit_empty',
             'unit_id' => 'permit_empty|integer',
+            'category_id' => 'permit_empty|integer',
+            'supplier_id' => 'permit_empty|integer',
+            'expiry_date' => 'permit_empty|valid_date',
             'carton_size' => 'permit_empty|decimal', // Added carton_size validation
             'initial_quantity' => 'permit_empty|decimal',
             'store_id' => 'permit_empty',
@@ -98,6 +116,9 @@ class Products extends BaseController
             'code' => $post['code'] ?? '',
             'stock_alert' => $post['stock_alert'] ?? 10,
             'unit_id' => $post['unit_id'] ?? null,
+            'category_id' => $post['category_id'] ?? null,
+            'supplier_id' => $post['supplier_id'] ?? null,
+            'expiry_date' => $post['expiry_date'] ?? null,
             'carton_size' => !empty($post['carton_size']) ? (float)$post['carton_size'] : null, // Added carton_size
         ];
 
@@ -143,10 +164,15 @@ class Products extends BaseController
 
         $model = new M_products();
         $unitModel = new UnitModel();
+        $categoriesModel = new CategoriesModel();
+        $suppliersModel = new \App\Models\SuppliersModel();
 
         $units = $unitModel->forStore()->orderBy('name', 'ASC')->findAll();
+        $categories = $categoriesModel->forStore()->orderBy('name', 'ASC')->findAll();
 
         $data['units'] = $units;
+        $data['categories'] = $categories;
+        $data['suppliers'] = $suppliersModel->forStore()->orderBy('name', 'ASC')->findAll();
         $data['product'] = $model->find($id);
         $data['title'] = 'Edit Product';
         // Check if the product exists before rendering the view.
@@ -169,6 +195,9 @@ class Products extends BaseController
             'description' => 'permit_empty',
             'barcode' => 'permit_empty',
             'unit_id' => 'permit_empty|integer',
+            'category_id' => 'permit_empty|integer',
+            'supplier_id' => 'permit_empty|integer',
+            'expiry_date' => 'permit_empty|valid_date',
             'carton_size' => 'permit_empty|decimal', // Added carton_size validation
             'updated_at' => 'permit_empty',
         ])) {
@@ -229,26 +258,33 @@ class Products extends BaseController
     {
         // Get search term from query parameter 'q' or URL segment
         $q = $this->request->getGet('q') ?? $keyword;
+        $supplierId = $this->request->getGet('supplier_id');
 
         $model = new \App\Models\M_products();
 
         // Require minimum 1 character to search (performance optimization for large datasets)
         if (empty($q) || strlen(trim($q)) < 1) {
             // Return empty array or top 20 products
-            $products = $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size')
-                ->forStore()
+            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size');
+            if (!empty($supplierId)) {
+                $model->where('supplier_id', (int)$supplierId);
+            }
+            $products = $model->forStore()
                 ->orderBy('name', 'ASC')
                 ->limit(20)
                 ->findAll();
         } else {
             // Search by name, code, or barcode with optimized query
-            $products = $model->groupStart()
+            $model->groupStart()
                 ->like('name', $q)
                 ->orLike('code', $q)
                 ->orLike('barcode', $q)
-                ->groupEnd()
-                ->select('id, name, code, barcode, cost_price, price, quantity, carton_size')
-                ->forStore()
+                ->groupEnd();
+            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size');
+            if (!empty($supplierId)) {
+                $model->where('supplier_id', (int)$supplierId);
+            }
+            $products = $model->forStore()
                 ->orderBy('name', 'ASC')
                 ->limit(50)
                 ->findAll();
@@ -296,6 +332,7 @@ class Products extends BaseController
         $length = $length > 0 ? min($length, 200) : 25; // guard against huge page sizes
 
         $search = $this->request->getVar('search')['value'] ?? '';
+        $supplierId = $this->request->getGet('supplier_id');
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
         // Map DataTables column indexes to database columns.
@@ -307,6 +344,9 @@ class Products extends BaseController
         $storeId = session('store_id');
 
         $baseBuilder = $db->table('pos_products')->where('store_id', $storeId);
+        if (!empty($supplierId)) {
+            $baseBuilder->where('supplier_id', (int)$supplierId);
+        }
 
         $totalRecords = (clone $baseBuilder)->countAllResults();
 

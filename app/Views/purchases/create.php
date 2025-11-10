@@ -596,7 +596,8 @@
 
             if (existingItem) {
                 // Update quantity if product already exists
-                existingItem.quantity += 1;
+                // If item uses cartons, increment by one full carton worth of pieces
+                existingItem.quantity += (existingItem.carton_size && existingItem.carton_size > 1) ? existingItem.carton_size : 1;
                 updateItemRow(existingItem);
             } else {
                 // Add new item
@@ -604,7 +605,8 @@
                     product_id: product.id,
                     name: product.name,
                     code: product.code || '',
-                    quantity: 1,
+                    // Default to one carton worth of pieces if carton_size > 1, else 1 piece
+                    quantity: (parseFloat(product.carton_size) && parseFloat(product.carton_size) > 1) ? parseFloat(product.carton_size) : 1,
                     cost_price: parseFloat(product.cost_price || 0),
                     unit_price: parseFloat(product.price || 0),
                     discount: 0,
@@ -653,11 +655,11 @@
                 <td class="px-2 py-4">
                     <div class="space-y-1">
                         <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
-                            value="${item.quantity}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
+                            value="${hasCartons ? (item.quantity / cartonSize).toFixed(2) : item.quantity}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
                         ${hasCartons ? `
                         <select class="item-unit-selector w-full text-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
-                            <option value="pieces" selected>Pieces</option>
-                            <option value="cartons">Cartons (${cartonSize} pcs)</option>
+                            <option value="pieces">Pieces</option>
+                            <option value="cartons" selected>Cartons (${cartonSize} pcs)</option>
                         </select>
                         ` : '<div class="text-xs text-gray-500">pieces</div>'}
                     </div>
@@ -704,6 +706,13 @@
                     $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
                 } else {
                     $qtyInput.val(qtyInPieces.toFixed(2));
+                }
+
+                // Auto-toggle back to cartons if exact multiple and selector changed to pieces
+                if (cartonSize > 1 && newUnit === 'pieces' && Number.isInteger(qtyInPieces / cartonSize)) {
+                    // Switch selector back to cartons for clarity
+                    $(this).val('cartons');
+                    $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
                 }
             });
 
@@ -765,6 +774,21 @@
             }
 
             item.quantity = inputQty;
+            // Adjust selector automatically: if quantity is exact multiple of carton size and cartonSize>1
+            if (cartonSize > 1) {
+                const $unitSelectorFinal = $row.find('.item-unit-selector');
+                if (inputQty < cartonSize) {
+                    if ($unitSelectorFinal.val() !== 'pieces') {
+                        $unitSelectorFinal.val('pieces');
+                        $qtyInput.val(inputQty.toFixed(2));
+                    }
+                } else if (Number.isInteger(inputQty / cartonSize)) {
+                    if ($unitSelectorFinal.val() !== 'cartons') {
+                        $unitSelectorFinal.val('cartons');
+                        $qtyInput.val((inputQty / cartonSize).toFixed(2));
+                    }
+                }
+            }
             item.unit_price = parseFloat($row.find('.item-unit-price').val()) || 0;
             item.cost_price = parseFloat($row.find('.item-cost-price').val()) || 0;
             item.discount = parseFloat($row.find('.item-discount').val()) || 0;

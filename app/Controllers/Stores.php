@@ -110,9 +110,9 @@ class Stores extends BaseController
         $validation = \Config\Services::validation();
         // Validate the input data
         if (!$this->validate([
-            'name' => 'required|min_length[3]|max_length[100]',
+            'name' => 'required|min_length[3]|max_length[200]',
             'address' => 'required|min_length[3]|max_length[255]',
-            'phone' => 'required|min_length[5]|max_length[15]',
+            'phone' => 'required|min_length[5]|max_length[200]',
             'is_active' => 'permit_empty|in_list[0,1]',
             'logo' => 'permit_empty|is_image[logo]|max_size[logo,2048]', // 2MB max size
             'currency_code' => 'permit_empty',
@@ -167,9 +167,9 @@ class Stores extends BaseController
         // Set validation rules for each field
         // Validate the input data
         if (!$this->validate([
-            'name' => 'required|min_length[3]|max_length[100]',
+            'name' => 'required|min_length[3]|max_length[200]',
             'address' => 'required|min_length[3]|max_length[255]',
-            'phone' => 'required|min_length[5]|max_length[15]',
+            'phone' => 'required|min_length[5]|max_length[200]',
             'is_active' => 'permit_empty|in_list[0,1]',
             'logo' => 'permit_empty|is_image[logo]|max_size[logo,2048]', // 2MB max size
             'currency_code' => 'permit_empty',

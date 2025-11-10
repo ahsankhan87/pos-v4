@@ -53,9 +53,18 @@ function money_fmt($v)
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900">Sales Report</h2>
-                <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span></p>
+                <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · Employee: <span class="font-medium text-gray-700"><?php
+                                                                                                                                                                                                                                                                                        $selectedEmp = null;
+                                                                                                                                                                                                                                                                                        foreach (($employees ?? []) as $e) {
+                                                                                                                                                                                                                                                                                            if ((int)$e['id'] === (int)$employee_id) {
+                                                                                                                                                                                                                                                                                                $selectedEmp = $e;
+                                                                                                                                                                                                                                                                                                break;
+                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                                        echo esc($selectedEmp['name'] ?? 'Unknown');
+                                                                                                                                                                                                                                                                                        ?></span><?php endif; ?></p>
             </div>
-            <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 w-full lg:w-auto">
+            <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 w-full lg:w-auto">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
@@ -63,6 +72,15 @@ function money_fmt($v)
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">To</label>
                     <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Employee</label>
+                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
+                        <option value="">All</option>
+                        <?php foreach (($employees ?? []) as $emp): ?>
+                            <option value="<?= (int)$emp['id'] ?>" <?= !empty($employee_id) && (int)$employee_id === (int)$emp['id'] ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
@@ -82,7 +100,7 @@ function money_fmt($v)
                         <i class="fas fa-file-csv mr-2"></i> CSV
                     </a>
                 </div>
-                <div class="sm:col-span-2 md:col-span-4">
+                <div class="sm:col-span-2 md:col-span-5">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
                         <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
                         <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Yesterday</button>

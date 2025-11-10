@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\PurchaseModel;
-use App\Models\M_suppliers as SupplierModel;
+use App\Models\SuppliersModel;
 use App\Models\M_products as ProductModel;
 use App\Models\StoreModel;
 use App\Models\TaxModel;
@@ -19,7 +19,7 @@ class Purchases extends BaseController
     public function __construct()
     {
         $this->purchaseModel = new PurchaseModel();
-        $this->supplierModel = new SupplierModel();
+        $this->supplierModel = new SuppliersModel();
         $this->productModel = new ProductModel();
         $this->storeModel = new StoreModel();
         //$this->taxModel = new TaxModel();
@@ -721,7 +721,7 @@ class Purchases extends BaseController
             ->get()
             ->getResultArray();
 
-        // Calculate totals
+        // Calculate totals (gross)
         $totalQuantity = 0;
         $totalCost = 0;
         $totalPurchases = 0;
@@ -731,6 +731,38 @@ class Purchases extends BaseController
             $totalCost += (float)$product['total_cost'];
             $product['avg_cost_price'] = (float)$product['avg_cost_price'];
             $product['purchase_id'] = (int)$product['purchase_id'];
+        }
+
+        // Map purchase returns per product for row-level adjustment
+        $returnsRows = $db->table('pos_purchase_returns r')
+            ->select('r.product_id, SUM(r.quantity) as qty_returned, SUM(r.return_amount) as amount_returned')
+            ->where('r.created_at >=', $from . ' 00:00:00')
+            ->where('r.created_at <=', $to . ' 23:59:59')
+            ->groupBy('r.product_id');
+        if ($storeId !== null) {
+            $returnsRows->where('r.store_id', $storeId);
+        }
+        $returnsRows = $returnsRows->get()->getResultArray();
+        $returnsByProduct = [];
+        foreach ($returnsRows as $rr) {
+            $returnsByProduct[(int)$rr['product_id']] = [
+                'qty_returned' => (float)($rr['qty_returned'] ?? 0),
+                'amount_returned' => (float)($rr['amount_returned'] ?? 0),
+            ];
+        }
+
+        // Add returns and net figures to products and compute total net cost
+        $totalNetCost = 0.0;
+        $totalNetQty = 0.0;
+        foreach ($products as &$product) {
+            $pid = (int)$product['product_id'];
+            $ret = $returnsByProduct[$pid] ?? ['qty_returned' => 0.0, 'amount_returned' => 0.0];
+            $product['returns_qty'] = $ret['qty_returned'];
+            $product['returns_amount'] = $ret['amount_returned'];
+            $product['net_quantity'] = max(0, (float)$product['total_quantity'] - $product['returns_qty']);
+            $product['net_cost'] = max(0.0, (float)$product['total_cost'] - $product['returns_amount']);
+            $totalNetCost += (float)$product['net_cost'];
+            $totalNetQty += (float)$product['net_quantity'];
         }
 
         // Get purchase summary
@@ -753,6 +785,20 @@ class Purchases extends BaseController
         $totalPaid = (float)($summary['total_paid'] ?? 0);
         $totalDue = $totalAmount - $totalPaid;
 
+        // Purchase returns (reduce gross purchase value)
+        $returnModel = new \App\Models\PurchaseReturnModel();
+        $returnsAgg = $returnModel
+            ->select('SUM(return_amount) as total_return_amount, SUM(quantity) as total_return_qty')
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59');
+        if ($storeId !== null) {
+            $returnsAgg->where('store_id', $storeId);
+        }
+        $returnsData = $returnsAgg->first() ?? [];
+        $totalReturnAmount = (float)($returnsData['total_return_amount'] ?? 0);
+        $totalReturnQty = (float)($returnsData['total_return_qty'] ?? 0);
+        $netTotalAmount = max(0, $totalAmount - $totalReturnAmount);
+
         $data = [
             'title' => 'Purchase Report',
             'products' => $products,
@@ -760,6 +806,11 @@ class Purchases extends BaseController
             'totalCost' => $totalCost,
             'totalPurchases' => $totalPurchases,
             'totalAmount' => $totalAmount,
+            'totalReturnAmount' => $totalReturnAmount,
+            'totalReturnQty' => $totalReturnQty,
+            'netTotalAmount' => $netTotalAmount,
+            'totalNetCost' => $totalNetCost,
+            'totalNetQty' => $totalNetQty,
             'totalPaid' => $totalPaid,
             'totalDue' => $totalDue,
             'from' => $from,

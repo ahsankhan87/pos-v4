@@ -60,6 +60,19 @@
     <!-- Sales Table Card -->
     <div class="table-card">
 
+        <!-- Table Header: Tabs + Due Summary -->
+        <div class="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="flex items-center gap-2 border-b border-gray-200 " role="tablist" aria-label="Payment Status">
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 is-active" data-status="" role="tab" aria-selected="true">All</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="paid" role="tab" aria-selected="false">Paid</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="partial" role="tab" aria-selected="false">Partial</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="due" role="tab" aria-selected="false">Due</button>
+            </div>
+            <span class="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded font-semibold whitespace-nowrap">
+                Total Outstanding (Due): <?= (session()->get('currency_symbol') ?? '$') . number_format($totalDue ?? 0, 2) ?>
+            </span>
+        </div>
+
         <div class="overflow-x-auto">
             <table id="salesTable" class="data-table">
                 <thead>
@@ -67,7 +80,9 @@
                         <th scope="col">ID</th>
                         <th scope="col">Invoice #</th>
                         <th scope="col">Customer</th>
-                        <th scope="col">Total</th>
+                        <th scope="col">Gross Total</th>
+                        <th scope="col">Returns</th>
+                        <th scope="col">Net Total</th>
                         <th scope="col">Date</th>
                         <th scope="col">
                             Payment Type
@@ -88,46 +103,130 @@
         </div>
 
     </div>
-    <div class="mb-4">
-        <span class="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded font-semibold">
-            Total Outstanding (Due): <?= (session()->get('currency_symbol') ?? '$') . number_format($totalDue ?? 0, 2) ?>
-        </span>
-    </div>
-
-    <div class="mb-4 flex flex-wrap gap-2">
-        <button class="filter-btn btn btn-filter is-active" data-status="">All</button>
-        <button class="filter-btn btn btn-filter" data-status="paid">Paid</button>
-        <button class="filter-btn btn btn-filter" data-status="partial">Partial</button>
-        <button class="filter-btn btn btn-filter" data-status="due">Due</button>
-    </div>
 </div>
 <!-- Payment History Modal -->
-<div id="paymentHistoryModal" class="fixed z-50 inset-0 hidden">
+<div id="paymentHistoryModal" class="fixed z-50 inset-0 hidden" role="dialog" aria-modal="true" aria-labelledby="paymentHistoryTitle">
     <!-- Overlay -->
-    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div id="paymentHistoryOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
     <!-- Modal Content -->
     <div class="flex items-center justify-center min-h-screen px-4 relative z-10">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg transform transition-all duration-200 scale-95 opacity-0 modal-content">
-            <div class="flex justify-between items-center border-b px-4 py-2">
-                <h3 class="text-lg font-semibold">Payment History</h3>
-                <button onclick="closePaymentHistory()" class="text-gray-500 hover:text-gray-700">&times;</button>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-200 scale-95 opacity-0 modal-content overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 id="paymentHistoryTitle" class="text-lg font-semibold leading-tight">Payment History</h3>
+                        <p id="paymentHistorySubtitle" class="text-xs text-white/80">Sale <span id="paymentModalSaleId">#</span></p>
+                    </div>
+                </div>
+                <button onclick="closePaymentHistory()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center focus:outline-none focus:ring-2 focus:ring-white/60" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="p-4">
-                <table class="min-w-full text-sm" id="paymentHistoryTable">
-                    <thead>
-                        <tr>
-                            <th class="text-left py-1">Date</th>
-                            <th class="text-left py-1">Amount</th>
-                            <th class="text-left py-1">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
+
+            <!-- Body -->
+            <div class="p-5">
+                <!-- Summary -->
+                <div class="mb-4 flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+                        <span class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-green-100 text-green-700">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        <div>
+                            <p class="text-xs text-gray-500 leading-none">Total Paid</p>
+                            <p id="paymentTotalPaid" class="text-sm font-semibold text-gray-900">-</p>
+                        </div>
+                    </div>
+                    <div id="paymentCountPill" class="hidden md:inline-flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">
+                        <i class="fas fa-list-ol text-gray-500"></i>
+                        <span><span id="paymentCount">0</span> payment(s)</span>
+                    </div>
+                </div>
+
+                <!-- Sale Details (auto-filled) -->
+                <div id="paymentDetailsBlock" class="mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Invoice</p>
+                        <p id="paymentInvoiceNo" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Customer</p>
+                        <p id="paymentCustomer" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Date</p>
+                        <p id="paymentDate" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Payment Type</p>
+                        <p id="paymentType" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Status</p>
+                        <p id="paymentStatus" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Gross Total</p>
+                        <p id="paymentGross" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Returns</p>
+                        <p id="paymentReturns" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Net Total</p>
+                        <p id="paymentNet" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 p-3">
+                        <p class="text-xs text-gray-500 leading-none mb-1">Due</p>
+                        <p id="paymentDue" class="font-medium text-gray-900 truncate">-</p>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="border rounded-lg overflow-hidden">
+                    <table class="min-w-full text-sm" id="paymentHistoryTable">
+                        <thead class="bg-gray-50 text-gray-600">
+                            <tr>
+                                <th class="text-left py-3 px-3 font-semibold">Date</th>
+                                <th class="text-left py-3 px-3 font-semibold">Amount</th>
+                                <th class="text-left py-3 px-3 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="paymentEmptyState" class="hidden py-12 text-center">
+                    <div class="mx-auto mb-3 h-12 w-12 rounded-full bg-gray-100 text-gray-500 grid place-items-center">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <p class="text-gray-700 font-medium">No payments found</p>
+                    <p class="text-gray-500 text-sm">When this sale receives payments they'll appear here.</p>
+                </div>
             </div>
-            <div class="px-4 py-2 border-t text-right">
-                <button onclick="closePaymentHistory()" class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300">Close</button>
+
+            <!-- Footer -->
+            <div class="px-5 py-3 bg-gray-50 border-t flex flex-wrap gap-2 justify-end">
+                <div class="mr-auto flex items-center gap-3 pl-1">
+                    <button type="button" onclick="printPaymentHistory()" class="btn btn-outline btn-sm flex items-center gap-2" title="Print">
+                        <i class="fas fa-print"></i>
+                        <span>Print</span>
+                    </button>
+                    <button type="button" onclick="exportPaymentHistoryCSV()" class="btn btn-outline btn-sm flex items-center gap-2" title="Export CSV">
+                        <i class="fas fa-file-export"></i>
+                        <span>Export</span>
+                    </button>
+                </div>
+                <button onclick="closePaymentHistory()" class="btn btn-secondary">
+                    Close
+                </button>
             </div>
         </div>
     </div>
@@ -146,29 +245,104 @@
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
 
 <script>
-    function showPaymentHistory(saleId) {
-        $('#paymentHistoryTable tbody').html('<tr><td colspan="3" class="text-center">Loading...</td></tr>');
+    function showPaymentHistory(saleId, meta) {
+        // Reset states
+        $('#paymentHistoryTable tbody').html('<tr><td colspan="3" class="py-6 text-center text-gray-500">Loading payments...</td></tr>');
+        $('#paymentEmptyState').addClass('hidden');
+        $('#paymentModalSaleId').text('#' + saleId);
+        $('#paymentTotalPaid').text('-');
+        $('#paymentCount').text('0');
+        $('#paymentCountPill').addClass('hidden');
+        $('#paymentHistoryModal').data('saleId', saleId);
+        if (meta) {
+            $('#paymentHistoryModal').data('meta', meta);
+        } else {
+            $('#paymentHistoryModal').removeData('meta');
+        }
+
+        // Fill sale details if meta provided
+        try {
+            const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
+            const money = v => (parseFloat(v ?? 0) || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            const dateFmt = v => {
+                if (!v) return '-';
+                const d = new Date(String(v).replace(' ', 'T'));
+                if (isNaN(d.getTime())) return String(v);
+                return d.toLocaleString(undefined, {
+                    month: 'short',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            };
+            if (meta) {
+                $('#paymentInvoiceNo').text(meta.invoice_no || '-');
+                $('#paymentCustomer').text(meta.customer_name || 'Walk-in');
+                $('#paymentDate').text(dateFmt(meta.created_at));
+                $('#paymentType').text((meta.payment_type || 'cash').charAt(0).toUpperCase() + (meta.payment_type || 'cash').slice(1));
+                $('#paymentStatus').text((meta.payment_status || 'paid').charAt(0).toUpperCase() + (meta.payment_status || 'paid').slice(1));
+                $('#paymentGross').text(currencySymbol + money(meta.total));
+                $('#paymentReturns').text(currencySymbol + money(meta.return_total));
+                $('#paymentNet').text(currencySymbol + money(meta.net_total));
+                $('#paymentDue').text(currencySymbol + money(meta.due_amount));
+            } else {
+                $('#paymentDetailsBlock p[id^="payment"]').text('-');
+            }
+        } catch (e) {}
+
+        // Open modal with animation
         $('#paymentHistoryModal').removeClass('hidden');
         $('.modal-content').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
+
+        // Close on overlay click and ESC
+        $('#paymentHistoryOverlay').off('click').on('click', closePaymentHistory);
+        $(document).on('keydown.paymentModal', function(e) {
+            if (e.key === 'Escape') closePaymentHistory();
+        });
+
         $.get('<?= site_url('sales/payment-history') ?>/' + saleId, function(data) {
+            const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
             if (!data || data.length === 0) {
-                $('#paymentHistoryTable tbody').html('<tr><td colspan="3" class="text-center text-gray-400">No payments found.</td></tr>');
+                $('#paymentHistoryTable tbody').empty();
+                $('#paymentEmptyState').removeClass('hidden');
+                $('#paymentTotalPaid').text(currencySymbol + '0.00');
                 return;
             }
 
-            const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
+            let totalPaid = 0;
             const rows = data.map(function(payment) {
-                const amount = parseFloat(payment.credit ?? 0).toFixed(2);
+                const amountNum = parseFloat(payment.credit ?? 0) || 0;
+                totalPaid += amountNum;
+                const amount = amountNum.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                const date = escapeHtml(payment.date ?? '');
+                const desc = escapeHtml(payment.description ?? '');
                 return `
-                    <tr>
-                        <td>${payment.date}</td>
-                        <td>${currencySymbol}${amount}</td>
-                        <td>${escapeHtml(payment.description ?? '')}</td>
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-3 text-gray-800">${date}</td>
+                        <td class="py-3 px-3 font-semibold text-gray-900">${currencySymbol}${amount}</td>
+                        <td class="py-3 px-3 text-gray-600">${desc || '<span class="text-gray-400">-</span>'}</td>
                     </tr>
                 `;
             }).join('');
 
             $('#paymentHistoryTable tbody').html(rows);
+
+            $('#paymentTotalPaid').text(
+                currencySymbol + (totalPaid).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })
+            );
+            $('#paymentCount').text(data.length);
+            $('#paymentCountPill').removeClass('hidden');
         });
     }
 
@@ -176,7 +350,89 @@
         $('.modal-content').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
         setTimeout(function() {
             $('#paymentHistoryModal').addClass('hidden');
+            $(document).off('keydown.paymentModal');
         }, 200);
+    }
+
+    function exportPaymentHistoryCSV() {
+        const saleId = $('#paymentHistoryModal').data('saleId');
+        const rows = [];
+        // Headers
+        rows.push(['Date', 'Amount', 'Description']);
+        // Table rows
+        $('#paymentHistoryTable tbody tr').each(function() {
+            const $tds = $(this).find('td');
+            if ($tds.length === 0) return; // skip empty/loading state
+            const date = ($tds.eq(0).text() || '').trim();
+            const amount = ($tds.eq(1).text() || '').trim();
+            const desc = ($tds.eq(2).text() || '').trim();
+            if (date.toLowerCase().includes('loading')) return; // skip loading row
+            rows.push([date, amount.replace(/[^0-9.,-]/g, ''), desc]);
+        });
+
+        const csvContent = rows.map(r => r.map(field => '"' + field.replace(/"/g, '""') + '"').join(',')).join('\r\n');
+        const blob = new Blob([csvContent], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'payment-history-sale-' + saleId + '.csv');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function printPaymentHistory() {
+        const saleId = $('#paymentHistoryModal').data('saleId');
+        const meta = $('#paymentHistoryModal').data('meta') || {};
+        const totalPaid = $('#paymentTotalPaid').text();
+        // Build table
+        let htmlTable = '<table style="width:100%;border-collapse:collapse;font-family:Arial, sans-serif;font-size:12px">';
+        htmlTable += '<thead><tr style="background:#f3f4f6"><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Date</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Amount</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Description</th></tr></thead><tbody>';
+        $('#paymentHistoryTable tbody tr').each(function() {
+            const $tds = $(this).find('td');
+            if ($tds.length === 0) return;
+            const date = ($tds.eq(0).text() || '').trim();
+            if (date.toLowerCase().includes('loading')) return;
+            const amount = ($tds.eq(1).text() || '').trim();
+            const desc = ($tds.eq(2).text() || '').trim();
+            htmlTable += '<tr><td style="padding:6px 8px;border:1px solid #e5e7eb">' + date + '</td><td style="padding:6px 8px;border:1px solid #e5e7eb">' + amount + '</td><td style="padding:6px 8px;border:1px solid #e5e7eb">' + (desc || '-') + '</td></tr>';
+        });
+        htmlTable += '</tbody></table>';
+        const w = window.open('', '_blank');
+        if (!w) return;
+        // Key-value details grid
+        const kv = [
+            ['Sale ID', '#' + saleId],
+            ['Invoice', meta.invoice_no || $('#paymentInvoiceNo').text() || '-'],
+            ['Customer', meta.customer_name || $('#paymentCustomer').text() || 'Walk-in'],
+            ['Date', $('#paymentDate').text() || meta.created_at || '-'],
+            ['Payment Type', $('#paymentType').text() || meta.payment_type || '-'],
+            ['Status', $('#paymentStatus').text() || meta.payment_status || '-'],
+            ['Gross Total', $('#paymentGross').text() || '-'],
+            ['Returns', $('#paymentReturns').text() || '-'],
+            ['Net Total', $('#paymentNet').text() || '-'],
+            ['Total Paid', totalPaid || '-'],
+            ['Due', $('#paymentDue').text() || '-']
+        ];
+        let kvHtml = '<div style="display:grid;grid-template-columns:140px 1fr;gap:6px 12px;margin:10px 0;font-family:Arial,sans-serif;font-size:12px">';
+        kv.forEach(pair => {
+            kvHtml += '<div style="font-weight:bold;color:#374151">' + pair[0] + '</div><div>' + pair[1] + '</div>';
+        });
+        kvHtml += '</div><div style="height:1px;background:#e5e7eb;margin:12px 0"></div>';
+        w.document.write('<!DOCTYPE html><html><head><title>Payment History Sale #' + saleId + '</title><style>@media print{body{margin:0;padding:12px 16px} h2{margin:0 0 4px;font-family:Arial} }</style></head><body>');
+        w.document.write('<h2>Payment History</h2>');
+        w.document.write(kvHtml);
+        w.document.write(htmlTable);
+        w.document.write('</body></html>');
+        w.document.close();
+        w.focus();
+        setTimeout(() => {
+            w.print();
+        }, 300);
     }
 
     function escapeHtml(text) {
@@ -205,13 +461,22 @@
             delete: <?= json_encode(site_url('sales/delete')) ?>
         };
 
+        const allowedStatuses = ['paid', 'partial', 'due'];
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentStatus = (function() {
+            const s = (urlParams.get('status') || '').toLowerCase();
+            return allowedStatuses.includes(s) ? s : '';
+        })();
         const table = $('#salesTable').DataTable({
             processing: true,
             serverSide: true,
             deferRender: true,
             ajax: {
                 url: routes.datatable,
-                type: 'GET'
+                type: 'GET',
+                data: function(d) {
+                    d.status = currentStatus || '';
+                }
             },
             dom: 'Bfrtip',
             buttons: [{
@@ -233,7 +498,7 @@
             lengthMenu: [25, 50, 100, 200],
             pageLength: 25,
             order: [
-                [4, 'desc']
+                [6, 'desc'] // Date column index after adding Returns and Net
             ],
             columns: [{
                     data: 'id',
@@ -245,8 +510,13 @@
                 {
                     data: 'invoice_no',
                     name: 'invoice_no',
-                    render: function(data) {
-                        return escapeHtml(data);
+                    render: function(data, type, row) {
+                        return `
+                            <a href="${routes.receipt}/${row.id}" target="_blank" class="text-blue-600 hover:underline">
+                            ${escapeHtml(data)}
+                            </a>
+                        `;
+
                     }
                 },
                 {
@@ -275,7 +545,26 @@
                     data: 'total',
                     name: 'total',
                     render: function(data) {
-                        return currencySymbol + formatNumber(data);
+                        return '<span class="text-gray-700 font-medium">' + currencySymbol + formatNumber(data) + '</span>';
+                    }
+                },
+                {
+                    data: 'return_total',
+                    name: 'return_total',
+                    render: function(data) {
+                        const amount = parseFloat(data ?? 0);
+                        if (amount <= 0) {
+                            return '<span class="text-gray-400">-</span>';
+                        }
+                        return '<span class="text-red-600">' + currencySymbol + formatNumber(amount) + '</span>';
+                    }
+                },
+                {
+                    data: 'net_total',
+                    name: 'net_total',
+                    render: function(data, type, row) {
+                        const net = parseFloat(data ?? 0);
+                        return '<span class="' + (net < 0 ? 'text-red-700' : 'text-green-700') + ' font-semibold">' + currencySymbol + formatNumber(net) + '</span>';
                     }
                 },
                 {
@@ -340,12 +629,29 @@
             }
         });
 
+        // Set initial active state from querystring (tab style)
+        $('.filter-btn').removeClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'false');
+        if (currentStatus) {
+            $(`.filter-btn[data-status="${currentStatus}"]`).addClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'true');
+        } else {
+            $(`.filter-btn[data-status=""]`).addClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'true');
+        }
+
         $('.filter-btn').on('click', function() {
             const status = $(this).data('status');
-            const regex = status ? '^' + status + '$' : '';
-            $('.filter-btn').removeClass('is-active');
-            $(this).addClass('is-active');
-            table.column(6).search(regex, true, false).draw();
+            $('.filter-btn').removeClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'false');
+            $(this).addClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'true');
+            currentStatus = status || '';
+            // Update URL without reloading the page
+            const params = new URLSearchParams(window.location.search);
+            if (currentStatus) {
+                params.set('status', currentStatus);
+            } else {
+                params.delete('status');
+            }
+            const newUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+            history.replaceState(null, '', newUrl);
+            table.ajax.reload(null, true);
         });
 
         function formatNumber(value) {
@@ -509,7 +815,9 @@
         $(document).on('click', '.payment-history-link', function(e) {
             e.preventDefault();
             const saleId = $(this).data('sale-id');
-            showPaymentHistory(saleId);
+            // Retrieve row meta from DataTable
+            const rowMeta = table.row($(this).closest('tr')).data();
+            showPaymentHistory(saleId, rowMeta);
         });
     });
 </script>

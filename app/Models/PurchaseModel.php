@@ -95,7 +95,7 @@ class PurchaseModel extends Model
         if (!$purchase) return null;
 
         // Get supplier details
-        $supplierModel = new \App\Models\M_suppliers();
+        $supplierModel = new \App\Models\SuppliersModel();
         $purchase['supplier'] = $supplierModel->find($purchase['supplier_id']);
 
         // Get store details

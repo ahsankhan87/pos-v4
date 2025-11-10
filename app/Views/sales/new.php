@@ -198,6 +198,16 @@
         <input type="hidden" name="invoice_no" value="<?= $invoiceNo ?>">
         <?php if (isset($resumeDraftId)): ?>
             <input type="hidden" name="draft_id" id="draft_id" value="<?= (int) $resumeDraftId ?>">
+            <script>
+                window.__DRAFT_PREFILL__ = {
+                    cart: <?= isset($prefillCartJson) ? $prefillCartJson : '[]' ?>,
+                    discountValue: <?= json_encode($prefillDiscountValue ?? 0) ?>,
+                    discountType: <?= json_encode($prefillDiscountType ?? 'fixed') ?>,
+                    customerId: <?= json_encode($prefillCustomerId ?? 0) ?>,
+                    employeeId: <?= json_encode($prefillEmployeeId ?? 0) ?>,
+                    paymentMethod: <?= json_encode($prefillPaymentMethod ?? 'cash') ?>
+                };
+            </script>
         <?php endif; ?>
 
         <div class="grid grid-cols-1 xl:grid-cols-4 gap-2">
@@ -428,13 +438,13 @@
                             </button>
                             <button type="button" id="saveDraftBtn"
                                 class="flex items-center justify-center px-2 py-1.5 bg-yellow-500 text-white text-xs font-medium rounded hover:bg-yellow-600 transition-all">
-                                <i class="fas fa-save mr-0.5 text-xs"></i>Draft
+                                <i class="fas fa-save mr-0.5 text-xs"></i>Save as Draft
                             </button>
                         </div>
                         <input type="hidden" name="draft" id="draft-flag" value="0">
                         <button type="submit"
                             class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-xs font-bold rounded hover:from-green-700 hover:to-green-800 transition-all shadow-md">
-                            <i class="fas fa-check-circle mr-1.5"></i>COMPLETE <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
+                            <i class="fas fa-check-circle mr-1.5"></i>COMPLETE SALE<kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
                         </button>
                     </div>
                 </div>
@@ -816,7 +826,13 @@
 
             if (existingItem) {
                 if (existingItem.quantity < existingItem.stock) {
-                    existingItem.quantity += 1;
+                    // Increment by one full carton if applicable, else by one piece
+                    const cartonSize = parseFloat(existingItem.carton_size) || 0;
+                    const increment = (cartonSize > 1) ? cartonSize : 1;
+                    existingItem.quantity += increment;
+                    if (cartonSize > 1) {
+                        existingItem.unit = 'cartons';
+                    }
                     //showSuccessMessage(`${product.name} quantity increased to ${existingItem.quantity}`);
                 } else {
                     showFormErrors([`Only ${existingItem.stock} units available in stock`]);
@@ -830,9 +846,11 @@
                     code: product.code || '',
                     price: parseFloat(product.price || 0),
                     cost_price: product.cost_price || 0,
-                    quantity: 1,
+                    // Default to one full carton worth of pieces if carton_size > 1
+                    quantity: (parseFloat(product.carton_size) > 1) ? parseFloat(product.carton_size) : 1,
                     stock: parseInt(product.quantity || 0),
-                    carton_size: parseFloat(product.carton_size) || 0
+                    carton_size: parseFloat(product.carton_size) || 0,
+                    unit: (parseFloat(product.carton_size) > 1) ? 'cartons' : 'pieces' // default display unit
                 });
                 //showSuccessMessage(`${product.name} added to cart`);
                 // } else {
@@ -858,6 +876,14 @@
                 // Check if product has carton tracking enabled
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const hasCartons = cartonSize > 1;
+                // Auto-switch display unit based on quantity vs carton size
+                if (hasCartons) {
+                    if (item.quantity < cartonSize) {
+                        item.unit = 'pieces';
+                    } else if (Number.isInteger(parseFloat(item.quantity) / cartonSize)) {
+                        item.unit = 'cartons';
+                    }
+                }
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
 
                 tbody += `
@@ -888,7 +914,11 @@
                                 ${item.quantity <= 0.01 ? 'disabled' : ''}>
                                 <i class="fas fa-minus text-xs"></i>
                             </button>
-                            <input type="number" min="0.01" step="0.01" value="${parseFloat(item.quantity).toFixed(2)}" 
+                            <input type="number" min="0.01" step="0.01" value="${(function(){
+                                    const cs = parseFloat(item.carton_size)||1;
+                                    if (item.unit === 'cartons' && cs>1) { return (parseFloat(item.quantity)/cs).toFixed(2); }
+                                    return parseFloat(item.quantity).toFixed(2);
+                                })()}" 
                                 onchange="updateQtyInput(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
                                 class="cart-qty-input w-14 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
@@ -902,8 +932,8 @@
                             <select onchange="changeQtyUnit(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
                                 class="cart-unit-selector text-[10px] border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 bg-white">
-                                <option value="pieces" selected>Pieces</option>
-                                <option value="cartons">Cartons (${cartonSize} pcs)</option>
+                                <option value="pieces" ${item.unit === 'pieces' ? 'selected' : ''}>Pieces</option>
+                                <option value="cartons" ${item.unit === 'cartons' ? 'selected' : ''}>Cartons (${cartonSize} pcs)</option>
                             </select>
                         </div>
                         ` : '<div class="text-[10px] text-gray-500">pieces</div>'}
@@ -1062,7 +1092,8 @@
 
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
-            const currentUnit = unitSelector ? unitSelector.value : 'pieces';
+            const currentUnit = unitSelector ? unitSelector.value : (item.unit || 'pieces');
+            item.unit = currentUnit;
 
             // Increment by 1 piece or 1 carton based on selector
             if (currentUnit === 'cartons' && cartonSize > 1) {
@@ -1087,13 +1118,23 @@
 
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
-            const currentUnit = unitSelector ? unitSelector.value : 'pieces';
+            const currentUnit = unitSelector ? unitSelector.value : (item.unit || 'pieces');
+            item.unit = currentUnit;
 
             // Decrement by 1 piece or 1 carton based on selector
             if (currentUnit === 'cartons' && cartonSize > 1) {
                 cart[idx].quantity = Math.max(0.01, cart[idx].quantity - cartonSize);
             } else {
                 cart[idx].quantity = Math.max(0.01, cart[idx].quantity - 1);
+            }
+
+            // Adjust display unit based on new quantity
+            if (cartonSize > 1) {
+                if (cart[idx].quantity < cartonSize) {
+                    cart[idx].unit = 'pieces';
+                } else if (Number.isInteger(parseFloat(cart[idx].quantity) / cartonSize)) {
+                    cart[idx].unit = 'cartons';
+                }
             }
 
             renderCart();
@@ -1107,7 +1148,8 @@
 
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
-            const currentUnit = unitSelector ? unitSelector.value : 'pieces';
+            const currentUnit = unitSelector ? unitSelector.value : (item.unit || 'pieces');
+            item.unit = currentUnit;
 
             // Convert to pieces if input is in cartons
             if (currentUnit === 'cartons' && cartonSize > 1) {
@@ -1122,6 +1164,14 @@
             }
 
             cart[idx].quantity = qty;
+            // Adjust display unit depending on carton relationship
+            if (cartonSize > 1) {
+                if (cart[idx].quantity < cartonSize) {
+                    cart[idx].unit = 'pieces';
+                } else if (Number.isInteger(parseFloat(cart[idx].quantity) / cartonSize)) {
+                    cart[idx].unit = 'cartons';
+                }
+            }
             renderCart();
         };
 
@@ -1139,12 +1189,14 @@
 
             // Update the display value based on new unit
             if (newUnit === 'cartons' && cartonSize > 1) {
-                // Show as cartons
+                // Show as cartons (do not change stored pieces quantity)
                 const qtyInCartons = qtyInPieces / cartonSize;
                 qtyInput.value = qtyInCartons.toFixed(2);
+                item.unit = 'cartons';
             } else {
                 // Show as pieces
                 qtyInput.value = qtyInPieces.toFixed(2);
+                item.unit = 'pieces';
             }
 
             skipRefocus = false;
@@ -1175,7 +1227,41 @@
             }
         };
 
-        // Initial empty render
+        // Prefill cart if resuming a draft
+        if (window.__DRAFT_PREFILL__) {
+            try {
+                cart = (window.__DRAFT_PREFILL__.cart || []).map(function(it) {
+                    return {
+                        id: it.id,
+                        name: it.name,
+                        code: it.code || '',
+                        price: parseFloat(it.price || 0),
+                        cost_price: parseFloat(it.cost_price || 0),
+                        quantity: parseFloat(it.quantity || 0),
+                        stock: parseFloat(it.stock || 0),
+                        barcode: it.barcode || '',
+                        carton_size: parseFloat(it.carton_size || 0),
+                        unit: (parseFloat(it.carton_size || 0) > 1 && parseFloat(it.quantity || 0) >= parseFloat(it.carton_size || 0)) ? 'cartons' : 'pieces'
+                    };
+                });
+                // Apply discount type/value
+                $('#discount_type').val(window.__DRAFT_PREFILL__.discountType || 'fixed').trigger('change');
+                $('#discount').val(window.__DRAFT_PREFILL__.discountValue || 0);
+                // Set customer/employee/payment method selections
+                if (window.__DRAFT_PREFILL__.customerId) {
+                    $('#customer-select').val(String(window.__DRAFT_PREFILL__.customerId)).trigger('change');
+                }
+                if (window.__DRAFT_PREFILL__.employeeId) {
+                    $('#employee-select').val(String(window.__DRAFT_PREFILL__.employeeId)).trigger('change');
+                }
+                if (window.__DRAFT_PREFILL__.paymentMethod) {
+                    $('select[name="payment_method"]').val(window.__DRAFT_PREFILL__.paymentMethod).trigger('change');
+                }
+            } catch (e) {
+                console.warn('Draft prefill failed', e);
+            }
+        }
+        // Initial render (empty or prefilled)
         renderCart();
 
         // Keyboard shortcuts
@@ -1299,17 +1385,13 @@
             else if ((e.key === '+' || e.key === '=') && !isInput && cart.length > 0) {
                 e.preventDefault();
                 const lastIdx = cart.length - 1;
-                if (cart[lastIdx].quantity < cart[lastIdx].stock) {
-                    updateQty(lastIdx, cart[lastIdx].quantity + 1);
-                }
+                incrementQty(lastIdx);
             }
             // - - Decrease quantity of last item
             else if (e.key === '-' && !isInput && cart.length > 0) {
                 e.preventDefault();
                 const lastIdx = cart.length - 1;
-                if (cart[lastIdx].quantity > 1) {
-                    updateQty(lastIdx, cart[lastIdx].quantity - 1);
-                }
+                decrementQty(lastIdx);
             }
             // Delete - Remove last item from cart
             else if (e.key === 'Delete' && !isInput && cart.length > 0) {
