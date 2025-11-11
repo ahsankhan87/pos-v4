@@ -778,10 +778,50 @@
             setTimeout(() => $('#barcode-input').focus(), 150);
         });
 
-        // Barcode scanning
+        // Barcode scanning with auto-search (debounced)
+        let barcodeSearchTimeout;
+
+        $('#barcode-input').on('input', function() {
+            const barcode = $(this).val().trim();
+
+            // Clear previous timeout
+            clearTimeout(barcodeSearchTimeout);
+
+            // Only search if there's a value
+            if (barcode.length > 0) {
+                // Debounce: wait 500ms after user stops typing
+                barcodeSearchTimeout = setTimeout(function() {
+                    // Show loading state
+                    $('#barcode-input').prop('disabled', true);
+                    const originalValue = $('#barcode-input').val();
+
+                    $.get('<?= site_url('api/products/barcode') ?>', {
+                            barcode: barcode
+                        })
+                        .done(function(product) {
+                            if (product && product.id) {
+                                addToCart(product);
+                                $('#barcode-input').val('');
+                            } else {
+                                showFormErrors([`Product with code "${barcode}" not found`]);
+                            }
+                        })
+                        .fail(function() {
+                            showFormErrors(['Error searching for product. Please try again.']);
+                        })
+                        .always(function() {
+                            $('#barcode-input').prop('disabled', false).focus();
+                        });
+                }, 500); // 500ms delay after typing stops
+            }
+        });
+
+        // Keep Enter key functionality for immediate search
         $('#barcode-input').on('keypress', function(e) {
             if (e.which === 13) {
                 e.preventDefault();
+                clearTimeout(barcodeSearchTimeout); // Cancel debounced search
+
                 const barcode = $(this).val().trim();
 
                 if (barcode) {

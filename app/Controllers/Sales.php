@@ -666,7 +666,7 @@ class Sales extends \CodeIgniter\Controller
                 return redirect()->back()->withInput()->with('error', 'Failed to update sale. Please try again.');
             }
 
-            return redirect()->to(site_url('sales'))->with('success', 'Sale updated successfully.');
+            return redirect()->to(site_url("/receipts/generate/{$saleId}"))->with('success', 'Sale updated successfully.');
         }
 
         $employees = $this->employeeModel->forStore()->findAll();

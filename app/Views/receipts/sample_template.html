@@ -1,106 +1,312 @@
-<!-- Sample Receipt Template -->
-<!-- This is a basic 80mm thermal receipt template -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
 <style>
-    body {
-        font-family: 'Courier New', monospace;
-        width: 300px;
-        margin: 0 auto;
-        padding: 10px;
+    /* Common styles for both screen and print */
+    #invoice-POS {
+        font-family: Arial, sans-serif;
+        background-color: white;
+        color: black;
     }
-    .center {
-        text-align: center;
-    }
-    .bold {
-        font-weight: bold;
-    }
-    .line {
-        border-bottom: 1px dashed #000;
-        margin: 10px 0;
-    }
-    table {
+
+    #invoice-POS table {
         width: 100%;
         border-collapse: collapse;
+        padding: 0;
+        margin: 0;
     }
-    th, td {
-        text-align: left;
-        padding: 2px;
+
+    #invoice-POS th {
+        font-size: 10px;
+        padding: 1px 2px;
+        margin: 0;
+        border: 1px solid #000;
+        color: black;
     }
-    th {
+
+    #invoice-POS td {
+        font-size: 10px;
+        padding: 2px 2px;
+        margin: 0;
+        color: black;
+    }
+
+    /* Borders only for items table tbody */
+    #invoice-POS table[style*="border: 1px solid #000"] tbody td {
+        border-right: 1px solid #000;
         border-bottom: 1px solid #000;
     }
-    .right {
-        text-align: right;
+
+    #invoice-POS table[style*="border: 1px solid #000"] tbody td:last-child {
+        border-right: none;
     }
-    .totals {
-        margin-top: 10px;
-        border-top: 2px solid #000;
-        padding-top: 5px;
+
+    #invoice-POS .r-header {
+        text-align: center;
+        margin-bottom: 5px;
+        background-color: white;
+        color: black;
+    }
+
+    #invoice-POS .company-name {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 2px 0;
+        color: black;
+    }
+
+    #invoice-POS .company-info {
+        font-size: 9px;
+        margin: 1px 0;
+        color: black;
+    }
+
+    #invoice-POS .invoice-title {
+        font-size: 12px;
+        font-weight: bold;
+        margin: 5px 0;
+        text-transform: uppercase;
+        color: black;
+        text-align: center;
+    }
+
+    #invoice-POS .info-section {
+        font-size: 9px;
+        margin: 3px 0;
+        /* border-bottom: 1px dashed #000; */
+        padding-bottom: 3px;
+    }
+
+    #invoice-POS .total-section {
+        /* border-top: 1px dashed #000; */
+        margin-top: 3px;
+        padding-top: 3px;
+    }
+
+    #invoice-POS .grand-total {
+        font-size: 12px;
+        font-weight: bold;
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+        padding: 2px 0;
+    }
+
+    #invoice-POS .qr-code {
+        text-align: center;
+        margin: 5px 0;
+    }
+
+    #invoice-POS .qr-code img {
+        width: 100px;
+        height: 100px;
+    }
+
+    #invoice-POS .r-footer {
+        text-align: center;
+        font-size: 9px;
+        margin-top: 5px;
+        color: black;
+    }
+
+    /* Screen-specific styles */
+    @media screen {
+        #invoice-POS {
+            width: 80mm;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .hidden-print {
+            display: block;
+        }
+    }
+
+    /* Print-specific styles */
+    @media print {
+        @page { margin: 0; }
+       body { margin: 0.5cm; }
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: Arial, sans-serif;
+            background-color: white !important;
+        }
+
+        /* Hide template elements only (keep page-content-wrapper visible) */
+        .hidden-print,
+        .footer,
+        .page-header,
+        .page-sidebar-wrapper,
+        .navbar,
+        nav,
+        .breadcrumb,
+        button {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Make sure invoice section is visible */
+        #invoice-POS {
+            display: block !important;
+            visibility: visible !important;
+            width: 58mm !important;
+            max-width: 58mm !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            font-size: 10px !important;
+            background-color: white !important;
+            color: black !important;
+            position: relative !important;
+        }
+
+        /* Force company header to show */
+        #invoice-POS>.r-header {
+            display: block !important;
+            visibility: visible !important;
+            text-align: center !important;
+            margin-bottom: 5px !important;
+            page-break-inside: avoid !important;
+        }
+
+        #invoice-POS .company-name {
+            display: block !important;
+            visibility: visible !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            margin: 2px 0 !important;
+            color: black !important;
+        }
+
+        #invoice-POS .company-info {
+            display: block !important;
+            visibility: visible !important;
+            font-size: 9px !important;
+            margin: 1px 0 !important;
+            color: black !important;
+        }
+
+        /* Ensure all invoice content is visible */
+        #invoice-POS * {
+            visibility: visible !important;
+        }
+table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+.right { text-align: right; }
+ th, td {
+            padding: 2px 0;
+            text-align: left;
+        }
     }
 </style>
+</head>
+<body>
+<section id="invoice-POS">
 
-<div class="center">
-    <h2 class="bold">{{store_name}}</h2>
-    <p>{{store_address}}</p>
-    <p>Tel: {{store_phone}}</p>
-</div>
+    <!-- Company Header - Always Show -->
+    <div class="r-header">
+        <div class="company-name">{{store_name}}</div>
+        <div class="company-info">{{store_address}}</div>
+        <div class="company-info">Tel: {{store_phone}}</div>
+    </div> 
+        <!-- Invoice Title -->
+        <div class="invoice-title">
+            {{payment_type}} SALE INVOICE
+        </div>
 
-<div class="line"></div>
+        <!-- Invoice Information -->
+        <div class="info-section">
+            <table style="width:100%; font-size:9px;">
+                <tr>
+                    <td>Inv #: {{receipt_number}}</td>
+                    
+                </tr>
+ <tr>
+                    <td>Date: {{date}}</td>
+                </tr>
+                <tr>
+                    <td >Customer: {{customer}}</td>
+                </tr>
+                <tr>
+                    <td>User: {{cashier}}</td>
+                    
+                </tr>
+            </table>
+        </div>
 
-<div>
-    <p><strong>Receipt #:</strong> {{receipt_number}}</p>
-    <p><strong>Date:</strong> {{date}}</p>
-    <p><strong>Cashier:</strong> {{cashier}}</p>
-    {{customer}}
-</div>
+        <!-- Items Table -->
+        <table style="width:100%; margin-top:3px;border: 1px solid #000;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; width:50%;">Item</th>
+                    <th style="text-align:center; width:10%;">Qty</th>
+                    <th style="text-align:right; width:20%;">Price</th>
+                    <th style="text-align:right; width:20%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{items}}
+            </tbody>
+        </table>
 
-<div class="line"></div>
+        <!-- Totals Section -->
+        <div class="total-section">
+            <table style="width:100%; font-size:10px;">
+                <tr>
+                    <td style="text-align:left;">Items: {{ItemsCount}}</td>
+                    <td style="text-align:right;">Sub Total:</td>
+                    <td style="text-align:right; width:30%;">{{currency}}{{subtotal}}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="text-align:right;">Discount:</td>
+                    <td style="text-align:right;">-{{currency}}{{total_discount}}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="text-align:right;">Tax:</td>
+                    <td style="text-align:right;">{{currency}}{{tax}}</td>
+                </tr>
+                <tr class="grand-total">
+                    <td></td>
+                    <td style="text-align:right;"><strong>TOTAL:</strong></td>
+                    <td style="text-align:right;"><strong>{{currency}}{{total}}</strong></td>
+                </tr>
+                    <tr>
+                        <td></td>
+                        <td style="text-align:right;">Tendered:</td>
+                        <td style="text-align:right;">{{currency}}{{paid}}</td>
+                    </tr>
+                    <tr style="font-weight:bold;">
+                        <td></td>
+                        <td style="text-align:right;">Change:</td>
+                        <td style="text-align:right;">{{currency}}{{change}}</td>
+                    </tr>
+                
+            </table>
+        </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Item</th>
-            <th class="right">Qty</th>
-            <th class="right">Price</th>
-            <th class="right">Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{items}}
-    </tbody>
-</table>
+       
 
-<div class="totals">
-    <table>
-        <tr>
-            <td><strong>Subtotal:</strong></td>
-            <td class="right">{{subtotal}}</td>
-        </tr>
-        <tr>
-            <td><strong>Discount:</strong></td>
-            <td class="right">-{{total_discount}}</td>
-        </tr>
-        <tr>
-            <td><strong>Tax:</strong></td>
-            <td class="right">{{tax}}</td>
-        </tr>
-        <tr style="border-top: 2px solid #000;">
-            <td><strong>TOTAL:</strong></td>
-            <td class="right"><strong>{{total}}</strong></td>
-        </tr>
-        <tr>
-            <td>Paid:</td>
-            <td class="right">{{paid}}</td>
-        </tr>
-        <tr>
-            <td>Change:</td>
-            <td class="right">{{change}}</td>
-        </tr>
-    </table>
-</div>
+        <!-- Footer -->
+        <div class="r-footer">
+            <div>{{store_footer}}</div>
+            <div style="margin-top: 5px;">Thank you for your business!</div>
+            <div style="margin-top: 5px;">Developed by: <i>khybersoft.com</i></div>
+            <div style="margin-top: 10px;">***</div>
+        </div>
 
-<div class="line"></div>
-
-<div class="center">
-    <p>{{store_footer}}</p>
-    <p>Thank you for your business!</p>
-</div>
+    </section>
+</body>
+</html>
