@@ -184,7 +184,7 @@
 
                             <div>
                                 <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F3</kbd></label>
-                                <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                     <option value="">Select Supplier</option>
                                     <?php foreach ($suppliers as $supplier): ?>
                                         <option value="<?= $supplier['id'] ?>"><?= $supplier['name'] ?></option>
@@ -275,6 +275,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                                     </tr>
@@ -595,9 +596,8 @@
             const existingItem = purchaseItems.find(item => item.product_id == product.id);
 
             if (existingItem) {
-                // Update quantity if product already exists
-                // If item uses cartons, increment by one full carton worth of pieces
-                existingItem.quantity += (existingItem.carton_size && existingItem.carton_size > 1) ? existingItem.carton_size : 1;
+                // Update quantity if product already exists - increment by 1 piece
+                existingItem.quantity += 1;
                 updateItemRow(existingItem);
             } else {
                 // Add new item
@@ -605,8 +605,8 @@
                     product_id: product.id,
                     name: product.name,
                     code: product.code || '',
-                    // Default to one carton worth of pieces if carton_size > 1, else 1 piece
-                    quantity: (parseFloat(product.carton_size) && parseFloat(product.carton_size) > 1) ? parseFloat(product.carton_size) : 1,
+                    // Default to 1 piece regardless of carton_size
+                    quantity: 1,
                     cost_price: parseFloat(product.cost_price || 0),
                     unit_price: parseFloat(product.price || 0),
                     discount: 0,
@@ -655,11 +655,11 @@
                 <td class="px-2 py-4">
                     <div class="space-y-1">
                         <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
-                            value="${hasCartons ? (item.quantity / cartonSize).toFixed(2) : item.quantity}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
+                            value="${item.quantity.toFixed(2)}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
                         ${hasCartons ? `
                         <select class="item-unit-selector w-full text-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
-                            <option value="pieces">Pieces</option>
-                            <option value="cartons" selected>Cartons (${cartonSize} pcs)</option>
+                            <option value="pieces" selected>Pieces</option>
+                            <option value="cartons">Cartons (${cartonSize} pcs)</option>
                         </select>
                         ` : '<div class="text-xs text-gray-500">pieces</div>'}
                     </div>
@@ -667,8 +667,10 @@
                 <td class="px-2 py-4">
                     <input type="number" class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                         value="${item.cost_price}" min="0" step="0.01">
-
-                    <input type="hidden" name="items[${item.product_id}][unit_price]" class="item-unit-price" value="${item.unit_price}">    
+                </td>
+                <td class="px-2 py-4">
+                    <input type="number" class="item-unit-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                        value="${item.unit_price}" min="0" step="0.01">
                 </td>
               
                 <td class="px-2 py-4 font-medium">
@@ -692,6 +694,10 @@
                 updateItemFromRow($row, item);
             });
 
+            $row.find('.item-unit-price').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
             // Unit selector change handler
             $row.find('.item-unit-selector').on('change', function() {
                 const newUnit = $(this).val();
@@ -701,18 +707,11 @@
                 // Current quantity is always stored in pieces in the item object
                 const qtyInPieces = item.quantity;
 
-                // Update display based on selected unit
+                // Update display based on selected unit (do not auto-switch user's choice)
                 if (newUnit === 'cartons' && cartonSize > 1) {
                     $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
                 } else {
                     $qtyInput.val(qtyInPieces.toFixed(2));
-                }
-
-                // Auto-toggle back to cartons if exact multiple and selector changed to pieces
-                if (cartonSize > 1 && newUnit === 'pieces' && Number.isInteger(qtyInPieces / cartonSize)) {
-                    // Switch selector back to cartons for clarity
-                    $(this).val('cartons');
-                    $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
                 }
             });
 
@@ -748,7 +747,11 @@
                         $qtyInput.val(item.quantity.toFixed(2));
                     }
                 }
-                $row.find('.item-unit-price').val(item.unit_price.toFixed(2));
+
+                if (!$row.find('.item-unit-price').is(activeElement)) {
+                    $row.find('.item-unit-price').val(item.unit_price.toFixed(2));
+                }
+
                 if (!$row.find('.item-cost-price').is(activeElement)) {
                     $row.find('.item-cost-price').val(item.cost_price.toFixed(2));
                 }
@@ -774,21 +777,7 @@
             }
 
             item.quantity = inputQty;
-            // Adjust selector automatically: if quantity is exact multiple of carton size and cartonSize>1
-            if (cartonSize > 1) {
-                const $unitSelectorFinal = $row.find('.item-unit-selector');
-                if (inputQty < cartonSize) {
-                    if ($unitSelectorFinal.val() !== 'pieces') {
-                        $unitSelectorFinal.val('pieces');
-                        $qtyInput.val(inputQty.toFixed(2));
-                    }
-                } else if (Number.isInteger(inputQty / cartonSize)) {
-                    if ($unitSelectorFinal.val() !== 'cartons') {
-                        $unitSelectorFinal.val('cartons');
-                        $qtyInput.val((inputQty / cartonSize).toFixed(2));
-                    }
-                }
-            }
+            // Do not auto-toggle the unit selector; respect user's selection
             item.unit_price = parseFloat($row.find('.item-unit-price').val()) || 0;
             item.cost_price = parseFloat($row.find('.item-cost-price').val()) || 0;
             item.discount = parseFloat($row.find('.item-discount').val()) || 0;
@@ -1059,10 +1048,15 @@
                 return false;
             }
             // F9 or Ctrl+S - Submit purchase form
-            else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
+            else if (e.key === 'F9' || (e.ctrlKey && e.key === 's') || (e.ctrlKey && e.key === 'S')) {
                 e.preventDefault();
                 if (purchaseItems.length === 0) {
                     alert('Please add at least one item to the purchase');
+                    return false;
+                }
+                if ($('#supplier_id').val() === '0' || $('#supplier_id').val() === '') {
+                    alert('Please select a supplier for this purchase');
+                    $('#supplier_id').select2('open');
                     return false;
                 }
 

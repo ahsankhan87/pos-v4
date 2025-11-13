@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ReceiptTemplateModel;
+use App\Libraries\WhatsAppService;
 
 class Receipts extends BaseController
 {
@@ -63,7 +64,8 @@ class Receipts extends BaseController
             '{{change}}' => number_format($sale['change_amount'], 2),
             '{{ItemsCount}}' => count($sale['items']) ?? 0,
             '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
-            '{{currency}}' => session()->get('currency_symbol') ?? '$'
+            '{{currency}}' => session()->get('currency_symbol') ?? '$',
+            '{{employee}}' => $sale['employee_name'] ?? ''
         ];
 
         // Generate receipt HTML
@@ -84,6 +86,109 @@ class Receipts extends BaseController
             'receiptHtml' => $receiptHtml,
             'sale' => $sale
         ]);
+    }
+
+    /**
+     * Generate receipt PDF, save it to a public path, and send via WhatsApp.
+     * Returns JSON with success/error.
+     */
+    public function sendWhatsApp($saleId)
+    {
+        // Load sale and receipt HTML just like generate()
+        $sale = $this->M_sales->getSaleData($saleId);
+        if (!$sale) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Sale not found'])->setStatusCode(404);
+        }
+
+        $template = $this->templateModel->getDefaultTemplate();
+        if (!$template) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Receipt template not found'])->setStatusCode(500);
+        }
+
+        $loggedInStore = $this->M_stores->find(session()->get('store_id'));
+
+        $discountAmount = (float) ($sale['total_discount'] ?? 0);
+        $discountType = $sale['discount_type'] ?? 'fixed';
+        $totalTax = (float) ($sale['total_tax'] ?? 0);
+        $grandTotal = (float) ($sale['total'] ?? 0);
+        $subtotal = max(0, $grandTotal + $discountAmount - $totalTax);
+        $discountPercent = ($subtotal > 0 && $discountAmount > 0)
+            ? round(($discountAmount / $subtotal) * 100, 2)
+            : 0;
+
+        $replacements = [
+            '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
+            '{{store_address}}' => $loggedInStore['address'] ?? '123 Main St, City',
+            '{{store_phone}}' => $loggedInStore['phone'] ?? '555-1234',
+            '{{store_footer}}' => 'Returns accepted within 7 days with receipt',
+            '{{receipt_number}}' => $sale['invoice_no'],
+            '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
+            '{{cashier}}' => $sale['cashier_name'],
+            '{{customer}}' => $sale['customer_id'] ? $sale['customer_name'] : '',
+            '{{items}}' => $this->buildItemsHtml($sale['items']),
+            '{{subtotal}}' => number_format($subtotal, 2),
+            '{{total_discount}}' => number_format($discountAmount, 2),
+            '{{discount_percent}}' => number_format($discountPercent, 2),
+            '{{discount_type}}' => $discountType,
+            '{{tax}}' => number_format($totalTax, 2),
+            '{{total}}' => number_format($grandTotal, 2),
+            '{{paid}}' => number_format($sale['amount_tendered'], 2),
+            '{{change}}' => number_format($sale['change_amount'], 2),
+            '{{ItemsCount}}' => count($sale['items']) ?? 0,
+            '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
+            '{{currency}}' => session()->get('currency_symbol') ?? '$',
+            '{{employee}}' => $sale['employee_name'] ?? ''
+        ];
+
+        $receiptHtml = str_replace(
+            array_keys($replacements),
+            array_values($replacements),
+            $template['template']
+        );
+
+        // Ensure output directory exists: public/uploads/receipts
+        $saveDir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'receipts';
+        if (!is_dir($saveDir)) {
+            @mkdir($saveDir, 0777, true);
+        }
+
+        // Sanitize filename using invoice_no
+        $invoice = preg_replace('/[^A-Za-z0-9\-_]/', '_', (string)($sale['invoice_no'] ?? ('S' . $saleId)));
+        $filename = $invoice . '.pdf';
+        $savePath = $saveDir . DIRECTORY_SEPARATOR . $filename;
+
+        // Generate PDF to file
+        $ok = $this->generatePdfToFile($receiptHtml, $savePath);
+        if (!$ok) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Failed to generate PDF'])->setStatusCode(500);
+        }
+
+        // Build public URL
+        $publicUrl = base_url('uploads/receipts/' . $filename);
+
+        // Determine recipient phone
+        $to = $this->request->getGet('to');
+        if (!$to && !empty($sale['customer_id'])) {
+            // Try find customer's phone
+            $custModel = new \App\Models\M_customers();
+            $cust = $custModel->find($sale['customer_id']);
+            if ($cust && !empty($cust['phone'])) {
+                $to = $cust['phone'];
+            }
+        }
+        if (!$to) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Destination phone not provided and no customer phone found'])->setStatusCode(400);
+        }
+
+        // Send via WhatsApp
+        $wa = new WhatsAppService();
+        if (!$wa->isEnabled()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'WhatsApp not configured'])->setStatusCode(500);
+        }
+        $caption = 'Invoice ' . ($sale['invoice_no'] ?? '') . ' • Total ' . (session()->get('currency_symbol') ?? '$') . number_format((float)($sale['total'] ?? 0), 2);
+        $result = $wa->sendDocumentByUrl($to, $publicUrl, $filename, $caption);
+
+        return $this->response->setJSON($result);
     }
 
     protected function buildItemsHtml($items)
@@ -154,6 +259,42 @@ class Receipts extends BaseController
         $pdf->writeHTML($style . $html, true, false, true, false, '');
 
         return $pdf->Output('receipt.pdf', 'I');
+    }
+
+    /**
+     * Generate and save the receipt PDF to a file path.
+     * Returns true on success.
+     */
+    protected function generatePdfToFile($html, $filePath)
+    {
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
+
+        $pdf = new \TCPDF('P', 'mm', [80, 200], true, 'UTF-8', false);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetMargins(4, 4, 4);
+        $pdf->SetAutoPageBreak(true, 6);
+        $pdf->setImageScale(1.25);
+        $pdf->SetFont('dejavusans', '', 9, '', true);
+
+        $style = '<style>
+            html,body{font-family: DejaVu Sans, Arial, Helvetica, sans-serif; font-size: 10px;}
+            table{width:100%; border-collapse: collapse;}
+            td,th{padding:2px 1px; border-bottom: 0.1mm solid #eee;}
+            .text-right{text-align:right}
+            .text-center{text-align:center}
+        </style>';
+
+        $pdf->AddPage();
+        $pdf->writeHTML($style . $html, true, false, true, false, '');
+
+        try {
+            $pdf->Output($filePath, 'F');
+            return file_exists($filePath);
+        } catch (\Throwable $e) {
+            log_message('error', 'PDF save failed: ' . $e->getMessage());
+            return false;
+        }
     }
 
     // List all templates

@@ -27,6 +27,22 @@
 
     <!-- Purchase List -->
     <div class="table-card">
+
+        <!-- Table Header: Payment Status Filter Tabs + Outstanding Summary -->
+        <div class="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="flex items-center gap-2 border-b border-gray-200" role="tablist" aria-label="Payment Status">
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 is-active" data-status="" role="tab" aria-selected="true">All</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="paid" role="tab" aria-selected="false">Paid</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="partial" role="tab" aria-selected="false">Partial</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="pending" role="tab" aria-selected="false">Due</button>
+            </div>
+            <?php if (isset($outstandingDue)): ?>
+                <span class="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded font-semibold whitespace-nowrap">
+                    Total Outstanding (Due): <?= (session()->get('currency_symbol') ?? '$') . number_format($outstandingDue ?? 0, 2) ?>
+                </span>
+            <?php endif; ?>
+        </div>
+
         <div class="overflow-x-auto">
             <table id="purchaseTable" class="data-table">
                 <thead>
@@ -44,14 +60,6 @@
             </table>
         </div>
     </div>
-
-    <?php if (isset($outstandingDue)): ?>
-        <div class="mt-4">
-            <span class="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded font-semibold">
-                Outstanding Balance: <?= (session()->get('currency_symbol') ?? '$') . number_format($outstandingDue ?? 0, 2) ?>
-            </span>
-        </div>
-    <?php endif; ?>
 </div>
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
@@ -81,13 +89,24 @@
             delete: <?= json_encode(site_url('purchases/delete')) ?>
         };
 
+        // Payment status filter
+        const allowedStatuses = ['paid', 'partial', 'pending', ''];
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentStatus = (function() {
+            const s = (urlParams.get('status') || '').toLowerCase();
+            return allowedStatuses.includes(s) ? s : '';
+        })();
+
         const table = $('#purchaseTable').DataTable({
             processing: true,
             serverSide: true,
             deferRender: true,
             ajax: {
                 url: routes.datatable,
-                type: 'GET'
+                type: 'GET',
+                data: function(d) {
+                    d.status = currentStatus || '';
+                }
             },
             dom: 'Bfrtip',
             buttons: [{
@@ -378,6 +397,32 @@
             if (!confirm('Are you sure you want to delete this purchase?')) {
                 e.preventDefault();
             }
+        });
+
+        // Payment Status Filter Handlers
+        // Set initial active state from querystring
+        $('.filter-btn').removeClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'false');
+        if (currentStatus) {
+            $(`.filter-btn[data-status="${currentStatus}"]`).addClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'true');
+        } else {
+            $(`.filter-btn[data-status=""]`).addClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'true');
+        }
+
+        $('.filter-btn').on('click', function() {
+            const status = $(this).data('status');
+            $('.filter-btn').removeClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'false');
+            $(this).addClass('is-active border-indigo-600 text-indigo-700').attr('aria-selected', 'true');
+            currentStatus = status || '';
+            // Update URL without reloading the page
+            const params = new URLSearchParams(window.location.search);
+            if (currentStatus) {
+                params.set('status', currentStatus);
+            } else {
+                params.delete('status');
+            }
+            const newUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+            history.replaceState(null, '', newUrl);
+            table.ajax.reload(null, true);
         });
     });
 </script>

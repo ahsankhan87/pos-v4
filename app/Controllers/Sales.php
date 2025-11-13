@@ -143,7 +143,7 @@ class Sales extends \CodeIgniter\Controller
             $errors[] = 'Cart is empty.';
         } else {
             foreach ($items as $item) {
-                if (!isset($item['id']) || !isset($item['price']) || !isset($item['quantity']) || $item['quantity'] < 1) {
+                if (!isset($item['id']) || !isset($item['price']) || !isset($item['quantity']) || $item['quantity'] < 0.01) {
                     $errors[] = 'Invalid product in cart.';
                     break;
                 }
@@ -695,17 +695,19 @@ class Sales extends \CodeIgniter\Controller
         $db = $salesModel->db;
         $db->transStart();
 
-        // Get sale details
+        // Get sale details BEFORE any deletion
         $sale = $salesModel->find($saleId);
         if (!$sale) {
             $db->transRollback();
             return redirect()->to(site_url('sales'))->with('error', 'Sale not found.');
         }
 
-        // Delete sale items and restore stock
+        // Get sale items BEFORE deletion to restore stock
         $items = $saleItemsModel->where('sale_id', $saleId)->findAll();
+
+        // Restore stock and log inventory changes
+        $productModel = new M_products();
         foreach ($items as $item) {
-            $productModel = new M_products();
             if (!$productModel->adjustStock($item['product_id'], $item['quantity'], 'in')) {
                 $db->transRollback();
                 return redirect()->to(site_url('sales'))->with('error', 'Failed to restore stock for product ID: ' . $item['product_id']);
@@ -717,9 +719,9 @@ class Sales extends \CodeIgniter\Controller
                 $item['quantity'],
                 'in',
                 session('store_id') ?? '',
-                "Sale #{$saleId} deleted - Restoring stock. Invoice No: " . ($sale['invoice_no'] ?? '') . ". Total: " . ($sale['total'] ?? 0),
-                0,
-                0,
+                "Sale #{$saleId} deleted - Restoring stock. Invoice No: " . ($sale['invoice_no'] ?? ''),
+                $item['cost_price'] ?? 0,
+                $item['price'] ?? 0,
                 $sale['invoice_no'] ?? '',
                 date('Y-m-d H:i:s')
             )) {
@@ -745,17 +747,14 @@ class Sales extends \CodeIgniter\Controller
             $dbError = $db->error();
             $modelErrors = $salesModel->errors();
             $db->transRollback();
-            $errMsg = 'Failed to create sale. ';
+            $errMsg = 'Failed to delete sale. ';
             if (!empty($modelErrors)) {
                 $errMsg .= 'Validation: ' . json_encode($modelErrors) . ' ';
             }
             if (!empty($dbError) && ($dbError['code'] ?? 0)) {
                 $errMsg .= 'DB: [' . ($dbError['code'] ?? '') . '] ' . ($dbError['message'] ?? '');
             }
-            return redirect()->back()->withInput()->with('error', trim($errMsg));
-
-            //$db->transRollback();
-            // return redirect()->to(site_url('sales'))->with('error', 'Failed to delete sale.');
+            return redirect()->to(site_url('sales'))->with('error', trim($errMsg));
         }
 
         // Commit transaction
@@ -1828,7 +1827,7 @@ class Sales extends \CodeIgniter\Controller
             $errors[] = 'Cart is empty.';
         } else {
             foreach ($items as $item) {
-                if (!isset($item['id']) || !isset($item['price']) || !isset($item['quantity']) || $item['quantity'] < 1) {
+                if (!isset($item['id']) || !isset($item['price']) || !isset($item['quantity']) || $item['quantity'] < 0.01) {
                     $errors[] = 'Invalid product in cart.';
                     break;
                 }

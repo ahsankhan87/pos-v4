@@ -56,6 +56,7 @@
             <a href="<?= site_url('sales') ?>" accesskey="l" title="Sales List (Alt+Shift+L)" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i>Sales</a>
             <!-- <a href="<?= site_url('receipts/generate/' . ($sale['id'] ?? 0) . '?output=pdf') ?>" target="_blank" accesskey="d" title="Open PDF (Alt+Shift+D)" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf mr-1"></i>PDF</a> -->
             <button type="button" accesskey="p" title="Print Receipt (Ctrl+P)" onclick="printReceiptOnly()" class="btn btn-primary btn-sm"><i class="fas fa-print mr-1"></i>Print</button>
+            <button type="button" title="Send to WhatsApp" onclick="sendReceiptWhatsApp()" class="btn btn-success btn-sm bg-green-600 hover:bg-green-700 text-white"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</button>
         </div>
     </div>
 
@@ -256,6 +257,29 @@
         }
     });
     // Hint banner is always visible; no persistence needed
+
+    async function sendReceiptWhatsApp() {
+        try {
+            const defaultPhone = <?= json_encode($sale['customer_phone'] ?? '') ?>;
+            const input = prompt('Enter WhatsApp number (E.164 or local):', defaultPhone || '');
+            if (!input) return;
+            const url = '<?= site_url('receipts/send-whatsapp/' . ($sale['id'] ?? 0)) ?>' + '?to=' + encodeURIComponent(input);
+            const res = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                alert('Sent to WhatsApp successfully.');
+            } else {
+                alert('WhatsApp send failed: ' + (data && (data.error || data.status) ? (data.error || ('HTTP ' + data.status)) : 'Unknown error'));
+            }
+        } catch (err) {
+            alert('WhatsApp send error: ' + (err && err.message ? err.message : err));
+        }
+    }
 </script>
 
 <?= $this->endSection() ?>

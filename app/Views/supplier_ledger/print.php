@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Customer Ledger') ?></title>
+    <title><?= esc($title) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,15 +29,15 @@
             font-size: 10px;
         }
 
-        .customer-info {
+        .supplier-info {
             margin-bottom: 10px;
         }
 
-        .customer-info table {
+        .supplier-info table {
             width: 100%;
         }
 
-        .customer-info td {
+        .supplier-info td {
             padding: 2px;
             font-size: 10px;
         }
@@ -111,7 +111,7 @@
                 padding-bottom: 3px;
             }
 
-            .customer-info {
+            .supplier-info {
                 margin-bottom: 8px;
             }
 
@@ -124,22 +124,22 @@
 
 <body>
     <div class="header">
-        <h2>CUSTOMER LEDGER</h2>
+        <h2>SUPPLIER LEDGER</h2>
         <p style="margin: 5px 0;">Period: <?= date('d M Y', strtotime($from)) ?> to <?= date('d M Y', strtotime($to)) ?></p>
     </div>
 
-    <div class="customer-info">
+    <div class="supplier-info">
         <table>
             <tr>
-                <td style="width: 50%;"><strong>Customer Name:</strong> <?= esc($customer['name']) ?></td>
-                <td style="width: 50%;"><strong>Phone:</strong> <?= esc($customer['phone']) ?></td>
+                <td style="width: 50%;"><strong>Supplier Name:</strong> <?= esc($supplier['name']) ?></td>
+                <td style="width: 50%;"><strong>Phone:</strong> <?= esc($supplier['phone']) ?></td>
             </tr>
             <tr>
-                <td><strong>Email:</strong> <?= esc($customer['email']) ?></td>
+                <td><strong>Email:</strong> <?= esc($supplier['email']) ?></td>
                 <td><strong>Date:</strong> <?= date('d M Y') ?></td>
             </tr>
             <tr>
-                <td colspan="2"><strong>Address:</strong> <?= esc($customer['address']) ?></td>
+                <td colspan="2"><strong>Address:</strong> <?= esc($supplier['address']) ?></td>
             </tr>
         </table>
     </div>
@@ -167,13 +167,13 @@
                 </tr>
             <?php endif; ?>
 
-            <?php if (!empty($ledger)): ?>
-                <?php foreach ($ledger as $transaction): ?>
+            <?php if (!empty($transactions)): ?>
+                <?php foreach ($transactions as $transaction): ?>
                     <tr>
                         <td><?= date('d M Y', strtotime($transaction['date'])) ?></td>
                         <td><?= esc($transaction['description']) ?></td>
                         <td class="text-center">
-                            <?= !empty($transaction['ref_no']) ? esc($transaction['ref_no']) : '-' ?>
+                            <?= $transaction['purchase_id'] ? 'PO-' . $transaction['purchase_id'] : '-' ?>
                         </td>
                         <td class="text-end">
                             <?= $transaction['debit'] > 0 ? number_to_currency($transaction['debit'], 'PKR', 'en_PK', 2) : '-' ?>
@@ -182,7 +182,7 @@
                             <?= $transaction['credit'] > 0 ? number_to_currency($transaction['credit'], 'PKR', 'en_PK', 2) : '-' ?>
                         </td>
                         <td class="text-end">
-                            <?= number_to_currency($transaction['balance'], 'PKR', 'en_PK', 2) ?>
+                            <?= number_to_currency($transaction['running_balance'], 'PKR', 'en_PK', 2) ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -192,7 +192,7 @@
                 </tr>
             <?php endif; ?>
         </tbody>
-        <?php if (!empty($ledger)): ?>
+        <?php if (!empty($transactions)): ?>
             <tfoot>
                 <tr class="total-row">
                     <td colspan="3" class="text-end"><strong>Total:</strong></td>
@@ -204,17 +204,17 @@
         <?php endif; ?>
     </table>
 
-    <?php if (!empty($ledger)): ?>
+    <?php if (!empty($transactions)): ?>
         <div class="summary">
             <h4 style="margin-top: 0;">Summary</h4>
             <p>Opening Balance: <strong><?= number_to_currency($openingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Total Sales (Debit): <strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p>Total Purchases (Debit): <strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></p>
             <p>Total Payments (Credit): <strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></p>
             <p>Closing Balance: <strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
             <?php if ($closingBalance > 0): ?>
-                <p style="color: green;"><em>Amount Receivable from Customer</em></p>
+                <p style="color: red;"><em>Amount Payable to Supplier</em></p>
             <?php elseif ($closingBalance < 0): ?>
-                <p style="color: red;"><em>Amount Payable to Customer</em></p>
+                <p style="color: green;"><em>Amount Receivable from Supplier</em></p>
             <?php else: ?>
                 <p style="color: blue;"><em>Account Settled</em></p>
             <?php endif; ?>

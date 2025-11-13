@@ -208,6 +208,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <a href="<?= site_url('suppliers') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-truck mr-2"></i> Suppliers List
                                             </a>
+                                            <a href="<?= site_url('supplier-ledger') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-book mr-2"></i> Supplier Ledger
+                                            </a>
 
                                         </div>
                                     </div>
@@ -420,6 +423,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 </a>
                                 <a href="<?= site_url('suppliers') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-truck mr-2"></i> Suppliers
+                                </a>
+                                <a href="<?= site_url('supplier-ledger') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-book mr-2"></i> Supplier Ledger
                                 </a>
                             </div>
                         </div>

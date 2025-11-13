@@ -63,6 +63,7 @@ class Purchases extends BaseController
         $length = $length > 0 ? min($length, 200) : 25;
 
         $search = $this->request->getVar('search')['value'] ?? '';
+        $statusFilter = $this->request->getVar('status') ?? '';
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
         $columns = [
@@ -74,20 +75,28 @@ class Purchases extends BaseController
             'p.status',
         ];
 
+        /** @var \CodeIgniter\Database\BaseConnection $db */
         $db = \Config\Database::connect();
         $storeId = session('store_id');
 
+        /** @var \CodeIgniter\Database\BaseBuilder $baseBuilder */
         $baseBuilder = $db->table('pos_purchases');
         if ($storeId !== null) {
             $baseBuilder->where('store_id', $storeId);
         }
         $totalRecords = (clone $baseBuilder)->countAllResults();
 
+        /** @var \CodeIgniter\Database\BaseBuilder $filteredBuilder */
         $filteredBuilder = $db->table('pos_purchases p')
             ->join('pos_suppliers s', 's.id = p.supplier_id', 'left');
 
         if ($storeId !== null) {
             $filteredBuilder->where('p.store_id', $storeId);
+        }
+
+        // Apply payment status filter
+        if (!empty($statusFilter) && in_array($statusFilter, ['paid', 'partial', 'pending'])) {
+            $filteredBuilder->where('p.payment_status', $statusFilter);
         }
 
         if ($search !== '') {
@@ -209,6 +218,11 @@ class Purchases extends BaseController
         }
     }
 
+    /**
+     * Calculate purchase totals from items array
+     * @param array<int, array<string, mixed>> $items
+     * @return array<string, float>
+     */
     protected function calculateTotals(array $items)
     {
         $total = 0;
@@ -257,6 +271,10 @@ class Purchases extends BaseController
         ];
     }
 
+    /**
+     * View purchase details
+     * @param int|string $id Purchase ID from route parameter
+     */
     public function view($id)
     {
         $purchase = $this->purchaseModel->getPurchaseWithDetails($id);
@@ -277,8 +295,9 @@ class Purchases extends BaseController
     public function edit($id)
     {
         $purchase = $this->purchaseModel->getPurchaseWithDetails($id);
+        $settingModel = new \App\Models\SettingsModel();
 
-        if (!$purchase || $purchase['status'] !== 'pending') {
+        if (!$purchase) {
             return redirect()->to('/purchases')->with('error', 'Purchase cannot be edited');
         }
 
@@ -290,7 +309,7 @@ class Purchases extends BaseController
             'suppliers' => $this->supplierModel->findAll(),
             'products' => $this->productModel->select('id, name, code, cost_price, price, quantity')->findAll(),
             'stores' => $this->storeModel->findAll(),
-            'taxes' => [], //$this->taxModel->findAll()
+            'taxRate' => $settingModel->first()['tax_rate'] ?? 0,
         ];
 
         return view('purchases/edit', $data);
@@ -300,7 +319,7 @@ class Purchases extends BaseController
     {
         $purchase = $this->purchaseModel->find($id);
 
-        if (!$purchase || $purchase['status'] !== 'pending') {
+        if (!$purchase) {
             return redirect()->to('/purchases')->with('error', 'Purchase cannot be edited');
         }
 
@@ -316,8 +335,8 @@ class Purchases extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Get items from form (they're submitted as array, not JSON)
-        $items = $this->request->getPost('items');
+        // Get items from form (they're submitted as JSON string)
+        $items = json_decode($this->request->getPost('items'), true);
 
         if (empty($items) || !is_array($items)) {
             return redirect()->back()->withInput()->with('error', 'No items provided');
@@ -335,17 +354,27 @@ class Purchases extends BaseController
 
             $quantity = (float)$item['quantity'];
             $costPrice = (float)$item['cost_price'];
+            $unitPrice = (float)($item['unit_price'] ?? 0);
             $discount = (float)($item['discount'] ?? 0);
+            $discountType = $item['discount_type'] ?? 'fixed';
+            $taxRate = (float)($item['tax_rate'] ?? 0);
 
-            $itemSubtotal = ($quantity * $costPrice) - $discount;
-            $itemTax = $itemSubtotal * 0.1; // 10% tax rate
+            // Calculate item totals
+            $itemBeforeDiscount = $quantity * $costPrice;
+            $discountAmount = $discountType === 'percentage' ? ($itemBeforeDiscount * $discount / 100) : $discount;
+            $itemAfterDiscount = $itemBeforeDiscount - $discountAmount;
+            $itemTax = $itemAfterDiscount * ($taxRate / 100);
+            $itemSubtotal = $itemAfterDiscount + $itemTax;
 
             $processedItems[] = [
                 'id' => $item['id'] ?? null,
                 'product_id' => $item['product_id'],
                 'quantity' => $quantity,
                 'cost_price' => $costPrice,
+                'unit_price' => $unitPrice,
                 'discount' => $discount,
+                'discount_type' => $discountType,
+                'tax_rate' => $taxRate,
                 'tax_amount' => $itemTax,
                 'subtotal' => $itemSubtotal
             ];
@@ -358,6 +387,7 @@ class Purchases extends BaseController
         $discount = (float)($this->request->getPost('discount') ?? 0);
         $discountType = $this->request->getPost('discount_type') ?? 'fixed';
         $shippingCost = (float)($this->request->getPost('shipping_cost') ?? 0);
+        $taxRate = (float)($this->request->getPost('tax_rate') ?? 0);
 
         $discountAmount = $discountType === 'percentage' ? ($subtotal * $discount / 100) : $discount;
         $grandTotal = $subtotal - $discountAmount + $totalTax + $shippingCost;
@@ -369,6 +399,7 @@ class Purchases extends BaseController
             'total_amount' => $subtotal,
             'discount' => $discount,
             'discount_type' => $discountType,
+            'tax_rate' => $taxRate,
             'tax_amount' => $totalTax,
             'shipping_cost' => $shippingCost,
             'grand_total' => $grandTotal,
@@ -380,6 +411,10 @@ class Purchases extends BaseController
         ];
 
         if ($this->purchaseModel->updatePurchase($id, $data, $processedItems)) {
+
+            //audit log
+            logAction('purchase_updated', 'Updated purchase with ID: ' . $id . ', Invoice No: ' . $purchase['invoice_no'], ' Supplier ID', $data['supplier_id'], ' Data', json_encode($data));
+
             return redirect()->to("/purchases/view/$id")->with('message', 'Purchase updated successfully');
         } else {
             return redirect()->back()->withInput()->with('error', 'Failed to update purchase');
@@ -391,7 +426,7 @@ class Purchases extends BaseController
         $purchaseId = $this->request->getPost('id');
         $purchase = $this->purchaseModel->find($purchaseId);
 
-        if (!$purchase || $purchase['status'] !== 'pending') {
+        if (!$purchase) {
             return redirect()->to('/purchases')->with('error', 'Purchase cannot be deleted');
         }
 
@@ -612,6 +647,7 @@ class Purchases extends BaseController
         $productModel = new \App\Models\M_products();
         $returnModel = new \App\Models\PurchaseReturnModel();
         $inventoryModel = new \App\Models\M_inventory();
+        $supplierLedgerModel = new \App\Models\SupplierLedgerModel();
 
         $returnItems = $this->request->getPost('return_items'); // [product_id => quantity]
         $reason = $this->request->getPost('reason');
@@ -629,6 +665,8 @@ class Purchases extends BaseController
             $returned[$ret['product_id']] = ($returned[$ret['product_id']] ?? 0) + $ret['quantity'];
         }
 
+        $totalReturnAmount = 0;
+
         foreach ($returnItems as $productId => $qty) {
             $qty = (int)$qty;
             if ($qty > 0) {
@@ -636,6 +674,9 @@ class Purchases extends BaseController
                 $alreadyReturned = $returned[$productId] ?? 0;
                 $maxReturnable = $item['quantity'] - $alreadyReturned;
                 if ($item && $qty <= $maxReturnable) {
+                    $returnAmount = $qty * $item['cost_price'];
+                    $totalReturnAmount += $returnAmount;
+
                     // Update product stock (decrease)
                     $productModel->adjustStock($productId, $qty, 'out');
                     // Update Inventory 
@@ -661,7 +702,7 @@ class Purchases extends BaseController
                         'purchase_id' => $purchaseId,
                         'product_id' => $productId,
                         'quantity' => $qty,
-                        'return_amount' => $qty * $item['cost_price'],
+                        'return_amount' => $returnAmount,
                         'reason' => $reason,
                         'user_id' => $userId,
                         'store_id' => $store_id,
@@ -669,6 +710,24 @@ class Purchases extends BaseController
                     ]);
                 }
             }
+        }
+
+        // Create supplier ledger entry for return (credit - reduces supplier payable)
+        if ($totalReturnAmount > 0) {
+            $currentBalance = $supplierLedgerModel->getSupplierBalance($purchase['supplier_id']);
+            $newBalance = $currentBalance - $totalReturnAmount;
+
+            $supplierLedgerModel->insert([
+                'supplier_id' => $purchase['supplier_id'],
+                'purchase_id' => $purchaseId,
+                'payment_id' => null,
+                'date' => date('Y-m-d'),
+                'description' => "Purchase Return - Invoice: {$purchase['invoice_no']} - {$reason}",
+                'debit' => 0,
+                'credit' => $totalReturnAmount,
+                'balance' => $newBalance,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
         }
 
         return redirect()->to(site_url('purchases'))->with('success', 'Purchase return processed.');

@@ -11,8 +11,7 @@ class Customers extends \CodeIgniter\Controller
      */
     public function __construct()
     {
-        helper('audit');
-        helper('form');
+        helper(['audit', 'form', 'number']);
     }
 
     /**

@@ -461,6 +461,56 @@
 <script src="<?php echo base_url() ?>assets/js/select2/select2.min.js"></script>
 <link href="<?php echo base_url() ?>assets/js/select2/select2.min.css" rel="stylesheet" />
 <script>
+    // ============================================
+    // CSRF Token Auto-Refresh for Long Sessions
+    // ============================================
+    // Refresh CSRF token every 10 minutes to prevent session timeout
+    function refreshCSRFToken() {
+        $.ajax({
+            url: '<?= site_url('api/csrf-refresh') ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response && response.token) {
+                    // Update CSRF token in form
+                    $('input[name="<?= csrf_token() ?>"]').val(response.token);
+                    console.log('CSRF token refreshed successfully');
+                }
+            },
+            error: function() {
+                console.warn('Failed to refresh CSRF token');
+            }
+        });
+    }
+
+    // Refresh token every 10 minutes (600000ms)
+    setInterval(refreshCSRFToken, 600000);
+
+    // Also refresh on user activity after 5 minutes of inactivity
+    let lastActivity = Date.now();
+    let activityTimer;
+
+    function updateActivity() {
+        const now = Date.now();
+        const timeSinceActivity = now - lastActivity;
+
+        // If inactive for 5+ minutes, refresh token on next activity
+        if (timeSinceActivity > 300000) {
+            refreshCSRFToken();
+        }
+
+        lastActivity = now;
+    }
+
+    // Track user activity
+    $(document).on('click keypress scroll', function() {
+        updateActivity();
+    });
+
+    // ============================================
+    // Helper Functions
+    // ============================================
+
     // Helper function to format currency
     function formatCurrency(amount) {
         const currency = '<?= session()->get('currency_symbol') ?? '$' ?>';
@@ -778,49 +828,50 @@
             setTimeout(() => $('#barcode-input').focus(), 150);
         });
 
-        // Barcode scanning with auto-search (debounced)
-        let barcodeSearchTimeout;
+        // // Barcode scanning with auto-search (debounced)
+        // let barcodeSearchTimeout;
 
-        $('#barcode-input').on('input', function() {
-            const barcode = $(this).val().trim();
+        // $('#barcode-input').on('input', function() {
+        //     const barcode = $(this).val().trim();
 
-            // Clear previous timeout
-            clearTimeout(barcodeSearchTimeout);
+        //     // Clear previous timeout
+        //     clearTimeout(barcodeSearchTimeout);
 
-            // Only search if there's a value
-            if (barcode.length > 0) {
-                // Debounce: wait 500ms after user stops typing
-                barcodeSearchTimeout = setTimeout(function() {
-                    // Show loading state
-                    $('#barcode-input').prop('disabled', true);
-                    const originalValue = $('#barcode-input').val();
+        //     // Only search if there's a value
+        //     if (barcode.length > 0) {
+        //         // Debounce: wait 500ms after user stops typing
+        //         barcodeSearchTimeout = setTimeout(function() {
+        //             // Show loading state
+        //             $('#barcode-input').prop('disabled', true);
+        //             const originalValue = $('#barcode-input').val();
 
-                    $.get('<?= site_url('api/products/barcode') ?>', {
-                            barcode: barcode
-                        })
-                        .done(function(product) {
-                            if (product && product.id) {
-                                addToCart(product);
-                                $('#barcode-input').val('');
-                            } else {
-                                showFormErrors([`Product with code "${barcode}" not found`]);
-                            }
-                        })
-                        .fail(function() {
-                            showFormErrors(['Error searching for product. Please try again.']);
-                        })
-                        .always(function() {
-                            $('#barcode-input').prop('disabled', false).focus();
-                        });
-                }, 500); // 500ms delay after typing stops
-            }
-        });
+        //             $.get('<?= site_url('api/products/barcode') ?>', {
+        //                     barcode: barcode
+        //                 })
+        //                 .done(function(product) {
+        //                     if (product && product.id) {
+        //                         addToCart(product);
+        //                         $('#barcode-input').val('');
+        //                     } else {
+        //                         showFormErrors([`Product with code "${barcode}" not found`]);
+        //                     }
+        //                 })
+        //                 .fail(function() {
+        //                     showFormErrors(['Error searching for product. Please try again.']);
+        //                 })
+        //                 .always(function() {
+        //                     $('#barcode-input').prop('disabled', false).focus();
+        //                 });
+        //         }, 500); // 500ms delay after typing stops
+        //     }
+        // });
 
         // Keep Enter key functionality for immediate search
         $('#barcode-input').on('keypress', function(e) {
             if (e.which === 13) {
                 e.preventDefault();
-                clearTimeout(barcodeSearchTimeout); // Cancel debounced search
+                // Clear previous timeout
+                //clearTimeout(barcodeSearchTimeout); // Cancel debounced search
 
                 const barcode = $(this).val().trim();
 
@@ -866,13 +917,9 @@
 
             if (existingItem) {
                 if (existingItem.quantity < existingItem.stock) {
-                    // Increment by one full carton if applicable, else by one piece
-                    const cartonSize = parseFloat(existingItem.carton_size) || 0;
-                    const increment = (cartonSize > 1) ? cartonSize : 1;
-                    existingItem.quantity += increment;
-                    if (cartonSize > 1) {
-                        existingItem.unit = 'cartons';
-                    }
+                    // Always increment by 1 piece; keep display unit as pieces
+                    existingItem.quantity += 1;
+                    existingItem.unit = 'pieces';
                     //showSuccessMessage(`${product.name} quantity increased to ${existingItem.quantity}`);
                 } else {
                     showFormErrors([`Only ${existingItem.stock} units available in stock`]);
@@ -886,11 +933,12 @@
                     code: product.code || '',
                     price: parseFloat(product.price || 0),
                     cost_price: product.cost_price || 0,
-                    // Default to one full carton worth of pieces if carton_size > 1
-                    quantity: (parseFloat(product.carton_size) > 1) ? parseFloat(product.carton_size) : 1,
+                    // Default quantity in pieces; if product has cartons, start at one full carton worth (in pieces)
+                    // Start every new item at exactly 1 piece (not a full carton)
+                    quantity: 1,
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
-                    unit: (parseFloat(product.carton_size) > 1) ? 'cartons' : 'pieces' // default display unit
+                    unit: 'pieces' // forced default display unit
                 });
                 //showSuccessMessage(`${product.name} added to cart`);
                 // } else {
@@ -916,14 +964,7 @@
                 // Check if product has carton tracking enabled
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const hasCartons = cartonSize > 1;
-                // Auto-switch display unit based on quantity vs carton size
-                if (hasCartons) {
-                    if (item.quantity < cartonSize) {
-                        item.unit = 'pieces';
-                    } else if (Number.isInteger(parseFloat(item.quantity) / cartonSize)) {
-                        item.unit = 'cartons';
-                    }
-                }
+                // Do NOT auto-switch display unit; always keep user's chosen unit. Default stays 'pieces'.
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
 
                 tbody += `
@@ -1129,7 +1170,6 @@
             skipRefocus = true;
             const item = cart[idx];
             const cartonSize = parseFloat(item.carton_size) || 1;
-
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
             const currentUnit = unitSelector ? unitSelector.value : (item.unit || 'pieces');
@@ -1137,7 +1177,12 @@
 
             // Increment by 1 piece or 1 carton based on selector
             if (currentUnit === 'cartons' && cartonSize > 1) {
-                cart[idx].quantity += cartonSize;
+                // First increment from 1 piece should add just 1 piece, not a full carton
+                if (cart[idx].quantity < cartonSize) {
+                    cart[idx].quantity += 1;
+                } else {
+                    cart[idx].quantity += cartonSize;
+                }
             } else {
                 cart[idx].quantity += 1;
             }
@@ -1155,7 +1200,6 @@
             skipRefocus = true;
             const item = cart[idx];
             const cartonSize = parseFloat(item.carton_size) || 1;
-
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
             const currentUnit = unitSelector ? unitSelector.value : (item.unit || 'pieces');
@@ -1163,18 +1207,15 @@
 
             // Decrement by 1 piece or 1 carton based on selector
             if (currentUnit === 'cartons' && cartonSize > 1) {
-                cart[idx].quantity = Math.max(0.01, cart[idx].quantity - cartonSize);
+                if (cart[idx].quantity < cartonSize) {
+                    // When below a full carton, step down by 1 piece
+                    cart[idx].quantity = Math.max(0.01, cart[idx].quantity - 1);
+                } else {
+                    // At or above a full carton, step down by one carton
+                    cart[idx].quantity = Math.max(0.01, cart[idx].quantity - cartonSize);
+                }
             } else {
                 cart[idx].quantity = Math.max(0.01, cart[idx].quantity - 1);
-            }
-
-            // Adjust display unit based on new quantity
-            if (cartonSize > 1) {
-                if (cart[idx].quantity < cartonSize) {
-                    cart[idx].unit = 'pieces';
-                } else if (Number.isInteger(parseFloat(cart[idx].quantity) / cartonSize)) {
-                    cart[idx].unit = 'cartons';
-                }
             }
 
             renderCart();
@@ -1204,14 +1245,6 @@
             }
 
             cart[idx].quantity = qty;
-            // Adjust display unit depending on carton relationship
-            if (cartonSize > 1) {
-                if (cart[idx].quantity < cartonSize) {
-                    cart[idx].unit = 'pieces';
-                } else if (Number.isInteger(parseFloat(cart[idx].quantity) / cartonSize)) {
-                    cart[idx].unit = 'cartons';
-                }
-            }
             renderCart();
         };
 

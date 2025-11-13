@@ -494,6 +494,56 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 <script src="<?php echo base_url() ?>assets/js/select2/select2.min.js"></script>
 <link href="<?php echo base_url() ?>assets/js/select2/select2.min.css" rel="stylesheet" />
 <script>
+    // ============================================
+    // CSRF Token Auto-Refresh for Long Sessions
+    // ============================================
+    // Refresh CSRF token every 10 minutes to prevent session timeout
+    function refreshCSRFToken() {
+        $.ajax({
+            url: '<?= site_url('api/csrf-refresh') ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response && response.token) {
+                    // Update CSRF token in form
+                    $('input[name="<?= csrf_token() ?>"]').val(response.token);
+                    console.log('CSRF token refreshed successfully');
+                }
+            },
+            error: function() {
+                console.warn('Failed to refresh CSRF token');
+            }
+        });
+    }
+
+    // Refresh token every 10 minutes (600000ms)
+    setInterval(refreshCSRFToken, 600000);
+
+    // Also refresh on user activity after 5 minutes of inactivity
+    let lastActivity = Date.now();
+    let activityTimer;
+
+    function updateActivity() {
+        const now = Date.now();
+        const timeSinceActivity = now - lastActivity;
+
+        // If inactive for 5+ minutes, refresh token on next activity
+        if (timeSinceActivity > 300000) {
+            refreshCSRFToken();
+        }
+
+        lastActivity = now;
+    }
+
+    // Track user activity
+    $(document).on('click keypress scroll', function() {
+        updateActivity();
+    });
+
+    // ============================================
+    // Helper Functions
+    // ============================================
+
     // Helper functions
     function formatCurrency(value) {
         return parseFloat(value || 0).toFixed(2);

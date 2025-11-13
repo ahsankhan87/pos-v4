@@ -73,6 +73,7 @@
             view: <?= json_encode(site_url('suppliers')) ?>,
             edit: <?= json_encode(site_url('suppliers/edit')) ?>,
             delete: <?= json_encode(site_url('suppliers/delete')) ?>,
+            ledger: <?= json_encode(site_url('supplier-ledger/view')) ?>,
         };
 
         $('#suppliersTable').DataTable({
@@ -174,6 +175,14 @@
                     </a>
                 `;
             }
+
+            // Add View Ledger link (always visible)
+            menuItems += `
+                <a href="${routes.ledger}/${row.id}" class="actions-link actions-link--success">
+                    <i class="fas fa-book"></i>
+                    <span>View Ledger</span>
+                </a>
+            `;
 
             if (permissions.update) {
                 menuItems += `

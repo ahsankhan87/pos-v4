@@ -63,6 +63,12 @@
                                 <input type="text" name="phone" value="<?= set_value('phone') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent">
                                 <?php if (!empty($errors['phone'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['phone']) ?></p><?php endif; ?>
                             </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Opening Balance</label>
+                                <input type="number" step="0.01" name="opening_balance" value="<?= set_value('opening_balance', 0) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="0.00">
+                                <small class="text-xs text-gray-500">Positive = Amount owed to supplier</small>
+                                <?php if (!empty($errors['opening_balance'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['opening_balance']) ?></p><?php endif; ?>
+                            </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Address</label>
                                 <input type="text" name="address" value="<?= set_value('address') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Optional">

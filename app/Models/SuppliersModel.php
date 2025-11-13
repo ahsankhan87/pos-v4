@@ -13,6 +13,7 @@ class SuppliersModel extends Model
         'email',
         'phone',
         'address',
+        'opening_balance',
         'store_id',
         'created_at',
         'updated_at'

@@ -1,431 +1,866 @@
 <?= $this->extend('templates/header') ?>
-
 <?= $this->section('content') ?>
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Purchase - <?= esc($purchase['invoice_no']) ?></h1>
-        <a href="<?= base_url("/purchases/view/{$purchase['id']}") ?>" class="btn btn-secondary">
-            <i class="fas fa-arrow-left mr-2"></i> Back to View
-        </a>
-    </div>
-
-    <?php
-    // Display any flash messages
-    if (session()->getFlashdata('success')): ?>
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-            <?= session()->getFlashdata('success') ?>
+<div class="min-h-screen bg-slate-100">
+    <div class="max-w-full mx-auto px-2 sm:px-6 lg:px-2 py-2">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Edit Purchase - <?= esc($purchase['invoice_no']) ?></h1>
+            <div class="flex gap-2">
+                <a href="<?= base_url("/purchases") ?>" class="inline-flex items-center px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-all">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to List
+                </a>
+                <button type="button" id="showHelpModal" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-all">
+                    <i class="fas fa-keyboard mr-2"></i>Keyboard Shortcuts <kbd class="ml-2 bg-white/20 px-2 py-1 rounded text-xs">?</kbd>
+                </button>
+            </div>
         </div>
-    <?php endif; ?>
-
-    <?php $errors = session()->getFlashdata('errors'); ?>
-    <?php if (! empty($errors)) : ?>
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-            <p class="font-bold">Please correct the errors below:</p>
-            <ul class="mt-2 list-disc list-inside">
-                <?php foreach ($errors as $error) : ?>
-                    <li><?= esc($error) ?></li>
-                <?php endforeach ?>
-            </ul>
-        </div>
-    <?php endif; ?>
-
-    <form id="purchaseForm" action="<?= base_url("/purchases/update/{$purchase['id']}") ?>" method="post">
-        <?= csrf_field() ?>
-        <input type="hidden" name="_method" value="PUT">
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column - Purchase Info -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Information</h2>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label for="invoice_no" class="block text-sm font-medium text-gray-700">Invoice No</label>
-                            <input type="text" id="invoice_no" name="invoice_no" value="<?= esc($purchase['invoice_no']) ?>" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100">
-                        </div>
-
-                        <div>
-                            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-                            <input type="datetime-local" id="date" name="date" value="<?= date('Y-m-d\TH:i', strtotime($purchase['date'])) ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-
-                        <div>
-                            <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier *</label>
-                            <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Select Supplier</option>
-                                <?php foreach ($suppliers as $supplier): ?>
-                                    <option value="<?= $supplier['id'] ?>" <?= $supplier['id'] == $purchase['supplier_id'] ? 'selected' : '' ?>>
-                                        <?= esc($supplier['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="store_id" class="block text-sm font-medium text-gray-700">Store *</label>
-                            <select id="store_id" name="store_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Select Store</option>
-                                <?php foreach ($stores as $store): ?>
-                                    <option value="<?= $store['id'] ?>" <?= $store['id'] == $purchase['store_id'] ? 'selected' : '' ?>>
-                                        <?= esc($store['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                            <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="pending" <?= $purchase['status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
-                                <option value="ordered" <?= $purchase['status'] == 'ordered' ? 'selected' : '' ?>>Ordered</option>
-                                <option value="received" <?= $purchase['status'] == 'received' ? 'selected' : '' ?>>Received</option>
-                            </select>
-                        </div>
+        <!-- Keyboard Shortcuts Modal -->
+        <div id="helpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-keyboard text-white text-2xl mr-3"></i>
+                        <h2 class="text-xl font-bold text-white">Keyboard Shortcuts</h2>
                     </div>
+                    <button type="button" id="closeHelpModal" class="text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
                 </div>
-
-                <!-- Payment Information -->
-                <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Payment Information</h2>
-
-                    <div class="space-y-4">
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Navigation & Search -->
                         <div>
-                            <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method *</label>
-                            <select id="payment_method" name="payment_method" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="cash" <?= $purchase['payment_method'] == 'cash' ? 'selected' : '' ?>>Cash</option>
-                                <option value="credit_card" <?= $purchase['payment_method'] == 'credit_card' ? 'selected' : '' ?>>Credit Card</option>
-                                <option value="bank_transfer" <?= $purchase['payment_method'] == 'bank_transfer' ? 'selected' : '' ?>>Bank Transfer</option>
-                                <option value="check" <?= $purchase['payment_method'] == 'check' ? 'selected' : '' ?>>Check</option>
-                                <option value="other" <?= $purchase['payment_method'] == 'other' ? 'selected' : '' ?>>Other</option>
-                            </select>
+                            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-search text-blue-600 mr-2"></i>Navigation & Search
+                            </h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Focus Barcode Input</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F1</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Product Search</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F2</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Select Customer</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F3</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Select Employee</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F4</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Select Discount</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F8</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Close Dropdowns</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Esc</kbd>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Cart Operations -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Payment Summary</label>
-                            <div class="mt-2 space-y-2 text-sm">
-                                <div class="flex justify-between">
-                                    <span>Amount Paid:</span>
-                                    <span class="font-medium"><?= number_to_currency($purchase['paid_amount'], 'USD', 'en_US', 2) ?></span>
+                            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-shopping-cart text-green-600 mr-2"></i>Cart Operations
+                            </h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Increase Last Item Qty</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">+ or =</kbd>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span>Due Amount:</span>
-                                    <span class="font-medium <?= $purchase['due_amount'] > 0 ? 'text-red-600' : 'text-green-600' ?>">
-                                        <?= number_to_currency($purchase['due_amount'], 'USD', 'en_US', 2) ?>
-                                    </span>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Decrease Last Item Qty</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">-</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Remove Last Item</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Del</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Clear Entire Cart</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F12</kbd>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment & Checkout -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-money-bill-wave text-emerald-600 mr-2"></i>Payment & Checkout
+                            </h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Enter Tendered Amount</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F6</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Tax Rate Input</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F7</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Save as Draft</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F5</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Complete Sale</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Ctrl+S</kbd> OR
+                                    <kbd class="px-3 py-1 bg-green-600 text-white rounded font-mono text-sm font-bold">F9</kbd>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Help & Other -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-question-circle text-purple-600 mr-2"></i>Help & Other
+                            </h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Toggle This Help</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">? or F1</kbd>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-gray-700">Quick Total Calculation</span>
+                                    <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Ctrl+T</kbd>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Notes -->
-                <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Notes</h2>
-                    <textarea id="note" name="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"><?= esc($purchase['note']) ?></textarea>
+                    <!-- Tips Section -->
+                    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 class="font-bold text-blue-900 mb-2 flex items-center">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Pro Tips
+                        </h4>
+                        <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                            <li>Use barcode scanner or F1 input for fastest product entry</li>
+                            <li>Press Enter in barcode field to search and add product instantly</li>
+                            <li>Use +/- keys to quickly adjust quantity of the last added item</li>
+                            <li>F9 for instant checkout when ready (with confirmation)</li>
+                            <li>All dropdowns support keyboard typing for quick selection</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex justify-end border-t border-gray-200">
+                    <button type="button" id="closeHelpModalBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium">
+                        Got it!
+                    </button>
                 </div>
             </div>
+        </div>
+        <?php
+        // Display any flash messages
+        if (session()->getFlashdata('success')): ?>
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                <?= session()->getFlashdata('success') ?>
+            </div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('message')): ?>
+            <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-6">
+                <?= session()->getFlashdata('message') ?>
+            </div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="bg-red-100 text-red-800 p-4 rounded-lg mb-6">
+                <?= session()->getFlashdata('error') ?>
+            </div>
+        <?php endif; ?>
+        <?php $errors = session()->getFlashdata('errors'); ?>
+        <?php if (! empty($errors)) : ?>
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                <p class="font-bold">Please correct the errors below:</p>
+                <ul class="mt-2 list-disc list-inside">
+                    <?php foreach ($errors as $error) : ?>
+                        <li><?= esc($error) ?></li>
+                    <?php endforeach ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+        <form id="purchaseForm" action="<?= base_url("/purchases/update/{$purchase['id']}") ?>" method="post">
+            <?= csrf_field() ?>
+            <input type="hidden" name="_method" value="PUT">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Purchase Info -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Information</h2>
 
-            <!-- Right Column - Items -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Items</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="invoice_no" class="block text-sm font-medium text-gray-700">Invoice No</label>
+                                <input type="text" id="invoice_no" name="invoice_no" value="<?= $invoice_no ?>" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100">
+                            </div>
 
-                    <div class="mb-4">
-                        <div class="flex space-x-2">
-                            <select id="product_select" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Select Product to Add</option>
-                                <?php foreach ($products as $product): ?>
-                                    <option value="<?= $product['id'] ?>"
-                                        data-name="<?= esc($product['name']) ?>"
-                                        data-code="<?= esc($product['code']) ?>"
-                                        data-price="<?= $product['cost_price'] ?>">
-                                        <?= esc($product['name']) ?> (<?= esc($product['code']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="button" id="addItemBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                <i class="fas fa-plus mr-1"></i> Add
-                            </button>
+                            <div>
+                                <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+                                <input type="datetime-local" id="date" name="date" value="<?= date('Y-m-d\TH:i', strtotime($purchase['date'])) ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+
+                            <div>
+                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F3</kbd></label>
+                                <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <option value="">Select Supplier</option>
+                                    <?php foreach ($suppliers as $supplier): ?>
+                                        <option value="<?= $supplier['id'] ?>" <?= $supplier['id'] == $purchase['supplier_id'] ? 'selected' : '' ?>><?= $supplier['name'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="store_id" class="block text-sm font-medium text-gray-700">Store</label>
+                                <select id="store_id" name="store_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select Store</option>
+                                    <?php foreach ($stores as $store): ?>
+                                        <option value="<?= $store['id'] ?>" <?= $store['id'] == $purchase['store_id'] ? 'selected' : '' ?>><?= esc($store['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                                <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="pending" <?= $purchase['status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
+                                    <option value="received" <?= $purchase['status'] == 'received' ? 'selected' : '' ?>>Received</option>
+                                    <option value="ordered" <?= $purchase['status'] == 'ordered' ? 'selected' : '' ?>>Ordered</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tax</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="itemsTableBody" class="bg-white divide-y divide-gray-200">
-                                <?php foreach ($purchase['items'] as $index => $item): ?>
-                                    <tr id="item-<?= $item['product_id'] ?>-<?= $index ?>" class="item-row">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center">
-                                                <div>
-                                                    <div class="font-medium text-gray-900"><?= esc($item['product_name']) ?></div>
-                                                    <div class="text-sm text-gray-500"><?= esc($item['product_code']) ?></div>
-                                                </div>
-                                            </div>
-                                            <input type="hidden" name="items[<?= $index ?>][product_id]" value="<?= $item['product_id'] ?>">
-                                            <input type="hidden" name="items[<?= $index ?>][id]" value="<?= $item['id'] ?? '' ?>">
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <input type="number" name="items[<?= $index ?>][quantity]"
-                                                class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                value="<?= $item['quantity'] ?>" min="0.01" step="0.01">
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <input type="number" name="items[<?= $index ?>][cost_price]"
-                                                class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                value="<?= $item['cost_price'] ?>" min="0" step="0.01">
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <input type="number" name="items[<?= $index ?>][discount]"
-                                                class="item-discount w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                value="<?= $item['discount'] ?>" min="0" step="0.01">
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="item-tax"><?= number_format($item['tax_amount'], 2) ?></span>
-                                            <input type="hidden" name="items[<?= $index ?>][tax_amount]" class="item-tax-amount" value="<?= $item['tax_amount'] ?>">
-                                        </td>
-                                        <td class="px-6 py-4 font-medium">
-                                            <span class="item-subtotal"><?= number_format($item['subtotal'], 2) ?></span>
-                                            <input type="hidden" name="items[<?= $index ?>][subtotal]" class="item-subtotal-input" value="<?= $item['subtotal'] ?>">
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <button type="button" class="remove-item text-red-500 hover:text-red-700">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <!-- Payment Information -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Payment Information</h2>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method *</label>
+                                <select id="payment_method" name="payment_method" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="cash" <?= $purchase['payment_method'] == 'cash' ? 'selected' : '' ?>>Cash</option>
+                                    <option value="credit_card" <?= $purchase['payment_method'] == 'credit_card' ? 'selected' : '' ?>>Credit Card</option>
+                                    <option value="bank_transfer" <?= $purchase['payment_method'] == 'bank_transfer' ? 'selected' : '' ?>>Bank Transfer</option>
+                                    <option value="check" <?= $purchase['payment_method'] == 'check' ? 'selected' : '' ?>>Check</option>
+                                    <option value="other" <?= $purchase['payment_method'] == 'other' ? 'selected' : '' ?>>Other</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="paid_amount" class="block text-sm font-medium text-gray-700">Amount Paid <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F6</kbd></label>
+                                <input type="number" id="paid_amount" name="paid_amount" value="<?= $purchase['paid_amount'] ?? 0 ?>" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Totals -->
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="font-medium">Subtotal:</span>
-                                <span id="subtotal"><?= number_to_currency($purchase['total_amount'], 'USD', 'en_US', 2) ?></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="font-medium">Discount:</span>
-                                <div class="flex items-center">
-                                    <input type="number" id="discount" name="discount" value="<?= $purchase['discount'] ?>" min="0" step="0.01" class="w-20 mr-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <select id="discount_type" name="discount_type" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        <option value="fixed" <?= ($purchase['discount_type'] ?? 'fixed') == 'fixed' ? 'selected' : '' ?>>$</option>
-                                        <option value="percentage" <?= ($purchase['discount_type'] ?? 'fixed') == 'percentage' ? 'selected' : '' ?>>%</option>
+                    <!-- Notes -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Notes</h2>
+                        <textarea id="note" name="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"><?= esc($purchase['note'] ?? '') ?></textarea>
+                    </div>
+                </div>
+
+                <!-- Right Column - Items -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Items</h2>
+
+                        <!-- Barcode and Product Search -->
+                        <div class="mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Barcode Scanner -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-barcode mr-1"></i>Barcode Scanner <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" id="barcode-input"
+                                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                            placeholder="Scan or enter barcode">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-barcode text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Product Search -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-search mr-1"></i>Product Search <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F2</kbd>
+                                    </label>
+                                    <select id="product_select" class="w-full select2-search">
+                                        <option></option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="font-medium">Tax:</span>
-                                <span id="tax_amount"><?= number_to_currency($purchase['tax_amount'], 'USD', 'en_US', 2) ?></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="font-medium">Shipping Cost:</span>
-                                <input type="number" id="shipping_cost" name="shipping_cost" value="<?= $purchase['shipping_cost'] ?>" min="0" step="0.01" class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
                         </div>
-                        <div class="bg-gray-50 p-4 rounded-md">
-                            <div class="flex justify-between text-lg font-bold">
-                                <span>Grand Total:</span>
-                                <span id="grand_total_display"><?= number_to_currency($purchase['grand_total'], 'USD', 'en_US', 2) ?></span>
-                            </div>
-                            <input type="hidden" id="grand_total" name="grand_total" value="<?= $purchase['grand_total'] ?>">
-                            <div class="flex justify-between mt-2">
-                                <span>Amount Paid:</span>
-                                <span id="paid_amount_display"><?= number_to_currency($purchase['paid_amount'], 'USD', 'en_US', 2) ?></span>
-                            </div>
-                            <div class="flex justify-between mt-2 <?= $purchase['due_amount'] > 0 ? 'text-red-600' : 'text-green-600' ?>">
-                                <span>Due Amount:</span>
-                                <span id="due_amount"><?= number_to_currency($purchase['due_amount'], 'USD', 'en_US', 2) ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Form Actions -->
-                <div class="mt-6 flex justify-between">
-                    <div class="space-x-3">
-                        <a href="<?= base_url("/purchases/view/{$purchase['id']}") ?>" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
-                            <i class="fas fa-times mr-2"></i> Cancel
-                        </a>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Items will be added here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Subtotal:</span>
+                                    <span id="subtotal"><?= session()->get('currency_symbol') ?>0.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Discount: <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F8</kbd></span>
+                                    <div class="flex items-center">
+                                        <input type="number" id="discount" name="discount" value="<?= $purchase['discount'] ?? 0 ?>" min="0" step="0.01" class="w-20 mr-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <select id="discount_type" name="discount_type" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="fixed" <?= ($purchase['discount_type'] ?? 'fixed') == 'fixed' ? 'selected' : '' ?>><?= session()->get('currency_symbol')  ?? '$' ?></option>
+                                            <option value="percentage" <?= ($purchase['discount_type'] ?? 'fixed') == 'percentage' ? 'selected' : '' ?>>%</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Tax:</span>
+                                    <input id="tax_rate" type="number" id="tax_rate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.01"
+                                        class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Shipping Cost:</span>
+                                    <input type="number" id="shipping_cost" name="shipping_cost" value="<?= $purchase['shipping_cost'] ?? 0 ?>" min="0" step="0.01" class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>Grand Total:</span>
+                                    <span id="grand_total"><?= session()->get('currency_symbol') ?>0.00</span>
+                                    <input type="text" id="grand_total" name="grand_total" value="0" hidden>
+                                </div>
+                                <div class="border-t border-gray-300 mt-2 pt-2">
+                                    <div class="flex justify-between">
+                                        <span>Tax Amount:</span>
+                                        <span id="taxAmount"><?= session()->get('currency_symbol') ?>0.00</span>
+                                        <input type="hidden" id="total_tax" name="total_tax" value="0" />
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-2">
+                                    <span>Amount Paid:</span>
+                                    <span id="paid_amount_display"><?= session()->get('currency_symbol') ?>0.00</span>
+                                </div>
+                                <div class="flex justify-between mt-2">
+                                    <span>Due Amount:</span>
+                                    <span id="due_amount"><?= session()->get('currency_symbol') ?>0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden field for items data -->
+                        <input type="hidden" id="items" name="items" value="">
                     </div>
-                    <div class="space-x-3">
-                        <?php if ($purchase['status'] == 'pending'): ?>
-                            <button type="submit" name="save_type" value="draft" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
-                                <i class="fas fa-save mr-2"></i> Save as Draft
-                            </button>
-                        <?php endif; ?>
-                        <button type="submit" name="save_type" value="update" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                            <i class="fas fa-check mr-2"></i> Update Purchase
-                        </button>
+
+                    <!-- Form Actions -->
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <!-- <button type="button" id="saveDraftBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Save Draft</button> -->
+                        <button type="submit" class="btn btn-primary">Update Purchase <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd></button>
                     </div>
                 </div>
             </div>
-        </div>
-    </form>
+
+        </form>
+    </div>
 </div>
 
 <!-- Select2 CDN -->
 <script src="<?php echo base_url() ?>assets/js/select2/select2.min.js"></script>
 <link href="<?php echo base_url() ?>assets/js/select2/select2.min.css" rel="stylesheet" />
 
-<!-- JavaScript for purchase edit form handling -->
+<!-- JavaScript for purchase form handling -->
 <script>
+    // This would include all the JavaScript for:
+    // - Adding/removing items
+    // - Calculating totals
+    // - Handling discounts
+    // - Updating payment info
+    // - Form validation
+    // - AJAX calls for product info
+    // - etc.
     $(document).ready(function() {
         // DOM Elements
         const $productSelect = $('#product_select');
         const $addItemBtn = $('#addItemBtn');
         const $itemsTableBody = $('#itemsTableBody');
         const $purchaseForm = $('#purchaseForm');
+        const $saveDraftBtn = $('#saveDraftBtn');
 
         // Totals Elements
         const $subtotalEl = $('#subtotal');
-        const $taxAmountEl = $('#tax_amount');
+        const $taxAmountEl = $('#taxAmount');
         const $grandTotalEl = $('#grand_total');
-        const $grandTotalDisplayEl = $('#grand_total_display');
         const $discountEl = $('#discount');
         const $discountTypeEl = $('#discount_type');
         const $shippingCostEl = $('#shipping_cost');
+        const $paidAmountEl = $('#paid_amount');
+        const $paidAmountDisplayEl = $('#paid_amount_display');
         const $dueAmountEl = $('#due_amount');
 
-        // Store products data for quick access
-        const products = {
-            <?php foreach ($products as $product): ?>
-                <?= $product['id'] ?>: {
-                    id: <?= $product['id'] ?>,
-                    name: '<?= addslashes($product['name']) ?>',
-                    code: '<?= addslashes($product['code']) ?>',
-                    cost_price: <?= $product['cost_price'] ?>,
-                    price: <?= $product['price'] ?>,
-                    quantity: <?= $product['quantity'] ?? 0 ?>
-                }
-                <?= end($products) !== $product ? ',' : '' ?>
-            <?php endforeach; ?>
-        };
+        // Hidden items input
+        const $itemsInput = $('#items');
+
+
+
+        // Array to hold all items in the purchase
+        let purchaseItems = [];
 
         // Initialize the page
         init();
 
         function init() {
+            // Initialize Select2 with AJAX for product search
+            $('.select2-search').select2({
+                placeholder: 'Type to search products...',
+                allowClear: true,
+                minimumInputLength: 0,
+                width: '100%',
+                ajax: {
+                    url: '<?= site_url('api/products/search') ?>',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term || '',
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function(data, params) {
+                        params.page = params.page || 1;
+                        const products = Array.isArray(data) ? data : (data.results || data.data || []);
+                        return {
+                            results: products.map(product => ({
+                                id: product.id,
+                                text: `${product.name || 'Unknown'} - ${product.code || 'N/A'}`,
+                                name: product.name,
+                                code: product.code,
+                                cost_price: product.cost_price,
+                                price: product.price,
+                                quantity: product.quantity,
+                                tax_id: product.tax_id || 0,
+                                carton_size: product.carton_size
+                            })),
+                            pagination: {
+                                more: false
+                            }
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: function(product) {
+                    if (product.loading) return product.text;
+                    if (!product.name) return product.text;
+                    return $(`
+                        <div class="flex items-center justify-between p-1">
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 text-sm">${product.name}</div>
+                                <div class="text-xs text-gray-500">Code: ${product.code || 'N/A'} • Stock: ${parseFloat(product.quantity || 0).toFixed(2)}</div>
+                            </div>
+                            <div class="text-right ml-2">
+                                <div class="font-bold text-blue-600 text-sm"><?= session()->get('currency_symbol') ?>${parseFloat(product.cost_price || 0).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `);
+                },
+                templateSelection: function(product) {
+                    return product.text;
+                }
+            });
+            // Help Modal Handlers
+
+            function openHelpModal() {
+                $('#helpModal').removeClass('hidden').addClass('flex');
+                $('body').css('overflow', 'hidden');
+            }
+
+            function closeHelpModal() {
+                $('#helpModal').removeClass('flex').addClass('hidden');
+                $('body').css('overflow', 'auto');
+                setTimeout(() => $('#barcode-input').focus(), 100);
+            }
+
+            $('#showHelpModal').on('click', openHelpModal);
+            $('#closeHelpModal, #closeHelpModalBtn').on('click', closeHelpModal);
+
+            // Close modal on outside click
+            $('#helpModal').on('click', function(e) {
+                if (e.target === this) {
+                    closeHelpModal();
+                }
+            });
+
+            // Product selection from search
+            $('.select2-search').on('select2:select', function(e) {
+                const product = e.params.data;
+                addProduct(product);
+                $(this).val(null).trigger('change');
+                $('.select2-search').select2('close');
+                setTimeout(() => $('#barcode-input').focus(), 150);
+            });
+
+            // Auto-focus search input when dropdown opens
+            $('.select2-search, #supplier_id').on('select2:open', function() {
+                setTimeout(function() {
+                    const searchField = document.querySelector('.select2-search__field');
+                    if (searchField) {
+                        searchField.focus();
+                    }
+                }, 100);
+            });
+
+            // Close dropdown handlers
+            $('.select2-search').on('select2:close', function() {
+                // Return focus to barcode input after closing
+                setTimeout(() => $('#barcode-input').focus(), 100);
+            });
+
+            // Barcode scanning
+            $('#barcode-input').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    const barcode = $(this).val().trim();
+                    if (barcode) {
+                        $(this).prop('disabled', true).val('Searching...');
+                        $.get('<?= site_url('api/products/barcode') ?>', {
+                                barcode: barcode
+                            })
+                            .done(function(product) {
+                                if (product && product.id) {
+                                    addProduct(product);
+                                } else {
+                                    alert(`Product with barcode "${barcode}" not found`);
+                                }
+                            })
+                            .fail(function() {
+                                alert('Error searching for product. Please try again.');
+                            })
+                            .always(function() {
+                                $('#barcode-input').prop('disabled', false).val('').focus();
+                            });
+                    }
+                }
+            });
+
             // Event listeners
-            $addItemBtn.on('click', addItemFromSelect);
             $purchaseForm.on('submit', handleFormSubmit);
+            $saveDraftBtn.on('click', saveAsDraft);
 
             // Calculate totals when these fields change
             $discountEl.on('change input', calculateTotals);
             $discountTypeEl.on('change', calculateTotals);
             $shippingCostEl.on('change input', calculateTotals);
+            $('#tax_rate').on('change input', calculateTotals);
+            $paidAmountEl.on('change input', updatePaymentInfo);
 
-            // Add event listeners to existing item rows
-            $('.item-quantity, .item-cost-price, .item-discount').on('change input', calculateTotals);
-            $('.remove-item').on('click', function() {
-                $(this).closest('tr').remove();
-                calculateTotals();
-            });
+            // Initialize any existing items (for edit mode)
+            initExistingItems();
 
-            // Enable select2 for better select controls
-            $productSelect.select2({
-                placeholder: "Select Product to Add",
+            // Enable select2 for supplier and payment method
+            $('#supplier_id, #payment_method').select2({
                 width: '100%'
             });
 
-            $('#supplier_id, #store_id, #payment_method').select2({
-                width: '100%'
+            // Help Modal Handlers
+            $('#showHelpModal').on('click', openHelpModal);
+            $('#closeHelpModal, #closeHelpModalBtn').on('click', closeHelpModal);
+
+            // Close modal on outside click
+            $('#helpModal').on('click', function(e) {
+                if (e.target === this) {
+                    closeHelpModal();
+                }
             });
 
-            // Initial calculation
-            calculateTotals();
+            // Auto-focus barcode input
+            $('#barcode-input').focus();
         }
 
-        function addItemFromSelect() {
-            const productId = $productSelect.val();
+        function openHelpModal() {
+            $('#helpModal').removeClass('hidden').addClass('flex');
+            $('body').css('overflow', 'hidden');
+        }
 
-            if (!productId) {
-                alert('Please select a product');
+        function closeHelpModal() {
+            $('#helpModal').removeClass('flex').addClass('hidden');
+            $('body').css('overflow', 'auto');
+            setTimeout(() => $('#barcode-input').focus(), 100);
+        }
+
+        function initExistingItems() {
+            // If editing a purchase, this would load existing items
+            // For now, we'll leave it empty for new purchases
+        }
+
+        // Add product from barcode or search
+        function addProduct(product) {
+            if (!product || !product.id) {
+                alert('Invalid product data');
                 return;
             }
 
-            const product = products[productId];
-
             // Check if product already exists in the items
-            const existingRow = $(`#itemsTableBody tr[data-product-id="${productId}"]`);
+            const existingItem = purchaseItems.find(item => item.product_id == product.id);
 
-            if (existingRow.length > 0) {
+            if (existingItem) {
                 // Update quantity if product already exists
-                const $quantityInput = existingRow.find('.item-quantity');
-                const currentQty = parseFloat($quantityInput.val()) || 0;
-                $quantityInput.val((currentQty + 1).toFixed(2));
+                // If item uses cartons, increment by one full carton worth of pieces
+                existingItem.quantity += (existingItem.carton_size && existingItem.carton_size > 1) ? existingItem.carton_size : 1;
+                updateItemRow(existingItem);
             } else {
-                // Add new item row
-                const newIndex = $('#itemsTableBody tr').length;
-                const newRowId = `item-${productId}-${Date.now()}`;
+                // Add new item
+                const newItem = {
+                    product_id: product.id,
+                    name: product.name,
+                    code: product.code || '',
+                    // Default to one carton worth of pieces if carton_size > 1, else 1 piece
+                    quantity: (parseFloat(product.carton_size) && parseFloat(product.carton_size) > 1) ? parseFloat(product.carton_size) : 1,
+                    cost_price: parseFloat(product.cost_price || 0),
+                    unit_price: parseFloat(product.price || 0),
+                    discount: 0,
+                    discount_type: 'fixed',
+                    tax_rate: 0, // Tax calculated at purchase level
+                    tax_amount: 0, // Tax calculated at purchase level
+                    subtotal: parseFloat(product.cost_price || 0),
+                    update_cost: false,
+                    expiry_date: '',
+                    batch_number: '',
+                    carton_size: parseFloat(product.carton_size) || 0,
+                    stock: parseFloat(product.quantity) || 0
+                };
 
-                const $newRow = $(`
-                <tr id="${newRowId}" class="item-row" data-product-id="${productId}">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div>
-                                <div class="font-medium text-gray-900">${product.name}</div>
-                                <div class="text-sm text-gray-500">${product.code}</div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="items[${newIndex}][product_id]" value="${productId}">
-                    </td>
-                    <td class="px-6 py-4">
-                        <input type="number" name="items[${newIndex}][quantity]" 
-                            class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                            value="1.00" min="0.01" step="0.01">
-                    </td>
-                    <td class="px-6 py-4">
-                        <input type="number" name="items[${newIndex}][cost_price]" 
-                            class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                            value="${product.cost_price}" min="0" step="0.01">
-                    </td>
-                    <td class="px-6 py-4">
-                        <input type="number" name="items[${newIndex}][discount]" 
-                            class="item-discount w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                            value="0.00" min="0" step="0.01">
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="item-tax">0.00</span>
-                        <input type="hidden" name="items[${newIndex}][tax_amount]" class="item-tax-amount" value="0">
-                    </td>
-                    <td class="px-6 py-4 font-medium">
-                        <span class="item-subtotal">${product.cost_price.toFixed(2)}</span>
-                        <input type="hidden" name="items[${newIndex}][subtotal]" class="item-subtotal-input" value="${product.cost_price}">
-                    </td>
-                    <td class="px-6 py-4">
-                        <button type="button" class="remove-item text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `);
-
-                // Add event listeners to the new row
-                $newRow.find('.item-quantity, .item-cost-price, .item-discount').on('change input', calculateTotals);
-                $newRow.find('.remove-item').on('click', function() {
-                    $newRow.remove();
-                    calculateTotals();
-                });
-
-                $itemsTableBody.append($newRow);
+                // Calculate initial values
+                calculateItemTotals(newItem);
+                // Add newest item to the beginning for DESC order
+                purchaseItems.unshift(newItem);
+                addItemRow(newItem);
             }
 
-            // Reset product select
-            $productSelect.val('').trigger('change');
+            // Recalculate totals
+            calculateTotals();
+        }
+
+        function addItemRow(item) {
+            const rowId = `item-${item.product_id}-${Date.now()}`;
+            item.rowId = rowId;
+
+            const cartonSize = parseFloat(item.carton_size) || 0;
+            const hasCartons = cartonSize > 1;
+            const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' pcs');
+
+            const $row = $(`
+            <tr id="${rowId}" class="item-row" data-product-id="${item.product_id}">
+                <td class="px-2 py-4">
+                    <div class="flex items-center">
+                        <div class="ml-4">
+                            <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
+                            <div class="text-sm text-gray-500">${escapeHtml(item.code)}</div>
+                            <div class="text-xs text-gray-400">Stock: ${stockDisplay}</div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="items[${item.product_id}][product_id]" value="${item.product_id}">
+                </td>
+                <td class="px-2 py-4">
+                    <div class="space-y-1">
+                        <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
+                            value="${hasCartons ? (item.quantity / cartonSize).toFixed(2) : item.quantity}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
+                        ${hasCartons ? `
+                        <select class="item-unit-selector w-full text-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
+                            <option value="pieces">Pieces</option>
+                            <option value="cartons" selected>Cartons (${cartonSize} pcs)</option>
+                        </select>
+                        ` : '<div class="text-xs text-gray-500">pieces</div>'}
+                    </div>
+                </td>
+                <td class="px-2 py-4">
+                    <input type="number" class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                        value="${item.cost_price}" min="0" step="0.01">
+                </td>
+                <td class="px-2 py-4">
+                    <input type="number" class="item-unit-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                        value="${item.unit_price}" min="0" step="0.01">
+                </td>
+              
+                <td class="px-2 py-4 font-medium">
+                    <span class="item-subtotal">${formatCurrency(item.subtotal)}</span>
+                    <input type="hidden" class="item-subtotal-input" name="items[${item.product_id}][subtotal]" value="${item.subtotal}">
+                </td>
+                <td class="px-2 py-4">
+                    <button type="button" class="remove-item text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `);
+
+            // Add event listeners to the new row
+            $row.find('.item-quantity').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            $row.find('.item-cost-price').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            $row.find('.item-unit-price').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            // Unit selector change handler
+            $row.find('.item-unit-selector').on('change', function() {
+                const newUnit = $(this).val();
+                const $qtyInput = $row.find('.item-quantity');
+                const cartonSize = parseFloat($qtyInput.data('carton-size')) || 1;
+
+                // Current quantity is always stored in pieces in the item object
+                const qtyInPieces = item.quantity;
+
+                // Update display based on selected unit
+                if (newUnit === 'cartons' && cartonSize > 1) {
+                    $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
+                } else {
+                    $qtyInput.val(qtyInPieces.toFixed(2));
+                }
+
+                // Auto-toggle back to cartons if exact multiple and selector changed to pieces
+                if (cartonSize > 1 && newUnit === 'pieces' && Number.isInteger(qtyInPieces / cartonSize)) {
+                    // Switch selector back to cartons for clarity
+                    $(this).val('cartons');
+                    $qtyInput.val((qtyInPieces / cartonSize).toFixed(2));
+                }
+            });
+
+            $row.find('.item-discount, .item-discount-type').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            $row.find('.remove-item').on('click', function() {
+                removeItem(item);
+            });
+
+            // Insert at top so latest item appears first
+            $itemsTableBody.prepend($row);
+        }
+
+        function updateItemRow(item) {
+            const $row = $(`#${item.rowId}`);
+
+            if ($row.length) {
+                // Don't update fields that are currently being edited to avoid cursor jumping
+                const activeElement = document.activeElement;
+
+                if (!$row.find('.item-quantity').is(activeElement)) {
+                    const $qtyInput = $row.find('.item-quantity');
+                    const cartonSize = parseFloat($qtyInput.data('carton-size')) || 1;
+                    const $unitSelector = $row.find('.item-unit-selector');
+                    const currentUnit = $unitSelector.length ? $unitSelector.val() : 'pieces';
+
+                    // Display quantity based on selected unit
+                    if (currentUnit === 'cartons' && cartonSize > 1) {
+                        $qtyInput.val((item.quantity / cartonSize).toFixed(2));
+                    } else {
+                        $qtyInput.val(item.quantity.toFixed(2));
+                    }
+                }
+
+                if (!$row.find('.item-unit-price').is(activeElement)) {
+                    $row.find('.item-unit-price').val(item.unit_price.toFixed(2));
+                }
+
+                if (!$row.find('.item-cost-price').is(activeElement)) {
+                    $row.find('.item-cost-price').val(item.cost_price.toFixed(2));
+                }
+                $row.find('.item-discount').val(item.discount);
+                $row.find('.item-discount-type').val(item.discount_type);
+                $row.find('.item-tax').text(item.tax_amount.toFixed(2));
+                $row.find('.item-tax-amount').val(item.tax_amount);
+                $row.find('.item-subtotal').text(item.subtotal.toFixed(2));
+                $row.find('.item-subtotal-input').val(item.subtotal);
+            }
+        }
+
+        function updateItemFromRow($row, item) {
+            let inputQty = parseFloat($row.find('.item-quantity').val()) || 0;
+            const $qtyInput = $row.find('.item-quantity');
+            const cartonSize = parseFloat($qtyInput.data('carton-size')) || 1;
+            const $unitSelector = $row.find('.item-unit-selector');
+            const currentUnit = $unitSelector.length ? $unitSelector.val() : 'pieces';
+
+            // Convert to pieces if input is in cartons
+            if (currentUnit === 'cartons' && cartonSize > 1) {
+                inputQty = inputQty * cartonSize;
+            }
+
+            item.quantity = inputQty;
+            // Adjust selector automatically: if quantity is exact multiple of carton size and cartonSize>1
+            if (cartonSize > 1) {
+                const $unitSelectorFinal = $row.find('.item-unit-selector');
+                if (inputQty < cartonSize) {
+                    if ($unitSelectorFinal.val() !== 'pieces') {
+                        $unitSelectorFinal.val('pieces');
+                        $qtyInput.val(inputQty.toFixed(2));
+                    }
+                } else if (Number.isInteger(inputQty / cartonSize)) {
+                    if ($unitSelectorFinal.val() !== 'cartons') {
+                        $unitSelectorFinal.val('cartons');
+                        $qtyInput.val((inputQty / cartonSize).toFixed(2));
+                    }
+                }
+            }
+            item.unit_price = parseFloat($row.find('.item-unit-price').val()) || 0;
+            item.cost_price = parseFloat($row.find('.item-cost-price').val()) || 0;
+            item.discount = parseFloat($row.find('.item-discount').val()) || 0;
+            item.discount_type = $row.find('.item-discount-type').val();
+
+            calculateItemTotals(item);
+            updateItemRow(item);
+            calculateTotals();
+        }
+
+        function calculateItemTotals(item) {
+            // Calculate subtotal before discount
+            const subtotalBeforeDiscount = item.quantity * item.cost_price;
+
+            // Calculate discount amount
+            let discountAmount = 0;
+            if (item.discount_type === 'percentage') {
+                discountAmount = subtotalBeforeDiscount * (item.discount / 100);
+            } else {
+                discountAmount = item.discount;
+            }
+
+            // Ensure discount doesn't exceed subtotal
+            discountAmount = Math.min(discountAmount, subtotalBeforeDiscount);
+
+            // Calculate subtotal after discount (no item-level tax)
+            const subtotal = subtotalBeforeDiscount - discountAmount;
+
+            // Update item properties (tax is calculated at purchase level, not item level)
+            item.tax_amount = 0;
+            item.tax_rate = 0;
+            item.subtotal = subtotal;
+        }
+
+        function removeItem(item) {
+            // Remove from array
+            purchaseItems = purchaseItems.filter(i => i.rowId !== item.rowId);
+
+            // Remove from DOM
+            $(`#${item.rowId}`).remove();
 
             // Recalculate totals
             calculateTotals();
@@ -433,74 +868,348 @@
 
         function calculateTotals() {
             let subtotal = 0;
-            let totalTax = 0;
 
-            // Calculate item totals
-            $('.item-row').each(function() {
-                const $row = $(this);
-                const quantity = parseFloat($row.find('.item-quantity').val()) || 0;
-                const costPrice = parseFloat($row.find('.item-cost-price').val()) || 0;
-                const discount = parseFloat($row.find('.item-discount').val()) || 0;
-
-                const itemSubtotal = (quantity * costPrice) - discount;
-                const itemTax = itemSubtotal * 0.1; // Assuming 10% tax rate
-
-                $row.find('.item-tax').text(itemTax.toFixed(2));
-                $row.find('.item-tax-amount').val(itemTax.toFixed(2));
-                $row.find('.item-subtotal').text(itemSubtotal.toFixed(2));
-                $row.find('.item-subtotal-input').val(itemSubtotal.toFixed(2));
-
-                subtotal += itemSubtotal;
-                totalTax += itemTax;
+            // Calculate items subtotal (with item-level discounts)
+            purchaseItems.forEach(item => {
+                const itemSubtotal = item.quantity * item.cost_price;
+                const itemDiscount = item.discount_type === 'percentage' ?
+                    (itemSubtotal * item.discount / 100) : item.discount;
+                subtotal += itemSubtotal - itemDiscount;
             });
 
-            // Apply overall discount
+            // Apply purchase-level discount
             const discount = parseFloat($discountEl.val()) || 0;
-            const discountType = $discountTypeEl.val();
             let discountAmount = 0;
 
-            if (discountType === 'percentage') {
-                discountAmount = (subtotal * discount) / 100;
+            if ($discountTypeEl.val() === 'percentage') {
+                discountAmount = subtotal * (discount / 100);
             } else {
                 discountAmount = discount;
             }
 
+            // Ensure discount doesn't exceed subtotal
+            discountAmount = Math.min(discountAmount, subtotal);
+
+            const subtotalAfterDiscount = subtotal - discountAmount;
+
+            // Calculate purchase-level tax
+            const taxRate = parseFloat($('#tax_rate').val()) || 0;
+            const taxAmount = subtotalAfterDiscount * (taxRate / 100);
+
+            // Apply shipping cost
             const shippingCost = parseFloat($shippingCostEl.val()) || 0;
-            const grandTotal = subtotal - discountAmount + totalTax + shippingCost;
 
-            // Update display
-            $subtotalEl.text('$' + subtotal.toFixed(2));
-            $taxAmountEl.text('$' + totalTax.toFixed(2));
-            $grandTotalDisplayEl.text('$' + grandTotal.toFixed(2));
-            $grandTotalEl.val(grandTotal.toFixed(2));
+            // Calculate grand total
+            const grandTotal = subtotalAfterDiscount + taxAmount + shippingCost;
 
-            // Calculate due amount (subtract existing payments)
-            const paidAmount = <?= $purchase['paid_amount'] ?>;
-            const dueAmount = grandTotal - paidAmount;
-            $dueAmountEl.text('$' + dueAmount.toFixed(2));
-            $dueAmountEl.removeClass('text-red-600 text-green-600');
-            $dueAmountEl.addClass(dueAmount > 0 ? 'text-red-600' : 'text-green-600');
+            // Update UI
+            $subtotalEl.text(formatCurrency(subtotal));
+            $taxAmountEl.text(formatCurrency(taxAmount));
+            $grandTotalEl.text(formatCurrency(grandTotal));
+
+            // Update hidden tax field
+            $('#total_tax').val(taxAmount.toFixed(2));
+
+            // Store grand total for payment calculations
+            $grandTotalEl.data('value', grandTotal);
+
+            // Update payment info
+            updatePaymentInfo();
+
+            // Update hidden items input
+            updateItemsInput();
+        }
+
+        function updatePaymentInfo() {
+            const grandTotal = parseFloat($grandTotalEl.data('value')) || 0;
+            const paidAmount = parseFloat($paidAmountEl.val()) || 0;
+            const dueAmount = Math.max(0, grandTotal - paidAmount);
+
+            $paidAmountDisplayEl.text(formatCurrency(paidAmount));
+            $dueAmountEl.text(formatCurrency(dueAmount));
+        }
+
+        function updateItemsInput() {
+            // Prepare items data for form submission
+            const itemsData = purchaseItems.map(item => ({
+                product_id: item.product_id,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                cost_price: item.cost_price,
+                discount: item.discount,
+                discount_type: item.discount_type,
+                tax_rate: item.tax_rate,
+                tax_amount: item.tax_amount,
+                subtotal: item.subtotal,
+                update_cost: item.update_cost,
+                expiry_date: item.expiry_date,
+                batch_number: item.batch_number
+            }));
+
+            $itemsInput.val(JSON.stringify(itemsData));
         }
 
         function handleFormSubmit(e) {
-            if ($('.item-row').length === 0) {
-                e.preventDefault();
+            e.preventDefault();
+
+            // Validate form
+            if (purchaseItems.length === 0) {
                 alert('Please add at least one item to the purchase');
-                return false;
+                return;
             }
 
-            // Update item indices before submitting
-            $('.item-row').each(function(index) {
-                const $row = $(this);
-                $row.find('input[name*="["]').each(function() {
-                    const name = $(this).attr('name');
-                    const newName = name.replace(/items\[\d+\]/, `items[${index}]`);
-                    $(this).attr('name', newName);
-                });
-            });
+            // Update items input before submission
+            updateItemsInput();
 
-            return true;
+            // Submit form
+            $purchaseForm.off('submit'); // Prevent duplicate submission
+            $purchaseForm.submit();
         }
+
+        function saveAsDraft() {
+            // Validate form
+            if (purchaseItems.length === 0) {
+                alert('Please add at least one item to the purchase');
+                return;
+            }
+
+            // Update items input
+            updateItemsInput();
+
+            // Set draft flag
+            $('<input>').attr({
+                type: 'hidden',
+                name: 'is_draft',
+                value: '1'
+            }).appendTo($purchaseForm);
+
+            // Submit form
+            $purchaseForm.off('submit'); // Prevent duplicate submission
+            $purchaseForm.submit();
+        }
+
+        // Helper functions
+        function formatCurrency(amount) {
+            return '<?= session()->get('currency_symbol') ?>' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        function parseCurrency(currencyString) {
+            return parseFloat(currencyString.replace(/[^0-9.-]+/g, ''));
+        }
+
+        // Helper function to format quantity with carton display
+        function formatQuantity(pieces, cartonSize) {
+            if (!cartonSize || cartonSize <= 1) {
+                return parseFloat(pieces).toFixed(2) + ' pcs';
+            }
+
+            const cartons = Math.floor(pieces / cartonSize);
+            const remaining = pieces - (cartons * cartonSize);
+
+            if (remaining > 0) {
+                return cartons + ' ctns + ' + remaining.toFixed(2) + ' pcs';
+            }
+            return cartons + ' ctns';
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize calculator with default values
+        calculateTotals();
+
+        // Keyboard shortcuts
+        $(document).on('keydown', function(e) {
+            // Don't trigger shortcuts when typing in input fields (except barcode)
+            const target = e.target;
+            const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+            const isBarcodeInput = target.id === 'barcode-input';
+            const isModalOpen = !$('#helpModal').hasClass('hidden');
+
+            // ? - Toggle help modal (except when typing in inputs)
+            if (e.key === '?' && !isInput) {
+                e.preventDefault();
+                if (isModalOpen) {
+                    closeHelpModal();
+                } else {
+                    openHelpModal();
+                }
+                return false;
+            }
+            // Escape - Close dropdowns
+            if (e.key === 'Escape') {
+                if (isModalOpen) {
+                    e.preventDefault();
+                    closeHelpModal();
+                    return false;
+                }
+                $('.select2-search, #supplier_id, #payment_method').select2('close');
+                if (!isBarcodeInput) {
+                    setTimeout(() => $('#barcode-input').focus(), 100);
+
+                }
+                return;
+            }
+
+            // F1 - Focus barcode input
+            if (e.key === 'F1') {
+                e.preventDefault();
+                $('#barcode-input').focus().select();
+                return false;
+            }
+            // F2 - Focus product search
+            else if (e.key === 'F2') {
+                e.preventDefault();
+                $('.select2-search').select2('open');
+                return false;
+            }
+            // F3 - Focus supplier dropdown
+            else if (e.key === 'F3') {
+                e.preventDefault();
+                $('#supplier_id').select2('open');
+                return false;
+            }
+            // F6 - Focus paid amount
+            else if (e.key === 'F6') {
+                e.preventDefault();
+                $('#paid_amount').focus().select();
+                return false;
+            }
+            // F8 - Focus discount input
+            else if (e.key === 'F8') {
+                e.preventDefault();
+                $('#discount').focus().select();
+                return false;
+            }
+            // F9 or Ctrl+S - Submit purchase form
+            else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
+                e.preventDefault();
+                if (purchaseItems.length === 0) {
+                    alert('Please add at least one item to the purchase');
+                    return false;
+                }
+
+                // Confirm and submit
+                if (confirm('Save this purchase?')) {
+                    updateItemsInput();
+                    //$purchaseForm.off('submit');
+                    $purchaseForm.submit();
+                }
+                return false;
+            }
+            // F12 - Clear all items
+            else if (e.key === 'F12' && !isInput && purchaseItems.length > 0) {
+                e.preventDefault();
+                if (confirm('Clear all items from purchase?')) {
+                    purchaseItems = [];
+                    $itemsTableBody.empty();
+                    calculateTotals();
+                }
+                return false;
+            }
+            // Delete - Remove last item
+            else if (e.key === 'Delete' && !isInput && purchaseItems.length > 0) {
+                e.preventDefault();
+                removeItem(purchaseItems[purchaseItems.length - 1]);
+            }
+        });
+
+        // Load existing purchase items
+        <?php if (!empty($purchase['items'])): ?>
+            <?php foreach ($purchase['items'] as $index => $item): ?>
+                addProduct({
+                    id: <?= $item['product_id'] ?>,
+                    product_id: <?= $item['product_id'] ?>,
+                    name: <?= json_encode($item['product_name']) ?>,
+                    code: <?= json_encode($item['product_code']) ?>,
+                    cost_price: parseFloat(<?= $item['cost_price'] ?>),
+                    price: parseFloat(<?= $item['unit_price'] ?? 0 ?>),
+                    carton_size: parseFloat(<?= $item['carton_size'] ?? 1 ?>),
+                    quantity: 0, // Will be updated below
+                    stock: 0
+                });
+                // Update the last added item with actual values
+                var loadedItem<?= $index ?> = purchaseItems[0];
+                loadedItem<?= $index ?>.quantity = parseFloat(<?= $item['quantity'] ?>);
+                loadedItem<?= $index ?>.discount = parseFloat(<?= $item['discount'] ?? 0 ?>);
+                loadedItem<?= $index ?>.discount_type = '<?= $item['discount_type'] ?? 'fixed' ?>';
+                loadedItem<?= $index ?>.tax_rate = parseFloat(<?= $item['tax_rate'] ?? 0 ?>);
+                calculateItemTotals(loadedItem<?= $index ?>);
+                updateItemRow(loadedItem<?= $index ?>);
+            <?php endforeach; ?>
+            calculateTotals();
+        <?php endif; ?>
     });
 </script>
+<style>
+    /* Custom POS styling */
+    .select2-container--default .select2-selection--single {
+        height: 32px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0 8px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 30px;
+        padding-left: 0;
+        font-weight: 500;
+        font-size: 0.75rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 30px;
+        right: 8px;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #f3f4f6 !important;
+        color: inherit !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] .text-blue-600 {
+        color: #2563eb !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] .text-gray-500 {
+        color: #6b7280 !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] .text-gray-900 {
+        color: #111827 !important;
+    }
+
+    /* Keyboard shortcut kbd styling */
+    kbd {
+        font-family: 'Courier New', monospace;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+</style>
 <?= $this->endSection() ?>

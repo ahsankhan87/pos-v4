@@ -6,6 +6,9 @@
         <h1 class="text-2xl font-bold text-gray-800">Purchase #<?= $purchase['invoice_no'] ?></h1>
 
         <div class="flex space-x-2 mt-4 md:mt-0">
+            <a href="<?= base_url("/purchases") ?>" class="inline-flex items-center px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-all">
+                <i class="fas fa-arrow-left mr-2"></i>Back to List
+            </a>
             <a href="<?= base_url("/purchases/print/{$purchase['id']}") ?>" class="btn btn-secondary" target="_blank">
                 <i class="fas fa-print mr-2"></i> Print
             </a>
@@ -14,7 +17,7 @@
                 <i class="fas fa-plus mr-2"></i> Create New Purchase
             </a>
 
-            <?php if ($purchase['status'] === 'pending' && can('purchases.edit')): ?>
+            <?php if (can('purchases.edit')): ?>
                 <a href="<?= base_url("/purchases/edit/{$purchase['id']}") ?>" class="btn btn-warning">
                     <i class="fas fa-edit mr-2"></i> Edit
                 </a>
@@ -145,6 +148,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
                             </tr>
                         </thead>
@@ -169,6 +173,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <?= number_to_currency($item['cost_price'], session()->get('currency_symbol'), 'en_US', 2) ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?= number_to_currency($item['unit_price'], session()->get('currency_symbol'), 'en_US', 2) ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap font-medium">
                                         <?= number_to_currency($item['subtotal'], session()->get('currency_symbol'), 'en_US', 2) ?>

@@ -135,6 +135,7 @@ class Suppliers extends \CodeIgniter\Controller
             'email' => 'permit_empty|valid_email',
             'phone' => 'permit_empty',
             'address' => 'permit_empty',
+            'opening_balance' => 'permit_empty|numeric',
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
 
@@ -149,6 +150,7 @@ class Suppliers extends \CodeIgniter\Controller
             'email' => $post['email'],
             'phone' => $post['phone'],
             'address' => $post['address'],
+            'opening_balance' => $post['opening_balance'] ?? 0,
             'created_at' => date('Y-m-d H:i:s'), // Add created_at timestamp
             'store_id' => session('store_id') ?? '', // Store ID from session
         ];
@@ -185,6 +187,7 @@ class Suppliers extends \CodeIgniter\Controller
             'email' => 'permit_empty|valid_email',
             'phone' => 'permit_empty',
             'address' => 'permit_empty',
+            'opening_balance' => 'permit_empty|numeric',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }

@@ -207,6 +207,7 @@ $routes->group('reports/inventory', ['filter' => 'auth'], function ($routes) {
 
 $routes->group('receipts', ['filter' => 'auth'], function ($routes) {
     $routes->get('generate/(:num)', 'Receipts::generate/$1', ['filter' => 'permission:receipts.view']);
+    $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:receipts.view']);
 
     // Template Management
     $routes->get('templates', 'Receipts::templates', ['filter' => 'permission:settings.view']);
@@ -349,6 +350,13 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->delete('delete', 'Purchases::delete', ['filter' => 'permission:purchases.delete']);
 });
 
+$routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'SupplierLedger::index', ['filter' => 'permission:purchases.view']);
+    $routes->get('view/(:num)', 'SupplierLedger::view/$1', ['filter' => 'permission:purchases.view']);
+    $routes->get('print/(:num)', 'SupplierLedger::print/$1', ['filter' => 'permission:purchases.view']);
+    $routes->post('update-opening-balance', 'SupplierLedger::updateOpeningBalance', ['filter' => 'permission:purchases.update']);
+});
+
 $routes->get('logs/datatable', 'AuditLogs::datatable', ['filter' => 'auth']);
 
 $routes->group('employees', ['filter' => 'auth'], function ($routes) {
@@ -369,6 +377,10 @@ $routes->group('employees', ['filter' => 'auth'], function ($routes) {
 $routes->group('purchase_payments', ['filter' => 'auth'], function ($routes) {
     $routes->delete('delete/(:num)', 'PurchasePayments::delete/$1', ['filter' => 'permission:purchases.update']);
 });
+
+// API Routes for AJAX/Long sessions
+$routes->get('api/csrf-refresh', 'Api::csrfRefresh'); // Refresh CSRF token for long POS sessions
+$routes->get('api/keep-alive', 'Api::keepAlive'); // Keep session alive
 
 $routes->get('api/products/search', 'Products::search'); // AJAX endpoint for product search
 $routes->get('api/products/search/(:any)', 'Products::search/$1'); // AJAX endpoint for product search with keyword

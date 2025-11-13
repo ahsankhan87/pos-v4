@@ -63,6 +63,7 @@
                         <code>{{ItemsCount}}</code>
                         <code>{{payment_type}}</code>
                         <code>{{currency}}</code>
+                        <code>{{employee}}</code>
                     </div>
                 </div>
                 <textarea id="template" name="template" rows="20" required
