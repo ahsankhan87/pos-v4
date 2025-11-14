@@ -64,6 +64,11 @@
                         <code>{{payment_type}}</code>
                         <code>{{currency}}</code>
                         <code>{{employee}}</code>
+                        <code>{{customer_name}}</code>
+                        <code>{{customer_address}}</code>
+                        <code>{{customer_phone}}</code>
+                        <code>{{customer_balance}}</code>
+                        <code>{{customer_month_sales}}</code>
                     </div>
                 </div>
                 <textarea id="template" name="template" rows="20" required
@@ -119,7 +124,13 @@
             '{{change}}': '0.20',
             '{{ItemsCount}}': '1',
             '{{payment_type}}': 'Cash',
-            '{{currency}}': '$'
+            '{{currency}}': '$',
+            '{{employee}}': 'John Doe',
+            '{{customer_name}}': 'Jane Smith',
+            '{{customer_address}}': '456 Elm Street, City',
+            '{{customer_phone}}': '(555) 987-6543',
+            '{{customer_balance}}': '100.00',
+            '{{customer_month_sales}}': '50.00'
         };
 
         for (const [key, value] of Object.entries(sampleData)) {

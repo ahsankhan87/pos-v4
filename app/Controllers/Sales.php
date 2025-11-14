@@ -226,7 +226,8 @@ class Sales extends \CodeIgniter\Controller
         $commission_amount = ($employee_id > 0 && $commission_rate > 0) ? round($total * $commission_rate, 2) : 0;
 
         // Validate customer and total
-        if ($customer_id && $total > 0) {
+        if ($customer_id) // Remove this check (&& $total > 0)
+        {
             // Start transaction
             // Start DB transaction
             $db = $salesModel->db;

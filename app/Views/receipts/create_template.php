@@ -64,6 +64,11 @@
                         <code>{{payment_type}}</code>
                         <code>{{currency}}</code>
                         <code>{{employee}}</code>
+                        <code>{{customer_name}}</code>
+                        <code>{{customer_address}}</code>
+                        <code>{{customer_phone}}</code>
+                        <code>{{customer_balance}}</code>
+                        <code>{{customer_month_sales}}</code>
                     </div>
                 </div>
                 <textarea id="template" name="template" rows="20" required

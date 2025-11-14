@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\ReceiptTemplateModel;
 use App\Libraries\WhatsAppService;
+use App\Models\CustomerLedgerModel;
+use App\Models\M_customers;
 
 class Receipts extends BaseController
 {
@@ -44,6 +46,29 @@ class Receipts extends BaseController
             ? round(($discountAmount / $subtotal) * 100, 2)
             : 0;
         // Prepare replacements
+        // Enrich customer details and metrics
+        $customerName = $sale['customer_id'] ? ($sale['customer_name'] ?? '') : '';
+        $customerPhone = $sale['customer_id'] ? ($sale['customer_phone'] ?? '') : '';
+        $customerAddress = $sale['customer_id'] ? ($sale['customer_address'] ?? '') : '';
+        $customerBalance = null;
+        $customerMonthSales = null;
+        if (!empty($sale['customer_id'])) {
+            // $custModel = new M_customers();
+            // $cust = $custModel->find($sale['customer_id']);
+            // if ($cust) {
+            //     $customerPhone = $cust['phone'] ?? '';
+            //     $customerAddress = $cust['address'] ?? '';
+            // }
+            $ledger = new CustomerLedgerModel();
+            $customerBalance = (float) $ledger->getCustomerBalance($sale['customer_id']);
+            $start = date('Y-m-01 00:00:00');
+            $end = date('Y-m-t 23:59:59');
+            $sumRow = $this->M_sales->select('SUM(total) as s')->forStore()->where('customer_id', $sale['customer_id'])->where('created_at >=', $start)->where('created_at <=', $end)->first();
+            $customerMonthSales = (float) ($sumRow['s'] ?? 0);
+        }
+
+        $currency = session()->get('currency_symbol') ?? '$';
+
         $replacements = [
             '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
             '{{store_address}}' => $loggedInStore['address'] ?? '123 Main St, City',
@@ -52,7 +77,12 @@ class Receipts extends BaseController
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
-            '{{customer}}' => $sale['customer_id'] ? $sale['customer_name'] : '',
+            '{{customer}}' => $sale['customer_id'] ? $customerName : '',
+            '{{customer_name}}' => $customerName,
+            '{{customer_phone}}' => $customerPhone,
+            '{{customer_address}}' => $customerAddress,
+            '{{customer_balance}}' => $customerBalance !== null ? number_format($customerBalance, 2) : '',
+            '{{customer_month_sales}}' => $customerMonthSales !== null ? number_format($customerMonthSales, 2) : '',
             '{{items}}' => $this->buildItemsHtml($sale['items']),
             '{{subtotal}}' => number_format($subtotal, 2),
             '{{total_discount}}' => number_format($discountAmount, 2),
@@ -64,8 +94,9 @@ class Receipts extends BaseController
             '{{change}}' => number_format($sale['change_amount'], 2),
             '{{ItemsCount}}' => count($sale['items']) ?? 0,
             '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
-            '{{currency}}' => session()->get('currency_symbol') ?? '$',
-            '{{employee}}' => $sale['employee_name'] ?? ''
+            '{{currency}}' => $currency,
+            '{{employee}}' => $sale['employee_name'] ?? '',
+            '{{employee_phone}}' => $sale['employee_phone'] ?? '',
         ];
 
         // Generate receipt HTML
@@ -116,6 +147,28 @@ class Receipts extends BaseController
             ? round(($discountAmount / $subtotal) * 100, 2)
             : 0;
 
+        // Enrich customer details and metrics (WA)
+        $customerName = $sale['customer_id'] ? ($sale['customer_name'] ?? '') : '';
+        $customerPhone = '';
+        $customerAddress = '';
+        $customerBalance = null;
+        $customerMonthSales = null;
+        if (!empty($sale['customer_id'])) {
+            $custModel = new M_customers();
+            $cust = $custModel->find($sale['customer_id']);
+            if ($cust) {
+                $customerPhone = $cust['phone'] ?? '';
+                $customerAddress = $cust['address'] ?? '';
+            }
+            $ledger = new CustomerLedgerModel();
+            $customerBalance = (float) $ledger->getCustomerBalance($sale['customer_id']);
+            $start = date('Y-m-01 00:00:00');
+            $end = date('Y-m-t 23:59:59');
+            $sumRow = $this->M_sales->select('SUM(total) as s')->forStore()->where('customer_id', $sale['customer_id'])->where('created_at >=', $start)->where('created_at <=', $end)->first();
+            $customerMonthSales = (float) ($sumRow['s'] ?? 0);
+        }
+        $currency = session()->get('currency_symbol') ?? '$';
+
         $replacements = [
             '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
             '{{store_address}}' => $loggedInStore['address'] ?? '123 Main St, City',
@@ -124,7 +177,12 @@ class Receipts extends BaseController
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
-            '{{customer}}' => $sale['customer_id'] ? $sale['customer_name'] : '',
+            '{{customer}}' => $sale['customer_id'] ? $customerName : '',
+            '{{customer_name}}' => $customerName,
+            '{{customer_phone}}' => $customerPhone,
+            '{{customer_address}}' => $customerAddress,
+            '{{customer_balance}}' => $customerBalance !== null ? number_format($customerBalance, 2) : '',
+            '{{customer_month_sales}}' => $customerMonthSales !== null ? number_format($customerMonthSales, 2) : '',
             '{{items}}' => $this->buildItemsHtml($sale['items']),
             '{{subtotal}}' => number_format($subtotal, 2),
             '{{total_discount}}' => number_format($discountAmount, 2),
@@ -136,7 +194,7 @@ class Receipts extends BaseController
             '{{change}}' => number_format($sale['change_amount'], 2),
             '{{ItemsCount}}' => count($sale['items']) ?? 0,
             '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
-            '{{currency}}' => session()->get('currency_symbol') ?? '$',
+            '{{currency}}' => $currency,
             '{{employee}}' => $sale['employee_name'] ?? ''
         ];
 

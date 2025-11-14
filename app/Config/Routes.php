@@ -204,6 +204,7 @@ $routes->group('reports/inventory', ['filter' => 'auth'], function ($routes) {
     $routes->get('movement', 'Reports\Inventory::movement', ['filter' => 'permission:analytics.view']);
     $routes->get('slow-movers', 'Reports\Inventory::slowMovers', ['filter' => 'permission:analytics.view']);
 });
+
 $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:receipts.view,feature:whatsapp']);
 
 $routes->group('receipts', ['filter' => 'auth'], function ($routes) {
@@ -213,6 +214,7 @@ $routes->group('receipts', ['filter' => 'auth'], function ($routes) {
     // Template Management
     $routes->get('templates', 'Receipts::templates', ['filter' => 'permission:settings.view']);
     $routes->get('templates/create', 'Receipts::createTemplate', ['filter' => 'permission:settings.update']);
+    $routes->get('templates/edit/(:num)', 'Receipts::editTemplate/$1', ['filter' => 'permission:settings.update']);
     $routes->post('templates/store', 'Receipts::storeTemplate', ['filter' => 'permission:settings.update']);
     $routes->get('import', 'Products::import', ['filter' => 'permission:products.create,feature:import_export']);
     $routes->post('templates/update/(:num)', 'Receipts::updateTemplate/$1', ['filter' => 'permission:settings.update']);

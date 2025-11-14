@@ -48,20 +48,32 @@ class LicenseService
     }
 
     /**
-     * Generates a signed license code for user and plan, expiring at timestamp.
+     * Generates a signed license code for user and plan.
+     * $expiresAt controls the subscription expiry once activated.
+     * $redeemBy (optional) limits how long this code can be activated (voucher window).
      */
-    public function generateLicenseCode($userId, $planCode, $expiresAt)
+    public function generateLicenseCode($userId, $planCode, $expiresAt, $redeemBy = null)
     {
         // Safety guard: do not allow generation unless explicitly enabled and from CLI
         $allow = getenv('ALLOW_LICENSE_GENERATION');
         if (!function_exists('is_cli') || !is_cli() || $allow !== '1') {
             throw new \RuntimeException('License generation is disabled. Set ALLOW_LICENSE_GENERATION=1 and run via CLI.');
         }
+        // Determine redeem window (voucher validity)
+        $issuedAt = time();
+        if ($redeemBy === null) {
+            $days = (int) (getenv('LICENSE_REDEEM_WINDOW_DAYS') ?: 7);
+            $redeemBy = $issuedAt + max(1, $days) * 86400;
+        } else {
+            $redeemBy = is_numeric($redeemBy) ? (int) $redeemBy : strtotime($redeemBy);
+        }
+
         $payload = [
             'uid' => (int) $userId,
             'plan' => (string) $planCode,
             'exp' => is_numeric($expiresAt) ? (int) $expiresAt : strtotime($expiresAt),
-            'iat' => time(),
+            'iat' => $issuedAt,
+            'rby' => $redeemBy,
         ];
 
         $payloadJson = json_encode($payload);
@@ -76,6 +88,10 @@ class LicenseService
             'code' => $code,
             'plan_id' => $this->planModel->where('code', $planCode)->select('id')->first()['id'] ?? null,
             'expires_at' => date('Y-m-d H:i:s', $payload['exp']),
+            'meta' => json_encode([
+                'issued_at' => $issuedAt,
+                'redeem_by' => $redeemBy,
+            ]),
         ]);
 
         return $code;
@@ -105,6 +121,10 @@ class LicenseService
         if (!$payload) {
             return [false, 'payload'];
         }
+        // Enforce voucher redeem window if present
+        if (!empty($payload['rby']) && time() > (int) $payload['rby']) {
+            return [false, 'redeem_expired'];
+        }
         if (!empty($payload['exp']) && time() > (int) $payload['exp']) {
             return [false, 'expired'];
         }
@@ -126,6 +146,13 @@ class LicenseService
         if ((int) $payload['uid'] !== (int) $userId) {
             $this->log('ACTIVATE_FAIL', $code, 'uid_mismatch', $userId);
             return [false, 'License user mismatch'];
+        }
+
+        // Enforce single-use: if license was already activated, reject
+        $existingLic = $this->licenseModel->findByCode($code);
+        if ($existingLic && !empty($existingLic['activated_at'])) {
+            $this->log('ACTIVATE_FAIL', $code, 'already_used', $userId);
+            return [false, 'This license code has already been used'];
         }
 
         $plan = $this->planModel->findByCode($payload['plan']);
@@ -156,10 +183,19 @@ class LicenseService
         }
         $this->log('ACTIVATE_OK', $code, 'activated:sub_id=' . $subId . ':plan_id=' . $plan['id'], $userId);
 
-        // Mark license as activated
+        // Mark license as activated (create if missing to lock reuse)
         $lic = $this->licenseModel->findByCode($code);
+        $now = date('Y-m-d H:i:s');
         if ($lic) {
-            $this->licenseModel->update($lic['id'], ['activated_at' => date('Y-m-d H:i:s')]);
+            $this->licenseModel->update($lic['id'], ['activated_at' => $now]);
+        } else {
+            $this->licenseModel->insert([
+                'user_id' => $userId,
+                'code' => $code,
+                'plan_id' => $plan['id'],
+                'expires_at' => $expAt,
+                'activated_at' => $now,
+            ]);
         }
 
         return [true, 'License activated'];

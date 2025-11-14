@@ -36,7 +36,9 @@ class M_sales extends Model
     {
         // Implement your sale data retrieval here
         // This is a simplified example
-        $sale = $this->select('pos_sales.*, pos_users.name as cashier_name, pos_customers.name as customer_name, pos_employees.name as employee_name')
+        $sale = $this->select('pos_sales.*, pos_users.name as cashier_name, 
+        pos_customers.name as customer_name, pos_customers.address as customer_address, pos_customers.phone as customer_phone,
+        pos_employees.phone as employee_phone,pos_employees.name as employee_name')
             ->join('pos_users', 'pos_users.id = pos_sales.user_id', 'left')
             ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
             ->join('pos_employees', 'pos_employees.id = pos_sales.employee_id', 'left')
