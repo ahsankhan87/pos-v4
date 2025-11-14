@@ -8,6 +8,11 @@ class CreateSupplierLedgerTable extends Migration
 {
     public function up()
     {
+        // If table already exists, skip creation to avoid errors in repeated runs
+        $exists = $this->db->query("SHOW TABLES LIKE 'pos_supplier_ledger'")->getNumRows() > 0;
+        if ($exists) {
+            return;
+        }
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',
@@ -72,6 +77,9 @@ class CreateSupplierLedgerTable extends Migration
 
     public function down()
     {
-        $this->forge->dropTable('pos_supplier_ledger');
+        $exists = $this->db->query("SHOW TABLES LIKE 'pos_supplier_ledger'")->getNumRows() > 0;
+        if ($exists) {
+            $this->forge->dropTable('pos_supplier_ledger');
+        }
     }
 }

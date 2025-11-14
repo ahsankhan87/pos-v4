@@ -37,6 +37,8 @@ class Filters extends BaseFilters
         'auth' => \App\Filters\AuthFilter::class,
         'permission'    => \App\Filters\PermissionFilter::class,
         'store' => \App\Filters\StoreFilter::class,
+        'subscription' => \App\Filters\RequireSubscription::class,
+        'feature' => \App\Filters\RequireFeature::class,
 
     ];
 
@@ -75,6 +77,17 @@ class Filters extends BaseFilters
         'before' => [
             'auth' => ['except' => ['login', 'register', 'forgot-password', 'reset-password/*', 'api/*']],
             'store' => ['except' => ['login', 'logout', 'stores/select', 'stores/switch/*', 'register', 'forgot-password', 'reset-password/*', 'api/*']],
+            'subscription' => ['except' => [
+                'login',
+                'logout',
+                'register',
+                'forgot-password',
+                'reset-password/*',
+                'api/*',
+                'billing/*',
+                'webhooks/*',
+                'products/barcode_image/*'
+            ]],
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',

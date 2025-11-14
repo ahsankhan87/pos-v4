@@ -283,6 +283,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     <span class="font-medium"><?= session()->get('store_name') ? esc(session()->get('store_name')) : 'No Store Selected' ?></span>
                                 </div>
                             </div>
+                            <?php /* Subscription pill removed from header as requested */ ?>
                             <?php
                             $stores = session()->get('stores');
 
@@ -316,6 +317,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     <div class="py-1">
                                         <a href="<?= site_url('stores/show/' . session()->get('store_id')) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                             <i class="fas fa-user-cog mr-2"></i> Profile
+                                        </a>
+                                        <a href="<?= site_url('billing/manage') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                            <i class="fas fa-id-badge mr-2"></i> Subscription
                                         </a>
                                         <a href="<?= site_url('users') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                             <i class="fas fa-users mr-2"></i> User Management
@@ -486,11 +490,15 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
 
                         <div class="border-t border-blue-600 pt-2 mt-2">
                             <!-- Mobile Settings Links -->
+                            <?php /* Mobile subscription pill removed from header as requested */ ?>
                             <a href="<?= site_url('users') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-users mr-2"></i> Users
                             </a>
                             <a href="<?= site_url('roles') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-user-shield mr-2"></i> Roles
+                            </a>
+                            <a href="<?= site_url('billing/manage') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-id-badge mr-2"></i> Subscription
                             </a>
                             <a href="<?= site_url('stores/select') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-exchange-alt mr-2"></i> Switch Store
@@ -710,6 +718,29 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 <?php endif; ?>
                             </div>
                         </div> -->
+
+                        <?php
+                        // Gentle renewal banner when near expiry (<=3 days) and not dismissed in this session
+                        helper('subscription');
+                        $bannerInfo = subscription_info();
+                        $showRenewBanner = $bannerInfo['active'] && ($bannerInfo['days_left'] !== null) && ($bannerInfo['days_left'] <= 3) && !session()->get('dismiss_renewal_banner');
+                        if ($showRenewBanner):
+                            $billingCfg = config('Billing');
+                        ?>
+                            <div class="mb-3 rounded-md border border-yellow-200 bg-yellow-50 p-3 flex items-start justify-between">
+                                <div class="text-sm text-yellow-900">
+                                    <strong>Heads up:</strong> Your <?= $bannerInfo['is_trial'] ? 'trial' : 'subscription' ?> <?= $bannerInfo['days_left'] === 0 ? 'has expired' : 'is ending soon' ?>.
+                                    Visit <a target="_blank" rel="noopener" href="<?= esc($billingCfg->supportWebsite) ?>" class="underline">our website</a>
+                                    <?php if (!empty($billingCfg->supportPhone)): ?> or <a href="tel:<?= preg_replace('/[^0-9+]/', '', $billingCfg->supportPhone) ?>" class="underline">call us</a><?php endif; ?> to renew.
+                                </div>
+                                <form method="post" action="<?= site_url('billing/dismiss-banner') ?>">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="ml-3 text-yellow-900 hover:text-yellow-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
 
                         <!-- Content Section -->
                         <div class="<?= !$isPosPage ? 'bg-white shadow rounded-lg overflow-hidden' : '' ?>">
