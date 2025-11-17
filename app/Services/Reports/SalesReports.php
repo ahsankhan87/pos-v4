@@ -233,19 +233,37 @@ class SalesReports
         $builder = $this->db->table('pos_sale_items si');
         $builder->select('COALESCE(SUM(si.subtotal),0) as revenue, COALESCE(SUM(si.cost_price * si.quantity),0) as cogs')
             ->join('pos_sales s', 's.id = si.sale_id')
-            ->where('DATE(s.created_at) >=', $start)
-            ->where('DATE(s.created_at) <=', $end);
+            ->where('s.created_at >=', $start . ' 00:00:00')
+            ->where('s.created_at <=', $end . ' 23:59:59');
         if ($storeId !== null) {
             $builder->where('s.store_id', $storeId);
         }
         $row = $builder->get()->getRowArray() ?? ['revenue' => 0, 'cogs' => 0];
-        $revenue = (float)$row['revenue'];
-        $cogs = (float)$row['cogs'];
-        $gross = $revenue - $cogs;
-        $rate = $revenue > 0 ? round(($gross / $revenue) * 100, 2) : 0.0;
+
+        // Base totals from sales items
+        $revenue = (float)($row['revenue'] ?? 0);
+        $cogs = (float)($row['cogs'] ?? 0);
+
+        // Adjust for sales returns in the same period (deduct returned revenue, credit back cost)
+        $ret = $this->db->table('pos_sales_returns r')
+            ->select('COALESCE(SUM(r.return_amount),0) as returns_revenue, COALESCE(SUM(r.quantity * si.cost_price),0) as returns_cost')
+            ->join('pos_sale_items si', 'si.sale_id = r.sale_id AND si.product_id = r.product_id', 'left')
+            ->where('r.created_at >=', $start . ' 00:00:00')
+            ->where('r.created_at <=', $end . ' 23:59:59');
+        if ($storeId !== null) {
+            $ret->where('r.store_id', $storeId);
+        }
+        $retRow = $ret->get()->getRowArray() ?? ['returns_revenue' => 0, 'returns_cost' => 0];
+        $returnsRevenue = (float)($retRow['returns_revenue'] ?? 0);
+        $returnsCost = (float)($retRow['returns_cost'] ?? 0);
+
+        $netRevenue = max(0.0, $revenue - $returnsRevenue);
+        $netCogs = max(0.0, $cogs - $returnsCost);
+        $gross = $netRevenue - $netCogs;
+        $rate = $netRevenue > 0 ? round(($gross / $netRevenue) * 100, 2) : 0.0;
         return [
-            'revenue' => round($revenue, 2),
-            'cogs' => round($cogs, 2),
+            'revenue' => round($netRevenue, 2),
+            'cogs' => round($netCogs, 2),
             'gross_margin' => round($gross, 2),
             'margin_rate' => $rate,
         ];

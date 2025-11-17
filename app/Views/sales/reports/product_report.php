@@ -2,20 +2,19 @@
 <?= $this->section('content') ?>
 <?php
 $from = isset($from) ? $from : (isset($date) ? $date : date('Y-m-d'));
-$to = isset($to) ? $to : (isset($date) ? $date : date('Y-m-d'));
+$to = isset($to) ? $to : $from;
 $employee_id = isset($employee_id) ? $employee_id : '';
 $currency = session()->get('currency_symbol') ?? '$';
 $totalQty = 0;
 $totalSales = 0;
 $productCount = 0;
-foreach ($items as $it) {
-    $totalQty += (float)($it['total_qty'] ?? 0);
-    $totalSales += (float)($it['total_sales'] ?? 0);
-    $productCount++;
-}
-function money_fmt($v)
-{
-    return number_format((float)$v, 2);
+
+if (!empty($items)) {
+    foreach ($items as $it) {
+        $totalQty += (float)($it['total_qty'] ?? 0);
+        $totalSales += (float)($it['total_sales'] ?? 0);
+        $productCount++;
+    }
 }
 
 $employeeName = '';
@@ -28,24 +27,42 @@ if (!empty($employee_id) && !empty($employees)) {
     }
 }
 
-function formatQuantity($pieces, $cartonSize)
-{
-    if (!$cartonSize || $cartonSize <= 1) {
-        return number_format($pieces, 2) . ' pcs';
+if (!function_exists('money_fmt')) {
+    function money_fmt($v)
+    {
+        return number_format((float)$v, 2, '.', ',');
     }
+}
 
-    $cartons = floor($pieces / $cartonSize);
-    $remaining = $pieces - ($cartons * $cartonSize);
-
-    if ($remaining > 0) {
-        return number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+if (!function_exists('formatQuantity')) {
+    function formatQuantity($pieces, $cartonSize)
+    {
+        $pieces = (float)$pieces;
+        $cartonSize = (float)$cartonSize;
+        if (!$cartonSize || $cartonSize <= 1) {
+            return number_format($pieces, 2) . ' pcs';
+        }
+        $cartons = floor($pieces / $cartonSize);
+        $remaining = $pieces - ($cartons * $cartonSize);
+        if ($remaining > 0) {
+            return number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+        }
+        return number_format($cartons) . ' ctns';
     }
-    return number_format($cartons) . ' ctns';
 }
 ?>
 
 <style>
+    html,
+    body {
+        margin: 0 !important;
+    }
+
     @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
 
         header,
         footer,
@@ -57,16 +74,69 @@ function formatQuantity($pieces, $cartonSize)
 
         body {
             background: #fff !important;
+            font-size: 11px;
+        }
+
+        .max-w-7xl,
+        .bg-white.shadow,
+        .rounded-lg {
+            box-shadow: none !important;
         }
 
         .print-container {
             box-shadow: none !important;
             padding: 0 !important;
         }
+
+        .stats-summary {
+            display: none !important;
+        }
+
+        .print-container .px-6 {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+
+        .print-container .py-3 {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+        }
+
+        .print-container .py-4 {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+
+        .print-container .py-5 {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+        }
+
+        .print-container table {
+            width: 100%;
+            border-collapse: collapse !important;
+        }
+
+        .print-container th,
+        .print-container td {
+            padding: 4px 6px !important;
+            border: 1px solid #ddd !important;
+            font-size: 11px !important;
+        }
+
+        h2 {
+            font-size: 14px !important;
+            margin: 0 0 4px 0 !important;
+        }
+
+        h3 {
+            font-size: 13px !important;
+            margin: 0 !important;
+        }
     }
 </style>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto print-root">
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
@@ -96,9 +166,10 @@ function formatQuantity($pieces, $cartonSize)
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> Apply
                     </button>
-                    <button type="button" id="btn-print" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                    <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
+                    <a href="<?= site_url('sales/product-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
                         <i class="fas fa-print mr-2"></i> Print
-                    </button>
+                    </a>
                 </div>
                 <div class="flex items-end gap-2">
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
@@ -121,7 +192,7 @@ function formatQuantity($pieces, $cartonSize)
                 </div>
             </form>
         </div>
-        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                 <div class="text-xs text-blue-700">Total Sales</div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></div>
@@ -173,9 +244,6 @@ function formatQuantity($pieces, $cartonSize)
 </div>
 
 <script>
-    document.getElementById('btn-print')?.addEventListener('click', function() {
-        window.print();
-    });
     (function() {
         function fmt(d) {
             return d.toISOString().slice(0, 10);

@@ -35,6 +35,13 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('customer-report', 'Sales::customerReport', ['filter' => 'permission:sales.view']);
     $routes->get('category-report', 'Sales::categoryReport', ['filter' => 'permission:sales.view']);
     $routes->get('unit-report', 'Sales::unitReport', ['filter' => 'permission:sales.view']);
+    // Print views
+    $routes->get('report/print', 'Sales::reportPrint', ['filter' => 'permission:sales.view']);
+    $routes->get('product-report/print', 'Sales::productReportPrint', ['filter' => 'permission:sales.view']);
+    $routes->get('customer-report/print', 'Sales::customerReportPrint', ['filter' => 'permission:sales.view']);
+    $routes->get('category-report/print', 'Sales::categoryReportPrint', ['filter' => 'permission:sales.view']);
+    $routes->get('unit-report/print', 'Sales::unitReportPrint', ['filter' => 'permission:sales.view']);
+    $routes->get('profit-loss-report/print', 'Sales::profitLossReportPrint', ['filter' => 'permission:sales.view']);
     $routes->get('report/export', 'Sales::exportReport', ['filter' => 'permission:sales.view']);
     $routes->get('product-report/export', 'Sales::exportProductReport', ['filter' => 'permission:sales.view']);
     $routes->get('customer-report/export', 'Sales::exportCustomerReport', ['filter' => 'permission:sales.view']);
@@ -312,6 +319,8 @@ $routes->group('products', ['filter' => 'auth'], function ($routes) {
     $routes->get('(:num)', 'Products::show/$1', ['filter' => 'permission:products.view']);
     $routes->get('stock-movement-history/(:num)', 'Products::stockMovementHistory/$1', ['filter' => 'permission:products.view']);
     $routes->get('barcode_image/(:any)', 'Products::barcode_image/$1'); // Public barcode image endpoint
+    $routes->get('printLabels6025', 'Products::printLabels6025', ['filter' => 'permission:products.view ']);
+
     // Import
     $routes->get('import', 'Products::import', ['filter' => 'permission:products.create']);
     $routes->post('import', 'Products::import', ['filter' => 'permission:products.create']);

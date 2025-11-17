@@ -94,6 +94,14 @@
                     <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-ellipsis-h text-slate-600"></i> Actions</h3>
                 </div>
                 <div class="p-4 space-y-2">
+                    <?php if (can('sales.create')): ?>
+                        <a href="<?= site_url('sales/new?customer_id=' . (int) $customer['id']) ?>" class="btn btn-success w-full">
+                            <i class="fas fa-shopping-bag"></i> New Sale
+                        </a>
+                        <!-- <a href="<?= site_url('sales/pos?customer_id=' . (int) $customer['id']) ?>" class="btn btn-info w-full">
+                            <i class="fas fa-cash-register"></i> POS Sale
+                        </a> -->
+                    <?php endif; ?>
                     <a href="<?= site_url('customers/edit/' . $customer['id']) ?>" class="btn btn-primary w-full"><i class="fas fa-edit"></i> Edit Customer</a>
                     <a href="<?= site_url('customers') ?>" class="btn btn-muted w-full"><i class="fas fa-arrow-left"></i> Back to List</a>
                 </div>

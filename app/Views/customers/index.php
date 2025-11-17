@@ -67,6 +67,7 @@
                         <th scope="col">Phone</th>
                         <th scope="col">Area</th>
                         <th scope="col">Address</th>
+                        <th scope="col" class="text-center">Sales</th>
                         <th scope="col" class="text-right">Actions</th>
                     </tr>
                 </thead>
@@ -92,6 +93,7 @@
             edit: <?= json_encode(site_url('customers/edit')) ?>,
             delete: <?= json_encode(site_url('customers/delete')) ?>,
             viewLedger: <?= json_encode(site_url('customers/ledger')) ?>,
+            salesNew: <?= json_encode(site_url('sales/new')) ?>,
         };
 
         const table = $('#customersTable').DataTable({
@@ -151,6 +153,22 @@
                     name: 'address',
                     render: function(data) {
                         return escapeHtml(data || '');
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function(row) {
+                        <?php if (can('sales.create')): ?>
+                            const url = routes.salesNew + '?customer_id=' + encodeURIComponent(row.id);
+                            return '<a href="' + url + '" target="_blank" class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="New Sale">\
+                                <i class="fas fa-shopping-bag mr-1"></i> Sale\
+                            </a>';
+                        <?php else: ?>
+                            return '<span class="text-gray-400 text-xs">—</span>';
+                        <?php endif; ?>
                     }
                 },
                 {

@@ -305,6 +305,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                                     <th class="px-2 py-1 text-left text-xs font-bold text-gray-600 uppercase">Product</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Price</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Qty</th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Disc</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Total</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Act</th>
                                 </tr>
@@ -336,6 +337,19 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     </h3>
 
                     <div class="space-y-1.5">
+                        <!-- Date -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Date</label>
+                            <?php
+                            $existingDate = $sale['created_at'] ?? date('Y-m-d H:i:s');
+                            $dtVal = old('sale_date');
+                            if (!$dtVal) {
+                                $dtVal = date('Y-m-d\TH:i', strtotime($existingDate));
+                            }
+                            ?>
+                            <input type="datetime-local" name="sale_date" value="<?= esc($dtVal) ?>"
+                                class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
+                        </div>
                         <div>
                             <?php $selectedCustomer = (string) old('customer_id', $sale['customer_id'] ?? ''); ?>
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Customer <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F3</kbd></label>
@@ -386,24 +400,11 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5">Disc <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F8</kbd></label>
                                 <div class="flex items-center gap-0.5">
-                                    <?php
-                                    $selectedDiscountType = old('discount_type', $sale['discount_type'] ?? 'fixed');
-                                    $prefillDiscount = old('discount');
-                                    if ($prefillDiscount === null || $prefillDiscount === '') {
-                                        // If percentage, derive percent from stored absolute discount vs. subtotal; otherwise use absolute
-                                        if ($selectedDiscountType === 'percentage') {
-                                            $baseSubtotal = (float) $initialSubtotal;
-                                            $prefillDiscount = $baseSubtotal > 0 ? round(((float)$storedDiscount / $baseSubtotal) * 100, 2) : 0;
-                                        } else {
-                                            $prefillDiscount = (float) $storedDiscount;
-                                        }
-                                    }
-                                    ?>
-                                    <input type="number" id="discount" name="discount" value="<?= esc($prefillDiscount) ?>" min="0" step="0.01"
-                                        class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <select id="discount_type" name="discount_type" class="border border-gray-300 rounded px-1 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                        <option value="fixed" <?= $selectedDiscountType === 'fixed' ? 'selected' : '' ?>><?= session()->get('currency_symbol') ?? '$' ?></option>
-                                        <option value="percentage" <?= $selectedDiscountType === 'percentage' ? 'selected' : '' ?>>%</option>
+                                    <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" disabled title="Use item-wise discounts"
+                                        class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-gray-100 cursor-not-allowed">
+                                    <select id="discount_type" name="discount_type" disabled title="Use item-wise discounts" class="border border-gray-300 rounded px-1 py-1 text-xs bg-gray-100 cursor-not-allowed">
+                                        <option value="fixed"><?= session()->get('currency_symbol') ?? '$' ?></option>
+                                        <option value="percentage">%</option>
                                     </select>
                                 </div>
                                 <input type="hidden" name="total_discount" id="total_discount" value="<?= esc(old('total_discount', $sale['total_discount'] ?? 0)) ?>">
@@ -475,7 +476,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             </button>
                         </div>
                         <button type="submit"
-                            class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-bold rounded hover:from-blue-700 hover:to-blue-800 transition-all shadow-md">
+                            class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xl font-bold rounded hover:from-blue-700 hover:to-blue-800 transition-all shadow-md">
                             <i class="fas fa-save mr-1.5"></i>UPDATE SALE <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
                         </button>
                     </div>
@@ -590,6 +591,74 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 hour12: true
             });
         }
+
+        // Build a descriptor for the current focused cart field
+        function captureFocusDescriptor() {
+            const ae = document.activeElement;
+            if (!ae) return null;
+            if (!ae.matches('.cart-qty-input, .item-discount-input, .cart-price-input, .cart-unit-selector, .item-discount-type')) return null;
+            const idx = parseInt(ae.getAttribute('data-cart-idx'));
+            if (isNaN(idx)) return null;
+            let field;
+            if (ae.classList.contains('cart-qty-input')) field = 'qty';
+            else if (ae.classList.contains('item-discount-input')) field = 'discount';
+            else if (ae.classList.contains('cart-price-input')) field = 'price';
+            else if (ae.classList.contains('cart-unit-selector')) field = 'unit';
+            else if (ae.classList.contains('item-discount-type')) field = 'discount_type';
+            return {
+                idx,
+                field,
+                selectionStart: ae.selectionStart,
+                selectionEnd: ae.selectionEnd,
+                selectAll: (ae.tagName === 'INPUT')
+            };
+        }
+
+        // Compute next focus target on Tab within cart fields
+        $(document).on('keydown', '#cart-items input, #cart-items select', function(e) {
+            if (e.key !== 'Tab') return;
+            const ae = this;
+            const idx = parseInt(ae.getAttribute('data-cart-idx'));
+            if (isNaN(idx)) return;
+            const hasUnit = !!document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
+            const baseSeq = hasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+            const currentField = ae.getAttribute('data-field') || (ae.classList.contains('cart-qty-input') ? 'qty' : (ae.classList.contains('cart-price-input') ? 'price' : (ae.classList.contains('item-discount-input') ? 'discount' : (ae.classList.contains('cart-unit-selector') ? 'unit' : 'discount_type'))));
+            let i = baseSeq.indexOf(currentField);
+            if (i === -1) return;
+            let targetIdx = idx;
+            let targetField;
+            if (e.shiftKey) {
+                if (i === 0) {
+                    targetIdx = idx - 1;
+                    const prevHasUnit = !!document.querySelector(`select.cart-unit-selector[data-cart-idx="${targetIdx}"]`);
+                    const prevSeq = prevHasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+                    targetField = prevSeq[prevSeq.length - 1];
+                } else {
+                    targetField = baseSeq[i - 1];
+                }
+            } else {
+                if (i === baseSeq.length - 1) {
+                    targetIdx = idx + 1;
+                    const nextHasUnit = !!document.querySelector(`select.cart-unit-selector[data-cart-idx="${targetIdx}"]`);
+                    const nextSeq = nextHasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+                    targetField = nextSeq[0];
+                } else {
+                    targetField = baseSeq[i + 1];
+                }
+            }
+            if (targetIdx < 0 || !document.querySelector(`[data-cart-idx="${targetIdx}"]`)) {
+                nextFocusAfterRender = {
+                    idx: null,
+                    field: null
+                };
+                return;
+            }
+            nextFocusAfterRender = {
+                idx: targetIdx,
+                field: targetField,
+                selectAll: true
+            };
+        });
         setInterval(updateTime, 1000);
 
         // Client-side validation for sale and draft
@@ -819,7 +888,9 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 quantity: quantity > 0 ? quantity : 1,
                 stock: stock > 0 ? stock : (quantity > 0 ? quantity : 1),
                 barcode: item.barcode || '',
-                carton_size: Number(item.carton_size ?? 0)
+                carton_size: Number(item.carton_size ?? 0),
+                discount: Number(item.discount ?? 0) || 0,
+                discount_type: (item.discount_type === 'percentage') ? 'percentage' : 'fixed'
             };
         }
 
@@ -848,6 +919,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         let cart = resolveInitialCart();
         let lastGrandTotal = 0; // Track latest computed total for tendered/change
         let skipRefocus = false; // Flag to prevent refocus during manual edits
+        let nextFocusAfterRender = null; // Planned next focus (for Tab navigation)
 
         // Customer selection handling
         $('#customer-select').on('change', function() {
@@ -974,6 +1046,14 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     {
                         name: 'price[]',
                         value: item.price
+                    },
+                    {
+                        name: 'discount[]',
+                        value: item.discount || 0
+                    },
+                    {
+                        name: 'discount_type[]',
+                        value: item.discount_type || 'fixed'
                     }
                 ];
 
@@ -987,20 +1067,32 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             });
         }
 
-        function renderCart() {
+        function renderCart(restoreFocus = null) {
             let tbody = '';
-            let subtotal = 0;
+            let subtotal = 0; // gross
+            let totalDiscount = 0;
 
             cart.forEach((item, idx) => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
+                const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                let lineDiscount = 0;
+                if (item.discount && parseFloat(item.discount) > 0) {
+                    if ((item.discount_type || 'fixed') === 'percentage') {
+                        lineDiscount = lineBase * (parseFloat(item.discount) / 100);
+                    } else {
+                        lineDiscount = parseFloat(item.discount);
+                    }
+                    if (lineDiscount > lineBase) lineDiscount = lineBase;
+                }
+                const itemTotal = lineBase - lineDiscount;
+                subtotal += lineBase;
+                totalDiscount += lineDiscount;
 
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const hasCartons = cartonSize > 1;
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' pcs');
 
                 tbody += `
-                <tr class="hover:bg-gray-50 transition-colors">
+                <tr class="hover:bg-gray-50 transition-colors" data-cart-idx="${idx}">
                     <td class="px-2 py-1.5">
                         <div class="flex items-center">
                             <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center mr-1.5">
@@ -1017,7 +1109,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><?= session()->get('currency_symbol') ?></span>
                             <input type="number" min="0" step="0.01" value="${formatCurrency(item.price)}" 
                                 onchange="updatePrice(${idx}, this.value)" 
-                                class="w-20 pl-3 pr-1 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold focus:ring-1 focus:ring-blue-500">
+                                data-cart-idx="${idx}" data-field="price"
+                                class="cart-price-input w-20 pl-3 pr-1 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold focus:ring-1 focus:ring-blue-500">
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
@@ -1029,9 +1122,9 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             </button>
                             <input type="number" min="0.01" step="0.01" value="${formatCurrency(item.quantity)}" 
                                 onchange="updateQtyInput(${idx}, this.value)" 
-                                data-cart-idx="${idx}"
+                                data-cart-idx="${idx}" data-field="qty"
                                 data-carton-size="${cartonSize}"
-                                class="cart-qty-input qty-input w-10 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
+                                class="cart-qty-input qty-input w-14 text-center border border-gray-300 rounded py-1 text-sm font-semibold">
                             <button type="button" onclick="incrementQty(${idx})" 
                                 class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
                                 <i class="fas fa-plus text-xs"></i>
@@ -1039,13 +1132,25 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         </div>
                         ${hasCartons ? `
                         <select onchange="changeQtyUnit(${idx}, this.value)" 
-                            data-cart-idx="${idx}"
+                            data-cart-idx="${idx}" data-field="unit"
                             class="cart-unit-selector unit-selector mt-1 w-full text-[10px] rounded border-gray-300 py-0.5 px-1">
                             <option value="pieces" selected>Pieces</option>
                             <option value="cartons">Cartons (${cartonSize} pcs)</option>
                         </select>
                         ` : '<div class="text-xs text-gray-500 mt-0.5">pieces</div>'}
                         <div class="text-xs text-gray-500 mt-0.5">Stock: ${stockDisplay}</div>
+                    </td>
+                    <td class="px-2 py-1.5 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <input type="number" min="0" step="0.01" value="${(parseFloat(item.discount||0)).toFixed(2)}"
+                                onchange="updateItemDiscount(${idx}, this.value)"
+                                data-cart-idx="${idx}" data-field="discount"
+                                class="item-discount-input w-16 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
+                            <select onchange="updateItemDiscountType(${idx}, this.value)" data-cart-idx="${idx}" data-field="discount_type" class="item-discount-type text-[10px] border border-gray-300 rounded px-1 py-0.5">
+                                <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
+                                <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
+                            </select>
+                        </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <div class="text-xs font-bold text-gray-900"><?= session()->get('currency_symbol') ?>${formatCurrency(itemTotal)}</div>
@@ -1073,25 +1178,63 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             $('#cart-count').text(cart.length);
 
             // Calculate totals
-            calculateTotals(subtotal);
+            calculateTotals(subtotal, totalDiscount);
             syncHiddenFormData();
 
-            // CRITICAL: Return focus to barcode input after cart operations
-            // BUT: Don't steal focus if user is editing discount, tax, qty, or price fields
+            // CRITICAL: Restore planned focus first (natural Tab), else barcode fallback
             requestAnimationFrame(() => {
                 const barcodeInput = document.getElementById('barcode-input');
                 const activeElement = document.activeElement;
 
-                // Skip refocus if this was triggered by a manual button click or input edit
+                // 1) Planned focus (from Tab) or explicit restoreFocus
+                const planned = restoreFocus && typeof restoreFocus.idx === 'number' ? restoreFocus : (nextFocusAfterRender || null);
+                nextFocusAfterRender = null; // consume once
+                if (planned && typeof planned.idx === 'number') {
+                    let selector;
+                    switch (planned.field) {
+                        case 'qty':
+                            selector = `.cart-qty-input[data-cart-idx="${planned.idx}"]`;
+                            break;
+                        case 'discount':
+                            selector = `.item-discount-input[data-cart-idx="${planned.idx}"]`;
+                            break;
+                        case 'price':
+                            selector = `.cart-price-input[data-cart-idx="${planned.idx}"]`;
+                            break;
+                        case 'unit':
+                            selector = `.cart-unit-selector[data-cart-idx="${planned.idx}"]`;
+                            break;
+                        case 'discount_type':
+                            selector = `.item-discount-type[data-cart-idx="${planned.idx}"]`;
+                            break;
+                    }
+                    if (selector) {
+                        const el = document.querySelector(selector);
+                        if (el) {
+                            el.focus();
+                            if (planned.selectionStart != null && el.setSelectionRange && el.type === 'number') {
+                                try {
+                                    el.setSelectionRange(planned.selectionStart, planned.selectionEnd);
+                                } catch (e) {}
+                            } else if (el.select && (planned.selectAll === true)) {
+                                el.select();
+                            }
+                            skipRefocus = false;
+                            return;
+                        }
+                    }
+                }
+
+                // 2) Skip refocus if this was a manual edit
                 if (skipRefocus) {
                     skipRefocus = false; // Reset flag
                     return;
                 }
 
-                // List of fields that should keep focus when user is editing them
+                // 3) Else, barcode fallback unless editing cart or totals inputs
                 const editableFields = ['discount', 'discount_type', 'taxRate', 'tenderedAmountInput'];
                 const isEditingField = editableFields.includes(activeElement?.id) ||
-                    (activeElement?.type === 'number' && activeElement?.closest('tr')); // qty/price inputs in cart
+                    (activeElement?.type === 'number' && activeElement?.closest('tr'));
 
                 if (barcodeInput && !isEditingField && activeElement !== barcodeInput) {
                     barcodeInput.focus();
@@ -1100,22 +1243,29 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         }
 
         // Calculate all totals
-        function calculateTotals(subtotal = null) {
+        function calculateTotals(subtotal = null, precomputedDiscount = null) {
             if (subtotal === null) {
-                subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                subtotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0)), 0);
             }
 
-            // Calculate discount
+            // Item-wise discount sum
             let discountAmount = 0;
-            const discountValue = parseFloat($('#discount').val()) || 0;
-            const discountType = $('#discount_type').val();
-
-            if (discountValue > 0) {
-                if (discountType === 'percentage') {
-                    discountAmount = subtotal * (discountValue / 100);
-                } else {
-                    discountAmount = discountValue;
-                }
+            if (precomputedDiscount === null) {
+                cart.forEach(function(item) {
+                    const base = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                    let d = 0;
+                    if (item.discount && parseFloat(item.discount) > 0) {
+                        if ((item.discount_type || 'fixed') === 'percentage') {
+                            d = base * (parseFloat(item.discount) / 100);
+                        } else {
+                            d = parseFloat(item.discount);
+                        }
+                        if (d > base) d = base;
+                    }
+                    discountAmount += d;
+                });
+            } else {
+                discountAmount = precomputedDiscount;
             }
 
             // Calculate tax
@@ -1223,6 +1373,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
         window.updateQtyInput = function(idx, inputValue) {
             skipRefocus = true;
+            const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
+            nextFocusAfterRender = null;
             const item = cart[idx];
             const cartonSize = parseFloat(item.carton_size) || 1;
             let qty = parseFloat(inputValue) || 0.01;
@@ -1244,7 +1396,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             }
 
             cart[idx].quantity = qty;
-            renderCart();
+            renderCart(restoreFocus);
         };
 
         window.changeQtyUnit = function(idx, newUnit) {
@@ -1287,10 +1439,30 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
         window.updatePrice = function(idx, price) {
             skipRefocus = true; // Prevent barcode refocus
+            const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
+            nextFocusAfterRender = null;
             price = parseFloat(price);
             if (price < 0) price = 0;
             cart[idx].price = price;
-            renderCart();
+            renderCart(restoreFocus);
+        };
+
+        window.updateItemDiscount = function(idx, val) {
+            skipRefocus = true;
+            const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
+            nextFocusAfterRender = null;
+            let v = parseFloat(val);
+            if (isNaN(v) || v < 0) v = 0;
+            cart[idx].discount = v;
+            renderCart(restoreFocus);
+        };
+
+        window.updateItemDiscountType = function(idx, t) {
+            skipRefocus = true;
+            const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
+            nextFocusAfterRender = null;
+            cart[idx].discount_type = (t === 'percentage') ? 'percentage' : 'fixed';
+            renderCart(restoreFocus);
         };
 
         window.removeItem = function(idx) {
@@ -1375,10 +1547,14 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 $('.select2-employee').select2('open');
                 return false;
             }
-            // F8 - Focus discount input
+            // F8 - Focus first item discount input
             else if (e.key === 'F8') {
                 e.preventDefault();
-                $('#discount').focus().select();
+                const firstDisc = document.querySelector('.item-discount-input');
+                if (firstDisc) {
+                    firstDisc.focus();
+                    firstDisc.select && firstDisc.select();
+                }
                 return false;
             }
             // F6 - Focus Tendered Amount

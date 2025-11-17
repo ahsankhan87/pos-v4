@@ -11,10 +11,22 @@
             <button type="button" id="resetCopies" class="btn btn-secondary btn-sm">
                 <span>Reset Copies</span>
             </button>
-            <button type="button" id="printLabels" class="btn btn-primary">
+            <!-- <button type="button" id="printLabels" class="btn btn-primary">
                 <i class="fas fa-print"></i>
                 <span>Print Labels</span>
+            </button> -->
+            <button type="button" id="openExactPrint" class="btn btn-primary btn-sm">
+                <i class="fas fa-external-link-alt"></i>
+                <span>Exact 60×25 Print</span>
             </button>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+                <input type="checkbox" id="showPriceExact" class="border-slate-300" checked>
+                Show price on exact print
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+                <span>Pad (mm)</span>
+                <input type="number" id="padExact" class="w-20 rounded border border-slate-300 px-2 py-1 text-sm" min="0" max="5" step="0.1" value="0">
+            </label>
         </div>
     </div>
 
@@ -60,7 +72,7 @@
                             min="20"
                             max="120"
                             step="1"
-                            value="48">
+                            value="60">
                     </label>
                     <label class="flex flex-col">
                         <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Height (mm)</span>
@@ -71,7 +83,7 @@
                             min="15"
                             max="80"
                             step="1"
-                            value="28">
+                            value="25">
                     </label>
                     <label class="flex flex-col">
                         <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Gap (mm)</span>
@@ -82,7 +94,7 @@
                             min="1"
                             max="20"
                             step="0.5"
-                            value="6">
+                            value="2">
                     </label>
                     <label class="flex flex-col">
                         <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Padding (mm)</span>
@@ -93,7 +105,7 @@
                             min="1"
                             max="15"
                             step="0.5"
-                            value="4">
+                            value="2">
                     </label>
                     <label class="flex flex-col">
                         <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Barcode height (mm)</span>
@@ -104,12 +116,13 @@
                             min="10"
                             max="40"
                             step="1"
-                            value="18">
+                            value="12">
                     </label>
                 </div>
                 <div class="mt-4 flex flex-wrap items-center gap-3">
                     <button type="button" id="resetLabelSize" class="btn btn-secondary btn-sm">Reset sizing</button>
-                    <span class="text-xs text-slate-500">Adjust the label dimensions to match your paper size or sticker roll before printing.</span>
+                    <button type="button" id="lp1300Preset" class="btn btn-primary btn-sm">LP-1300 60×25 Preset</button>
+                    <span class="text-xs text-slate-500">For Black Copper LP-1300: Paper 60×25 mm, Margins None, Scale 100%.</span>
                 </div>
             </div>
         </div>
@@ -122,16 +135,16 @@
 
 <style>
     :root {
-        --label-width-mm: 48;
-        --label-height-mm: 28;
-        --label-gap-mm: 6;
-        --label-padding-mm: 4;
-        --label-barcode-height-mm: 18;
+        --label-width-mm: 60;
+        --label-height-mm: 25;
+        --label-gap-mm: 2;
+        --label-padding-mm: 2;
+        --label-barcode-height-mm: 12;
     }
 
     @page {
         size: auto;
-        margin: 6mm;
+        margin: 0;
     }
 
     .labels-grid {
@@ -150,15 +163,15 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 0.1rem;
+        gap: 0.05rem;
         width: 100%;
         max-width: calc(var(--label-width-mm, 48) * 1mm);
-        min-height: calc(var(--label-height-mm, 28) * 1mm);
+        height: calc(var(--label-height-mm, 28) * 1mm);
         box-sizing: border-box;
     }
 
     .label-name {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         font-weight: 700;
         color: #0f172a;
         line-height: 1.2;
@@ -166,7 +179,7 @@
     }
 
     .label-meta {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: #0f172a;
         letter-spacing: 0.08em;
         font-weight: 600;
@@ -180,7 +193,7 @@
     }
 
     .label-barcode-text {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         color: #1e293b;
         letter-spacing: 0.05em;
     }
@@ -198,23 +211,29 @@
             display: none !important;
         }
 
+        html,
         body {
             background: #fff;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         .labels-grid {
-            grid-template-columns: repeat(auto-fit, minmax(calc(var(--label-width-mm, 48) * 1mm), 1fr));
-            gap: calc(var(--label-gap-mm, 6) * 1mm);
+            display: block;
+            /* single column for roll */
         }
 
         .label-card {
-            max-width: calc(var(--label-width-mm, 48) * 1mm);
-            width: 100%;
-            min-height: calc(var(--label-height-mm, 28) * 1mm);
+            width: calc(var(--label-width-mm, 48) * 1mm);
+            height: calc(var(--label-height-mm, 28) * 1mm);
             padding: calc(var(--label-padding-mm, 4) * 1mm);
-            border-radius: 0.3rem;
-            border-color: #94a3b8;
-            gap: 0.3rem;
+            border-radius: 0.2rem;
+            border: none;
+            /* cleaner thermal print */
+            gap: 0.2rem;
+            margin: 0 0 calc(var(--label-gap-mm, 6) * 1mm) 0;
+            /* vertical gap */
+            page-break-inside: avoid;
         }
 
         .label-card img {
@@ -222,7 +241,7 @@
         }
 
         .label-barcode-text {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
         }
     }
 </style>
@@ -253,7 +272,9 @@
         const copiesInputs = Array.from(document.querySelectorAll('[data-product]'));
         const resetButton = document.getElementById('resetCopies');
         const printButton = document.getElementById('printLabels');
+        const exactPrintBtn = document.getElementById('openExactPrint');
         const labelSizeResetButton = document.getElementById('resetLabelSize');
+        const lpPresetBtn = document.getElementById('lp1300Preset');
         const root = document.documentElement;
 
         const dimensionInputs = {
@@ -265,11 +286,11 @@
         };
 
         const dimensionDefaults = {
-            width: 48,
-            height: 28,
-            gap: 6,
-            padding: 4,
-            barcode: 18,
+            width: 60,
+            height: 25,
+            gap: 2,
+            padding: 2,
+            barcode: 12,
         };
 
         const dimensionVarMap = {
@@ -438,9 +459,79 @@
             });
         }
 
+        if (lpPresetBtn) {
+            lpPresetBtn.addEventListener('click', () => {
+                const preset = {
+                    width: 60,
+                    height: 25,
+                    gap: 2,
+                    padding: 2,
+                    barcode: 12
+                };
+                Object.entries(preset).forEach(([key, value]) => {
+                    const input = dimensionInputs[key];
+                    if (!input) return;
+                    input.value = value;
+                    root.style.setProperty(dimensionVarMap[key], value.toString());
+                });
+                renderLabels();
+            });
+        }
+
         if (printButton) {
             printButton.addEventListener('click', () => {
                 window.print();
+            });
+        }
+
+        // Open dedicated exact 60x25 printer-friendly page with selected copies
+        function buildLabelsQuery() {
+            const copies = getCopiesMap();
+            const pairs = [];
+            copies.forEach((cnt, pid) => {
+                if (cnt > 0) pairs.push(pid + 'x' + cnt);
+            });
+            return pairs.join(',');
+        }
+        if (exactPrintBtn) {
+            exactPrintBtn.addEventListener('click', () => {
+                const q = buildLabelsQuery();
+                if (!q) {
+                    alert('No labels selected.');
+                    return;
+                }
+                const showPriceCheckbox = document.getElementById('showPriceExact');
+                const showPrice = showPriceCheckbox && showPriceCheckbox.checked ? 1 : 0;
+
+                // Read current barcode height (mm) from sizing controls
+                let barcodeMm = 12;
+                if (dimensionInputs.barcode && dimensionInputs.barcode.value !== '') {
+                    const n = Number(dimensionInputs.barcode.value);
+                    if (Number.isFinite(n)) {
+                        barcodeMm = n;
+                    }
+                }
+
+                // Optional extra pad for exact print (mm)
+                let padMm = 0;
+                const padInput = document.getElementById('padExact');
+                if (padInput && padInput.value !== '') {
+                    const p = Number(padInput.value);
+                    if (Number.isFinite(p)) {
+                        padMm = Math.min(5, Math.max(0, p));
+                    }
+                }
+
+                const base = '<?= site_url('products/printLabels6025') ?>';
+                const params = new URLSearchParams();
+                params.set('labels', q);
+                params.set('showPrice', String(showPrice));
+                params.set('barcode', String(barcodeMm));
+                if (padMm > 0) {
+                    params.set('pad', String(padMm));
+                }
+                const url = base + '?' + params.toString();
+                window.open(url, '_blank');
             });
         }
 

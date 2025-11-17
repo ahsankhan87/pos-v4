@@ -27,6 +27,15 @@ function money_fmt($v)
 
 <style>
     @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        html,
+        body {
+            margin: 0 !important;
+        }
 
         header,
         footer,
@@ -38,16 +47,74 @@ function money_fmt($v)
 
         body {
             background: #fff !important;
+            font-size: 11px;
+        }
+
+        .max-w-7xl,
+        .bg-white.shadow,
+        .rounded-lg {
+            box-shadow: none !important;
         }
 
         .print-container {
             box-shadow: none !important;
             padding: 0 !important;
         }
+
+        .print-root {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        .stats-summary {
+            display: none !important;
+        }
+
+        .print-container table {
+            width: 100%;
+            border-collapse: collapse !important;
+        }
+
+        .print-container th,
+        .print-container td {
+            padding: 4px 6px !important;
+            border: 1px solid #ddd !important;
+            font-size: 11px !important;
+        }
+
+        h2 {
+            font-size: 14px !important;
+            margin: 0 0 4px 0 !important;
+        }
+
+        h3 {
+            font-size: 13px !important;
+            margin: 0 !important;
+        }
+
+        .px-6 {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+
+        .py-5 {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+        }
+
+        .py-4 {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+
+        .py-3 {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+        }
     }
 </style>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto print-root">
     <!-- Header + Filters -->
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
@@ -86,9 +153,9 @@ function money_fmt($v)
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> Apply
                     </button>
-                    <button type="button" id="btn-print" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                    <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
                         <i class="fas fa-print mr-2"></i> Print
-                    </button>
+                    </a>
                 </div>
                 <div class="flex items-end gap-2">
                     <a href="<?= site_url('sales/report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to)) ?>"
@@ -111,7 +178,7 @@ function money_fmt($v)
             </form>
         </div>
         <!-- KPI Cards -->
-        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                 <div class="text-xs text-blue-700">Gross Sales</div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></div>
@@ -184,10 +251,6 @@ function money_fmt($v)
 </div>
 
 <script>
-    document.getElementById('btn-print')?.addEventListener('click', function() {
-        window.print();
-    });
-
     // Quick ranges helper
     (function() {
         function fmt(d) {

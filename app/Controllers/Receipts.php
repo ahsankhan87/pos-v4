@@ -260,11 +260,30 @@ class Receipts extends BaseController
             // to show full carton + pieces breakdown, modify here as needed
             $qtyDisplay = $this->formatQuantity($quantity, $cartonSize, true);
 
+            $unitPrice = (float)($item['price'] ?? 0);
+            $lineBase = $unitPrice * $quantity;
+            // Compute line discount if present
+            $lineDiscount = 0.0;
+            $discVal = isset($item['discount']) ? (float)$item['discount'] : 0.0;
+            $discType = strtolower((string)($item['discount_type'] ?? 'fixed'));
+            if ($discVal > 0) {
+                if ($discType === 'percentage') {
+                    $lineDiscount = $lineBase * ($discVal / 100);
+                } else {
+                    $lineDiscount = $discVal;
+                }
+                if ($lineDiscount > $lineBase) {
+                    $lineDiscount = $lineBase;
+                }
+            }
+            $lineNet = $lineBase - $lineDiscount;
+
             $html .= '<tr>';
-            $html .= '<td>' . $item['name'] . '</td>';
+            $html .= '<td>' . htmlspecialchars((string)$item['name']) . '</td>';
             $html .= '<td style="text-align: center;">' . $qtyDisplay . '</td>';
-            $html .= '<td style="text-align: right;">' . number_format($item['price'], 2) . '</td>';
-            $html .= '<td style="text-align: right;">' . number_format($item['quantity'] * $item['price'], 2) . '</td>';
+            $html .= '<td style="text-align: right;">' . number_format($unitPrice, 2) . '</td>';
+            $html .= '<td style="text-align: right;">' . number_format($lineDiscount, 2) . '</td>';
+            $html .= '<td style="text-align: right;">' . number_format($lineNet, 2) . '</td>';
             $html .= '</tr>';
         }
         return $html;

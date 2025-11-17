@@ -285,6 +285,7 @@
                                     <th class="px-2 py-1 text-left text-xs font-bold text-gray-600 uppercase">Product</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Price</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Qty</th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Disc</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Total</th>
                                     <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Act</th>
                                 </tr>
@@ -316,6 +317,13 @@
                     </h3>
 
                     <div class="space-y-1.5">
+                        <!-- Date -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Date</label>
+                            <input type="datetime-local" name="sale_date" value="<?= date('Y-m-d\TH:i') ?>"
+                                class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
+                        </div>
+
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-0.5">Customer <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F3</kbd></label>
                             <select name="customer_id" id="customer-select" class="w-full select2-customer text-xs">
@@ -360,9 +368,9 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5">Disc <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F8</kbd></label>
                                 <div class="flex items-center gap-0.5">
-                                    <input type="number" id="discount" name="discount" value="0" min="0" step="0.01"
-                                        class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <select id="discount_type" name="discount_type" class="border border-gray-300 rounded px-1 py-1 text-xs focus:ring-1 focus:ring-blue-500">
+                                    <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" disabled title="Use item-wise discounts"
+                                        class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-gray-100 cursor-not-allowed">
+                                    <select id="discount_type" name="discount_type" disabled title="Use item-wise discounts" class="border border-gray-300 rounded px-1 py-1 text-xs bg-gray-100 cursor-not-allowed">
                                         <option value="fixed"><?= session()->get('currency_symbol') ?? '$' ?></option>
                                         <option value="percentage">%</option>
                                     </select>
@@ -443,7 +451,7 @@
                         </div>
                         <input type="hidden" name="draft" id="draft-flag" value="0">
                         <button type="submit"
-                            class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-xs font-bold rounded hover:from-green-700 hover:to-green-800 transition-all shadow-md">
+                            class="w-full flex items-center justify-center px-3 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white text-xl font-bold rounded hover:from-green-700 hover:to-green-800 transition-all shadow-md">
                             <i class="fas fa-check-circle mr-1.5"></i>COMPLETE SALE<kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
                         </button>
                     </div>
@@ -793,6 +801,20 @@
             }, 100);
         });
 
+        // Prefill customer from query parameter if provided (e.g., sales/new?customer_id=123)
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const preCustomerId = params.get('customer_id');
+            if (preCustomerId) {
+                const $sel = $('#customer-select');
+                if ($sel.length) {
+                    $sel.val(String(preCustomerId)).trigger('change');
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to preselect customer from URL:', e);
+        }
+
         // Removed server prefill variables (cart now always starts empty)
 
         // Cart management
@@ -938,7 +960,9 @@
                     quantity: 1,
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
-                    unit: 'pieces' // forced default display unit
+                    unit: 'pieces', // forced default display unit
+                    discount: 0,
+                    discount_type: 'fixed'
                 });
                 //showSuccessMessage(`${product.name} added to cart`);
                 // } else {
@@ -953,13 +977,25 @@
         // Remove persistence completely (stub deleted)
 
         // Render cart
-        function renderCart() {
+        function renderCart(restoreFocus = null) {
             let tbody = '';
-            let subtotal = 0;
+            let subtotal = 0; // gross subtotal before discounts
+            let totalDiscount = 0;
 
             cart.forEach((item, idx) => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
+                const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                let lineDiscount = 0;
+                if (item.discount && parseFloat(item.discount) > 0) {
+                    if ((item.discount_type || 'fixed') === 'percentage') {
+                        lineDiscount = lineBase * (parseFloat(item.discount) / 100);
+                    } else {
+                        lineDiscount = parseFloat(item.discount);
+                    }
+                    if (lineDiscount > lineBase) lineDiscount = lineBase;
+                }
+                const itemTotal = lineBase - lineDiscount;
+                subtotal += lineBase;
+                totalDiscount += lineDiscount;
 
                 // Check if product has carton tracking enabled
                 const cartonSize = parseFloat(item.carton_size) || 0;
@@ -982,10 +1018,11 @@
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <div class="relative">
-                            <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><?= session()->get('currency_symbol') ?></span>
+                            <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-xs"><?= session()->get('currency_symbol') ?></span>
                             <input type="number" min="0" step="0.01" value="${item.price.toFixed(2)}" 
                                 onchange="updatePrice(${idx}, this.value)" 
-                                class="w-20 pl-3 pr-1 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold focus:ring-1 focus:ring-blue-500">
+                                data-cart-idx="${idx}"
+                                class="cart-price-input w-24 pl-3 pr-1 text-center border border-gray-300 rounded py-1 text-sm font-semibold focus:ring-1 focus:ring-blue-500">
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
@@ -1002,7 +1039,7 @@
                                 })()}" 
                                 onchange="updateQtyInput(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
-                                class="cart-qty-input w-14 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
+                                class="cart-qty-input w-16 text-center border border-gray-300 rounded py-1 text-sm font-semibold">
                             <button type="button" onclick="incrementQty(${idx})" 
                                 class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
                                 <i class="fas fa-plus text-xs"></i>
@@ -1012,13 +1049,26 @@
                         <div class="flex items-center justify-center">
                             <select onchange="changeQtyUnit(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
-                                class="cart-unit-selector text-[10px] border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 bg-white">
+                                class="cart-unit-selector text-xs border border-gray-300 rounded px-1.5 py-1 focus:ring-1 focus:ring-blue-500 bg-white">
                                 <option value="pieces" ${item.unit === 'pieces' ? 'selected' : ''}>Pieces</option>
                                 <option value="cartons" ${item.unit === 'cartons' ? 'selected' : ''}>Cartons (${cartonSize} pcs)</option>
                             </select>
                         </div>
                         ` : '<div class="text-[10px] text-gray-500">pieces</div>'}
                         <div class="text-[10px] text-gray-500 mt-0.5">Stock: ${stockDisplay}</div>
+                    </td>
+                    <td class="px-2 py-1.5 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <input type="number" min="0" step="0.01" value="${(parseFloat(item.discount||0)).toFixed(2)}"
+                                onchange="updateItemDiscount(${idx}, this.value)"
+                                data-cart-idx="${idx}"
+                                class="item-discount-input w-20 text-center border border-gray-300 rounded py-1 text-sm font-semibold">
+                            <select onchange="updateItemDiscountType(${idx}, this.value)"
+                                data-cart-idx="${idx}" class="item-discount-type text-xs border border-gray-300 rounded px-1.5 py-1">
+                                <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
+                                <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
+                            </select>
+                        </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <div class="text-xs font-bold text-gray-900"><?= session()->get('currency_symbol') ?>${itemTotal.toFixed(2)}</div>
@@ -1046,7 +1096,7 @@
             $('#cart-count').text(cart.length);
 
             // Calculate totals
-            calculateTotals(subtotal);
+            calculateTotals(subtotal, totalDiscount);
 
             // CRITICAL: Return focus to barcode input after cart operations
             // BUT: Don't steal focus if user is editing discount, tax, qty, or price fields
@@ -1055,9 +1105,47 @@
                 const activeElement = document.activeElement;
 
                 // Skip refocus if this was triggered by a manual button click or input edit
+                // If we have a restoreFocus descriptor, attempt to restore it now
+                if (restoreFocus && typeof restoreFocus.idx === 'number') {
+                    let selector;
+                    switch (restoreFocus.field) {
+                        case 'qty':
+                            selector = `.cart-qty-input[data-cart-idx="${restoreFocus.idx}"]`;
+                            break;
+                        case 'discount':
+                            selector = `.item-discount-input[data-cart-idx="${restoreFocus.idx}"]`;
+                            break;
+                        case 'price':
+                            selector = `.cart-price-input[data-cart-idx="${restoreFocus.idx}"]`;
+                            break;
+                        case 'unit':
+                            selector = `.cart-unit-selector[data-cart-idx="${restoreFocus.idx}"]`;
+                            break;
+                        case 'discount_type':
+                            selector = `.item-discount-type[data-cart-idx="${restoreFocus.idx}"]`;
+                            break;
+                    }
+                    if (selector) {
+                        const el = document.querySelector(selector);
+                        if (el) {
+                            el.focus();
+                            // Restore caret position if numeric input
+                            if (restoreFocus.selectionStart != null && el.setSelectionRange && el.type === 'number') {
+                                try {
+                                    el.setSelectionRange(restoreFocus.selectionStart, restoreFocus.selectionEnd);
+                                } catch (e) {}
+                            } else if (el.select && (restoreFocus.selectAll === true)) {
+                                el.select();
+                            }
+                            skipRefocus = false; // reset flag safely
+                            return; // Do not shift focus to barcode
+                        }
+                    }
+                }
+
                 if (skipRefocus) {
-                    skipRefocus = false; // Reset flag
-                    return;
+                    skipRefocus = false; // Reset flag after skipping barcode refocus
+                    return; // Leave current focus (likely body) to allow Tab progression
                 }
 
                 // List of fields that should keep focus when user is editing them
@@ -1074,22 +1162,29 @@
         }
 
         // Calculate all totals
-        function calculateTotals(subtotal = null) {
+        function calculateTotals(subtotal = null, precomputedDiscount = null) {
             if (subtotal === null) {
-                subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                subtotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0)), 0);
             }
 
-            // Calculate discount
+            // Calculate item-wise discount
             let discountAmount = 0;
-            const discountValue = parseFloat($('#discount').val()) || 0;
-            const discountType = $('#discount_type').val();
-
-            if (discountValue > 0) {
-                if (discountType === 'percentage') {
-                    discountAmount = subtotal * (discountValue / 100);
-                } else {
-                    discountAmount = discountValue;
-                }
+            if (precomputedDiscount === null) {
+                cart.forEach(function(item) {
+                    const base = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                    let d = 0;
+                    if (item.discount && parseFloat(item.discount) > 0) {
+                        if ((item.discount_type || 'fixed') === 'percentage') {
+                            d = base * (parseFloat(item.discount) / 100);
+                        } else {
+                            d = parseFloat(item.discount);
+                        }
+                        if (d > base) d = base;
+                    }
+                    discountAmount += d;
+                });
+            } else {
+                discountAmount = precomputedDiscount;
             }
 
             // Calculate tax
@@ -1221,8 +1316,34 @@
             renderCart();
         };
 
+        function captureFocusDescriptor() {
+            const ae = document.activeElement;
+            if (!ae) return null;
+            if (!ae.matches('.cart-qty-input, .item-discount-input, .cart-price-input, .cart-unit-selector')) return null;
+            const idx = parseInt(ae.getAttribute('data-cart-idx'));
+            if (isNaN(idx)) return null;
+            let field;
+            if (ae.classList.contains('cart-qty-input')) field = 'qty';
+            else if (ae.classList.contains('item-discount-input')) field = 'discount';
+            else if (ae.classList.contains('cart-price-input')) field = 'price';
+            else if (ae.classList.contains('cart-unit-selector')) field = 'unit';
+            const descriptor = {
+                idx,
+                field,
+                selectionStart: ae.selectionStart,
+                selectionEnd: ae.selectionEnd,
+                selectAll: (ae.tagName === 'INPUT')
+            };
+            return descriptor;
+        }
+
         window.updateQtyInput = function(idx, inputValue) {
             skipRefocus = true;
+            const restoreFocus = {
+                idx: idx,
+                field: 'qty',
+                selectAll: true
+            };
             const item = cart[idx];
             const cartonSize = parseFloat(item.carton_size) || 1;
             let qty = parseFloat(inputValue) || 0.01;
@@ -1245,7 +1366,7 @@
             }
 
             cart[idx].quantity = qty;
-            renderCart();
+            renderCart(restoreFocus);
         };
 
         window.changeQtyUnit = function(idx, newUnit) {
@@ -1277,10 +1398,38 @@
 
         window.updatePrice = function(idx, price) {
             skipRefocus = true; // Prevent barcode refocus
+            const restoreFocus = {
+                idx: idx,
+                field: 'price',
+                selectAll: true
+            };
             price = parseFloat(price);
             if (price < 0) price = 0;
             cart[idx].price = price;
-            renderCart();
+            renderCart(restoreFocus);
+        };
+
+        window.updateItemDiscount = function(idx, val) {
+            skipRefocus = true;
+            const restoreFocus = {
+                idx: idx,
+                field: 'discount',
+                selectAll: true
+            };
+            let v = parseFloat(val);
+            if (isNaN(v) || v < 0) v = 0;
+            cart[idx].discount = v;
+            renderCart(restoreFocus);
+        };
+
+        window.updateItemDiscountType = function(idx, t) {
+            skipRefocus = true;
+            const restoreFocus = {
+                idx: idx,
+                field: 'discount_type'
+            };
+            cart[idx].discount_type = (t === 'percentage') ? 'percentage' : 'fixed';
+            renderCart(restoreFocus);
         };
 
         window.removeItem = function(idx) {
@@ -1314,7 +1463,9 @@
                         stock: parseFloat(it.stock || 0),
                         barcode: it.barcode || '',
                         carton_size: parseFloat(it.carton_size || 0),
-                        unit: (parseFloat(it.carton_size || 0) > 1 && parseFloat(it.quantity || 0) >= parseFloat(it.carton_size || 0)) ? 'cartons' : 'pieces'
+                        unit: (parseFloat(it.carton_size || 0) > 1 && parseFloat(it.quantity || 0) >= parseFloat(it.carton_size || 0)) ? 'cartons' : 'pieces',
+                        discount: parseFloat(it.discount || 0) || 0,
+                        discount_type: it.discount_type || 'fixed'
                     };
                 });
                 // Apply discount type/value
@@ -1401,10 +1552,14 @@
                 $('.select2-employee').select2('open');
                 return false;
             }
-            // F8 - Focus discount input
+            // F8 - Focus first item discount input
             else if (e.key === 'F8') {
                 e.preventDefault();
-                $('#discount').focus().select();
+                const firstDisc = document.querySelector('.item-discount-input');
+                if (firstDisc) {
+                    firstDisc.focus();
+                    firstDisc.select && firstDisc.select();
+                }
                 return false;
             }
             // F6 - Focus Tendered Amount

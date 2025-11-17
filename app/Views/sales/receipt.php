@@ -27,7 +27,7 @@
         <?php endforeach; ?>
         <tr>
             <td colspan="3" class="py-2 px-4 text-right">Discount</td>
-            <td class="py-2 px-4"><?= esc($sale['discount']) ?></td>
+            <td class="py-2 px-4"><?= esc($sale['total_discount'] ?? 0) ?></td>
         </tr>
         <tr>
             <td colspan="3" class="py-2 px-4 text-right">Tax</td>

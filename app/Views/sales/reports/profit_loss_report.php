@@ -39,6 +39,15 @@ if (!empty($employee_id) && !empty($employees)) {
 
 <style>
     @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        html,
+        body {
+            margin: 0 !important;
+        }
 
         header,
         footer,
@@ -48,17 +57,65 @@ if (!empty($employee_id) && !empty($employees)) {
         .dataTables_length,
         .dataTables_filter,
         .dataTables_info,
-        .dataTables_paginate {
+        .dataTables_paginate,
+        .stats-summary {
             display: none !important;
         }
 
         body {
             background: #fff !important;
+            font-size: 11px;
+        }
+
+        .max-w-7xl,
+        .bg-white.shadow,
+        .rounded-lg,
+        .shadow-lg {
+            box-shadow: none !important;
         }
 
         .print-container {
             box-shadow: none !important;
             padding: 0 !important;
+        }
+
+        .print-root {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Tighten paddings */
+        .px-6 {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+
+        .py-6 {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+        }
+
+        .py-4 {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+
+        .py-3 {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+        }
+
+        /* Compact table */
+        .print-container table {
+            width: 100%;
+            border-collapse: collapse !important;
+        }
+
+        .print-container th,
+        .print-container td {
+            padding: 4px 6px !important;
+            border: 1px solid #ddd !important;
+            font-size: 11px !important;
         }
 
         #profitAnalysisTable {
@@ -111,7 +168,7 @@ if (!empty($employee_id) && !empty($employees)) {
     }
 </style>
 
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="max-w-7xl mx-auto px-4 py-6 print-root">
     <!-- Header Section -->
     <div class="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg rounded-lg mb-6 overflow-hidden">
         <div class="px-6 py-6">
@@ -155,9 +212,9 @@ if (!empty($employee_id) && !empty($employees)) {
                             </button>
                         </div>
                         <div class="flex items-end gap-2">
-                            <button type="button" id="btn-print" class="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-900 shadow-md">
+                            <a href="<?= site_url('sales/profit-loss-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-900 shadow-md">
                                 <i class="fas fa-print mr-2"></i> Print
-                            </button>
+                            </a>
                         </div>
                     </div>
 
@@ -175,7 +232,7 @@ if (!empty($employee_id) && !empty($employees)) {
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 stats-summary">
         <!-- Total Revenue (Net) -->
         <div class="metric-card bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-5">
             <div class="flex items-center justify-between mb-2">
@@ -266,6 +323,22 @@ if (!empty($employee_id) && !empty($employees)) {
                         <tr class="border-b border-gray-200">
                             <td class="py-3 text-sm text-gray-600 pl-4">Discounts Given</td>
                             <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalDiscounts) ?>)</td>
+                        </tr>
+                        <?php if (!empty($expenseBreakdown)): ?>
+                            <?php foreach ($expenseBreakdown as $exp): ?>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2 text-xs text-gray-600 pl-8">Expense: <?= esc($exp['category_name'] ?? 'Uncategorized') ?></td>
+                                    <td class="py-2 text-xs text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt(($exp['total'] ?? (($exp['sum_amount'] ?? 0) + ($exp['sum_tax'] ?? 0)))) ?>)</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <tr class="border-b border-gray-200">
+                            <td class="py-3 text-sm text-gray-600 pl-4">Other Expenses</td>
+                            <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalExpenses ?? 0) ?>)</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 bg-orange-50">
+                            <td class="py-3 text-sm font-semibold text-gray-900">Total Operating Expenses</td>
+                            <td class="py-3 text-sm text-right font-bold text-red-700">(<?= esc($currency) ?> <?= money_fmt(($totalOperatingExpenses ?? ($totalDiscounts + ($totalExpenses ?? 0)))) ?>)</td>
                         </tr>
                         <tr class="border-b-2 border-gray-300 bg-purple-50">
                             <td class="py-3 text-base font-bold text-gray-900">Net Profit</td>
@@ -466,7 +539,7 @@ if (!empty($employee_id) && !empty($employees)) {
     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
         <i class="fas fa-info-circle mr-2"></i>
         <strong>Note:</strong> Sales returns are deducted from revenue and their cost is credited back to COGS for this period.
-        The report shows gross profit (net revenue - net COGS) and net profit (gross profit - discounts). Tax amounts are included in revenue.
+        The report shows gross profit (net revenue - net COGS) and net profit (gross profit - discounts - expenses). Tax amounts are included in revenue.
         All quantities are displayed in cartons and pieces where applicable.
     </div>
 </div>
@@ -522,9 +595,7 @@ if (!empty($employee_id) && !empty($employees)) {
         });
     });
 
-    document.getElementById('btn-print')?.addEventListener('click', function() {
-        window.print();
-    });
+    // print handled by separate print view
 
     // Quick date range filters
     (function() {

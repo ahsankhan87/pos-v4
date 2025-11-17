@@ -464,6 +464,95 @@ class Products extends BaseController
     }
 
     /**
+     * Exact 60x25mm barcode label print page (one label per page for roll printers).
+     * Accepts query parameter `labels` in the form "id x copies" comma-separated, e.g. labels=12x3,45x1
+     * Separators supported between id and copies: 'x', ':', '-'.
+     */
+    public function printLabels6025()
+    {
+        helper('barcode');
+        $labelsParam = (string) ($this->request->getGet('labels') ?? '');
+        $pairs = array_filter(array_map('trim', explode(',', $labelsParam)));
+        $copiesById = [];
+        foreach ($pairs as $p) {
+            if ($p === '') continue;
+            // Support 12x3, 12:3, 12-3
+            if (preg_match('/^(\d+)\s*[x:\-]\s*(\d+)$/i', $p, $m)) {
+                $pid = (int) $m[1];
+                $cnt = max(0, (int) $m[2]);
+                if ($pid > 0 && $cnt > 0) {
+                    $copiesById[$pid] = ($copiesById[$pid] ?? 0) + $cnt;
+                }
+            } elseif (ctype_digit($p)) {
+                $pid = (int) $p;
+                if ($pid > 0) {
+                    $copiesById[$pid] = ($copiesById[$pid] ?? 0) + 1;
+                }
+            }
+        }
+
+        if (empty($copiesById)) {
+            return redirect()->back()->with('error', 'No labels specified for printing.');
+        }
+
+        $model = new M_products();
+        $ids = array_keys($copiesById);
+        $products = $model
+            ->forStore()
+            ->whereIn('id', $ids)
+            ->where('barcode IS NOT NULL AND barcode != ""', null, false)
+            ->select('id, name, price, barcode')
+            ->findAll();
+
+        if (empty($products)) {
+            return redirect()->back()->with('error', 'Selected products not found or missing barcodes.');
+        }
+
+        // Reindex by id for quick lookup
+        $byId = [];
+        foreach ($products as $p) {
+            $byId[(int)$p['id']] = $p;
+        }
+
+        $labels = [];
+        foreach ($copiesById as $pid => $cnt) {
+            if (!isset($byId[$pid])) continue;
+            for ($i = 0; $i < $cnt; $i++) {
+                $labels[] = $byId[$pid];
+            }
+        }
+
+        if (empty($labels)) {
+            return redirect()->back()->with('error', 'No valid labels to print.');
+        }
+
+        // Options from query
+        $showPrice = $this->request->getGet('showPrice');
+        $showPrice = ($showPrice === null) ? 1 : ((int)$showPrice ? 1 : 0);
+        $barcodeHeight = $this->request->getGet('barcode');
+        $barcodeHeightMm = is_numeric($barcodeHeight) ? (float)$barcodeHeight : 12.0;
+        // clamp to sensible range
+        if ($barcodeHeightMm < 6) $barcodeHeightMm = 6;
+        if ($barcodeHeightMm > 20) $barcodeHeightMm = 20;
+
+        return view('products/print_60x25_labels', [
+            'title' => 'Print Labels 60×25',
+            'labels' => $labels,
+            'currencySymbol' => session('currency_symbol') ?? '',
+            'showPrice' => (bool)$showPrice,
+            'barcodeHeightMm' => $barcodeHeightMm,
+            // Optional extra top/bottom padding (mm) for feed tuning
+            'padMm' => (function () {
+                $pad = $this->request->getGet('pad');
+                $val = is_numeric($pad) ? (float) $pad : 0.0;
+                if ($val < 0) $val = 0.0;
+                if ($val > 5) $val = 5.0;
+                return $val;
+            })(),
+        ]);
+    }
+
+    /**
      * Import products from a CSV file.
      * Accepts headers: name, code, barcode, price or unit_price, cost_price, quantity, stock_alert, description
      * Rows will be upserted based on barcode (preferred) or code within the current store.

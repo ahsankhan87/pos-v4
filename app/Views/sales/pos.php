@@ -131,6 +131,19 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Preselect customer from query string if provided
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const preId = params.get('customer_id');
+            if (preId) {
+                const sel = document.getElementById('customerSelect');
+                if (sel) {
+                    sel.value = String(preId);
+                }
+            }
+        } catch (e) {
+            console.warn('Preselect customer failed:', e);
+        }
 
         // Product search functionality
         document.getElementById('productSearch').addEventListener('input', function(e) {

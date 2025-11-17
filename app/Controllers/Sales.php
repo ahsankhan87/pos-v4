@@ -105,24 +105,24 @@ class Sales extends \CodeIgniter\Controller
         $inventoryModel = new M_inventory();
         $draftId = (int) ($this->request->getPost('draft_id') ?? 0);
         $invoiceNo = $this->request->getPost('invoice_no') ?? $salesModel->generateSalesInvoiceNo();
+        $sale_date_raw = trim((string) ($this->request->getPost('sale_date') ?? ''));
+        if ($sale_date_raw !== '') {
+            $sale_date = str_replace('T', ' ', $sale_date_raw);
+            if (strlen($sale_date) === 16) { // YYYY-MM-DD HH:MM
+                $sale_date .= ':00';
+            }
+        } else {
+            $sale_date = date('Y-m-d H:i:s');
+        }
         $customer_id = (int) ($this->request->getPost('customer_id') ?: 0);
         $cart_data = $this->request->getPost('cart_data');
         $items = json_decode($cart_data, true);
-        // Discount handling: use the raw discount input with type awareness
+        // Discount handling: prefer item-wise discount if provided per line
         $discountInput = (float) ($this->request->getPost('discount') ?? 0);
         $total = $this->request->getPost('grand_total') ?? 0;
         $subtotal = (float) ($this->request->getPost('subtotal') ?? 0);
         $discount_type = $this->request->getPost('discount_type') ?? 'fixed';
-        // Compute authoritative totalDiscount on the server
-        if ($discount_type === 'percentage') {
-            $totalDiscount = round((float)$subtotal * ($discountInput / 100), 2);
-        } else {
-            $totalDiscount = round($discountInput, 2);
-        }
-        // Cap discount to subtotal to avoid negatives
-        if ($totalDiscount > (float)$subtotal) {
-            $totalDiscount = (float)$subtotal;
-        }
+        $totalDiscount = 0.0;
         $total_tax = $this->request->getPost('total_tax') ?? 0;
         $payment_method = $this->request->getPost('payment_method');
         $tax_rate = $this->request->getPost('tax_rate') ?? 0;
@@ -153,19 +153,59 @@ class Sales extends \CodeIgniter\Controller
             return redirect()->back()->withInput()->with('error', implode(' ', $errors));
         }
 
-        // Server-side safeguard: compute subtotal from items if missing/zero from client
+        // Server-side safeguard: compute subtotal and item-wise discounts from items
         if (is_array($items) && !empty($items)) {
             $computedSubtotal = 0.0;
+            $itemwiseDiscountSum = 0.0;
             foreach ($items as $it) {
                 $qty = isset($it['quantity']) ? (float)$it['quantity'] : 0;
                 $price = isset($it['price']) ? (float)$it['price'] : 0;
                 if ($qty > 0 && $price >= 0) {
-                    $computedSubtotal += $qty * $price;
+                    $lineBase = $qty * $price;
+                    $computedSubtotal += $lineBase;
+                    // compute line discount if provided
+                    $lineDiscount = 0.0;
+                    if (isset($it['discount']) && (float)$it['discount'] > 0) {
+                        $dtype = isset($it['discount_type']) ? strtolower((string)$it['discount_type']) : 'fixed';
+                        if ($dtype === 'percentage') {
+                            $lineDiscount = $lineBase * ((float)$it['discount'] / 100);
+                        } else {
+                            $lineDiscount = (float)$it['discount'];
+                        }
+                        if ($lineDiscount > $lineBase) {
+                            $lineDiscount = $lineBase;
+                        }
+                    }
+                    $itemwiseDiscountSum += $lineDiscount;
                 }
             }
             if ($computedSubtotal > 0) {
                 $subtotal = $computedSubtotal;
             }
+            // If any item-wise discount exists, use it as authoritative totalDiscount
+            if ($itemwiseDiscountSum > 0) {
+                $totalDiscount = round($itemwiseDiscountSum, 2);
+                $discount_type = 'itemwise';
+            } else {
+                // Fallback to global discount input if no item discounts present
+                if (($this->request->getPost('discount_type') ?? 'fixed') === 'percentage') {
+                    $totalDiscount = round((float)$subtotal * ($discountInput / 100), 2);
+                } else {
+                    $totalDiscount = round($discountInput, 2);
+                }
+                if ($totalDiscount > (float)$subtotal) {
+                    $totalDiscount = (float)$subtotal;
+                }
+            }
+        }
+
+        // Normalize discount type and clamp near-zero discount to zero
+        if (!isset($discount_type) || !in_array($discount_type, ['fixed', 'percentage', 'itemwise'], true)) {
+            $discount_type = 'fixed';
+        }
+        if (abs((float)$totalDiscount) < 0.005) {
+            $totalDiscount = 0.0;
+            $discount_type = 'fixed';
         }
 
         // If total is zero or missing, compute it using server-side figures
@@ -246,6 +286,7 @@ class Sales extends \CodeIgniter\Controller
                     $effectiveInvoiceNo = $salesModel->generateSalesInvoiceNo();
                     // Update existing sale to completed
                     $saleData = [
+                        'created_at' => $sale_date,
                         'customer_id' => $customer_id,
                         'payment_type' => $payment_type,
                         'payment_method' => $payment_method,
@@ -269,11 +310,11 @@ class Sales extends \CodeIgniter\Controller
                 } else {
                     // Insert new sale
                     $saleData = [
+                        'created_at' => $sale_date,
                         'customer_id' => $customer_id,
                         'total' => $total,
                         'total_discount' => $totalDiscount,
                         'discount_type' => $discount_type,
-                        'created_at' => date('Y-m-d H:i:s'),
                         'payment_method' => $payment_method,
                         'store_id' => session('store_id') ?? 0, // Store ID from session
                         'user_id' => $userId, // Assuming you have user authentication
@@ -287,7 +328,7 @@ class Sales extends \CodeIgniter\Controller
                         'payment_type' => $payment_type,
                         'payment_status' => $payment_status,
                         'due_amount' => $due_amount ?? 0,
-                        'created_at' => date('Y-m-d H:i:s')
+
                     ];
                     $sale_id = $salesModel->insert($saleData);
                     if (!$sale_id) {
@@ -303,7 +344,7 @@ class Sales extends \CodeIgniter\Controller
                     $ledgerModel->insert([
                         'customer_id' => $customer_id,
                         'sale_id' => $sale_id,
-                        'date' => date('Y-m-d H:i:s'),
+                        'date' => $sale_date,
                         'description' => 'Credit Sale Invoice #' . $effectiveInvoiceNo,
                         'debit' => $due_amount,
                         'credit' => 0,
@@ -323,13 +364,31 @@ class Sales extends \CodeIgniter\Controller
                 foreach ($items as $item) {
                     $product = $productModel->find($item['id']);
                     if ($product) { //&& $product['quantity'] >= $item['quantity']
+                        // compute net subtotal after line discount if provided
+                        $lineBase = ((float)$item['price']) * ((float)$item['quantity']);
+                        $lineDiscount = 0.0;
+                        $dtype = 'fixed';
+                        if (isset($item['discount']) && (float)$item['discount'] > 0) {
+                            $dtype = isset($item['discount_type']) ? strtolower((string)$item['discount_type']) : 'fixed';
+                            if ($dtype === 'percentage') {
+                                $lineDiscount = $lineBase * ((float)$item['discount'] / 100);
+                            } else {
+                                $lineDiscount = (float)$item['discount'];
+                            }
+                            if ($lineDiscount > $lineBase) {
+                                $lineDiscount = $lineBase;
+                            }
+                        }
+                        $netSubtotal = max(0.0, $lineBase - $lineDiscount);
                         $saleItemsModel->insert([
                             'sale_id' => $sale_id,
                             'product_id' => $item['id'],
                             'quantity' => $item['quantity'],
                             'price' => $item['price'],
                             'cost_price' => $item['cost_price'],
-                            'subtotal' => $item['price'] * $item['quantity'],
+                            'subtotal' => $netSubtotal,
+                            'discount' => isset($item['discount']) ? (float)$item['discount'] : 0,
+                            'discount_type' => $dtype,
                         ]);
 
                         $productModel->adjustStock($item['id'], $item['quantity'], 'out');
@@ -343,7 +402,7 @@ class Sales extends \CodeIgniter\Controller
                             $item['cost_price'] ?? 0,
                             $item['price'] ?? 0,
                             $effectiveInvoiceNo,
-                            date('Y-m-d H:i:s')
+                            $sale_date
                         );
                     } else {
                         throw new \Exception('Insufficient stock for ' . ($product ? $product['name'] : 'Unknown Product'));
@@ -447,10 +506,23 @@ class Sales extends \CodeIgniter\Controller
                 'quantity' => (float) $line['quantity'],
                 'stock' => $currentStock + (float) $line['quantity'],
                 'barcode' => $product['barcode'] ?? '',
+                'discount' => isset($line['discount']) ? (float)$line['discount'] : 0.0,
+                'discount_type' => isset($line['discount_type']) && strtolower((string)$line['discount_type']) === 'percentage' ? 'percentage' : 'fixed',
+                'carton_size' => isset($product['carton_size']) ? (float)$product['carton_size'] : 0,
             ];
         }
 
         if ($this->request->getMethod() === 'POST') {
+            // Normalize sale date from form (datetime-local)
+            $saleDateRaw = trim((string) ($this->request->getPost('sale_date') ?? ''));
+            if ($saleDateRaw !== '') {
+                $saleDate = str_replace('T', ' ', $saleDateRaw);
+                if (strlen($saleDate) === 16) {
+                    $saleDate .= ':00';
+                }
+            } else {
+                $saleDate = $sale['created_at'] ?? date('Y-m-d H:i:s');
+            }
             $cartJson = $this->request->getPost('cart_data');
             $cartData = json_decode($cartJson ?? '[]', true);
 
@@ -473,7 +545,8 @@ class Sales extends \CodeIgniter\Controller
             }
 
             $validatedItems = [];
-            $subtotal = 0.0;
+            $subtotal = 0.0; // gross subtotal
+            $itemwiseDiscountSum = 0.0;
 
             if (empty($errors)) {
                 foreach ((array) $cartData as $line) {
@@ -503,7 +576,25 @@ class Sales extends \CodeIgniter\Controller
                         break;
                     }
 
-                    $subtotal += $price * $quantity;
+                    $lineBase = $price * $quantity;
+                    $subtotal += $lineBase;
+                    // compute line discount if carried in cart_data
+                    $lineDiscount = 0.0;
+                    $dtype = 'fixed';
+                    $discountRaw = 0.0;
+                    if (isset($line['discount']) && (float)$line['discount'] > 0) {
+                        $discountRaw = (float)$line['discount'];
+                        $dtype = isset($line['discount_type']) ? strtolower((string)$line['discount_type']) : 'fixed';
+                        if ($dtype === 'percentage') {
+                            $lineDiscount = $lineBase * ($discountRaw / 100);
+                        } else {
+                            $lineDiscount = $discountRaw;
+                        }
+                        if ($lineDiscount > $lineBase) {
+                            $lineDiscount = $lineBase;
+                        }
+                    }
+                    $itemwiseDiscountSum += $lineDiscount;
 
                     $validatedItems[] = [
                         'product_id' => $productId,
@@ -511,20 +602,30 @@ class Sales extends \CodeIgniter\Controller
                         'price' => $price,
                         'cost_price' => isset($line['cost_price']) ? (float) $line['cost_price'] : (float) ($product['cost_price'] ?? 0),
                         'name' => $product['name'] ?? 'Unknown product',
+                        'line_discount' => $lineDiscount,
+                        'discount' => $discountRaw,
+                        'discount_type' => $dtype,
                     ];
                 }
             }
-
+            // Compute discount strictly from item-wise totals in edit flow
+            // Ignore global discount fallback to prevent unintended defaults (e.g., 1)
             $discountAmount = 0.0;
-            if ($subtotal > 0 && $discountInput > 0) {
-                if ($discountType === 'percentage') {
-                    $discountAmount = round($subtotal * ($discountInput / 100), 2);
-                } else {
-                    $discountAmount = round($discountInput, 2);
-                }
-                if ($discountAmount > $subtotal) {
-                    $discountAmount = $subtotal;
-                }
+            if ($itemwiseDiscountSum > 0) {
+                $discountAmount = round($itemwiseDiscountSum, 2);
+                $discountType = 'itemwise';
+            }
+
+            // Ensure discount_type is a valid value when no discount is applied
+            // Prevent empty/invalid discount types from causing model/DB validation failures
+            $validDiscountTypes = ['fixed', 'percentage', 'itemwise'];
+            if (!in_array($discountType, $validDiscountTypes, true)) {
+                $discountType = 'fixed';
+            }
+            // Clamp very small discounts to zero and set type fixed
+            if (abs((float)$discountAmount) < 0.005) {
+                $discountAmount = 0.0;
+                $discountType = 'fixed';
             }
 
             $taxableAmount = max(0, $subtotal - $discountAmount);
@@ -593,7 +694,7 @@ class Sales extends \CodeIgniter\Controller
                         $existingItem['cost_price'] ?? 0,
                         $existingItem['price'] ?? 0,
                         $sale['invoice_no'] ?? null,
-                        date('Y-m-d H:i:s')
+                        $saleDate
                     );
                 }
             } catch (\Throwable $e) {
@@ -602,7 +703,7 @@ class Sales extends \CodeIgniter\Controller
                 return redirect()->back()->withInput()->with('error', 'Failed to update sale while restoring inventory. ' . $e->getMessage());
             }
 
-            // Delete items outside the try block to avoid double catching
+            // Delete existing sale items before re-inserting
             if (!$saleItemsModel->where('sale_id', $saleId)->delete()) {
                 $db->transRollback();
                 return redirect()->back()->withInput()->with('error', 'Failed to reset existing sale items.');
@@ -611,13 +712,17 @@ class Sales extends \CodeIgniter\Controller
             try {
                 foreach ($validatedItems as $lineItem) {
                     $productModel->adjustStock($lineItem['product_id'], $lineItem['quantity'], 'out');
+                    // Save net line subtotal after discount
+                    $netSubtotal = max(0.0, ($lineItem['price'] * $lineItem['quantity']) - ($lineItem['line_discount'] ?? 0));
                     $saleItemsModel->insert([
                         'sale_id' => $saleId,
                         'product_id' => $lineItem['product_id'],
                         'quantity' => $lineItem['quantity'],
                         'price' => $lineItem['price'],
                         'cost_price' => $lineItem['cost_price'],
-                        'subtotal' => $lineItem['price'] * $lineItem['quantity'],
+                        'subtotal' => $netSubtotal,
+                        'discount' => $lineItem['discount'] ?? 0,
+                        'discount_type' => $lineItem['discount_type'] ?? 'fixed',
                     ]);
 
                     $inventoryModel->logStockChange(
@@ -630,11 +735,12 @@ class Sales extends \CodeIgniter\Controller
                         $lineItem['cost_price'],
                         $lineItem['price'],
                         $sale['invoice_no'] ?? null,
-                        date('Y-m-d H:i:s')
+                        $saleDate
                     );
                 }
 
                 $saleUpdate = [
+                    'created_at' => $saleDate,
                     'customer_id' => $customerId,
                     'payment_type' => $paymentType,
                     'payment_method' => $paymentMethod,
@@ -653,6 +759,29 @@ class Sales extends \CodeIgniter\Controller
                 ];
 
                 $salesModel->update($saleId, $saleUpdate);
+
+                // Update customer ledger for credit edits
+                try {
+                    $ledgerModel = new \App\Models\CustomerLedgerModel();
+                    // Remove any prior ledger entries for this sale
+                    $ledgerModel->where('sale_id', $saleId)->delete();
+                    // Insert updated ledger entry only if credit and there is due
+                    if ($paymentType === 'credit' && $dueAmount > 0) {
+                        $newBalance = (float)$ledgerModel->getCustomerBalance($customerId) + (float)$dueAmount;
+                        $ledgerModel->insert([
+                            'customer_id' => $customerId,
+                            'sale_id' => $saleId,
+                            'date' => $saleDate,
+                            'description' => 'Credit Sale Invoice #' . ($sale['invoice_no'] ?? ''),
+                            'debit' => $dueAmount,
+                            'credit' => 0,
+                            'balance' => $newBalance,
+                            'created_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    throw new \Exception('Failed to update customer ledger: ' . $e->getMessage());
+                }
 
                 logAction('sale_updated', sprintf('Sale ID %s updated. Total: %s', $saleId, $total));
             } catch (\Throwable $e) {
@@ -866,6 +995,59 @@ class Sales extends \CodeIgniter\Controller
         ];
         return view('sales/reports/report', $data);
     }
+    public function reportPrint()
+    {
+        // Reuse data prep from report()
+        $salesModel = new M_sales();
+        $customerModel = new M_customers();
+        $returnModel = new SalesReturnModel();
+
+        $storeId = session('store_id');
+        $employeeId = $this->request->getGet('employee_id');
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+
+        $salesBuilder = $salesModel->forStore($storeId)
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59');
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder->orderBy('created_at', 'DESC')->findAll();
+
+        foreach ($sales as &$sale) {
+            $customer = $customerModel->find($sale['customer_id']);
+            $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
+            $returns = $returnModel->where('sale_id', $sale['id'])->findAll();
+            $total_return_qty = 0;
+            $total_return_amount = 0;
+            foreach ($returns as $ret) {
+                $total_return_qty += $ret['quantity'];
+                $total_return_amount += $ret['return_amount'];
+            }
+            $sale['total_return_qty'] = $total_return_qty;
+            $sale['total_return_amount'] = $total_return_amount;
+            $sale['net_total'] = $sale['total'] - $total_return_amount;
+        }
+
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $data = [
+            'title' => 'Daily Sales Report - Print',
+            'sales' => $sales,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+            'employee_id' => $employeeId
+        ];
+        return view('sales/reports/report_print', $data);
+    }
     public function productReport()
     {
         $dateParam = $this->request->getGet('date');
@@ -920,6 +1102,47 @@ class Sales extends \CodeIgniter\Controller
         ];
         return view('sales/reports/product_report', $data);
     }
+    public function productReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $productModel = new \App\Models\M_products();
+        $itemsBuilder = $saleItemsModel
+            ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $items = $itemsBuilder->groupBy('product_id')->orderBy('total_sales', 'DESC')->findAll();
+        foreach ($items as &$item) {
+            $product = $productModel->find($item['product_id']);
+            $item['product_name'] = $product ? $product['name'] : 'Unknown';
+            $item['carton_size'] = $product ? ($product['carton_size'] ?? 0) : 0;
+        }
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $data = [
+            'title' => 'Product-wise Sales Report - Print',
+            'items' => $items,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+            'employee_id' => $employeeId
+        ];
+        return view('sales/reports/product_report_print', $data);
+    }
 
     public function customerReport()
     {
@@ -970,6 +1193,45 @@ class Sales extends \CodeIgniter\Controller
         ];
         return view('sales/reports/customer_report', $data);
     }
+    public function customerReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $salesModel = new \App\Models\M_sales();
+        $customerModel = new \App\Models\M_customers();
+        $salesBuilder = $salesModel
+            ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59')
+            ->forStore($storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder->groupBy('customer_id')->findAll();
+        foreach ($sales as &$sale) {
+            $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
+            $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
+        }
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $data = [
+            'title' => 'Customer-wise Sales Report - Print',
+            'sales' => $sales,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+            'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+        ];
+        return view('sales/reports/customer_report_print', $data);
+    }
 
     public function categoryReport()
     {
@@ -1015,6 +1277,42 @@ class Sales extends \CodeIgniter\Controller
             'to' => $to,
             'employees' => $employees,
             'employee_id' => $employeeId,
+        ]);
+    }
+    public function categoryReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $builder = $saleItemsModel
+            ->select('pos_categories.id as category_id, pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $rows = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        return view('sales/reports/category_report_print', [
+            'title' => 'Category-wise Sales Report - Print',
+            'rows' => $rows,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+            'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
         ]);
     }
 
@@ -1063,6 +1361,42 @@ class Sales extends \CodeIgniter\Controller
             'employee_id' => $employeeId,
         ]);
     }
+    public function unitReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $builder = $saleItemsModel
+            ->select('pos_units.id as unit_id, pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $builder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $rows = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        return view('sales/reports/unit_report_print', [
+            'title' => 'Unit-wise Sales Report - Print',
+            'rows' => $rows,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+            'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+        ]);
+    }
 
     public function profitLossReport()
     {
@@ -1086,9 +1420,9 @@ class Sales extends \CodeIgniter\Controller
         $saleItemsBuilder = $saleItemsModel
             ->select('
                 pos_sale_items.*,
+                pos_sale_items.cost_price as item_cost_price,
                 pos_products.name as product_name,
                 pos_products.code as product_code,
-                pos_products.cost_price,
                 pos_products.carton_size,
                 pos_sales.created_at,
                 pos_sales.invoice_no,
@@ -1125,7 +1459,7 @@ class Sales extends \CodeIgniter\Controller
 
             $qty = (float)$item['quantity'];
             $revenue = (float)$item['subtotal'];
-            $cost = (float)$item['cost_price'] * $qty;
+            $cost = (float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty;
 
             $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
             $productSummary[$pid]['sale_id'] = $item['sale_id'];
@@ -1148,8 +1482,8 @@ class Sales extends \CodeIgniter\Controller
         // Sales returns impact (deduct from revenue, adjust cost)
         $salesReturnModel = new \App\Models\SalesReturnModel();
         $returnsAggBuilder = $salesReturnModel
-            ->select('SUM(pos_sales_returns.return_amount) as total_return_amount, SUM(pos_sales_returns.quantity * pos_products.cost_price) as total_return_cost')
-            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->select('SUM(pos_sales_returns.return_amount) as total_return_amount, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as total_return_cost')
+            ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
             ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
             ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
@@ -1164,8 +1498,8 @@ class Sales extends \CodeIgniter\Controller
 
         // Map returns per product for row-level adjustment
         $returnItemsBuilder = $salesReturnModel
-            ->select('pos_sales_returns.product_id, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned, SUM(pos_sales_returns.quantity * pos_products.cost_price) as cost_returned')
-            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->select('pos_sales_returns.product_id, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as cost_returned')
+            ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
             ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
             ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
@@ -1213,7 +1547,7 @@ class Sales extends \CodeIgniter\Controller
         $totalCost = max(0, $grossCost - $totalReturnCost);
         $totalGrossProfit = $totalRevenue - $totalCost;
 
-        // Get operating expenses (from purchases, taxes, discounts)
+        // Get operating items (discounts/taxes on sales) and expenses module totals
         $salesDataBuilder = $salesModel
             ->select('
                 SUM(total_discount) as total_discounts,
@@ -1231,10 +1565,137 @@ class Sales extends \CodeIgniter\Controller
         $totalDiscounts = (float)($salesData['total_discounts'] ?? 0);
         $totalTaxes = (float)($salesData['total_taxes'] ?? 0);
         $salesCount = (int)($salesData['sales_count'] ?? 0);
+        // Sum expenses from expenses module for the period (amount + tax)
+        $expenseAgg = (new \App\Models\ExpenseModel())
+            ->select('COALESCE(SUM(amount),0) as sum_amount, COALESCE(SUM(tax),0) as sum_tax')
+            ->forStore($storeId)
+            ->where('date >=', $from)
+            ->where('date <=', $to)
+            ->first();
+        $totalExpenses = (float)($expenseAgg['sum_amount'] ?? 0) + (float)($expenseAgg['sum_tax'] ?? 0);
 
-        // Calculate net profit after returns and discounts
-        $netProfit = $totalGrossProfit - $totalDiscounts;
+        // Category-wise expense breakdown (print)
+        $dbPrint2 = \Config\Database::connect();
+        $expPrint2 = $dbPrint2->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expPrint2->where('e.store_id', $storeId);
+        }
+        $expPrint2->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expPrint2->get()->getResultArray();
+        foreach ($expenseBreakdown as &$epr2) {
+            $epr2['total'] = (float)($epr2['sum_amount'] ?? 0) + (float)($epr2['sum_tax'] ?? 0);
+        }
+        unset($epr2);
+
+        // Category-wise expense breakdown for print
+        $dbExpenses = \Config\Database::connect();
+        $expGrouped = $dbExpenses->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expGrouped->where('e.store_id', $storeId);
+        }
+        $expGrouped->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expGrouped->get()->getResultArray();
+        foreach ($expenseBreakdown as &$ebr) {
+            $ebr['total'] = (float)($ebr['sum_amount'] ?? 0) + (float)($ebr['sum_tax'] ?? 0);
+        }
+        unset($ebr);
+        // Category-wise expense breakdown for print
+        $db2 = \Config\Database::connect();
+        $expBuilder2 = $db2->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expBuilder2->where('e.store_id', $storeId);
+        }
+        $expBuilder2->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expBuilder2->get()->getResultArray();
+        foreach ($expenseBreakdown as &$erow2) {
+            $erow2['total'] = (float)($erow2['sum_amount'] ?? 0) + (float)($erow2['sum_tax'] ?? 0);
+        }
+        unset($erow2);
+
+        // Category-wise expense breakdown for print
+        $db = \Config\Database::connect();
+        $expBuilder = $db->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expBuilder->where('e.store_id', $storeId);
+        }
+        $expBuilder->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expBuilder->get()->getResultArray();
+        foreach ($expenseBreakdown as &$erow) {
+            $erow['total'] = (float)($erow['sum_amount'] ?? 0) + (float)($erow['sum_tax'] ?? 0);
+        }
+        unset($erow);
+
+        // Category-wise expense breakdown for print view
+        $db = \Config\Database::connect();
+        $expBuilder = $db->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expBuilder->where('e.store_id', $storeId);
+        }
+        $expBuilder->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expBuilder->get()->getResultArray();
+        foreach ($expenseBreakdown as &$erow) {
+            $erow['total'] = (float)($erow['sum_amount'] ?? 0) + (float)($erow['sum_tax'] ?? 0);
+        }
+        unset($erow);
+
+        // Category-wise expense breakdown
+        $db = \Config\Database::connect();
+        $expBuilder = $db->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expBuilder->where('e.store_id', $storeId);
+        }
+        $expBuilder->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expBuilder->get()->getResultArray();
+        foreach ($expenseBreakdown as &$erow) {
+            $erow['total'] = (float)($erow['sum_amount'] ?? 0) + (float)($erow['sum_tax'] ?? 0);
+        }
+        unset($erow);
+
+        // Calculate net profit after returns, discounts, and expenses
+        $totalOperatingExpenses = $totalDiscounts + $totalExpenses;
+        $netProfit = $totalGrossProfit - $totalOperatingExpenses;
         $profitMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
+
+        // Prepare expense breakdown for print view
+        $dbPrint = \Config\Database::connect();
+        $expPrint = $dbPrint->table('pos_expenses e')
+            ->select('e.category_id, COALESCE(c.name, "Uncategorized") as category_name, COALESCE(SUM(e.amount),0) as sum_amount, COALESCE(SUM(e.tax),0) as sum_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to);
+        if ($storeId !== null && $storeId !== '') {
+            $expPrint->where('e.store_id', $storeId);
+        }
+        $expPrint->groupBy('e.category_id, c.name');
+        $expenseBreakdown = $expPrint->get()->getResultArray();
+        foreach ($expenseBreakdown as &$epr) {
+            $epr['total'] = (float)($epr['sum_amount'] ?? 0) + (float)($epr['sum_tax'] ?? 0);
+        }
+        unset($epr);
 
         // Load employees for filter dropdown
         $employees = (new \App\Models\EmployeesModel())
@@ -1251,6 +1712,8 @@ class Sales extends \CodeIgniter\Controller
             'totalGrossProfit' => $totalGrossProfit,
             'totalDiscounts' => $totalDiscounts,
             'totalTaxes' => $totalTaxes,
+            'totalExpenses' => $totalExpenses,
+            'totalOperatingExpenses' => $totalOperatingExpenses,
             'netProfit' => $netProfit,
             'profitMargin' => $profitMargin,
             'salesCount' => $salesCount,
@@ -1267,6 +1730,168 @@ class Sales extends \CodeIgniter\Controller
         ];
 
         return view('sales/reports/profit_loss_report', $data);
+    }
+    public function profitLossReportPrint()
+    {
+        // Reuse logic from profitLossReport()
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+        $storeId = session('store_id');
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $salesModel = new \App\Models\M_sales();
+        $salesReturnModel = new \App\Models\SalesReturnModel();
+
+        $saleItemsBuilder = $saleItemsModel
+            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $saleItemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $items = $saleItemsBuilder->orderBy('pos_products.name', 'ASC')->findAll();
+
+        $productSummary = [];
+        foreach ($items as $item) {
+            $pid = $item['product_id'];
+            if (!isset($productSummary[$pid])) {
+                $productSummary[$pid] = ['product_id' => $pid, 'product_name' => $item['product_name'], 'product_code' => $item['product_code'], 'carton_size' => $item['carton_size'] ?? 0, 'total_qty_sold' => 0, 'total_revenue' => 0, 'total_cost' => 0, 'gross_profit' => 0];
+            }
+            $qty = (float)$item['quantity'];
+            $revenue = (float)$item['subtotal'];
+            $cost = (float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty;
+            $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
+            $productSummary[$pid]['sale_id'] = $item['sale_id'];
+            $productSummary[$pid]['total_qty_sold'] += $qty;
+            $productSummary[$pid]['total_revenue'] += $revenue;
+            $productSummary[$pid]['total_cost'] += $cost;
+            $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
+        }
+
+        $grossRevenue = 0;
+        $grossCost = 0;
+        $grossGrossProfit = 0;
+        foreach ($productSummary as $p) {
+            $grossRevenue += $p['total_revenue'];
+            $grossCost += $p['total_cost'];
+            $grossGrossProfit += $p['gross_profit'];
+        }
+
+        $returnsAggBuilder = $salesReturnModel
+            ->select('SUM(pos_sales_returns.return_amount) as total_return_amount, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as total_return_cost')
+            ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnsAggBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnsAgg = $returnsAggBuilder->first();
+        $totalReturns = (float)($returnsAgg['total_return_amount'] ?? 0);
+        $totalReturnCost = (float)($returnsAgg['total_return_cost'] ?? 0);
+
+        $returnItemsBuilder = $salesReturnModel
+            ->select('pos_sales_returns.product_id, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as cost_returned')
+            ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnItemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnItems = $returnItemsBuilder->groupBy('pos_sales_returns.product_id')->findAll();
+        $returnsByProduct = [];
+        foreach ($returnItems as $ri) {
+            $returnsByProduct[$ri['product_id']] = ['qty_returned' => (float)($ri['qty_returned'] ?? 0), 'amount_returned' => (float)($ri['amount_returned'] ?? 0), 'cost_returned' => (float)($ri['cost_returned'] ?? 0)];
+        }
+
+        foreach ($productSummary as $pid => &$row) {
+            if (isset($returnsByProduct[$pid])) {
+                $r = $returnsByProduct[$pid];
+                $row['returns_qty'] = $r['qty_returned'];
+                $row['returns_revenue'] = $r['amount_returned'];
+                $row['returns_cost'] = $r['cost_returned'];
+                $row['net_qty_sold'] = max(0, $row['total_qty_sold'] - $r['qty_returned']);
+                $row['net_revenue'] = max(0, $row['total_revenue'] - $r['amount_returned']);
+                $row['net_cost'] = max(0, $row['total_cost'] - $r['cost_returned']);
+                $row['net_gross_profit'] = $row['net_revenue'] - $row['net_cost'];
+            } else {
+                $row['returns_qty'] = 0;
+                $row['returns_revenue'] = 0;
+                $row['returns_cost'] = 0;
+                $row['net_qty_sold'] = $row['total_qty_sold'];
+                $row['net_revenue'] = $row['total_revenue'];
+                $row['net_cost'] = $row['total_cost'];
+                $row['net_gross_profit'] = $row['gross_profit'];
+            }
+        }
+
+        $totalRevenue = max(0, $grossRevenue - $totalReturns);
+        $totalCost = max(0, $grossCost - $totalReturnCost);
+        $totalGrossProfit = $totalRevenue - $totalCost;
+
+        $salesDataBuilder = $salesModel->select('SUM(total_discount) as total_discounts, SUM(total_tax) as total_taxes, COUNT(id) as sales_count')
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59')
+            ->forStore($storeId);
+        if (!empty($employeeId)) {
+            $salesDataBuilder->where('employee_id', (int)$employeeId);
+        }
+        $salesData = $salesDataBuilder->first();
+        $totalDiscounts = (float)($salesData['total_discounts'] ?? 0);
+        $totalTaxes = (float)($salesData['total_taxes'] ?? 0);
+        $salesCount = (int)($salesData['sales_count'] ?? 0);
+
+        // Expenses module aggregation for print as well
+        $expenseAgg = (new \App\Models\ExpenseModel())
+            ->select('COALESCE(SUM(amount),0) as sum_amount, COALESCE(SUM(tax),0) as sum_tax')
+            ->forStore($storeId)
+            ->where('date >=', $from)
+            ->where('date <=', $to)
+            ->first();
+        $totalExpenses = (float)($expenseAgg['sum_amount'] ?? 0) + (float)($expenseAgg['sum_tax'] ?? 0);
+
+        $totalOperatingExpenses = $totalDiscounts + $totalExpenses;
+        $netProfit = $totalGrossProfit - $totalOperatingExpenses;
+        $profitMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
+
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $data = [
+            'title' => 'Profit & Loss Report - Print',
+            'products' => array_values($productSummary),
+            'totalRevenue' => $totalRevenue,
+            'totalCost' => $totalCost,
+            'totalGrossProfit' => $totalGrossProfit,
+            'totalDiscounts' => $totalDiscounts,
+            'totalTaxes' => $totalTaxes,
+            'totalExpenses' => $totalExpenses,
+            'totalOperatingExpenses' => $totalOperatingExpenses,
+            'netProfit' => $netProfit,
+            'profitMargin' => $profitMargin,
+            'salesCount' => $salesCount,
+            'grossRevenue' => $grossRevenue,
+            'grossCost' => $grossCost,
+            'grossGrossProfit' => $grossGrossProfit,
+            'totalReturns' => $totalReturns,
+            'totalReturnCost' => $totalReturnCost,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+            'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+        ];
+        return view('sales/reports/profit_loss_report_print', $data);
     }
 
     public function exportReportExcel()
@@ -1803,18 +2428,66 @@ class Sales extends \CodeIgniter\Controller
         $customer_id = $this->request->getPost('customer_id');
         $cart_data = $this->request->getPost('cart_data');
         $items = json_decode($cart_data, true);
-        $discount = ($this->request->getPost('discount') ?? 0);
+        $discountInput = (float)($this->request->getPost('discount') ?? 0);
         $discount_type = $this->request->getPost('discount_type') ?? 'fixed';
-        $total_tax = $this->request->getPost('total_tax') ?? 0;
+        $total_tax = (float)($this->request->getPost('total_tax') ?? 0);
         $payment_method = $this->request->getPost('payment_method');
         $userId = session()->get('user_id');
         $employee_id = $this->request->getPost('employee_id') ?? 0; // Salesman/employee assigned to this sale
 
-        $total = 0;
-        foreach ($items as $item) {
-            $total += $item['price'] * $item['quantity'];
+        // Compute authoritative subtotal and item-wise discount sum
+        $subtotal = 0.0;
+        $itemwiseDiscountSum = 0.0;
+        foreach ((array)$items as $it) {
+            $qty = isset($it['quantity']) ? (float)$it['quantity'] : 0;
+            $price = isset($it['price']) ? (float)$it['price'] : 0;
+            if ($qty > 0 && $price >= 0) {
+                $lineBase = $qty * $price;
+                $subtotal += $lineBase;
+                // compute line discount if provided
+                $lineDiscount = 0.0;
+                if (isset($it['discount']) && (float)$it['discount'] > 0) {
+                    $dtype = isset($it['discount_type']) ? strtolower((string)$it['discount_type']) : 'fixed';
+                    if ($dtype === 'percentage') {
+                        $lineDiscount = $lineBase * ((float)$it['discount'] / 100);
+                    } else {
+                        $lineDiscount = (float)$it['discount'];
+                    }
+                    if ($lineDiscount > $lineBase) {
+                        $lineDiscount = $lineBase;
+                    }
+                }
+                $itemwiseDiscountSum += $lineDiscount;
+            }
         }
-        $total = max(0, $total  - floatval($discount) + floatval($total_tax));
+
+        // Determine total discount preference: item-wise if present else global input
+        $totalDiscount = 0.0;
+        if ($itemwiseDiscountSum > 0) {
+            $totalDiscount = round($itemwiseDiscountSum, 2);
+            $discount_type = 'itemwise';
+        } else {
+            if ($discount_type === 'percentage') {
+                $totalDiscount = round($subtotal * ($discountInput / 100), 2);
+            } else {
+                $totalDiscount = round($discountInput, 2);
+            }
+            if ($totalDiscount > $subtotal) {
+                $totalDiscount = $subtotal;
+            }
+        }
+
+        // Normalize discount type and clamp near-zero discount to zero
+        if (!isset($discount_type) || !in_array($discount_type, ['fixed', 'percentage', 'itemwise'], true)) {
+            $discount_type = 'fixed';
+        }
+        if (abs((float)$totalDiscount) < 0.005) {
+            $totalDiscount = 0.0;
+            $discount_type = 'fixed';
+        }
+
+        // Compute total using discounted subtotal + posted tax (if any)
+        $total = max(0, ($subtotal - $totalDiscount) + $total_tax);
 
         $commission_rate = 0;
 
@@ -1865,7 +2538,7 @@ class Sales extends \CodeIgniter\Controller
         $saleData = [
             'customer_id' => $customer_id,
             'total' => $total,
-            'total_discount' => $discount,
+            'total_discount' => $totalDiscount,
             'discount_type' => $discount_type,
             'created_at' => date('Y-m-d H:i:s'),
             'payment_method' => $payment_method,
@@ -1881,13 +2554,30 @@ class Sales extends \CodeIgniter\Controller
         $sale_id = $salesModel->getInsertID();
 
         foreach ($items as $item) {
+            $lineBase = ((float)$item['price']) * ((float)$item['quantity']);
+            $lineDiscount = 0.0;
+            $dtype = 'fixed';
+            if (isset($item['discount']) && (float)$item['discount'] > 0) {
+                $dtype = isset($item['discount_type']) ? strtolower((string)$item['discount_type']) : 'fixed';
+                if ($dtype === 'percentage') {
+                    $lineDiscount = $lineBase * ((float)$item['discount'] / 100);
+                } else {
+                    $lineDiscount = (float)$item['discount'];
+                }
+                if ($lineDiscount > $lineBase) {
+                    $lineDiscount = $lineBase;
+                }
+            }
+            $netSubtotal = max(0.0, $lineBase - $lineDiscount);
             $saleItemsModel->insert([
                 'sale_id' => $sale_id,
                 'product_id' => $item['id'],
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
                 'cost_price' => $item['cost_price'],
-                'subtotal' => $item['price'] * $item['quantity'],
+                'subtotal' => $netSubtotal,
+                'discount' => isset($item['discount']) ? (float)$item['discount'] : 0,
+                'discount_type' => $dtype,
             ]);
         }
 
@@ -1953,6 +2643,8 @@ class Sales extends \CodeIgniter\Controller
                 'stock' => $stock,
                 'carton_size' => $cartonSize,
                 'barcode' => $prod['barcode'] ?? '',
+                'discount' => isset($line['discount']) ? (float)$line['discount'] : 0.0,
+                'discount_type' => (isset($line['discount_type']) && strtolower((string)$line['discount_type']) === 'percentage') ? 'percentage' : 'fixed',
             ];
             $subtotal += $price * $qty;
         }
@@ -2144,7 +2836,14 @@ class Sales extends \CodeIgniter\Controller
                             $customerLedgerModel = new \App\Models\CustomerLedgerModel();
                             $currentBalance = $customerLedgerModel->getCustomerBalance($sale['customer_id']);
 
-                            $returnAmount = $qty * $item['price'];
+                            // Compute return amount using per-unit net (after line discount)
+                            $unitNet = 0.0;
+                            if (!empty($item['quantity']) && (float)$item['quantity'] > 0) {
+                                $unitNet = (float)$item['subtotal'] / (float)$item['quantity'];
+                            } else {
+                                $unitNet = (float)$item['price'];
+                            }
+                            $returnAmount = round($qty * $unitNet, 2);
                             $newBalance = $currentBalance - $returnAmount;
                             $totalReturnAmountCreditSale += $returnAmount; // Track amount to offset due
 
@@ -2164,11 +2863,18 @@ class Sales extends \CodeIgniter\Controller
                         logAction('sale_return', 'Invoice #' . $sale['invoice_no'] . ', Sale ID: ' . $saleId . ', Product ID: ' . $productId . ', Quantity: ' . $qty . ', Reason: ' . $reason);
 
                         // Log return
+                        // Persist return with net amount (after per-line discount)
+                        $unitNetForRow = 0.0;
+                        if (!empty($item['quantity']) && (float)$item['quantity'] > 0) {
+                            $unitNetForRow = (float)$item['subtotal'] / (float)$item['quantity'];
+                        } else {
+                            $unitNetForRow = (float)$item['price'];
+                        }
                         $returnModel->insert([
                             'sale_id' => (int)$saleId,
                             'product_id' => $productId,
                             'quantity' => $qty,
-                            'return_amount' => $qty * $item['price'],
+                            'return_amount' => round($qty * $unitNetForRow, 2),
                             'reason' => $reason,
                             'user_id' => $userId,
                             'created_at' => date('Y-m-d H:i:s'),
