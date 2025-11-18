@@ -119,7 +119,8 @@ class Auth extends BaseController
                 'email' => 'required|valid_email|is_unique[pos_users.email]',
                 'password' => 'required|min_length[5]',
                 'password_confirm' => 'required|matches[password]',
-                'name' => 'required|min_length[3]'
+                'name' => 'required|min_length[3]',
+                'store_id' => 'permit_empty|is_natural_no_zero'
             ];
 
             if (!$this->validate($rules)) {
@@ -132,10 +133,11 @@ class Auth extends BaseController
                 'password' => $this->request->getPost('password'),
                 'name' => $this->request->getPost('name'),
                 'phone' => $this->request->getPost('phone'),
-                'is_active' => 1 // Set to 0 if you want admin approval
+                'is_active' => 1, // Set to 0 if you want admin approval
+                'store_id' => 0, // Default store assignment, can be updated later
             ];
 
-            $this->userModel->save($data);
+            $this->userModel->insert($data);
             // Log the registration action
 
             logAction('registration', 'New user registered: ' . $data['username'] . ' with email: ' . $data['email']);

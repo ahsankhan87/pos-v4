@@ -468,6 +468,17 @@
 <!-- Select2 CDN -->
 <script src="<?php echo base_url() ?>assets/js/select2/select2.min.js"></script>
 <link href="<?php echo base_url() ?>assets/js/select2/select2.min.css" rel="stylesheet" />
+<style>
+    /* Make only the product search dropdown taller */
+    .product-results-tall .select2-results__options {
+        max-height: 520px !important;
+        /* default is ~200px; increase for more rows */
+    }
+
+    .product-results-tall.select2-dropdown {
+        max-height: 560px !important;
+    }
+</style>
 <script>
     // ============================================
     // CSRF Token Auto-Refresh for Long Sessions
@@ -710,6 +721,8 @@
             minimumInputLength: 2, // Require at least 2 characters for better performance
             width: '100%',
             dropdownAutoWidth: true,
+            dropdownCssClass: 'product-results-tall',
+            closeOnSelect: false,
             ajax: {
                 url: '<?= site_url('api/products/search') ?>',
                 dataType: 'json',
@@ -788,7 +801,7 @@
 
         // Close dropdown handlers
         $('.select2-search').on('select2:close', function() {
-            // Return focus to barcode input after closing
+            // If user explicitly closes search, return focus to barcode
             setTimeout(() => $('#barcode-input').focus(), 100);
         });
 
@@ -821,6 +834,7 @@
         let cart = [];
         let lastGrandTotal = 0; // Track latest computed total for tendered/change
         let skipRefocus = false; // Flag to prevent refocus during manual edits
+        let lastAddSource = null; // 'barcode' | 'search' | null
 
         // Load cart from persistent session (real-time session)
         // No server session prefill
@@ -843,11 +857,15 @@
         // Product selection from search
         $('.select2-search').on('select2:select', function(e) {
             const product = e.params.data;
+            lastAddSource = 'search';
             addToCart(product);
             $(this).val(null).trigger('change');
-            $('.select2-search').select2('close');
-            // Return focus to barcode input
-            setTimeout(() => $('#barcode-input').focus(), 150);
+            // Keep search open and focused for rapid multi-add via search
+            setTimeout(function() {
+                $('.select2-search').select2('open');
+                const sf = document.querySelector('.select2-search__field');
+                if (sf) sf.focus();
+            }, 0);
         });
 
         // // Barcode scanning with auto-search (debounced)
@@ -906,6 +924,7 @@
                         })
                         .done(function(product) {
                             if (product && product.id) {
+                                lastAddSource = 'barcode';
                                 addToCart(product);
                                 //showSuccessMessage(`${product.name} added to cart`);
 
@@ -1103,6 +1122,20 @@
             requestAnimationFrame(() => {
                 const barcodeInput = document.getElementById('barcode-input');
                 const activeElement = document.activeElement;
+
+                // If last add came from product search, keep user in search
+                if (lastAddSource === 'search') {
+                    lastAddSource = null;
+                    const $sel = $('.select2-search');
+                    if ($sel.length) {
+                        $sel.select2('open');
+                        setTimeout(function() {
+                            const sf = document.querySelector('.select2-search__field');
+                            if (sf) sf.focus();
+                        }, 0);
+                    }
+                    return; // Do not move focus to barcode
+                }
 
                 // Skip refocus if this was triggered by a manual button click or input edit
                 // If we have a restoreFocus descriptor, attempt to restore it now

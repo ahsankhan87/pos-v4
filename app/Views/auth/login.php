@@ -74,12 +74,12 @@
             </div>
         </form>
 
-        <div class="text-center text-sm">
+        <!-- <div class="text-center text-sm">
             <p class="text-gray-600">Don't have an account?</p>
             <a href="<?= base_url('register') ?>" class="font-medium text-blue-600 hover:text-blue-500">
                 Register here
             </a>
-        </div>
+        </div> -->
     </div>
 </div>
 <?= $this->endSection() ?>

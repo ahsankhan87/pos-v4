@@ -330,7 +330,7 @@ $currency = session('currency_symbol') ?? '$'; ?>
                     .then(data => {
                         if (data && data.barcode) {
                             input.value = data.barcode;
-                            updatePreview();
+                            //updatePreview();
                         } else {
                             throw new Error('Invalid response format');
                         }
@@ -346,7 +346,7 @@ $currency = session('currency_symbol') ?? '$'; ?>
             });
         }
 
-        updatePreview();
+        //updatePreview();
     });
 </script>
 <?= $this->endSection() ?>

@@ -157,13 +157,13 @@
                         <div class="p-4 space-y-2">
                             <div class="flex gap-2">
                                 <input type="text" name="barcode" id="product-barcode" value="<?= esc(old('barcode', $product['barcode'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Leave blank to keep existing">
-                                <button type="button" id="generate-barcode" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-sm shadow">Generate</button>
                             </div>
                             <?php if (!empty($errors['barcode'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['barcode']) ?></p><?php endif; ?>
+                            <?php $img = barcode_image($product['barcode'] ?? ''); ?>
                             <div id="barcode-preview-wrap" class="mt-2 border border-dashed rounded-lg p-3 bg-gray-50 <?= empty($product['barcode']) ? 'hidden' : '' ?>">
-                                <img id="barcode-preview" alt="Barcode preview" class="max-h-24 mx-auto" src="<?= !empty($product['barcode']) ? site_url('products/barcode_image/' . $product['barcode']) : '' ?>">
+                                <img id="barcode-preview" src="<?= $img ?>" alt="Barcode preview" class="max-h-24 mx-auto" />
                             </div>
-                            <p class="text-xs text-gray-500">Tip: You can scan or type a barcode. Leave blank to keep existing or generate a new one.</p>
+                            <p class="text-xs text-gray-500">Tip: You can scan or type a barcode. Leave blank to keep existing.</p>
                         </div>
                     </div>
 
@@ -183,7 +183,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const button = document.getElementById('generate-barcode');
             const input = document.getElementById('product-barcode');
             const preview = document.getElementById('barcode-preview');
             const previewWrap = document.getElementById('barcode-preview-wrap');
@@ -268,48 +267,8 @@
             });
             if (priceInput) priceInput.addEventListener('input', recalcMarginFromPrice);
 
-            // Barcode preview
-            function updatePreview() {
-                const code = (input.value || '').trim();
-                if (!code) {
-                    previewWrap.classList.add('hidden');
-                    preview.removeAttribute('src');
-                    return;
-                }
-                preview.src = '<?= site_url('products/barcode_image') ?>/' + encodeURIComponent(code);
-                previewWrap.classList.remove('hidden');
-            }
-            if (input) {
-                input.addEventListener('input', () => {
-                    clearTimeout(window.__barcodeTimer);
-                    window.__barcodeTimer = setTimeout(updatePreview, 250);
-                });
-            }
-            if (button && input) {
-                button.addEventListener('click', function() {
-                    button.disabled = true;
-                    button.textContent = 'Generating...';
-                    fetch('<?= site_url('products/generate-barcode') ?>', {
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(response => response.ok ? response.json() : Promise.reject())
-                        .then(data => {
-                            if (data && data.barcode) {
-                                input.value = data.barcode;
-                                updatePreview();
-                            }
-                        })
-                        .catch(() => alert('Unable to generate a barcode right now.'))
-                        .finally(() => {
-                            button.disabled = false;
-                            button.textContent = 'Generate';
-                        });
-                });
-            }
+            // Barcode preview updates stripped: preview changes only after save
 
-            updatePreview();
         });
     </script>
 <?php endif; ?>

@@ -33,6 +33,7 @@ class Products extends BaseController
 
     public function show($id = null)
     {
+        helper('barcode');
         $model = new M_products();
         // Fetch product with category and supplier name
         $data['product'] = $model
@@ -52,7 +53,7 @@ class Products extends BaseController
 
     public function new()
     {
-        helper('form');
+        helper(['form', 'barcode']);
         $unitModel = new UnitModel();
         $categoriesModel = new CategoriesModel();
         $suppliersModel = new \App\Models\SuppliersModel();
@@ -160,7 +161,7 @@ class Products extends BaseController
 
     public function edit($id = null)
     {
-        helper('form');
+        helper(['form', 'barcode']);
 
         $model = new M_products();
         $unitModel = new UnitModel();
@@ -446,7 +447,12 @@ class Products extends BaseController
     // Endpoint to generate barcode image
     public function barcode_image($barcode)
     {
+        helper('barcode');
         try {
+
+            $image  = barcode_image($product['barcode'] ?? '');
+            return $image;
+
             $payload = generate_barcode($barcode);
             $image = is_array($payload) ? $payload['data'] : $payload;
             $mime = is_array($payload) ? $payload['mime'] : 'image/png';

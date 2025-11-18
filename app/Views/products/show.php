@@ -103,8 +103,11 @@
                             <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-barcode text-purple-600"></i> Barcode</h3>
                         </div>
                         <div class="p-4 text-center">
+                            <?php $img = barcode_image($product['barcode'] ?? ''); ?>
+
                             <?php if (!empty($product['barcode'])): ?>
-                                <img src="<?= site_url('products/barcode_image/' . urlencode($product['barcode'])) ?>" alt="Barcode" class="mx-auto border border-gray-200 rounded p-2 max-h-24">
+                                <img src="<?= $img ?>" alt="barcode" class="mx-auto border border-gray-200 rounded p-2 max-h-24" />
+                                <!-- <img src="<?= site_url('products/barcode_image/' . urlencode($product['barcode'])) ?>" alt="Barcode" class="mx-auto border border-gray-200 rounded p-2 max-h-24"> -->
                                 <div class="text-xs text-gray-600 mt-2">Barcode: <span class="font-mono"><?= esc($product['barcode']) ?></span></div>
                             <?php else: ?>
                                 <div class="text-sm text-gray-500">No barcode assigned.</div>
