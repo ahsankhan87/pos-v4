@@ -624,30 +624,36 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         <?php endif; ?>
                                     </a>
 
-                                    <a href="<?= site_url('sales/profit-loss-report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'bg-green-600 text-white' : 'hover:bg-green-50 hover:text-green-600' ?>">
-                                        <i class="fas fa-chart-line mr-3 <?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'text-white' : 'text-gray-400 group-hover:text-green-500' ?>"></i>
-                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'font-bold' : '' ?>">Profit & Loss</span>
-                                    </a>
+                                    <?php if (can('reports.view')): ?>
+                                        <a href="<?= site_url('sales/profit-loss-report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'bg-green-600 text-white' : 'hover:bg-green-50 hover:text-green-600' ?>">
+                                            <i class="fas fa-chart-line mr-3 <?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'text-white' : 'text-gray-400 group-hover:text-green-500' ?>"></i>
+                                            <span class="<?= ($segment1 == 'sales' && $segment2 == 'profit-loss-report') ? 'font-bold' : '' ?>">Profit & Loss</span>
+                                        </a>
+                                    <?php endif; ?>
 
                                     <a href="<?= site_url('purchases/report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'purchases' && $segment2 == 'report') ? 'bg-purple-600 text-white' : 'hover:bg-purple-50 hover:text-purple-600' ?>">
                                         <i class="fas fa-shopping-cart mr-3 <?= ($segment1 == 'purchases' && $segment2 == 'report') ? 'text-white' : 'text-gray-400 group-hover:text-purple-500' ?>"></i>
                                         <span class="<?= ($segment1 == 'purchases' && $segment2 == 'report') ? 'font-bold' : '' ?>">Purchase Report</span>
                                     </a>
 
-                                    <a href="<?= site_url('sales/product-report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
-                                        <i class="fas fa-box mr-3 <?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
-                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'font-bold' : '' ?>">Product Sales</span>
-                                    </a>
+                                    <?php if (can('reports.view')): ?>
+                                        <a href="<?= site_url('sales/product-report') ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                            <i class="fas fa-box mr-3 <?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                            <span class="<?= ($segment1 == 'sales' && $segment2 == 'product-report') ? 'font-bold' : '' ?>">Product Sales</span>
+                                        </a>
+                                    <?php endif; ?>
 
-                                    <a href="<?= site_url('sales/report') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
-                                        <i class="fas fa-calendar-day mr-3 <?= ($segment1 == 'sales' && $segment2 == 'report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
-                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'report') ? 'font-bold' : '' ?>">Daily Sales</span>
-                                        <?php if ($segment1 == 'sales' && $segment2 == 'report'): ?>
-                                            <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+R</span>
-                                        <?php else: ?>
-                                            <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+R</span>
-                                        <?php endif; ?>
-                                    </a>
+                                    <?php if (can('reports.view')): ?>
+                                        <a href="<?= site_url('sales/report') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                            <i class="fas fa-calendar-day mr-3 <?= ($segment1 == 'sales' && $segment2 == 'report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                            <span class="<?= ($segment1 == 'sales' && $segment2 == 'report') ? 'font-bold' : '' ?>">Daily Sales</span>
+                                            <?php if ($segment1 == 'sales' && $segment2 == 'report'): ?>
+                                                <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">Ctrl+Alt+R</span>
+                                            <?php else: ?>
+                                                <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+R</span>
+                                            <?php endif; ?>
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
 
                                 <!-- More Options -->

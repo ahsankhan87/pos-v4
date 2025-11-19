@@ -28,8 +28,10 @@
             <div class="md:col-span-2 flex flex-wrap gap-2">
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Apply</button>
                 <button type="button" onclick="window.print()" class="px-4 py-2 bg-gray-700 text-white rounded-md">Print</button>
-                <a href="<?= site_url('sales/employee-commission-report/export_excel?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="px-4 py-2 bg-green-600 text-white rounded-md">Export Excel</a>
-                <a href="<?= site_url('sales/employee-commission-report/export_pdf?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="px-4 py-2 bg-red-600 text-white rounded-md">Export PDF</a>
+                <?php if (can('reports.export')): ?>
+                    <a href="<?= site_url('sales/employee-commission-report/export_excel?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="px-4 py-2 bg-green-600 text-white rounded-md">Export Excel</a>
+                    <a href="<?= site_url('sales/employee-commission-report/export_pdf?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="px-4 py-2 bg-red-600 text-white rounded-md">Export PDF</a>
+                <?php endif; ?>
             </div>
             <div class="md:col-span-6 flex flex-wrap gap-2 text-sm text-gray-600">
                 <button name="from" value="<?= date('Y-m-d') ?>" formaction="<?= site_url('sales/employee-commission-report') ?>" class="px-3 py-1 border rounded hover:bg-gray-50">Today</button>

@@ -28,40 +28,40 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('payment-history/(:num)', 'Sales::paymentHistory/$1', ['filter' => 'permission:sales.view']);
     $routes->get('drafts', 'Sales::drafts', ['filter' => 'permission:sales.view']);
 
-    // Reports
-    $routes->get('profit-loss-report', 'Reports\Sales::profitLossReport', ['filter' => 'permission:sales.view']);
-    $routes->get('report', 'Reports\Sales::report', ['filter' => 'permission:sales.view']);
-    $routes->get('product-report', 'Reports\Sales::productReport', ['filter' => 'permission:sales.view']);
-    $routes->get('customer-report', 'Reports\Sales::customerReport', ['filter' => 'permission:sales.view']);
-    $routes->get('category-report', 'Reports\Sales::categoryReport', ['filter' => 'permission:sales.view']);
-    $routes->get('unit-report', 'Reports\Sales::unitReport', ['filter' => 'permission:sales.view']);
+    // Reports - view/print guarded by reports.view; exports by reports.export
+    $routes->get('profit-loss-report', 'Reports\Sales::profitLossReport', ['filter' => 'permission:reports.view']);
+    $routes->get('report', 'Reports\Sales::report', ['filter' => 'permission:reports.view']);
+    $routes->get('product-report', 'Reports\Sales::productReport', ['filter' => 'permission:reports.view']);
+    $routes->get('customer-report', 'Reports\Sales::customerReport', ['filter' => 'permission:reports.view']);
+    $routes->get('category-report', 'Reports\Sales::categoryReport', ['filter' => 'permission:reports.view']);
+    $routes->get('unit-report', 'Reports\Sales::unitReport', ['filter' => 'permission:reports.view']);
     // Print views
-    $routes->get('report/print', 'Reports\Sales::reportPrint', ['filter' => 'permission:sales.view']);
-    $routes->get('product-report/print', 'Reports\Sales::productReportPrint', ['filter' => 'permission:sales.view']);
-    $routes->get('customer-report/print', 'Reports\Sales::customerReportPrint', ['filter' => 'permission:sales.view']);
-    $routes->get('category-report/print', 'Reports\Sales::categoryReportPrint', ['filter' => 'permission:sales.view']);
-    $routes->get('unit-report/print', 'Reports\Sales::unitReportPrint', ['filter' => 'permission:sales.view']);
-    $routes->get('profit-loss-report/print', 'Reports\Sales::profitLossReportPrint', ['filter' => 'permission:sales.view']);
-    $routes->get('report/export', 'Reports\Sales::exportReport', ['filter' => 'permission:sales.view']);
-    $routes->get('product-report/export', 'Reports\Sales::exportProductReport', ['filter' => 'permission:sales.view']);
-    $routes->get('customer-report/export', 'Reports\Sales::exportCustomerReport', ['filter' => 'permission:sales.view']);
-    $routes->get('report/export_pdf', 'Reports\Sales::exportReportPDF', ['filter' => 'permission:sales.view']);
-    $routes->get('report/export_excel', 'Reports\Sales::exportReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('product-report/export_excel', 'Reports\Sales::exportProductReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('product-report/export_pdf', 'Reports\Sales::exportProductReportPDF', ['filter' => 'permission:sales.view']);
-    $routes->get('customer-report/export_excel', 'Reports\Sales::exportCustomerReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('customer-report/export_pdf', 'Reports\Sales::exportCustomerReportPDF', ['filter' => 'permission:sales.view']);
-    $routes->get('category-report/export_excel', 'Reports\Sales::exportCategoryReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('category-report/export_pdf', 'Reports\Sales::exportCategoryReportPDF', ['filter' => 'permission:sales.view']);
-    $routes->get('unit-report/export_excel', 'Reports\Sales::exportUnitReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('unit-report/export_pdf', 'Reports\Sales::exportUnitReportPDF', ['filter' => 'permission:sales.view']);
-    $routes->get('employee-report', 'Reports\Sales::employeeReport', ['filter' => 'permission:sales.view']);
-    $routes->get('employee-commission-report', 'Reports\Sales::employeeCommissionReport', ['filter' => 'permission:sales.view']);
+    $routes->get('report/print', 'Reports\Sales::reportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('product-report/print', 'Reports\Sales::productReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('customer-report/print', 'Reports\Sales::customerReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('category-report/print', 'Reports\Sales::categoryReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('unit-report/print', 'Reports\Sales::unitReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('profit-loss-report/print', 'Reports\Sales::profitLossReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('report/export', 'Reports\Sales::exportReport', ['filter' => 'permission:reports.export']);
+    $routes->get('product-report/export', 'Reports\Sales::exportProductReport', ['filter' => 'permission:reports.export']);
+    $routes->get('customer-report/export', 'Reports\Sales::exportCustomerReport', ['filter' => 'permission:reports.export']);
+    $routes->get('report/export_pdf', 'Reports\Sales::exportReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('report/export_excel', 'Reports\Sales::exportReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('product-report/export_excel', 'Reports\Sales::exportProductReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('product-report/export_pdf', 'Reports\Sales::exportProductReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('customer-report/export_excel', 'Reports\Sales::exportCustomerReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('customer-report/export_pdf', 'Reports\Sales::exportCustomerReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('category-report/export_excel', 'Reports\Sales::exportCategoryReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('category-report/export_pdf', 'Reports\Sales::exportCategoryReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('unit-report/export_excel', 'Reports\Sales::exportUnitReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('unit-report/export_pdf', 'Reports\Sales::exportUnitReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('employee-report', 'Reports\Sales::employeeReport', ['filter' => 'permission:reports.view']);
+    $routes->get('employee-commission-report', 'Reports\Sales::employeeCommissionReport', ['filter' => 'permission:reports.view']);
     // Employee report exports
-    $routes->get('employee-report/export_excel', 'Reports\Sales::exportEmployeeReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('employee-report/export_pdf', 'Reports\Sales::exportEmployeeReportPDF', ['filter' => 'permission:sales.view']);
-    $routes->get('employee-commission-report/export_excel', 'Reports\Sales::exportEmployeeCommissionReportExcel', ['filter' => 'permission:sales.view']);
-    $routes->get('employee-commission-report/export_pdf', 'Reports\Sales::exportEmployeeCommissionReportPDF', ['filter' => 'permission:sales.view']);
+    $routes->get('employee-report/export_excel', 'Reports\Sales::exportEmployeeReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('employee-report/export_pdf', 'Reports\Sales::exportEmployeeReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('employee-commission-report/export_excel', 'Reports\Sales::exportEmployeeCommissionReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('employee-commission-report/export_pdf', 'Reports\Sales::exportEmployeeCommissionReportPDF', ['filter' => 'permission:reports.export']);
 
     // Create
     $routes->get('new', 'Sales::new', ['filter' => 'permission:sales.create']);

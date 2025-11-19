@@ -167,20 +167,24 @@ if (!function_exists('formatQuantity')) {
                         <i class="fas fa-filter mr-2"></i> Apply
                     </button>
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
-                    <a href="<?= site_url('sales/product-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
-                        <i class="fas fa-print mr-2"></i> Print
-                    </a>
+                    <?php if (can('reports.view')): ?>
+                        <a href="<?= site_url('sales/product-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                            <i class="fas fa-print mr-2"></i> Print
+                        </a>
+                    <?php endif; ?>
                 </div>
                 <div class="flex items-end gap-2">
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
-                    <a href="<?= site_url('sales/product-report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
-                        class="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 shadow-soft">
-                        <i class="fas fa-file-pdf mr-2"></i> PDF
-                    </a>
-                    <a href="<?= site_url('sales/product-report/export_excel?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
-                        class="inline-flex items-center px-4 py-2 rounded-md bg-yellow-400 text-gray-900 hover:bg-yellow-500 shadow-soft">
-                        <i class="fas fa-file-csv mr-2"></i> CSV
-                    </a>
+                    <?php if (can('reports.export')): ?>
+                        <a href="<?= site_url('sales/product-report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
+                            class="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 shadow-soft">
+                            <i class="fas fa-file-pdf mr-2"></i> PDF
+                        </a>
+                        <a href="<?= site_url('sales/product-report/export_excel?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
+                            class="inline-flex items-center px-4 py-2 rounded-md bg-yellow-400 text-gray-900 hover:bg-yellow-500 shadow-soft">
+                            <i class="fas fa-file-csv mr-2"></i> CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
                 <div class="sm:col-span-2 md:col-span-5">
                     <div class="flex flex-wrap gap-2 text-xs no-print">

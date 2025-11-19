@@ -212,9 +212,11 @@ if (!empty($employee_id) && !empty($employees)) {
                             </button>
                         </div>
                         <div class="flex items-end gap-2">
-                            <a href="<?= site_url('sales/profit-loss-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-900 shadow-md">
-                                <i class="fas fa-print mr-2"></i> Print
-                            </a>
+                            <?php if (can('reports.view')): ?>
+                                <a href="<?= site_url('sales/profit-loss-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-900 shadow-md">
+                                    <i class="fas fa-print mr-2"></i> Print
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
 
