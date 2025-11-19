@@ -77,6 +77,39 @@
     <h2>Profit &amp; Loss Report</h2>
     <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
     <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+
+    <table style="margin-bottom:8px;">
+        <tbody>
+            <tr>
+                <td>Gross Revenue — Products</td>
+                <td class="text-right"><?= esc($currency) . ' ' . money_fmt($grossRevenueProduct ?? 0) ?></td>
+            </tr>
+            <tr>
+                <td>Gross Revenue — Services</td>
+                <td class="text-right"><?= esc($currency) . ' ' . money_fmt($grossRevenueService ?? (($grossRevenue ?? 0) - ($grossRevenueProduct ?? 0))) ?></td>
+            </tr>
+            <tr>
+                <td>Less: Sales Returns — Products</td>
+                <td class="text-right">(<?= esc($currency) . ' ' . money_fmt($productReturnAmount ?? 0) ?>)</td>
+            </tr>
+            <tr>
+                <td>Less: Sales Returns — Services</td>
+                <td class="text-right">(<?= esc($currency) . ' ' . money_fmt($serviceReturnAmount ?? (($totalReturns ?? 0) - ($productReturnAmount ?? 0))) ?>)</td>
+            </tr>
+            <tr>
+                <td><strong>Net Revenue</strong></td>
+                <td class="text-right"><strong><?= esc($currency) . ' ' . money_fmt($totalRevenue ?? 0) ?></strong></td>
+            </tr>
+            <tr>
+                <td>Less: Cost of Goods Sold (Products only)</td>
+                <td class="text-right">(<?= esc($currency) . ' ' . money_fmt($totalCost ?? 0) ?>)</td>
+            </tr>
+            <tr>
+                <td><strong>Gross Profit</strong></td>
+                <td class="text-right"><strong><?= esc($currency) . ' ' . money_fmt(($totalGrossProfit ?? 0)) ?></strong></td>
+            </tr>
+        </tbody>
+    </table>
     <table>
         <thead>
             <tr>

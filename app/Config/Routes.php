@@ -369,6 +369,14 @@ $routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
     $routes->post('update-opening-balance', 'SupplierLedger::updateOpeningBalance', ['filter' => 'permission:purchases.update']);
 });
 
+// Accounts Reports: Debtors & Creditors
+$routes->group('reports', ['filter' => 'auth'], function ($routes) {
+    $routes->get('debtors', 'Reports\Accounts::debtors', ['filter' => 'permission:customers.view']);
+    $routes->get('debtors/data', 'Reports\Accounts::debtorsData', ['filter' => 'permission:customers.view']);
+    $routes->get('creditors', 'Reports\Accounts::creditors', ['filter' => 'permission:purchases.view']);
+    $routes->get('creditors/data', 'Reports\Accounts::creditorsData', ['filter' => 'permission:purchases.view']);
+});
+
 $routes->get('logs/datatable', 'AuditLogs::datatable', ['filter' => 'auth']);
 
 $routes->group('employees', ['filter' => 'auth'], function ($routes) {
@@ -428,13 +436,20 @@ $routes->get('no-access', 'NoAccess::index');
 
 // Billing & Subscriptions
 $routes->group('billing', ['filter' => 'auth'], function ($routes) {
-    $routes->get('plans', 'Billing::plans');
-    $routes->get('manage', 'Billing::manage');
-    $routes->get('subscribe/(:segment)', 'Billing::subscribe/$1');
-    $routes->get('activate', 'Billing::activateLicense');
-    $routes->post('activate', 'Billing::activateLicense');
-    $routes->post('cancel-scheduled', 'Billing::cancelScheduled');
-    $routes->post('dismiss-banner', 'Billing::dismissRenewalBanner');
+    // View plans and current subscription
+    $routes->get('plans', 'Billing::plans', ['filter' => 'permission:billing.view']);
+    $routes->get('manage', 'Billing::manage', ['filter' => 'permission:billing.view']);
+
+    // Subscribe/switch plans
+    $routes->get('subscribe/(:segment)', 'Billing::subscribe/$1', ['filter' => 'permission:billing.manage']);
+
+    // License activation
+    $routes->get('activate', 'Billing::activateLicense', ['filter' => 'permission:billing.manage']);
+    $routes->post('activate', 'Billing::activateLicense', ['filter' => 'permission:billing.manage']);
+
+    // Manage scheduled changes and UI banners
+    $routes->post('cancel-scheduled', 'Billing::cancelScheduled', ['filter' => 'permission:billing.manage']);
+    $routes->post('dismiss-banner', 'Billing::dismissRenewalBanner', ['filter' => 'permission:billing.manage']);
 });
 
 // Payment Provider Webhooks (no auth)

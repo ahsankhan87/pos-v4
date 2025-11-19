@@ -3,6 +3,7 @@
 
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/buttons.dataTables.min.css">
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -79,6 +80,10 @@
 
 <!-- DataTables JS -->
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/dataTables.buttons.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/jszip.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const permissions = {
@@ -100,6 +105,7 @@
             processing: true,
             serverSide: true,
             deferRender: true,
+            dom: 'Blfrtip',
             ajax: {
                 url: routes.datatable,
                 type: 'GET',
@@ -111,6 +117,69 @@
             pageLength: 25,
             order: [
                 [0, 'desc']
+            ],
+            buttons: [{
+                    extend: 'print',
+                    text: '<i class="fas fa-print mr-1"></i> Print',
+                    className: 'btn btn-muted btn-sm',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5]
+                    },
+                    title: 'Customers',
+                    customize: function(win) {
+                        var $body = $(win.document.body);
+                        var $table = $body.find('table');
+                        // Global font sizing and tighter spacing
+                        $body.css({
+                            'font-size': '11px',
+                            'line-height': '1.25',
+                            'margin': '0'
+                        });
+                        $body.find('h1').css({
+                            'font-size': '14px',
+                            'margin': '0 0 8px 0'
+                        });
+                        // Apply DataTables compact class and ensure small cell padding
+                        $table.addClass('compact').css('font-size', 'inherit');
+                        $(win.document.head).append(
+                            '<style>\
+                                @page { margin: 8mm; }\
+                                body { padding: 8mm; }\
+                                table { border-collapse: collapse !important; }\
+                                table.dataTable thead th,\
+                                table.dataTable tbody td,\
+                                table.dataTable tfoot th,\
+                                table.dataTable tfoot td {\
+                                    padding: 4px 6px !important;\
+                                }\
+                                table.dataTable thead th {\
+                                    border-bottom: 1px solid #ddd !important;\
+                                }\
+                                table.dataTable tbody tr td {\
+                                    border-top: 1px solid #f0f0f0 !important;\
+                                }\
+                            </style>'
+                        );
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: '<i class="fas fa-file-csv mr-1"></i> CSV',
+                    className: 'btn btn-muted btn-sm',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5]
+                    },
+                    title: 'customers'
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fas fa-file-excel mr-1"></i> Excel',
+                    className: 'btn btn-muted btn-sm',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5]
+                    },
+                    title: 'customers'
+                }
             ],
             columns: [{
                     data: 'id',

@@ -16,23 +16,25 @@ The receipt template system allows you to create and manage multiple receipt tem
 
 Use these placeholders in your HTML templates. They will be automatically replaced with actual data:
 
-| Placeholder          | Description                   | Example Output                   |
-| -------------------- | ----------------------------- | -------------------------------- |
-| `{{store_name}}`     | Store name                    | "ABC Store"                      |
-| `{{store_address}}`  | Store address                 | "123 Main St, City"              |
-| `{{store_phone}}`    | Store phone number            | "(555) 123-4567"                 |
-| `{{store_footer}}`   | Footer message                | "Returns accepted within 7 days" |
-| `{{receipt_number}}` | Receipt/Invoice number        | "INV-2025-001"                   |
-| `{{date}}`           | Transaction date and time     | "25/10/2025 14:30"               |
-| `{{cashier}}`        | Cashier name                  | "John Doe"                       |
-| `{{customer}}`       | Customer info (if available)  | "Customer: Jane Smith"           |
-| `{{items}}`          | Table rows of purchased items | Multiple `<tr>` rows             |
-| `{{subtotal}}`       | Subtotal before tax/discount  | "100.00"                         |
-| `{{total_discount}}` | Total discount amount         | "10.00"                          |
-| `{{tax}}`            | Tax amount                    | "9.00"                           |
-| `{{total}}`          | Grand total                   | "99.00"                          |
-| `{{paid}}`           | Amount paid by customer       | "100.00"                         |
-| `{{change}}`         | Change given                  | "1.00"                           |
+| Placeholder          | Description                   | Example Output                         |
+| -------------------- | ----------------------------- | -------------------------------------- |
+| `{{store_name}}`     | Store name                    | "ABC Store"                            |
+| `{{store_address}}`  | Store address                 | "123 Main St, City"                    |
+| `{{store_phone}}`    | Store phone number            | "(555) 123-4567"                       |
+| `{{store_footer}}`   | Footer message                | "Returns accepted within 7 days"       |
+| `{{store_logo_url}}` | Store logo absolute URL       | `https://example.com/uploads/logo.png` |
+| `{{store_logo_img}}` | Ready-to-use <img> tag        | `<img src=".../logo.png" alt="Logo">`  |
+| `{{receipt_number}}` | Receipt/Invoice number        | "INV-2025-001"                         |
+| `{{date}}`           | Transaction date and time     | "25/10/2025 14:30"                     |
+| `{{cashier}}`        | Cashier name                  | "John Doe"                             |
+| `{{customer}}`       | Customer info (if available)  | "Customer: Jane Smith"                 |
+| `{{items}}`          | Table rows of purchased items | Multiple `<tr>` rows                   |
+| `{{subtotal}}`       | Subtotal before tax/discount  | "100.00"                               |
+| `{{total_discount}}` | Total discount amount         | "10.00"                                |
+| `{{tax}}`            | Tax amount                    | "9.00"                                 |
+| `{{total}}`          | Grand total                   | "99.00"                                |
+| `{{paid}}`           | Amount paid by customer       | "100.00"                               |
+| `{{change}}`         | Change given                  | "1.00"                                 |
 
 ## Item Format
 

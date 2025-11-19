@@ -69,11 +69,18 @@ class Receipts extends BaseController
 
         $currency = session()->get('currency_symbol') ?? '$';
 
+        $logoUrl = '';
+        if (!empty($loggedInStore['logo'])) {
+            $logoUrl = base_url('public/uploads/' . ltrim($loggedInStore['logo'], '/'));
+        }
+
         $replacements = [
             '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
             '{{store_address}}' => $loggedInStore['address'] ?? '123 Main St, City',
             '{{store_phone}}' => $loggedInStore['phone'] ?? '555-1234',
             '{{store_footer}}' => 'Returns accepted within 7 days with receipt',
+            '{{store_logo_url}}' => $logoUrl,
+            '{{store_logo_img}}' => $logoUrl ? ('<img src="' . $logoUrl . '" alt="Logo" style="height:48px; max-width:220px; object-fit:contain;">') : '',
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
@@ -169,11 +176,18 @@ class Receipts extends BaseController
         }
         $currency = session()->get('currency_symbol') ?? '$';
 
+        $logoUrl = '';
+        if (!empty($loggedInStore['logo'])) {
+            $logoUrl = base_url('public/uploads/' . ltrim($loggedInStore['logo'], '/'));
+        }
+
         $replacements = [
             '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
             '{{store_address}}' => $loggedInStore['address'] ?? '123 Main St, City',
             '{{store_phone}}' => $loggedInStore['phone'] ?? '555-1234',
             '{{store_footer}}' => 'Returns accepted within 7 days with receipt',
+            '{{store_logo_url}}' => $logoUrl,
+            '{{store_logo_img}}' => $logoUrl ? ('<img src="' . $logoUrl . '" alt="Logo" style="height:48px; max-width:220px; object-fit:contain;">') : '',
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],

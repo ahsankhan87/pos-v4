@@ -299,19 +299,27 @@ if (!empty($employee_id) && !empty($employees)) {
                 <table class="w-full">
                     <tbody>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm font-medium text-gray-700">Gross Revenue</td>
-                            <td class="py-3 text-sm text-right font-semibold text-gray-900"><?= esc($currency) ?> <?= money_fmt($grossRevenue ?? $totalRevenue) ?></td>
+                            <td class="py-3 text-sm font-medium text-gray-700">Gross Revenue — Products</td>
+                            <td class="py-3 text-sm text-right font-semibold text-gray-900"><?= esc($currency) ?> <?= money_fmt($grossRevenueProduct ?? 0) ?></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Sales Returns</td>
-                            <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalReturns ?? 0) ?>)</td>
+                            <td class="py-3 text-sm font-medium text-gray-700">Gross Revenue — Services</td>
+                            <td class="py-3 text-sm text-right font-semibold text-gray-900"><?= esc($currency) ?> <?= money_fmt($grossRevenueService ?? (($grossRevenue ?? 0) - ($grossRevenueProduct ?? 0))) ?></td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Sales Returns — Products</td>
+                            <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($productReturnAmount ?? 0) ?>)</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Sales Returns — Services</td>
+                            <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($serviceReturnAmount ?? (($totalReturns ?? 0) - ($productReturnAmount ?? 0))) ?>)</td>
                         </tr>
                         <tr class="border-b border-gray-200 bg-blue-50">
                             <td class="py-3 text-sm font-semibold text-gray-900">Net Revenue</td>
                             <td class="py-3 text-sm text-right font-bold text-gray-900"><?= esc($currency) ?> <?= money_fmt($totalRevenue) ?></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Cost of Goods Sold</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Cost of Goods Sold (Products only)</td>
                             <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalCost) ?>)</td>
                         </tr>
                         <tr class="border-b-2 border-gray-300 bg-green-50">

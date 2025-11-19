@@ -428,7 +428,31 @@
                         <td>
                             <div class="font-bold"><?= esc($item['product_name']) ?></div>
                         </td>
-                        <td class="text-center"><?= number_format($item['quantity'], 2) ?></td>
+                        <?php
+                        // Calculate display quantity based on carton_size and quantity
+                        $displayQuantity = '';
+                        $cartons = 0;
+                        $remaining = 0;
+                        $cartonSize = 0;
+                        $pieces = 0;
+
+                        $cartonSize = (float)($item['carton_size'] ?? 0);
+                        $pieces = (float)($item['quantity'] ?? 0);
+
+                        if (!$cartonSize || $cartonSize <= 1) {
+                            $displayQuantity =  number_format($pieces, 2);
+                        } else {
+                            $cartons = floor($pieces / $cartonSize);
+                            $remaining = $pieces - ($cartons * $cartonSize);
+
+                            if ($remaining > 0) {
+                                $displayQuantity = $cartons . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+                            } else {
+                                $displayQuantity = $cartons . ' ctns';
+                            }
+                        }
+                        ?>
+                        <td class="text-center"><?= $displayQuantity ?></td>
                         <td class="text-right"><?= number_to_currency($item['cost_price'], session()->get('currency_symbol'), 'en_US', 2) ?></td>
 
                         <td class="text-right font-bold"><?= number_to_currency($item['subtotal'], session()->get('currency_symbol'), 'en_US', 2) ?></td>

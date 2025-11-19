@@ -119,6 +119,9 @@ class Inventory extends BaseController
                     ->groupEnd();
             }
 
+            // Check type to exclude services
+            $builder->where('type !=', 'service');
+
             // Apply date range filter
             if ($fromDate) {
                 $builder->where('created_at >=', $fromDate . ' 00:00:00');

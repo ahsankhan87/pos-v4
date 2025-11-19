@@ -19,6 +19,8 @@
             padding: 12px;
             margin-bottom: 16px;
         }
+        .letterhead .logo { margin-bottom: 8px; text-align: center; }
+        .letterhead .logo img { max-height: 54px; max-width: 260px; object-fit: contain; display: inline-block; }
         .letterhead h1 {
             margin: 0;
             font-size: 22px;
@@ -127,6 +129,7 @@
 </head>
 <body>
     <div class="letterhead">
+        <div class="logo">{{store_logo_img}}</div>
         <h1>{{store_name}}</h1>
         <div class="contact">
             <strong>Address:</strong> {{store_address}} | 

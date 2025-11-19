@@ -48,6 +48,8 @@
         background-color: white;
         color: black;
     }
+    #invoice-POS .r-header .logo { margin-bottom: 4px; }
+    #invoice-POS .r-header .logo img { max-height: 40px; max-width: 180px; object-fit: contain; display: inline-block; }
 
     #invoice-POS .company-name {
         font-size: 14px;
@@ -216,6 +218,7 @@ table {
 
     <!-- Company Header - Always Show -->
     <div class="r-header">
+        <div class="logo">{{store_logo_img}}</div>
         <div class="company-name">{{store_name}}</div>
         <div class="company-info">{{store_address}}</div>
         <div class="company-info">Tel: {{store_phone}}</div>

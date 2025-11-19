@@ -27,6 +27,8 @@ class M_products extends Model
         'carton_size',
         'category_id',
         'supplier_id',
+        'type',
+        'is_stock_tracked',
     ]; // adjust fields as per your table
 
     public function getProducts($productID = false)
@@ -41,13 +43,21 @@ class M_products extends Model
     public function adjustStock($productId, $quantity, $type = 'adjustment')
     {
         $product = $this->find($productId);
+        if (!$product) {
+            return false; // product not found
+        }
+
+        // Skip stock adjustment if this is a service or explicitly not tracked
+        if ((isset($product['type']) && $product['type'] === 'service') || (isset($product['is_stock_tracked']) && (int)$product['is_stock_tracked'] === 0)) {
+            return true; // treat as successful no-op
+        }
 
         if ($type === 'in') {
             $newQuantity = $product['quantity'] + $quantity;
         } elseif ($type === 'out') {
             $newQuantity = $product['quantity'] - $quantity;
         } else {
-            $newQuantity = $quantity;
+            $newQuantity = $quantity; // direct set
         }
 
         return $this->update($productId, ['quantity' => $newQuantity]);
@@ -56,6 +66,7 @@ class M_products extends Model
     public function getLowStockProducts()
     {
         return $this->where('quantity <= stock_alert', null, false)
+            ->where('type !=', 'service')
             ->findAll();
     }
 

@@ -51,6 +51,15 @@ $currency = session('currency_symbol') ?? '$'; ?>
                     <div class="p-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Type <span class="text-red-500">*</span></label>
+                                <select name="type" id="product-type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                    <?php $typeVal = set_value('type', 'product'); ?>
+                                    <option value="product" <?= $typeVal === 'product' ? 'selected' : '' ?>>Product</option>
+                                    <option value="service" <?= $typeVal === 'service' ? 'selected' : '' ?>>Service</option>
+                                </select>
+                                <?php if (!empty($errors['type'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['type']) ?></p><?php endif; ?>
+                            </div>
+                            <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="name" autofocus value="<?= set_value('name') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                                 <?php if (!empty($errors['name'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['name']) ?></p><?php endif; ?>
@@ -98,12 +107,12 @@ $currency = session('currency_symbol') ?? '$'; ?>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Stock Alert</label>
-                                <input type="number" name="stock_alert" value="<?= set_value('stock_alert', 10) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0" step="0.01">
+                                <input type="number" name="stock_alert" value="<?= set_value('stock_alert', 10) ?>" class="product-only w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0" step="0.01" data-product-only>
                                 <?php if (!empty($errors['stock_alert'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['stock_alert']) ?></p><?php endif; ?>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Expiry Date</label>
-                                <input type="date" name="expiry_date" value="<?= set_value('expiry_date') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="date" name="expiry_date" value="<?= set_value('expiry_date') ?>" class="product-only w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" data-product-only>
                                 <?php if (!empty($errors['expiry_date'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['expiry_date']) ?></p><?php endif; ?>
                             </div>
                             <div class="md:col-span-2">
@@ -144,13 +153,13 @@ $currency = session('currency_symbol') ?? '$'; ?>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Initial Quantity</label>
-                                <input type="number" step="0.01" min="0" name="initial_quantity" value="<?= set_value('initial_quantity', '0') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="number" step="0.01" min="0" name="initial_quantity" value="<?= set_value('initial_quantity', '0') ?>" class="product-only w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" data-product-only>
                                 <p class="text-xs text-gray-500 mt-1">Optional. Starting stock in pieces. Will be logged to inventory.</p>
                                 <?php if (!empty($errors['initial_quantity'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['initial_quantity']) ?></p><?php endif; ?>
                             </div>
                             <div>
                                 <label for="carton_size" class="block text-xs font-semibold text-gray-700 mb-1">Pieces per Carton/Box</label>
-                                <input type="number" step="0.01" name="carton_size" id="carton_size" value="<?= old('carton_size') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., 6 for 6 pieces per carton">
+                                <input type="number" step="0.01" name="carton_size" id="carton_size" value="<?= old('carton_size') ?>" class="product-only w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., 6 for 6 pieces per carton" data-product-only>
                                 <p class="text-xs text-gray-500 mt-1">Leave empty if not sold in cartons.</p>
                                 <?php if (!empty($errors['carton_size'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['carton_size']) ?></p><?php endif; ?>
                             </div>
@@ -162,7 +171,7 @@ $currency = session('currency_symbol') ?? '$'; ?>
             <!-- Right: Sticky Sidebar -->
             <div class="space-y-4 lg:sticky lg:top-3 self-start">
                 <!-- Barcode -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="product-only bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" data-product-only>
                     <div class="px-4 py-2 bg-gradient-to-r from-purple-50 to-fuchsia-50 border-b border-gray-200">
                         <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
                             <i class="fas fa-barcode text-purple-600"></i> Barcode
@@ -188,6 +197,7 @@ $currency = session('currency_symbol') ?? '$'; ?>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                     <div class="flex flex-col gap-2">
                         <input type="hidden" name="created_at" value="<?= date('Y-m-d H:i:s') ?>">
+                        <input type="hidden" name="is_stock_tracked" id="is_stock_tracked_input" value="<?= $typeVal === 'service' ? '0' : '1' ?>">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button type="submit" name="submit_action" value="save" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-md">
                                 <i class="fas fa-save mr-2"></i> Save Product
@@ -347,6 +357,28 @@ $currency = session('currency_symbol') ?? '$'; ?>
         }
 
         //updatePreview();
+        // Type toggle logic
+        const typeSelect = document.getElementById('product-type');
+        const stockTrackedInput = document.getElementById('is_stock_tracked_input');
+
+        function toggleProductOnly() {
+            const val = typeSelect ? typeSelect.value : 'product';
+            const productEls = document.querySelectorAll('[data-product-only]');
+            productEls.forEach(el => {
+                if (val === 'service') {
+                    el.classList.add('hidden');
+                } else {
+                    el.classList.remove('hidden');
+                }
+            });
+            if (stockTrackedInput) {
+                stockTrackedInput.value = (val === 'service') ? '0' : '1';
+            }
+        }
+        if (typeSelect) {
+            typeSelect.addEventListener('change', toggleProductOnly);
+            toggleProductOnly();
+        }
     });
 </script>
 <?= $this->endSection() ?>

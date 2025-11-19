@@ -36,6 +36,10 @@
                         </div>
                         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
+                                <div class="text-gray-500">Type</div>
+                                <div class="font-medium text-gray-900"><?= esc($product['type'] ?? '') ?></div>
+                            </div>
+                            <div>
                                 <div class="text-gray-500">Name</div>
                                 <div class="font-medium text-gray-900"><?= esc($product['name'] ?? '') ?></div>
                             </div>

@@ -93,6 +93,8 @@ class Products extends BaseController
             'store_id' => 'permit_empty',
             'created_at' => 'permit_empty',
             'updated_at' => 'permit_empty',
+            'type' => 'permit_empty',
+            'is_stock_tracked' => 'permit_empty',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -121,6 +123,9 @@ class Products extends BaseController
             'supplier_id' => $post['supplier_id'] ?? null,
             'expiry_date' => $post['expiry_date'] ?? null,
             'carton_size' => !empty($post['carton_size']) ? (float)$post['carton_size'] : null, // Added carton_size
+            'type' => $post['type'] ?? 'product',
+            'is_stock_tracked' => $post['is_stock_tracked'] ?? 1,
+
         ];
 
         // Handle initial quantity
@@ -201,6 +206,8 @@ class Products extends BaseController
             'expiry_date' => 'permit_empty|valid_date',
             'carton_size' => 'permit_empty|decimal', // Added carton_size validation
             'updated_at' => 'permit_empty',
+            'type' => 'permit_empty',
+            'is_stock_tracked' => 'permit_empty',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -363,7 +370,7 @@ class Products extends BaseController
 
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
-        $filteredBuilder->select('id, name, cost_price, price, quantity, carton_size, IFNULL(description, "") as description, code, barcode');
+        $filteredBuilder->select('id, name, cost_price, price, quantity, carton_size, IFNULL(description, "") as description, code, barcode, type, is_stock_tracked');
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 1); // default to ID column index
@@ -1001,6 +1008,12 @@ class Products extends BaseController
             $product = $productsModel->forStore()->find($id);
             if (! $product) {
                 $errors[] = ['id' => $id, 'error' => 'Not found'];
+                continue;
+            }
+
+            // Skip services or non-tracked items
+            if ((($product['type'] ?? 'product') === 'service') || ((int)($product['is_stock_tracked'] ?? 1) === 0)) {
+                $errors[] = ['id' => $id, 'error' => 'Service/non-tracked item skipped'];
                 continue;
             }
 

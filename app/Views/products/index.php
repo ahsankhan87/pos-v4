@@ -155,7 +155,14 @@
                 {
                     data: 'name',
                     name: 'name',
-                    render: data => escapeHtml(data)
+                    render: function(data, type, row) {
+                        const isService = (row.type === 'service') || (parseInt(row.is_stock_tracked ?? 1, 10) === 0);
+                        const nameHtml = escapeHtml(data);
+                        if (isService) {
+                            return `${nameHtml} <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 align-middle">Service</span>`;
+                        }
+                        return nameHtml;
+                    }
                 },
                 {
                     data: 'code',
@@ -165,7 +172,13 @@
                 {
                     data: 'barcode',
                     name: 'barcode',
-                    render: data => escapeHtml(data ?? '')
+                    render: function(data, type, row) {
+                        const isService = (row.type === 'service') || (parseInt(row.is_stock_tracked ?? 1, 10) === 0);
+                        if (isService) {
+                            return '<span class="text-gray-400">—</span>';
+                        }
+                        return escapeHtml(data ?? '');
+                    }
                 },
                 {
                     data: 'cost_price',
@@ -232,6 +245,7 @@
         }
 
         function buildActions(row) {
+            const isService = (row.type === 'service') || (parseInt(row.is_stock_tracked ?? 1, 10) === 0);
             const routes = {
                 view: <?= json_encode(site_url('products/show')) ?> + '/' + row.id,
                 history: <?= json_encode(site_url('products/stock-movement-history')) ?> + '/' + row.id,
@@ -250,18 +264,20 @@
                         <span>View</span>
                     </a>
                 `;
-                menuItems += `
-                    <a href="${routes.history}" class="actions-link actions-link--info">
-                        <i class="fas fa-history"></i>
-                        <span>Stock Movement History</span>
-                    </a>
-                `;
-                menuItems += `
-                    <a href="${routes.barcode}" target="_blank" class="actions-link actions-link--info">
-                        <i class="fas fa-barcode"></i>
-                        <span>Print Barcode Labels</span>
-                    </a>
-                `;
+                if (!isService) {
+                    menuItems += `
+                        <a href="${routes.history}" class="actions-link actions-link--info">
+                            <i class="fas fa-history"></i>
+                            <span>Stock Movement History</span>
+                        </a>
+                    `;
+                    menuItems += `
+                        <a href="${routes.barcode}" target="_blank" class="actions-link actions-link--info">
+                            <i class="fas fa-barcode"></i>
+                            <span>Print Barcode Labels</span>
+                        </a>
+                    `;
+                }
             }
             if (permissions.update) {
                 menuItems += `
@@ -271,7 +287,7 @@
                     </a>
                 `;
             }
-            if (permissions.adjust) {
+            if (permissions.adjust && !isService) {
                 menuItems += `
                     <a href="${routes.adjust}" class="actions-link actions-link--warning">
                         <i class="fas fa-sliders-h"></i>
@@ -363,11 +379,20 @@
         $('#bulk-print').on('click', function(e) {
             e.preventDefault();
             $('.actions-menu').addClass('hidden');
-            const ids = $('#productsTable tbody .row-select:checked').map(function() {
-                return this.value;
-            }).get();
-            if (!ids.length) return;
-            const url = <?= json_encode(site_url('products/print-barcodes')) ?> + '?ids=' + encodeURIComponent(ids.join(','));
+            const validIds = [];
+            $('#productsTable tbody .row-select:checked').each(function() {
+                const tr = $(this).closest('tr');
+                const data = table.row(tr).data();
+                const isService = (data.type === 'service') || (parseInt(data.is_stock_tracked ?? 1, 10) === 0);
+                if (!isService && (data.barcode ?? '') !== '') {
+                    validIds.push(data.id);
+                }
+            });
+            if (!validIds.length) {
+                alert('No eligible products selected (services and items without barcodes are excluded).');
+                return;
+            }
+            const url = <?= json_encode(site_url('products/print-barcodes')) ?> + '?ids=' + encodeURIComponent(validIds.join(','));
             window.open(url, '_blank');
         });
 
@@ -415,10 +440,17 @@
         $('#bulk-adjust').on('click', function(e) {
             e.preventDefault();
             $('.actions-menu').addClass('hidden');
-            const ids = $('#productsTable tbody .row-select:checked').map(function() {
-                return this.value;
-            }).get();
-            if (!ids.length) return;
+            const ids = [];
+            $('#productsTable tbody .row-select:checked').each(function() {
+                const tr = $(this).closest('tr');
+                const data = table.row(tr).data();
+                const isService = (data.type === 'service') || (parseInt(data.is_stock_tracked ?? 1, 10) === 0);
+                if (!isService) ids.push(data.id);
+            });
+            if (!ids.length) {
+                alert('No eligible products selected (services are excluded).');
+                return;
+            }
             $('#bulk-adjust-modal').removeClass('hidden');
             $('#bulk-adjust-count').text(ids.length);
             $('#bulk-adjust-apply').off('click').on('click', function() {

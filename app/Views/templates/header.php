@@ -234,6 +234,14 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                                 <i class="fas fa-file-alt mr-2"></i> Inventory Reports
                                             </a>
                                             <div class="border-t border-gray-100"></div>
+                                            <div class="px-4 py-2 text-[11px] uppercase tracking-wide text-gray-400">Accounts</div>
+                                            <a href="<?= site_url('reports/debtors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-users mr-2 text-red-600"></i> Debtors (Customers)
+                                            </a>
+                                            <a href="<?= site_url('reports/creditors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-truck mr-2 text-purple-600"></i> Creditors (Suppliers)
+                                            </a>
+                                            <div class="border-t border-gray-100"></div>
                                             <a href="<?= site_url('analytics') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-chart-line mr-2"></i> Sales Analytics
                                             </a>
@@ -462,10 +470,20 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 <a href="<?= site_url('reports/inventory') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-file-alt mr-2"></i> Inventory Reports
                                 </a>
+                                <div class="border-t border-blue-600 my-1"></div>
+                                <div class="px-3 py-1 text-[11px] uppercase tracking-wide text-blue-200">Accounts</div>
+                                <a href="<?= site_url('reports/debtors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-users mr-2 text-red-300"></i> Debtors (Customers)
+                                </a>
+                                <a href="<?= site_url('reports/creditors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-truck mr-2 text-purple-300"></i> Creditors (Suppliers)
+                                </a>
+
                                 <a href="<?= site_url('analytics') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-chart-line mr-2"></i> Sales Analytics
                                 </a>
                                 <div class="border-t border-blue-600 my-1"></div>
+                                <div class="px-3 py-1 text-[11px] uppercase tracking-wide text-blue-200">Sales</div>
                                 <a href="<?= site_url('sales/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-calendar-day mr-2"></i> Daily Sales
                                 </a>
@@ -692,7 +710,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                             <!-- Sidebar Footer -->
                             <div class="px-4 py-4 border-t border-gray-200">
                                 <div class="flex items-center justify-between">
-                                    <div class="text-sm text-gray-500">Version 2.1.0</div>
+                                    <div class="text-sm text-gray-500">Version 1.1.0</div>
                                     <button class="text-gray-400 hover:text-gray-500">
                                         <i class="fas fa-question-circle"></i>
                                     </button>

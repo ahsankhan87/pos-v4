@@ -498,7 +498,7 @@ class Sales extends BaseController
         $salesModel = new \App\Models\M_sales();
 
         $saleItemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
+            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, pos_products.type as product_type, pos_products.is_stock_tracked, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
@@ -510,6 +510,9 @@ class Sales extends BaseController
         $items = $saleItemsBuilder->orderBy('pos_products.name', 'ASC')->findAll();
 
         $productSummary = [];
+        $grossRevenueProduct = 0;
+        $grossRevenueService = 0;
+        $grossCostProduct = 0; // services have no COGS
         foreach ($items as $item) {
             $pid = $item['product_id'];
             if (!isset($productSummary[$pid])) {
@@ -518,6 +521,7 @@ class Sales extends BaseController
                     'product_name' => $item['product_name'],
                     'product_code' => $item['product_code'],
                     'carton_size' => $item['carton_size'] ?? 0,
+                    'product_type' => $item['product_type'] ?? 'product',
                     'total_qty_sold' => 0,
                     'total_revenue' => 0,
                     'total_cost' => 0,
@@ -526,13 +530,20 @@ class Sales extends BaseController
             }
             $qty = (float)$item['quantity'];
             $revenue = (float)$item['subtotal'];
-            $cost = (float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty;
+            $isService = (($item['product_type'] ?? 'product') === 'service') || ((int)($item['is_stock_tracked'] ?? 1) === 0);
+            $cost = $isService ? 0.0 : ((float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty);
             $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
             $productSummary[$pid]['sale_id'] = $item['sale_id'];
             $productSummary[$pid]['total_qty_sold'] += $qty;
             $productSummary[$pid]['total_revenue'] += $revenue;
             $productSummary[$pid]['total_cost'] += $cost;
             $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
+            if ($isService) {
+                $grossRevenueService += $revenue;
+            } else {
+                $grossRevenueProduct += $revenue;
+                $grossCostProduct += $cost;
+            }
         }
 
         $grossRevenue = 0;
@@ -546,8 +557,14 @@ class Sales extends BaseController
 
         $salesReturnModel = new \App\Models\SalesReturnModel();
         $returnsAggBuilder = $salesReturnModel
-            ->select('SUM(pos_sales_returns.return_amount) as total_return_amount, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as total_return_cost')
+            ->select(
+                'SUM(pos_sales_returns.return_amount) as total_return_amount,' .
+                    'SUM(CASE WHEN (pos_products.type = \'service\' OR pos_products.is_stock_tracked = 0) THEN pos_sales_returns.return_amount ELSE 0 END) as service_return_amount,' .
+                    'SUM(CASE WHEN (pos_products.type <> \'service\' AND pos_products.is_stock_tracked = 1) THEN pos_sales_returns.return_amount ELSE 0 END) as product_return_amount,' .
+                    'SUM(CASE WHEN (pos_products.type <> \'service\' AND pos_products.is_stock_tracked = 1) THEN (pos_sales_returns.quantity * pos_sale_items.cost_price) ELSE 0 END) as total_return_cost'
+            )
             ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
             ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
             ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
@@ -557,11 +574,14 @@ class Sales extends BaseController
         }
         $returnsAgg = $returnsAggBuilder->first();
         $totalReturns = (float)($returnsAgg['total_return_amount'] ?? 0);
-        $totalReturnCost = (float)($returnsAgg['total_return_cost'] ?? 0);
+        $productReturnAmount = (float)($returnsAgg['product_return_amount'] ?? 0);
+        $serviceReturnAmount = (float)($returnsAgg['service_return_amount'] ?? 0);
+        $totalReturnCost = (float)($returnsAgg['total_return_cost'] ?? 0); // products only
 
         $returnItemsBuilder = $salesReturnModel
-            ->select('pos_sales_returns.product_id, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as cost_returned')
+            ->select('pos_sales_returns.product_id, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned, SUM(CASE WHEN (pos_products.type <> \'service\' AND pos_products.is_stock_tracked = 1) THEN (pos_sales_returns.quantity * pos_sale_items.cost_price) ELSE 0 END) as cost_returned')
             ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
             ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
             ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
@@ -599,7 +619,9 @@ class Sales extends BaseController
             }
         }
 
-        $totalRevenue = max(0, $grossRevenue - $totalReturns);
+        $netProductRevenue = max(0, $grossRevenueProduct - $productReturnAmount);
+        $netServiceRevenue = max(0, $grossRevenueService - $serviceReturnAmount);
+        $totalRevenue = max(0, $netProductRevenue + $netServiceRevenue);
         $totalCost = max(0, $grossCost - $totalReturnCost);
         $totalGrossProfit = $totalRevenue - $totalCost;
 
@@ -634,6 +656,12 @@ class Sales extends BaseController
             'totalRevenue' => $totalRevenue,
             'totalCost' => $totalCost,
             'totalGrossProfit' => $totalGrossProfit,
+            'grossRevenueProduct' => $grossRevenueProduct,
+            'grossRevenueService' => $grossRevenueService,
+            'productReturnAmount' => $productReturnAmount,
+            'serviceReturnAmount' => $serviceReturnAmount,
+            'netProductRevenue' => $netProductRevenue,
+            'netServiceRevenue' => $netServiceRevenue,
             'totalDiscounts' => $totalDiscounts,
             'totalTaxes' => $totalTaxes,
             'totalExpenses' => $totalExpenses,
@@ -669,7 +697,7 @@ class Sales extends BaseController
         $salesReturnModel = new \App\Models\SalesReturnModel();
 
         $saleItemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
+            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, pos_products.type as product_type, pos_products.is_stock_tracked, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
@@ -681,20 +709,30 @@ class Sales extends BaseController
         $items = $saleItemsBuilder->orderBy('pos_products.name', 'ASC')->findAll();
 
         $productSummary = [];
+        $grossRevenueProduct = 0;
+        $grossRevenueService = 0;
+        $grossCostProduct = 0;
         foreach ($items as $item) {
             $pid = $item['product_id'];
             if (!isset($productSummary[$pid])) {
-                $productSummary[$pid] = ['product_id' => $pid, 'product_name' => $item['product_name'], 'product_code' => $item['product_code'], 'carton_size' => $item['carton_size'] ?? 0, 'total_qty_sold' => 0, 'total_revenue' => 0, 'total_cost' => 0, 'gross_profit' => 0];
+                $productSummary[$pid] = ['product_id' => $pid, 'product_name' => $item['product_name'], 'product_code' => $item['product_code'], 'carton_size' => $item['carton_size'] ?? 0, 'product_type' => $item['product_type'] ?? 'product', 'total_qty_sold' => 0, 'total_revenue' => 0, 'total_cost' => 0, 'gross_profit' => 0];
             }
             $qty = (float)$item['quantity'];
             $revenue = (float)$item['subtotal'];
-            $cost = (float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty;
+            $isService = (($item['product_type'] ?? 'product') === 'service') || ((int)($item['is_stock_tracked'] ?? 1) === 0);
+            $cost = $isService ? 0.0 : ((float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty);
             $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
             $productSummary[$pid]['sale_id'] = $item['sale_id'];
             $productSummary[$pid]['total_qty_sold'] += $qty;
             $productSummary[$pid]['total_revenue'] += $revenue;
             $productSummary[$pid]['total_cost'] += $cost;
             $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
+            if ($isService) {
+                $grossRevenueService += $revenue;
+            } else {
+                $grossRevenueProduct += $revenue;
+                $grossCostProduct += $cost;
+            }
         }
         $grossRevenue = 0;
         $grossCost = 0;
@@ -706,8 +744,14 @@ class Sales extends BaseController
         }
 
         $returnsAggBuilder = $salesReturnModel
-            ->select('SUM(pos_sales_returns.return_amount) as total_return_amount, SUM(pos_sales_returns.quantity * pos_sale_items.cost_price) as total_return_cost')
+            ->select(
+                'SUM(pos_sales_returns.return_amount) as total_return_amount,' .
+                    'SUM(CASE WHEN (pos_products.type = \'service\' OR pos_products.is_stock_tracked = 0) THEN pos_sales_returns.return_amount ELSE 0 END) as service_return_amount,' .
+                    'SUM(CASE WHEN (pos_products.type <> \'service\' AND pos_products.is_stock_tracked = 1) THEN pos_sales_returns.return_amount ELSE 0 END) as product_return_amount,' .
+                    'SUM(CASE WHEN (pos_products.type <> \'service\' AND pos_products.is_stock_tracked = 1) THEN (pos_sales_returns.quantity * pos_sale_items.cost_price) ELSE 0 END) as total_return_cost'
+            )
             ->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
             ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
             ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
@@ -717,9 +761,13 @@ class Sales extends BaseController
         }
         $returnsAgg = $returnsAggBuilder->first();
         $totalReturns = (float)($returnsAgg['total_return_amount'] ?? 0);
+        $productReturnAmount = (float)($returnsAgg['product_return_amount'] ?? 0);
+        $serviceReturnAmount = (float)($returnsAgg['service_return_amount'] ?? 0);
         $totalReturnCost = (float)($returnsAgg['total_return_cost'] ?? 0);
 
-        $totalRevenue = max(0, $grossRevenue - $totalReturns);
+        $netProductRevenue = max(0, $grossRevenueProduct - $productReturnAmount);
+        $netServiceRevenue = max(0, $grossRevenueService - $serviceReturnAmount);
+        $totalRevenue = max(0, $netProductRevenue + $netServiceRevenue);
         $totalCost = max(0, $grossCost - $totalReturnCost);
         $totalGrossProfit = $totalRevenue - $totalCost;
 
@@ -754,6 +802,12 @@ class Sales extends BaseController
             'totalRevenue' => $totalRevenue,
             'totalCost' => $totalCost,
             'totalGrossProfit' => $totalGrossProfit,
+            'grossRevenueProduct' => $grossRevenueProduct,
+            'grossRevenueService' => $grossRevenueService,
+            'productReturnAmount' => $productReturnAmount,
+            'serviceReturnAmount' => $serviceReturnAmount,
+            'netProductRevenue' => $netProductRevenue,
+            'netServiceRevenue' => $netServiceRevenue,
             'totalDiscounts' => $totalDiscounts,
             'totalTaxes' => $totalTaxes,
             'totalExpenses' => $totalExpenses,
