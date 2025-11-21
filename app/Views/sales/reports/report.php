@@ -71,7 +71,6 @@ function money_fmt($v)
         }
 
         .print-container table {
-            width: 100%;
             border-collapse: collapse !important;
         }
 
@@ -120,16 +119,17 @@ function money_fmt($v)
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900">Sales Report</h2>
-                <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · Employee: <span class="font-medium text-gray-700"><?php
-                                                                                                                                                                                                                                                                                        $selectedEmp = null;
-                                                                                                                                                                                                                                                                                        foreach (($employees ?? []) as $e) {
-                                                                                                                                                                                                                                                                                            if ((int)$e['id'] === (int)$employee_id) {
-                                                                                                                                                                                                                                                                                                $selectedEmp = $e;
-                                                                                                                                                                                                                                                                                                break;
-                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                        echo esc($selectedEmp['name'] ?? 'Unknown');
-                                                                                                                                                                                                                                                                                        ?></span><?php endif; ?></p>
+                <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · Employee: <span class="font-medium text-gray-700">
+                            <?php
+                                                                                                                                                                                                    $selectedEmp = null;
+                                                                                                                                                                                                    foreach (($employees ?? []) as $e) {
+                                                                                                                                                                                                        if ((int)$e['id'] === (int)$employee_id) {
+                                                                                                                                                                                                            $selectedEmp = $e;
+                                                                                                                                                                                                            break;
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                    }
+                                                                                                                                                                                                    echo esc($selectedEmp['name'] ?? 'Unknown');
+                            ?></span><?php endif; ?></p>
             </div>
             <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 w-full lg:w-auto">
                 <div>
@@ -157,9 +157,12 @@ function money_fmt($v)
                         <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
                             <i class="fas fa-print mr-2"></i> Print
                         </a>
+                        <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-soft">
+                            <i class="fas fa-list mr-2"></i> Items
+                        </a>
                     <?php endif; ?>
                 </div>
-                <div class="flex items-end gap-2">
+                <!-- <div class="flex items-end gap-2">
                     <?php if (can('reports.export')): ?>
                         <a href="<?= site_url('sales/report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to)) ?>"
                             class="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 shadow-soft">
@@ -170,7 +173,7 @@ function money_fmt($v)
                             <i class="fas fa-file-csv mr-2"></i> CSV
                         </a>
                     <?php endif; ?>
-                </div>
+                </div> -->
                 <div class="sm:col-span-2 md:col-span-5">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
                         <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
@@ -213,7 +216,7 @@ function money_fmt($v)
             <div class="text-sm text-gray-500">Showing <?= number_format($count) ?> records</div>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table id="dailySalesTable" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
@@ -253,9 +256,15 @@ function money_fmt($v)
         </div>
     </div>
 </div>
-
+<script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/dataTables.buttons.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/jszip.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/pdfmake.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/vfs_fonts.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
 <script>
-    // Quick ranges helper
+    // Quick ranges helper & DataTables init
     (function() {
         function fmt(d) {
             return d.toISOString().slice(0, 10);
@@ -268,9 +277,7 @@ function money_fmt($v)
                 const now = new Date();
                 let from = new Date();
                 let to = new Date();
-                if (r === 'today') {
-                    // already today
-                } else if (r === 'yesterday') {
+                if (r === 'yesterday') {
                     from.setDate(now.getDate() - 1);
                     to.setDate(now.getDate() - 1);
                 } else if (r === 'last7') {
@@ -282,6 +289,39 @@ function money_fmt($v)
                 toInput.value = fmt(to);
             });
         });
+
+        if (window.jQuery && $.fn.DataTable) {
+            $('#dailySalesTable').DataTable({
+                pageLength: 25,
+                order: [
+                    [3, 'desc']
+                ],
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'print',
+                        text: 'Print',
+                        customize: function(win) {
+                            const css = 'table{font-size:11px;} table th,table td{padding:4px 6px !important;}';
+                            const style = win.document.createElement('style');
+                            style.appendChild(win.document.createTextNode(css));
+                            win.document.head.appendChild(style);
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: 'CSV'
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel'
+                    }
+                ],
+                language: {
+                    search: 'Search:',
+                    lengthMenu: 'Show _MENU_ entries'
+                }
+            });
+        }
     })();
 </script>
 

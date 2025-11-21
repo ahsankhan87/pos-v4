@@ -331,8 +331,8 @@ if (!empty($employee_id) && !empty($employees)) {
                             <td class="py-3 text-sm text-right"></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Discounts Given</td>
-                            <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalDiscounts) ?>)</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4">Line Discounts (informational)</td>
+                            <td class="py-3 text-sm text-right text-gray-500"><?= esc($currency) ?> <?= money_fmt($grossDiscount ?? 0) ?></td>
                         </tr>
                         <?php if (!empty($expenseBreakdown)): ?>
                             <?php foreach ($expenseBreakdown as $exp): ?>
@@ -348,7 +348,7 @@ if (!empty($employee_id) && !empty($employees)) {
                         </tr>
                         <tr class="border-b border-gray-200 bg-orange-50">
                             <td class="py-3 text-sm font-semibold text-gray-900">Total Operating Expenses</td>
-                            <td class="py-3 text-sm text-right font-bold text-red-700">(<?= esc($currency) ?> <?= money_fmt(($totalOperatingExpenses ?? ($totalDiscounts + ($totalExpenses ?? 0)))) ?>)</td>
+                            <td class="py-3 text-sm text-right font-bold text-red-700">(<?= esc($currency) ?> <?= money_fmt($totalOperatingExpenses ?? 0) ?>)</td>
                         </tr>
                         <tr class="border-b-2 border-gray-300 bg-purple-50">
                             <td class="py-3 text-base font-bold text-gray-900">Net Profit</td>
@@ -548,9 +548,7 @@ if (!empty($employee_id) && !empty($employees)) {
     <!-- Footer Note -->
     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
         <i class="fas fa-info-circle mr-2"></i>
-        <strong>Note:</strong> Sales returns are deducted from revenue and their cost is credited back to COGS for this period.
-        The report shows gross profit (net revenue - net COGS) and net profit (gross profit - discounts - expenses). Tax amounts are included in revenue.
-        All quantities are displayed in cartons and pieces where applicable.
+        <strong>Note:</strong> Line discounts are already reflected in net revenue and not subtracted again as expenses. Sales returns reduce revenue and credit back cost. Gross Profit = Net Revenue - Net COGS. Net Profit = Gross Profit - Operating Expenses. Taxes are included in revenue totals. Quantities shown in cartons/pieces where applicable.
     </div>
 </div>
 <!-- DataTables JS -->

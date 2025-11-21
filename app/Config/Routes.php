@@ -29,8 +29,10 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('drafts', 'Sales::drafts', ['filter' => 'permission:sales.view']);
 
     // Reports - view/print guarded by reports.view; exports by reports.export
-    $routes->get('profit-loss-report', 'Reports\Sales::profitLossReport', ['filter' => 'permission:reports.view']);
+    // Use dedicated permission for Profit & Loss report
+    $routes->get('profit-loss-report', 'Reports\Sales::profitLossReport', ['filter' => 'permission:reports.profitloss']);
     $routes->get('report', 'Reports\Sales::report', ['filter' => 'permission:reports.view']);
+    $routes->get('report/items', 'Reports\Sales::saleItemsReport', ['filter' => 'permission:reports.view']);
     $routes->get('product-report', 'Reports\Sales::productReport', ['filter' => 'permission:reports.view']);
     $routes->get('customer-report', 'Reports\Sales::customerReport', ['filter' => 'permission:reports.view']);
     $routes->get('category-report', 'Reports\Sales::categoryReport', ['filter' => 'permission:reports.view']);
@@ -41,7 +43,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('customer-report/print', 'Reports\Sales::customerReportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('category-report/print', 'Reports\Sales::categoryReportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('unit-report/print', 'Reports\Sales::unitReportPrint', ['filter' => 'permission:reports.view']);
-    $routes->get('profit-loss-report/print', 'Reports\Sales::profitLossReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('profit-loss-report/print', 'Reports\Sales::profitLossReportPrint', ['filter' => 'permission:reports.profitloss']);
     $routes->get('report/export', 'Reports\Sales::exportReport', ['filter' => 'permission:reports.export']);
     $routes->get('product-report/export', 'Reports\Sales::exportProductReport', ['filter' => 'permission:reports.export']);
     $routes->get('customer-report/export', 'Reports\Sales::exportCustomerReport', ['filter' => 'permission:reports.export']);

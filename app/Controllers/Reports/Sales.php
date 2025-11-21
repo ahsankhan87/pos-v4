@@ -7,7 +7,7 @@ use App\Services\Reports\SalesReports;
 
 class Sales extends BaseController
 {
-    protected SalesReports $reports;
+    protected $reports;
 
     public function __construct()
     {
@@ -108,7 +108,9 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $salesBuilder = $salesModel->forStore($storeId)
@@ -157,7 +159,9 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $salesBuilder = $salesModel->forStore($storeId)
@@ -194,6 +198,90 @@ class Sales extends BaseController
         ]);
     }
 
+    // Separate heavy sale-items report
+    public function saleItemsReport()
+    {
+        $salesModel = new \App\Models\M_sales();
+        $storeId = session('store_id');
+        $employeeId = $this->request->getGet('employee_id');
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $salesBuilder = $salesModel->forStore($storeId)
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59');
+        if (!empty($employeeId)) {
+            $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        $sales = $salesBuilder->orderBy('created_at', 'DESC')->findAll();
+
+        $saleItemsBySale = [];
+        if (!empty($sales)) {
+            $saleIds = array_column($sales, 'id');
+            $saleItemsModel = new \App\Models\M_sale_items();
+            $rows = $saleItemsModel
+                ->select('pos_sale_items.sale_id, pos_sale_items.product_id, pos_sale_items.quantity, pos_sale_items.price, pos_sale_items.cost_price, pos_sale_items.subtotal, pos_sale_items.discount, pos_sale_items.discount_type, pos_products.name as product_name, pos_products.code as product_code, pos_sales.invoice_no')
+                ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id', 'left')
+                ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+                ->whereIn('pos_sale_items.sale_id', $saleIds)
+                ->orderBy('pos_sale_items.sale_id', 'ASC')
+                ->orderBy('pos_products.name', 'ASC')
+                ->findAll();
+            foreach ($rows as $r) {
+                $sid = $r['sale_id'];
+                if (!isset($saleItemsBySale[$sid])) {
+                    $saleItemsBySale[$sid] = [];
+                }
+                $qty = (float)$r['quantity'];
+                $unitPrice = (float)$r['price'];
+                $grossLine = $unitPrice * $qty;
+                $discountRaw = (float)($r['discount'] ?? 0);
+                $dtype = strtolower($r['discount_type'] ?? 'fixed');
+                $discountAmt = 0.0;
+                if ($discountRaw > 0) {
+                    $discountAmt = ($dtype === 'percentage') ? ($grossLine * ($discountRaw / 100)) : $discountRaw;
+                    if ($discountAmt > $grossLine) {
+                        $discountAmt = $grossLine;
+                    }
+                }
+                $netRevenue = (float)$r['subtotal'];
+                $costAmt = (float)$r['cost_price'] * $qty;
+                $profit = $netRevenue - $costAmt;
+                $marginPct = $netRevenue > 0 ? (($profit / $netRevenue) * 100) : 0;
+                $saleItemsBySale[$sid][] = [
+                    'product_id' => $r['product_id'],
+                    'product_name' => $r['product_name'] ?? 'Unknown',
+                    'product_code' => $r['product_code'] ?? '',
+                    'quantity' => $qty,
+                    'unit_price' => $unitPrice,
+                    'gross_line' => $grossLine,
+                    'discount_amount' => $discountAmt,
+                    'net_revenue' => $netRevenue,
+                    'cost_amount' => $costAmt,
+                    'profit' => $profit,
+                    'margin_pct' => $marginPct,
+                    'invoice_no' => $r['invoice_no'] ?? null,
+                ];
+            }
+        }
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        return view('sales/reports/sale_items_report', [
+            'title' => 'Sale Items Report',
+            'sales' => $sales,
+            'saleItemsBySale' => $saleItemsBySale,
+            'from' => $from,
+            'to' => $to,
+            'employees' => $employees,
+            'employee_id' => $employeeId,
+        ]);
+    }
+
     public function productReport()
     {
         $dateParam = $this->request->getGet('date');
@@ -201,7 +289,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -230,6 +320,57 @@ class Sales extends BaseController
             'employees' => $employees,
             'employee_id' => $employeeId,
         ]);
+
+        // Preload sale items for interactive per-sale detail (avoid extra queries on row click)
+        $saleIds = array_column($sales, 'id');
+        $saleItemsBySale = [];
+        if (!empty($saleIds)) {
+            $saleItemsModel = new \App\Models\M_sale_items();
+            $saleItemsRaw = $saleItemsModel
+                ->select('pos_sale_items.sale_id, pos_sale_items.product_id, pos_sale_items.quantity, pos_sale_items.price, pos_sale_items.cost_price, pos_sale_items.subtotal, pos_sale_items.discount, pos_sale_items.discount_type, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size')
+                ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+                ->whereIn('pos_sale_items.sale_id', $saleIds)
+                ->orderBy('pos_sale_items.sale_id', 'ASC')
+                ->orderBy('pos_products.name', 'ASC')
+                ->findAll();
+            foreach ($saleItemsRaw as $row) {
+                $sid = $row['sale_id'];
+                if (!isset($saleItemsBySale[$sid])) {
+                    $saleItemsBySale[$sid] = [];
+                }
+                // Compute derived fields client may need (net revenue, discount amount, cost, profit, margin)
+                $qty = (float)$row['quantity'];
+                $unitPrice = (float)$row['price'];
+                $grossLine = $unitPrice * $qty;
+                $discountRaw = (float)($row['discount'] ?? 0);
+                $dtype = strtolower($row['discount_type'] ?? 'fixed');
+                $discountAmt = 0.0;
+                if ($discountRaw > 0) {
+                    $discountAmt = ($dtype === 'percentage') ? ($grossLine * ($discountRaw / 100)) : $discountRaw;
+                    if ($discountAmt > $grossLine) {
+                        $discountAmt = $grossLine;
+                    }
+                }
+                $netRevenue = (float)$row['subtotal']; // already gross minus discount
+                $costAmt = (float)$row['cost_price'] * $qty;
+                $profit = $netRevenue - $costAmt;
+                $marginPct = $netRevenue > 0 ? (($profit / $netRevenue) * 100) : 0;
+                $saleItemsBySale[$sid][] = [
+                    'product_id' => $row['product_id'],
+                    'product_name' => $row['product_name'] ?? 'Unknown',
+                    'product_code' => $row['product_code'] ?? '',
+                    'carton_size' => $row['carton_size'] ?? 0,
+                    'quantity' => $qty,
+                    'unit_price' => $unitPrice,
+                    'gross_line' => $grossLine,
+                    'discount_amount' => $discountAmt,
+                    'net_revenue' => $netRevenue,
+                    'cost_amount' => $costAmt,
+                    'profit' => $profit,
+                    'margin_pct' => $marginPct,
+                ];
+            }
+        }
     }
 
     public function productReportPrint()
@@ -239,7 +380,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -278,7 +421,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $salesModel = new \App\Models\M_sales();
@@ -314,7 +459,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $salesModel = new \App\Models\M_sales();
@@ -351,7 +498,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -385,7 +534,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -420,7 +571,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -454,7 +607,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -490,7 +645,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -498,7 +655,10 @@ class Sales extends BaseController
         $salesModel = new \App\Models\M_sales();
 
         $saleItemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, pos_products.type as product_type, pos_products.is_stock_tracked, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
+            ->select('pos_sale_items.*, pos_sale_items.cost_price as item_cost_price,
+               pos_sale_items.price as item_unit_price,
+               pos_products.name as product_name, pos_products.code as product_code, 
+               pos_products.carton_size, pos_products.type as product_type, pos_products.is_stock_tracked, pos_sales.created_at, pos_sales.invoice_no, pos_sales.employee_id')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
@@ -512,6 +672,7 @@ class Sales extends BaseController
         $productSummary = [];
         $grossRevenueProduct = 0;
         $grossRevenueService = 0;
+        $grossDiscount = 0;
         $grossCostProduct = 0; // services have no COGS
         foreach ($items as $item) {
             $pid = $item['product_id'];
@@ -523,25 +684,51 @@ class Sales extends BaseController
                     'carton_size' => $item['carton_size'] ?? 0,
                     'product_type' => $item['product_type'] ?? 'product',
                     'total_qty_sold' => 0,
-                    'total_revenue' => 0,
+                    'total_revenue' => 0, // net of line discounts
+                    'total_line_discount' => 0,
                     'total_cost' => 0,
                     'gross_profit' => 0,
                 ];
             }
+
             $qty = (float)$item['quantity'];
-            $revenue = (float)$item['subtotal'];
+            // Base line value (before discount); prefer explicit unit price then fallback.
+            $unitPrice = (float)($item['item_unit_price'] ?? $item['price'] ?? 0);
+            $lineBase = $unitPrice * $qty;
+
+            // Reconstruct actual line discount amount (stored raw value may be percentage or fixed).
+            $discountRaw = (float)($item['discount'] ?? 0);
+            $discountType = strtolower($item['discount_type'] ?? 'fixed');
+            $lineDiscount = 0.0;
+            if ($discountRaw > 0) {
+                if ($discountType === 'percentage') {
+                    $lineDiscount = $lineBase * ($discountRaw / 100);
+                } else {
+                    $lineDiscount = $discountRaw;
+                }
+                if ($lineDiscount > $lineBase) {
+                    $lineDiscount = $lineBase; // clamp
+                }
+            }
+
+            // Net revenue after discount (match stored subtotal logic if available)
+            $netRevenue = $lineBase - $lineDiscount;
             $isService = (($item['product_type'] ?? 'product') === 'service') || ((int)($item['is_stock_tracked'] ?? 1) === 0);
             $cost = $isService ? 0.0 : ((float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty);
+
             $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
             $productSummary[$pid]['sale_id'] = $item['sale_id'];
             $productSummary[$pid]['total_qty_sold'] += $qty;
-            $productSummary[$pid]['total_revenue'] += $revenue;
+            $productSummary[$pid]['total_revenue'] += $netRevenue;
+            $productSummary[$pid]['total_line_discount'] += $lineDiscount;
             $productSummary[$pid]['total_cost'] += $cost;
             $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
+
+            $grossDiscount += $lineDiscount;
             if ($isService) {
-                $grossRevenueService += $revenue;
+                $grossRevenueService += $netRevenue;
             } else {
-                $grossRevenueProduct += $revenue;
+                $grossRevenueProduct += $netRevenue;
                 $grossCostProduct += $cost;
             }
         }
@@ -645,7 +832,8 @@ class Sales extends BaseController
             ->first();
         $totalExpenses = (float)($expenseAgg['sum_amount'] ?? 0) + (float)($expenseAgg['sum_tax'] ?? 0);
 
-        $totalOperatingExpenses = $totalDiscounts + $totalExpenses;
+        // Discounts already deducted from revenue above; exclude from operating expenses to prevent double counting.
+        $totalOperatingExpenses = $totalExpenses;
         $netProfit = $totalGrossProfit - $totalOperatingExpenses;
         $profitMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
 
@@ -662,7 +850,8 @@ class Sales extends BaseController
             'serviceReturnAmount' => $serviceReturnAmount,
             'netProductRevenue' => $netProductRevenue,
             'netServiceRevenue' => $netServiceRevenue,
-            'totalDiscounts' => $totalDiscounts,
+            'totalDiscounts' => $totalDiscounts, // retained for reference, not subtracted again
+            'grossDiscount' => $grossDiscount, // actual sum of line discounts applied
             'totalTaxes' => $totalTaxes,
             'totalExpenses' => $totalExpenses,
             'totalOperatingExpenses' => $totalOperatingExpenses,
@@ -689,7 +878,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
         $storeId = session('store_id');
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -712,21 +903,38 @@ class Sales extends BaseController
         $grossRevenueProduct = 0;
         $grossRevenueService = 0;
         $grossCostProduct = 0;
+        $grossDiscountPrint = 0; // track line discounts for print consistency
         foreach ($items as $item) {
             $pid = $item['product_id'];
             if (!isset($productSummary[$pid])) {
-                $productSummary[$pid] = ['product_id' => $pid, 'product_name' => $item['product_name'], 'product_code' => $item['product_code'], 'carton_size' => $item['carton_size'] ?? 0, 'product_type' => $item['product_type'] ?? 'product', 'total_qty_sold' => 0, 'total_revenue' => 0, 'total_cost' => 0, 'gross_profit' => 0];
+                $productSummary[$pid] = [
+                    'product_id' => $pid,
+                    'product_name' => $item['product_name'],
+                    'product_code' => $item['product_code'],
+                    'carton_size' => $item['carton_size'] ?? 0,
+                    'product_type' => $item['product_type'] ?? 'product',
+                    'total_qty_sold' => 0,
+                    'total_revenue' => 0,
+                    'total_line_discount' => 0,
+                    'total_cost' => 0,
+                    'gross_profit' => 0,
+                ];
             }
             $qty = (float)$item['quantity'];
-            $revenue = (float)$item['subtotal'];
+            $unitPrice = (float)($item['price'] ?? 0);
+            $lineBase = $unitPrice * $qty;
+            $revenue = (float)$item['subtotal']; // already net of discount
+            $lineDiscount = max(0.0, $lineBase - $revenue);
             $isService = (($item['product_type'] ?? 'product') === 'service') || ((int)($item['is_stock_tracked'] ?? 1) === 0);
             $cost = $isService ? 0.0 : ((float)($item['item_cost_price'] ?? $item['cost_price'] ?? 0) * $qty);
             $productSummary[$pid]['invoice_no'] = $item['invoice_no'];
             $productSummary[$pid]['sale_id'] = $item['sale_id'];
             $productSummary[$pid]['total_qty_sold'] += $qty;
             $productSummary[$pid]['total_revenue'] += $revenue;
+            $productSummary[$pid]['total_line_discount'] += $lineDiscount;
             $productSummary[$pid]['total_cost'] += $cost;
             $productSummary[$pid]['gross_profit'] = $productSummary[$pid]['total_revenue'] - $productSummary[$pid]['total_cost'];
+            $grossDiscountPrint += $lineDiscount;
             if ($isService) {
                 $grossRevenueService += $revenue;
             } else {
@@ -791,7 +999,8 @@ class Sales extends BaseController
             ->first();
         $totalExpenses = (float)($expenseAgg['sum_amount'] ?? 0) + (float)($expenseAgg['sum_tax'] ?? 0);
 
-        $totalOperatingExpenses = $totalDiscounts + $totalExpenses;
+        // Discounts already reflected in net revenue; exclude from operating expenses
+        $totalOperatingExpenses = $totalExpenses;
         $netProfit = $totalGrossProfit - $totalOperatingExpenses;
         $profitMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
 
@@ -808,7 +1017,8 @@ class Sales extends BaseController
             'serviceReturnAmount' => $serviceReturnAmount,
             'netProductRevenue' => $netProductRevenue,
             'netServiceRevenue' => $netServiceRevenue,
-            'totalDiscounts' => $totalDiscounts,
+            'totalDiscounts' => $totalDiscounts, // reference only
+            'grossDiscount' => $grossDiscountPrint,
             'totalTaxes' => $totalTaxes,
             'totalExpenses' => $totalExpenses,
             'totalOperatingExpenses' => $totalOperatingExpenses,
@@ -835,7 +1045,9 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -875,7 +1087,9 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -919,7 +1133,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -960,7 +1176,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -1004,7 +1222,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -1045,7 +1265,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -1089,7 +1311,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -1126,7 +1350,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -1167,7 +1393,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
@@ -1205,7 +1433,9 @@ class Sales extends BaseController
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
         if ($from > $to) {
-            [$from, $to] = [$to, $from];
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
         }
 
         $storeId = session('store_id');
