@@ -297,20 +297,16 @@ class Sales extends BaseController
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
         $itemsBuilder = $saleItemsModel
-            ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
+            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
             ->where('pos_sales.store_id', $storeId);
         if (!empty($employeeId)) {
             $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
         }
-        $items = $itemsBuilder->groupBy('product_id')->orderBy('total_sales', 'DESC')->findAll();
-        foreach ($items as &$item) {
-            $product = $productModel->find($item['product_id']);
-            $item['product_name'] = $product ? $product['name'] : 'Unknown';
-            $item['carton_size'] = $product ? ($product['carton_size'] ?? 0) : 0;
-        }
+        $items = $itemsBuilder->groupBy('pos_sale_items.product_id')->orderBy('pos_products.category_id', 'ASC')->orderBy('total_sales', 'DESC')->findAll();
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/product_report', [
             'title' => 'Product-wise Sales Report',
@@ -388,20 +384,16 @@ class Sales extends BaseController
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
         $itemsBuilder = $saleItemsModel
-            ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
+            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
             ->where('pos_sales.store_id', $storeId);
         if (!empty($employeeId)) {
             $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
         }
-        $items = $itemsBuilder->groupBy('product_id')->orderBy('total_sales', 'DESC')->findAll();
-        foreach ($items as &$item) {
-            $product = $productModel->find($item['product_id']);
-            $item['product_name'] = $product ? $product['name'] : 'Unknown';
-            $item['carton_size'] = $product ? ($product['carton_size'] ?? 0) : 0;
-        }
+        $items = $itemsBuilder->groupBy('pos_sale_items.product_id')->orderBy('pos_products.category_id', 'ASC')->orderBy('total_sales', 'DESC')->findAll();
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/product_report_print', [
             'title' => 'Product-wise Sales Report - Print',

@@ -176,14 +176,14 @@ if (!function_exists('formatQuantity')) {
                 <div class="flex items-end gap-2">
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
                     <?php if (can('reports.export')): ?>
-                        <a href="<?= site_url('sales/product-report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
+                        <!-- <a href="<?= site_url('sales/product-report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
                             class="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 shadow-soft">
                             <i class="fas fa-file-pdf mr-2"></i> PDF
                         </a>
                         <a href="<?= site_url('sales/product-report/export_excel?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
                             class="inline-flex items-center px-4 py-2 rounded-md bg-yellow-400 text-gray-900 hover:bg-yellow-500 shadow-soft">
                             <i class="fas fa-file-csv mr-2"></i> CSV
-                        </a>
+                        </a> -->
                     <?php endif; ?>
                 </div>
                 <div class="sm:col-span-2 md:col-span-5">

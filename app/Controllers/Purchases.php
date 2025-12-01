@@ -111,7 +111,7 @@ class Purchases extends BaseController
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
         $filteredBuilder->select(
-            'p.id, p.invoice_no, p.date, p.grand_total, p.payment_status, p.status, p.paid_amount, ' .
+            'p.id, p.invoice_no, p.supplier_invoice_no, p.date, p.grand_total, p.payment_status, p.status, p.paid_amount, ' .
                 'GREATEST(COALESCE(p.grand_total, 0) - COALESCE(p.paid_amount, 0), 0) AS due_amount, ' .
                 'COALESCE(s.name, "N/A") AS supplier_name'
         );
@@ -174,6 +174,8 @@ class Purchases extends BaseController
             'tax_rate' => 'permit_empty|numeric',
             'tax_amount' => 'permit_empty|numeric',
             'payment_status' => 'permit_empty|in_list[paid,partial,pending]',
+            'supplier_invoice_no' => 'permit_empty|max_length[100]',
+            'invoice_image' => 'permit_empty|max_size[invoice_image,5120]|is_image[invoice_image]'
         ];
 
         if (!$this->validate($rules)) {
@@ -183,10 +185,38 @@ class Purchases extends BaseController
         $items = json_decode($this->request->getPost('items'), true);
         $totals = $this->calculateTotals($items);
 
+        // Handle invoice image upload
+        $invoiceImagePath = null;
+        $invoiceImageFile = $this->request->getFile('invoice_image');
+
+        if ($invoiceImageFile) {
+            $error = $invoiceImageFile->getError();
+
+            // UPLOAD_ERR_OK = 0 means successful upload
+            if ($error === UPLOAD_ERR_OK && $invoiceImageFile->isValid() && !$invoiceImageFile->hasMoved()) {
+                $newName = $invoiceImageFile->getRandomName();
+                $targetPath = FCPATH . 'uploads/purchase_invoices';
+
+                // Ensure directory exists and is writable
+                if (!is_dir($targetPath)) {
+                    mkdir($targetPath, 0777, true);
+                }
+
+                if ($invoiceImageFile->move($targetPath, $newName)) {
+                    $invoiceImagePath = 'uploads/purchase_invoices/' . $newName;
+                }
+            } elseif ($error !== UPLOAD_ERR_NO_FILE) {
+                // Log error if not just "no file uploaded"
+                log_message('error', 'Invoice image upload error: ' . $invoiceImageFile->getErrorString());
+            }
+        }
+
         $data = [
             'supplier_id' => $this->request->getPost('supplier_id'),
             'store_id' => session()->get('store_id'),
             'invoice_no' => $this->request->getPost('invoice_no') ?? $this->purchaseModel->generatePurchaseInvoiceNo(),
+            'supplier_invoice_no' => $this->request->getPost('supplier_invoice_no'),
+            'invoice_image' => $invoiceImagePath,
             'date' => $this->request->getPost('date'),
             'total_amount' => $totals['total'],
             'discount' => $this->request->getPost('discount') ?? 0,
@@ -328,7 +358,9 @@ class Purchases extends BaseController
             'store_id' => 'required|numeric',
             'date' => 'required|valid_date',
             'items' => 'required',
-            'payment_method' => 'required|in_list[cash,credit_card,bank_transfer,check,other]'
+            'payment_method' => 'required|in_list[cash,credit_card,bank_transfer,check,other]',
+            'supplier_invoice_no' => 'permit_empty|max_length[100]',
+            'invoice_image' => 'permit_empty|max_size[invoice_image,5120]|is_image[invoice_image]'
         ];
 
         if (!$this->validate($rules)) {
@@ -392,6 +424,37 @@ class Purchases extends BaseController
         $discountAmount = $discountType === 'percentage' ? ($subtotal * $discount / 100) : $discount;
         $grandTotal = $subtotal - $discountAmount + $totalTax + $shippingCost;
 
+        // Handle invoice image upload
+        $invoiceImagePath = $purchase['invoice_image'] ?? null; // Keep existing image
+        $invoiceImage = $this->request->getFile('invoice_image');
+
+        if ($invoiceImage) {
+            $error = $invoiceImage->getError();
+
+            // UPLOAD_ERR_OK = 0 means successful upload
+            if ($error === UPLOAD_ERR_OK && $invoiceImage->isValid() && !$invoiceImage->hasMoved()) {
+                $newName = $invoiceImage->getRandomName();
+                $targetPath = FCPATH . 'uploads/purchase_invoices';
+
+                // Ensure directory exists and is writable
+                if (!is_dir($targetPath)) {
+                    mkdir($targetPath, 0777, true);
+                }
+
+                if ($invoiceImage->move($targetPath, $newName)) {
+                    $invoiceImagePath = 'uploads/purchase_invoices/' . $newName;
+
+                    // Delete old image if exists
+                    if (!empty($purchase['invoice_image']) && file_exists(FCPATH . $purchase['invoice_image'])) {
+                        @unlink(FCPATH . $purchase['invoice_image']);
+                    }
+                }
+            } elseif ($error !== UPLOAD_ERR_NO_FILE) {
+                // Log error if not just "no file uploaded"
+                log_message('error', 'Invoice image upload error (update): ' . $invoiceImage->getErrorString());
+            }
+        }
+
         $data = [
             'supplier_id' => $this->request->getPost('supplier_id'),
             'store_id' => $this->request->getPost('store_id'),
@@ -407,6 +470,8 @@ class Purchases extends BaseController
             'payment_method' => $this->request->getPost('payment_method'),
             'note' => $this->request->getPost('note'),
             'status' => $this->request->getPost('status') ?? 'pending',
+            'supplier_invoice_no' => $this->request->getPost('supplier_invoice_no'),
+            'invoice_image' => $invoiceImagePath,
             'updated_at' => date('Y-m-d H:i:s')
         ];
 

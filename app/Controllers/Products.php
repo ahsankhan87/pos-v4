@@ -722,7 +722,8 @@ class Products extends BaseController
 
             $hasDescriptionColumn = array_key_exists('description', $map);
             $descriptionRaw = $get('description');
-            $description = $hasDescriptionColumn ? ($descriptionRaw !== '' ? $descriptionRaw : null) : null;
+            // Always use empty string instead of null to avoid NOT NULL constraint violation
+            $description = $hasDescriptionColumn ? ($descriptionRaw !== '' ? $descriptionRaw : '') : '';
 
             $hasCodeColumn = array_key_exists('code', $map);
             $codeRaw = $get('code');
@@ -774,10 +775,11 @@ class Products extends BaseController
                     $data['stock_alert'] = 10;
                 }
 
+                // Always set description (empty string if not provided) to avoid NOT NULL errors
                 if ($hasDescriptionColumn) {
                     $data['description'] = $description;
                 } elseif (! $existing) {
-                    $data['description'] = null;
+                    $data['description'] = '';
                 }
 
                 if ($hasCodeColumn) {
@@ -798,14 +800,20 @@ class Products extends BaseController
                 if ($existing) {
                     $productId = (int) $existing['id'];
                     $previousQuantity = (float) ($existing['quantity'] ?? 0);
-                    $productsModel->update($productId, $data);
+                    if (! $productsModel->update($productId, $data)) {
+                        $modelErrors = $productsModel->errors();
+                        throw new \RuntimeException('Update failed: ' . json_encode($modelErrors));
+                    }
                     $updated++;
                     if ($quantityProvided) {
                         $newQuantity = isset($data['quantity']) ? (float) $data['quantity'] : $previousQuantity;
                         $quantityDelta = $newQuantity - $previousQuantity;
                     }
                 } else {
-                    $productsModel->insert($data);
+                    if (! $productsModel->insert($data)) {
+                        $modelErrors = $productsModel->errors();
+                        throw new \RuntimeException('Insert failed: ' . json_encode($modelErrors));
+                    }
                     $productId = (int) $productsModel->insertID();
                     $inserted++;
                     $quantityDelta = (float) ($data['quantity'] ?? 0);
@@ -826,12 +834,22 @@ class Products extends BaseController
 
                 $db->transComplete();
                 if ($db->transStatus() === false) {
-                    throw new \RuntimeException('Transaction failed');
+                    $dbError = $db->error();
+                    $code = $dbError['code'] ?? '';
+                    $message = $dbError['message'] ?? 'Unknown DB error';
+                    $lastQuery = method_exists($db, 'getLastQuery') && $db->getLastQuery() ? $db->getLastQuery()->getQuery() : '';
+                    throw new \RuntimeException('Transaction failed: [' . $code . '] ' . $message . ($lastQuery ? ' Query: ' . $lastQuery : ''));
                 }
             } catch (\Throwable $t) {
                 $db->transRollback();
+                $dbError = $db->error();
+                $extra = '';
+                if (!empty($dbError) && ($dbError['code'] ?? 0)) {
+                    $extra = ' DB:[' . ($dbError['code'] ?? '') . '] ' . ($dbError['message'] ?? '');
+                }
+                $lastQuery = method_exists($db, 'getLastQuery') && $db->getLastQuery() ? $db->getLastQuery()->getQuery() : '';
                 $skipped++;
-                $errors[] = "Row {$rowNum}: " . $t->getMessage();
+                $errors[] = 'Row ' . $rowNum . ': ' . $t->getMessage() . ($extra ? ' ' . $extra : '') . ($lastQuery ? ' Query: ' . $lastQuery : '');
             }
         }
 

@@ -50,6 +50,7 @@
                         <th scope="col">Reference</th>
                         <th scope="col">Date</th>
                         <th scope="col">Supplier</th>
+                        <th scope="col">Supplier Inv #</th>
                         <th scope="col" class="text-right">Total</th>
                         <th scope="col">Payment Status</th>
                         <th scope="col">Status</th>
@@ -151,6 +152,13 @@
                 {
                     data: 'supplier_name',
                     name: 'supplier_name',
+                    render: function(data) {
+                        return escapeHtml(data || 'N/A');
+                    }
+                },
+                {
+                    data: 'supplier_invoice_no',
+                    name: 'supplier_invoice_no',
                     render: function(data) {
                         return escapeHtml(data || 'N/A');
                     }

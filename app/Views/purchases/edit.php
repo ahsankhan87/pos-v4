@@ -178,7 +178,7 @@
                 </ul>
             </div>
         <?php endif; ?>
-        <form id="purchaseForm" action="<?= base_url("/purchases/update/{$purchase['id']}") ?>" method="post">
+        <form id="purchaseForm" action="<?= base_url("/purchases/update/{$purchase['id']}") ?>" method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <input type="hidden" name="_method" value="PUT">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -225,6 +225,23 @@
                                     <option value="received" <?= $purchase['status'] == 'received' ? 'selected' : '' ?>>Received</option>
                                     <option value="ordered" <?= $purchase['status'] == 'ordered' ? 'selected' : '' ?>>Ordered</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label for="supplier_invoice_no" class="block text-sm font-medium text-gray-700">Supplier Invoice No</label>
+                                <input type="text" id="supplier_invoice_no" name="supplier_invoice_no" value="<?= esc($purchase['supplier_invoice_no'] ?? '') ?>" maxlength="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Enter supplier's invoice number">
+                            </div>
+
+                            <div>
+                                <label for="invoice_image" class="block text-sm font-medium text-gray-700">Invoice Image</label>
+                                <?php if (!empty($purchase['invoice_image'])): ?>
+                                    <div class="mb-2">
+                                        <img src="<?= base_url($purchase['invoice_image']) ?>" alt="Invoice" class="h-20 w-auto rounded border">
+                                        <p class="text-xs text-gray-500 mt-1">Current image (upload new to replace)</p>
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" id="invoice_image" name="invoice_image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <p class="mt-1 text-xs text-gray-500">Max 5MB. Accepted formats: JPG, PNG, GIF</p>
                             </div>
                         </div>
                     </div>

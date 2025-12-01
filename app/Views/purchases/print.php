@@ -374,6 +374,10 @@
                         <span class="detail-value"><?= nl2br(esc($purchase['supplier']['address'])) ?></span>
                     </div>
                 <?php endif; ?>
+                <div class="detail-item">
+                    <span class="detail-label">Supplier Inv #:</span>
+                    <span class="detail-value"><?= esc($purchase['supplier_invoice_no'] ?? 'N/A') ?></span>
+                </div>
             </div>
 
             <div class="invoice-info">

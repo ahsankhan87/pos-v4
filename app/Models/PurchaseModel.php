@@ -12,6 +12,8 @@ class PurchaseModel extends Model
         'supplier_id',
         'store_id',
         'invoice_no',
+        'supplier_invoice_no',
+        'invoice_image',
         'date',
         'total_amount',
         'discount',

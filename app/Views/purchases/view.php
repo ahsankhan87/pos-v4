@@ -73,6 +73,22 @@
                         </span>
                     </div>
 
+                    <?php if (!empty($purchase['supplier_invoice_no'])): ?>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-500">Supplier Invoice No</span>
+                            <span class="block"><?= esc($purchase['supplier_invoice_no']) ?></span>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($purchase['invoice_image'])): ?>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-500">Invoice Image</span>
+                            <a href="<?= base_url($purchase['invoice_image']) ?>" target="_blank" class="inline-block mt-1">
+                                <img src="<?= base_url($purchase['invoice_image']) ?>" alt="Invoice" class="h-32 w-auto rounded border hover:opacity-80 transition-opacity">
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
                     <div>
                         <span class="block text-sm font-medium text-gray-500">Created By</span>
                         <span class="block"><?= $purchase['creator']['username'] ?? 'System' ?></span>
