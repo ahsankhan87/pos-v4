@@ -56,7 +56,9 @@
             <a href="<?= site_url('sales') ?>" accesskey="l" title="Sales List (Alt+Shift+L)" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i>Sales</a>
             <!-- <a href="<?= site_url('receipts/generate/' . ($sale['id'] ?? 0) . '?output=pdf') ?>" target="_blank" accesskey="d" title="Open PDF (Alt+Shift+D)" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf mr-1"></i>PDF</a> -->
             <button type="button" accesskey="p" title="Print Receipt (Ctrl+P)" onclick="printReceiptOnly()" class="btn btn-primary btn-sm"><i class="fas fa-print mr-1"></i>Print</button>
-            <button type="button" title="Send to WhatsApp" onclick="sendReceiptWhatsApp()" class="btn btn-success btn-sm bg-green-600 hover:bg-green-700 text-white"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</button>
+            <!-- <button type="button" title="Send to WhatsApp" onclick="sendReceiptWhatsApp()" class="btn btn-success btn-sm bg-green-600 hover:bg-green-700 text-white"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</button> -->
+            <a href="<?= site_url('receipts/templates') ?>" title="Receipt Templates" class="btn btn-muted btn-sm"><i class="fas fa-cogs mr-1"></i>Templates</a>
+
         </div>
     </div>
 

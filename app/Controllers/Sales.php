@@ -69,6 +69,31 @@ class Sales extends \CodeIgniter\Controller
         return view('sales/index', $data);
     }
 
+    public function distributor()
+    {
+        helper('form');
+        $customerModel = new M_customers();
+        //$productModel = new M_products();
+        $salesModel = new M_sales();
+        $settingModel = new \App\Models\SettingsModel();
+
+        // Removed per-tab sale session id logic; no redirect or sid required
+
+        $data['customers'] = $customerModel->forStore()->findAll();
+        //$data['products'] = $productModel->forStore()->getProducts();
+        //$data['discounts'] = $this->discountModel->where('is_active', 1)->forStore()->findAll();
+        // $data['categories'] = $this->categoriesModel->forStore()->findAll();
+        $data['employees'] = $this->employeeModel->forStore()->findAll();
+        $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
+        $data['title'] = 'New Sale';
+        $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
+        $data['taxRate'] = $settingModel->first()['tax_rate'] ?? 0;
+
+        // No session-based prefill; cart is managed in-memory on the client now
+
+        return view('sales/distributor', $data);
+    }
+
     public function new()
     {
         helper('form');

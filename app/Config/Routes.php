@@ -457,3 +457,4 @@ $routes->group('billing', ['filter' => 'auth'], function ($routes) {
 // Payment Provider Webhooks (no auth)
 $routes->post('webhooks/stripe', 'Webhooks::stripe');
 $routes->post('webhooks/paypal', 'Webhooks::paypal');
+$routes->get('sales/distributor', 'Sales::distributor');

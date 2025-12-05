@@ -113,7 +113,7 @@ $segment2 = $segments[1] ?? '';
 
 // $segment1 = $uri->getSegment(1) ?? '';
 // $segment2 = $uri->getSegment(2) ?? '';
-$isPosPage = ($uri->getSegment(1) === 'sales' && $uri->getSegment(2) === 'new');
+$isPosPage = ($uri->getSegment(1) === 'sales' && ($uri->getSegment(2) === 'new' || $uri->getSegment(2) === 'distributor'));
 $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) === 'create');
 ?>
 
@@ -158,6 +158,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         <div class="py-1">
                                             <a href="<?php echo site_url('sales/new') ?>" accesskey="s" title="Shortcut: Ctrl+Alt+S" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-plus mr-2"></i> New Sale
+                                            </a>
+                                            <a href="<?php echo site_url('sales/distributor') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                <i class="fas fa-hand-holding-usd mr-2"></i> New Sale <bage class="bg-red-100 text-red-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">New</bage>
                                             </a>
                                             <a href="<?php echo site_url('sales') ?>" accesskey="l" title="Shortcut: Ctrl+Alt+L" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-list mr-2"></i> Sales List
@@ -378,6 +381,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 <a href="<?= site_url('sales/new') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-plus mr-2"></i> New Sale
                                 </a>
+                                <a href="<?= site_url('sales/distributor') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-hand-holding-usd mr-2"></i> New Sale <bage class="bg-red-100 text-red-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">New</bage>
+                                </a>
                                 <a href="<?= site_url('sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-list mr-2"></i> Sales List
                                 </a>
@@ -574,6 +580,12 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     <?php else: ?>
                                         <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+S</span>
                                     <?php endif; ?>
+                                </a>
+                                <a href="<?= site_url('sales/distributor') ?>" accesskey="d" title="Shortcut: Ctrl+Alt+D" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'distributor') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                    <i class="fas fa-hand-holding-usd mr-3 <?= ($segment1 == 'sales' && $segment2 == 'distributor') ? 'text-white' : 'text-yellow-500' ?>"></i>
+                                    <span class="<?= ($segment1 == 'sales' && $segment2 == 'distributor') ? 'font-bold' : 'font-semibold text-gray-700' ?>">New Sale</span>
+                                    <badge class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">New</badge>
+
                                 </a>
 
                                 <a href="<?= site_url('sales') ?>" accesskey="l" title="Shortcut: Ctrl+Alt+L" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == '') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
