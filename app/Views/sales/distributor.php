@@ -374,6 +374,20 @@
             }, 100);
         });
 
+        // Prefill customer from query parameter if provided (e.g., sales/new?customer_id=123)
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const preCustomerId = params.get('customer_id');
+            if (preCustomerId) {
+                const $sel = $('#customer-select');
+                if ($sel.length) {
+                    $sel.val(String(preCustomerId)).trigger('change');
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to preselect customer from URL:', e);
+        }
+
         // Add New Line button - adds an empty editable row
         $('#addNewLineBtn').on('click', function() {
             addEmptyLine();

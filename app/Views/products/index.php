@@ -5,7 +5,6 @@
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/buttons.dataTables.min.css">
 
-
 <div class="min-h-screen bg-slate-100">
     <!-- Top Bar -->
     <div class="bg-white shadow-sm border-b border-gray-200">
@@ -22,38 +21,60 @@
                 </div>
                 <div class="flex items-center gap-2 flex-wrap py-2">
                     <?php if (can('products.create')): ?>
-                        <a href="<?= site_url('products/new') ?>" class="btn btn-primary">
-                            <i class="fas fa-plus-circle"></i> Add Product
+                        <a href="<?= site_url('products/new') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm">
+                            <i class="fas fa-plus-circle"></i>
+                            <span class="hidden sm:inline">Add Product</span>
+                            <span class="sm:hidden">Add</span>
                         </a>
-                        <a href="<?= site_url('products/import') ?>" class="btn btn-secondary">
-                            <i class="fas fa-file-import"></i> Import CSV
+                        <a href="<?= site_url('products/import') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm">
+                            <i class="fas fa-file-import"></i>
+                            <span class="hidden sm:inline">Import CSV</span>
+                            <span class="sm:hidden">Import</span>
                         </a>
                     <?php endif; ?>
 
-                    <div class="actions-wrapper relative z-20">
-                        <button type="button" id="bulk-actions-toggle" class="actions-toggle btn btn-muted" aria-haspopup="true" disabled>
-                            <span>Bulk Actions</span>
-                            <i class="fas fa-chevron-down"></i>
+                    <!-- Bulk Actions Dropdown -->
+                    <div class="relative inline-block" x-data="{ open: false, disabled: true }" x-init="window.bulkActionsDropdown = { enable: () => { disabled = false; }, disable: () => { disabled = true; open = false; }, isDisabled: () => disabled }">
+                        <button @click="if(!disabled) open = !open" :disabled="disabled" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-all duration-200 border-2 border-gray-300 hover:border-gray-400 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                            <i class="fas fa-tasks"></i>
+                            <span class="hidden sm:inline">Bulk Actions</span>
+                            <span class="sm:hidden">Bulk</span>
+                            <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
                         </button>
-                        <div class="actions-menu hidden absolute right-0 mt-1 z-50 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-1" style="z-index:9999;">
-                            <a href="#" id="bulk-print" class="actions-link actions-link--info">
-                                <i class="fas fa-barcode"></i>
-                                <span>Print Selected</span>
+
+                        <div x-show="open"
+                            @click.away="open = false"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                            style="display: none;">
+
+                            <a href="#" id="bulk-print" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-barcode w-5 text-blue-600"></i>
+                                <span class="font-medium">Print Selected</span>
                             </a>
-                            <a href="#" id="bulk-export" class="actions-link actions-link--success">
-                                <i class="fas fa-file-export"></i>
-                                <span>Export Selected</span>
+
+                            <a href="#" id="bulk-export" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-file-export w-5 text-green-600"></i>
+                                <span class="font-medium">Export Selected</span>
                             </a>
+
                             <?php if (can('inventory.update')): ?>
-                                <a href="#" id="bulk-adjust" class="actions-link actions-link--warning">
-                                    <i class="fas fa-sliders-h"></i>
-                                    <span>Adjust Stock</span>
+                                <a href="#" id="bulk-adjust" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-sliders-h w-5 text-orange-600"></i>
+                                    <span class="font-medium">Adjust Stock</span>
                                 </a>
                             <?php endif; ?>
+
                             <?php if (can('products.delete')): ?>
-                                <a href="#" id="bulk-delete" class="actions-link actions-link--danger">
-                                    <i class="fas fa-trash-alt"></i>
-                                    <span>Delete Selected</span>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="#" id="bulk-delete" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-50 transition-colors">
+                                    <i class="fas fa-trash-alt w-5 text-red-600"></i>
+                                    <span class="font-medium">Delete Selected</span>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -105,6 +126,10 @@
 <!-- DataTables JS -->
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/dataTables.buttons.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.colVis.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
+<script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
+
 <script>
     $(document).ready(function() {
         const csrfName = <?= json_encode(csrf_token()) ?>;
@@ -125,17 +150,71 @@
                 url: <?= json_encode(site_url('products/datatable')) ?>,
                 type: 'GET',
             },
-            lengthMenu: [25, 50, 100, 200],
+            lengthMenu: [
+                [25, 50, 100, 200, 400],
+                [25, 50, 100, 200, 400]
+            ],
             pageLength: 25,
-            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"Blf>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
+            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
             pagingType: 'full_numbers',
             buttons: [{
-                text: '<i class="fas fa-file-excel"></i> Export Excel',
-                className: 'btn btn-success',
-                action: function() {
-                    window.location.href = <?= json_encode(site_url('products/export')) ?>;
+                    extend: 'colvis',
+                    text: '<i class="fas fa-columns"></i> Columns',
+                    className: 'btn btn-secondary',
+                    columns: ':not(:first-child):not(:last-child)'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i> Print',
+                    className: 'btn btn-secondary',
+                    title: 'Products List',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child):not(:last-child)'
+                    },
+                    customize: function(win) {
+                        var $body = $(win.document.body);
+                        var $table = $body.find('table');
+                        // Global font sizing and tighter spacing
+                        $body.css({
+                            'font-size': '11px',
+                            'line-height': '1.25',
+                            'margin': '0'
+                        });
+                        $body.find('h1').css({
+                            'font-size': '14px',
+                            'margin': '0 0 8px 0'
+                        });
+                        // Apply DataTables compact class and ensure small cell padding
+                        $table.addClass('compact').css('font-size', 'inherit');
+                        $(win.document.head).append(
+                            '<style>\
+                                @page { margin: 8mm; }\
+                                body { padding: 8mm; }\
+                                table { border-collapse: collapse !important; }\
+                                table.dataTable thead th,\
+                                table.dataTable tbody td,\
+                                table.dataTable tfoot th,\
+                                table.dataTable tfoot td {\
+                                    padding: 4px 6px !important;\
+                                }\
+                                table.dataTable thead th {\
+                                    border-bottom: 1px solid #ddd !important;\
+                                }\
+                                table.dataTable tbody tr td {\
+                                    border-top: 1px solid #f0f0f0 !important;\
+                                }\
+                            </style>'
+                        );
+                    }
+                },
+                {
+                    text: '<i class="fas fa-file-excel"></i> Export Excel',
+                    className: 'btn btn-success',
+                    action: function() {
+                        window.location.href = <?= json_encode(site_url('products/export')) ?>;
+                    }
                 }
-            }],
+            ],
             order: [
                 [1, 'desc']
             ],
@@ -348,15 +427,15 @@
             }
         });
 
-        // Bulk actions dropdown
-        const $bulkToggle = $('#bulk-actions-toggle');
-
+        // Bulk actions dropdown with Alpine.js
         function updateBulkButtonsState() {
             const anyChecked = $('.row-select:checked').length > 0;
-            $bulkToggle.prop('disabled', !anyChecked);
-            if (!anyChecked) {
-                // hide menu if selection cleared
-                $('.actions-menu').addClass('hidden');
+            if (window.bulkActionsDropdown) {
+                if (anyChecked) {
+                    window.bulkActionsDropdown.enable();
+                } else {
+                    window.bulkActionsDropdown.disable();
+                }
             }
         }
 
@@ -378,7 +457,7 @@
 
         $('#bulk-print').on('click', function(e) {
             e.preventDefault();
-            $('.actions-menu').addClass('hidden');
+
             const validIds = [];
             $('#productsTable tbody .row-select:checked').each(function() {
                 const tr = $(this).closest('tr');
@@ -398,7 +477,6 @@
 
         $('#bulk-export').on('click', function(e) {
             e.preventDefault();
-            $('.actions-menu').addClass('hidden');
             const ids = $('#productsTable tbody .row-select:checked').map(function() {
                 return this.value;
             }).get();
@@ -409,7 +487,6 @@
 
         $('#bulk-delete').on('click', function(e) {
             e.preventDefault();
-            $('.actions-menu').addClass('hidden');
             const ids = $('#productsTable tbody .row-select:checked').map(function() {
                 return this.value;
             }).get();
@@ -439,7 +516,6 @@
 
         $('#bulk-adjust').on('click', function(e) {
             e.preventDefault();
-            $('.actions-menu').addClass('hidden');
             const ids = [];
             $('#productsTable tbody .row-select:checked').each(function() {
                 const tr = $(this).closest('tr');
@@ -534,5 +610,8 @@
         </div>
     </div>
 </div>
+
+<!-- Alpine.js for dropdown -->
+<script defer src="<?= base_url('assets/js/alpinejs.cdn.min.js') ?>"></script>
 
 <?= $this->endSection() ?>

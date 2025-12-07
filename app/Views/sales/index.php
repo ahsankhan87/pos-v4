@@ -232,7 +232,6 @@
     </div>
 </div>
 
-
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
 <!-- DataTables Buttons CSS -->
@@ -478,7 +477,8 @@
                     d.status = currentStatus || '';
                 }
             },
-            dom: 'Bfrtip',
+            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
+
             buttons: [{
                     extend: 'excel',
                     text: '<i class="fas fa-file-excel"></i> Excel',
@@ -492,7 +492,46 @@
                 {
                     extend: 'print',
                     text: '<i class="fas fa-print"></i> Print',
-                    className: 'btn btn-outline btn-sm'
+                    className: 'btn btn-secondary',
+                    title: 'Products List',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child):not(:last-child)'
+                    },
+                    customize: function(win) {
+                        var $body = $(win.document.body);
+                        var $table = $body.find('table');
+                        // Global font sizing and tighter spacing
+                        $body.css({
+                            'font-size': '11px',
+                            'line-height': '1.25',
+                            'margin': '0'
+                        });
+                        $body.find('h1').css({
+                            'font-size': '14px',
+                            'margin': '0 0 8px 0'
+                        });
+                        // Apply DataTables compact class and ensure small cell padding
+                        $table.addClass('compact').css('font-size', 'inherit');
+                        $(win.document.head).append(
+                            '<style>\
+                                @page { margin: 8mm; }\
+                                body { padding: 8mm; }\
+                                table { border-collapse: collapse !important; }\
+                                table.dataTable thead th,\
+                                table.dataTable tbody td,\
+                                table.dataTable tfoot th,\
+                                table.dataTable tfoot td {\
+                                    padding: 4px 6px !important;\
+                                }\
+                                table.dataTable thead th {\
+                                    border-bottom: 1px solid #ddd !important;\
+                                }\
+                                table.dataTable tbody tr td {\
+                                    border-top: 1px solid #f0f0f0 !important;\
+                                }\
+                            </style>'
+                        );
+                    }
                 }
             ],
             lengthMenu: [25, 50, 100, 200],
@@ -536,7 +575,7 @@
                         return `
                             <a href="${ledgerUrl}" class="text-blue-600 hover:underline" title="View Ledger">
                                 ${escapeHtml(data)}
-                                <i class="fas fa-book"></i>
+                                <i class="fas fa-book text-xs"></i>
                             </a>
                         `;
                     }

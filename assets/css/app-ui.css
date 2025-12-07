@@ -414,6 +414,20 @@
 .row-has-due {
     background: linear-gradient(90deg, rgba(248, 113, 113, 0.12) 0%, rgba(248, 250, 252, 0) 45%);
 }
+.dataTables_filter {
+        flex: 1;
+        max-width: 400px;
+    }
+    .dataTables_filter input {
+        width: 100% !important;
+        max-width: 400px;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+    }
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
 
 @media (max-width: 768px) {
     .dataTables_wrapper .dt-buttons {

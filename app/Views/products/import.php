@@ -42,6 +42,10 @@
                 <p class="mt-2 text-xs text-gray-500">Upsert strategy: match by <strong>barcode</strong> (preferred) or <strong>code</strong> within the selected store. If no match, a new product is created.</p>
             </div>
             <div>
+                <a href="<?= site_url('products') ?>" class="inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back to Products
+                </a>
                 <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded">
                     <i class="fa-solid fa-file-import"></i>
                     Import

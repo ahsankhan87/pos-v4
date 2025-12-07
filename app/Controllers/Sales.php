@@ -1609,4 +1609,272 @@ class Sales extends \CodeIgniter\Controller
 
         return $this->response->setJSON($payments);
     }
+
+    /**
+     * Get outstanding invoices for a customer
+     */
+    public function outstandingInvoices($customerId)
+    {
+        $salesModel = new M_sales();
+
+        $invoices = $salesModel->select('id, invoice_no, created_at, due_amount, total, payment_status')
+            ->where('customer_id', $customerId)
+            ->where('due_amount >', 0)
+            ->whereIn('payment_status', ['partial', 'due'])
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        return $this->response->setJSON($invoices);
+    }
+
+    /**
+     * Process lumpsum payment for multiple invoices
+     */
+    public function processLumpsumPayment()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $salesModel = new M_sales();
+        $ledgerModel = new \App\Models\CustomerLedgerModel();
+
+        $customerId = (int) $this->request->getPost('customer_id');
+        $paymentAmount = (float) $this->request->getPost('payment_amount');
+        $invoices = $this->request->getPost('invoices');
+        $paymentDate = $this->request->getPost('payment_date') ?: date('Y-m-d');
+        $paymentMethod = $this->request->getPost('payment_method') ?: 'cash';
+        $notes = $this->request->getPost('notes') ?: '';
+
+        if ($paymentAmount <= 0 || empty($invoices)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid payment amount or no invoices selected'
+            ]);
+        }
+
+        $db = $salesModel->db;
+        $db->transStart();
+
+        try {
+            $totalApplied = 0;
+
+            foreach ($invoices as $invoice) {
+                $saleId = (int) $invoice['sale_id'];
+                $amount = (float) $invoice['amount'];
+
+                if ($amount <= 0) continue;
+
+                $sale = $salesModel->find($saleId);
+                if (!$sale || $sale['customer_id'] != $customerId) continue;
+
+                $due = (float) $sale['due_amount'];
+                $applyAmount = min($amount, $due);
+
+                if ($applyAmount > 0) {
+                    // Update sale
+                    $newDue = $due - $applyAmount;
+                    $paymentStatus = $newDue <= 0.01 ? 'paid' : 'partial';
+
+                    $salesModel->update($saleId, [
+                        'due_amount' => $newDue,
+                        'payment_status' => $paymentStatus
+                    ]);
+
+                    // Ledger entry
+                    $description = 'Lumpsum payment for Invoice #' . $sale['invoice_no'];
+                    if ($notes) {
+                        $description .= ' - ' . $notes;
+                    }
+
+                    $ledgerModel->insert([
+                        'customer_id' => $customerId,
+                        'sale_id' => $saleId,
+                        'date' => $paymentDate . ' ' . date('H:i:s'),
+                        'description' => $description,
+                        'debit' => 0,
+                        'credit' => $applyAmount,
+                        'balance' => 0, // Will be updated by trigger or separate process
+                        'type' => 'payment',
+                        'ref_no' => 'PMT-' . time() . '-' . $saleId,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+
+                    $totalApplied += $applyAmount;
+
+                    logAction('payment_received', "Lumpsum payment of {$applyAmount} for Sale ID: {$saleId}, Invoice: {$sale['invoice_no']}");
+                }
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Transaction failed'
+                ]);
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Payment of {$totalApplied} applied successfully",
+                'total_applied' => $totalApplied
+            ]);
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Process custom payment/advance for a customer
+     */
+    public function processCustomPayment()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $ledgerModel = new \App\Models\CustomerLedgerModel();
+        $customerModel = new M_customers();
+
+        $customerId = (int) $this->request->getPost('customer_id');
+        $transactionType = $this->request->getPost('transaction_type'); // 'payment' or 'advance'
+        $amount = (float) $this->request->getPost('amount');
+        $paymentDate = $this->request->getPost('payment_date') ?: date('Y-m-d');
+        $paymentMethod = $this->request->getPost('payment_method') ?: 'cash';
+        $description = $this->request->getPost('description');
+
+        if ($amount <= 0 || !$description) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid amount or missing description'
+            ]);
+        }
+
+        $customer = $customerModel->find($customerId);
+        if (!$customer) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Customer not found'
+            ]);
+        }
+
+        try {
+            $credit = $amount;
+            $type = $transactionType === 'payment' ? 'payment' : 'advance';
+
+            if ($transactionType === 'advance') {
+                $description = 'Advance Payment - ' . $description;
+            }
+
+            $ledgerModel->insert([
+                'customer_id' => $customerId,
+                'sale_id' => null,
+                'date' => $paymentDate . ' ' . date('H:i:s'),
+                'description' => $description . ' [' . strtoupper($paymentMethod) . ']',
+                'debit' => 0,
+                'credit' => $credit,
+                'balance' => 0, // Will be updated by trigger or separate process
+                'type' => $type,
+                'ref_no' => strtoupper($transactionType) . '-' . time(),
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            logAction('custom_payment', "Custom {$transactionType} of {$amount} for Customer ID: {$customerId}");
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => ucfirst($transactionType) . ' recorded successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function reversePayment()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $ledgerModel = new \App\Models\CustomerLedgerModel();
+        $ledgerId = (int) $this->request->getPost('ledger_id');
+        $reason = $this->request->getPost('reason');
+
+        if (!$reason) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Reversal reason is required'
+            ]);
+        }
+
+        try {
+            // Get the original ledger entry
+            $ledgerEntry = $ledgerModel->find($ledgerId);
+
+            if (!$ledgerEntry) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Payment entry not found'
+                ]);
+            }
+
+            // Only allow reversal of payment/advance entries (credit > 0)
+            if ((float)$ledgerEntry['credit'] <= 0) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Only payment entries can be reversed'
+                ]);
+            }
+
+            // Get ref_no safely
+            $refNo = isset($ledgerEntry['ref_no']) ? $ledgerEntry['ref_no'] : 'ID-' . $ledgerId;
+
+            // Check if already reversed
+            $existingReversal = $ledgerModel->where('description LIKE', '%REVERSAL of Ref: ' . $refNo . '%')
+                ->first();
+
+            if ($existingReversal) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'This payment has already been reversed'
+                ]);
+            }
+
+            // Create reversal entry (debit to reverse the credit)
+            $reversalData = [
+                'customer_id' => $ledgerEntry['customer_id'],
+                'sale_id' => $ledgerEntry['sale_id'] ?? null,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'REVERSAL of Ref: ' . $refNo . ' - ' . $reason,
+                'debit' => $ledgerEntry['credit'], // Reverse the credit as debit
+                'credit' => 0,
+                'balance' => 0,
+                'type' => 'reversal',
+                'ref_no' => 'REV-' . time(),
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            $ledgerModel->insert($reversalData);
+
+            logAction('payment_reversal', "Reversed payment ID: {$ledgerId}, Ref: {$refNo}, Amount: {$ledgerEntry['credit']}, Reason: {$reason}");
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Payment reversed successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

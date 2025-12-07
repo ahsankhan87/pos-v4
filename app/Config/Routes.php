@@ -67,6 +67,8 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
 
     // Create
     $routes->get('new', 'Sales::new', ['filter' => 'permission:sales.create']);
+    $routes->get('distributor', 'Sales::distributor', ['filter' => 'permission:sales.create']);
+
     $routes->post('create', 'Sales::create', ['filter' => 'permission:sales.create']);
     $routes->post('save-cart', 'Sales::saveCart', ['filter' => 'permission:sales.create']);
     $routes->post('clear-cart', 'Sales::clearCart', ['filter' => 'permission:sales.create']);
@@ -88,6 +90,10 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('resume-draft/(:num)', 'Sales::resumeDraft/$1', ['filter' => 'permission:sales.update']);
     $routes->get('held', 'Sales::listHeldCarts', ['filter' => 'permission:sales.update']);
     $routes->get('recall/(:num)', 'Sales::recallCart/$1', ['filter' => 'permission:sales.update']);
+
+    $routes->post('process-lumpsum-payment', 'Sales::processLumpsumPayment', ['filter' => 'permission:sales.update']);
+    $routes->post('process-custom-payment', 'Sales::processCustomPayment', ['filter' => 'permission:sales.update']);
+    $routes->post('reverse-payment', 'Sales::reversePayment', ['filter' => 'permission:sales.update']);
 
     // Delete
     $routes->delete('delete/(:num)', 'Sales::delete/$1', ['filter' => 'permission:sales.delete']);
@@ -261,6 +267,10 @@ $routes->group('customers', ['filter' => 'auth'], function ($routes) {
     $routes->post('update/(:num)', 'Customers::update/$1', ['filter' => 'permission:customers.update']);
     // Delete
     $routes->delete('delete/(:num)', 'Customers::delete/$1', ['filter' => 'permission:customers.delete']);
+
+    $routes->get('outstanding-invoices/(:num)', 'Customers::outstandingInvoices/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('lumpsum-payment/(:num)', 'Customers::lumpsumPayment/$1', ['filter' => 'permission:customers.view']);
+    $routes->get('aging-analysis/(:num)', 'Customers::agingAnalysis/$1', ['filter' => 'permission:customers.view']);
 });
 
 $routes->group('expenses', ['filter' => 'auth'], function ($routes) {
@@ -457,4 +467,3 @@ $routes->group('billing', ['filter' => 'auth'], function ($routes) {
 // Payment Provider Webhooks (no auth)
 $routes->post('webhooks/stripe', 'Webhooks::stripe');
 $routes->post('webhooks/paypal', 'Webhooks::paypal');
-$routes->get('sales/distributor', 'Sales::distributor');

@@ -40,25 +40,124 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     </p>
                 <?php endif; ?>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="<?= site_url('customers') ?>" class="btn btn-muted">
-                    <i class="fas fa-arrow-left mr-1"></i> Back to Customers
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="<?= site_url('customers') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200 border border-gray-300">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="hidden sm:inline">Back</span>
                 </a>
-                <a target="_blank" href="<?= site_url('customers/ledger/print/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>" class="btn btn-secondary">
-                    <i class="fas fa-print mr-1"></i> Print
-                </a>
-                <a target="_blank" href="<?= site_url('customers/ledger/print-compact/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>" class="btn btn-secondary">
-                    <i class="fas fa-receipt mr-1"></i> Compact
-                </a>
-                <a target="_blank" href="<?= site_url('customers/ledger/export/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>" class="btn btn-secondary">
-                    <i class="fas fa-file-export mr-1"></i> Export
-                </a>
-                <a target="_blank" href="<?= site_url('customers/ledger/export_pdf/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>" class="btn btn-secondary">
-                    <i class="fas fa-file-pdf mr-1"></i> PDF
-                </a>
-                <a target="_blank" href="<?= site_url('customers/ledger/export_pdf_compact/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>" class="btn btn-secondary">
-                    <i class="fas fa-file-pdf mr-1"></i> PDF (Compact)
-                </a>
+                <!-- <a href="<?= site_url('customers/outstanding-invoices/' . ($customer['id'] ?? 0)) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span class="hidden md:inline">Outstanding</span>
+                </a> -->
+                <!-- Action Receive Payment Dropdown -->
+                <div class="relative inline-block" x-data="{ open: false }">
+                    <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span class="hidden md:inline">Receive Payment</span>
+                        <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
+                    </button>
+
+                    <div x-show="open"
+                        @click.away="open = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                        style="display: none;">
+
+                        <a href="<?= site_url('customers/lumpsum-payment/' . ($customer['id'] ?? 0)) ?>"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-coins w-5 text-green-600"></i>
+                            <span class="font-medium">Lump Sum Payment</span>
+                        </a>
+
+                        <button type="button" onclick="openCustomPayment()" class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-wallet w-5 text-cyan-600"></i>
+                            <span class="font-medium">Custom Payment</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Actions Dropdown -->
+                <div class="relative inline-block" x-data="{ open: false }">
+                    <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-all duration-200 border-2 border-gray-300 hover:border-gray-400 shadow-sm">
+                        <i class="fas fa-ellipsis-v"></i>
+                        <span class="hidden sm:inline">Actions</span>
+                        <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
+                    </button>
+
+                    <div x-show="open"
+                        @click.away="open = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                        style="display: none;">
+
+                        <div class="px-3 py-2 border-b border-gray-100">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Reports</p>
+                        </div>
+
+                        <a href="<?= site_url('customers/aging-analysis/' . ($customer['id'] ?? 0)) ?>"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-clock w-5 text-orange-600"></i>
+                            <span class="font-medium">Aging Analysis</span>
+                        </a>
+
+                        <div class="border-t border-gray-100 my-1"></div>
+
+                        <div class="px-3 py-2">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Print Options</p>
+                        </div>
+
+                        <a href="<?= site_url('customers/ledger/print/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>"
+                            target="_blank"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-print w-5 text-gray-500"></i>
+                            <span class="font-medium">Print Ledger</span>
+                        </a>
+
+                        <a href="<?= site_url('customers/ledger/print-compact/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>"
+                            target="_blank"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-receipt w-5 text-gray-500"></i>
+                            <span class="font-medium">Print Compact</span>
+                        </a>
+
+                        <div class="border-t border-gray-100 my-1"></div>
+
+                        <div class="px-3 py-2">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Export Options</p>
+                        </div>
+
+                        <a href="<?= site_url('customers/ledger/export/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>"
+                            target="_blank"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-file-excel w-5 text-green-600"></i>
+                            <span class="font-medium">Export to Excel</span>
+                        </a>
+
+                        <a href="<?= site_url('customers/ledger/export_pdf/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>"
+                            target="_blank"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-file-pdf w-5 text-red-600"></i>
+                            <span class="font-medium">Export to PDF</span>
+                        </a>
+
+                        <a href="<?= site_url('customers/ledger/export_pdf_compact/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>"
+                            target="_blank"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-file-pdf w-5 text-red-600"></i>
+                            <span class="font-medium">Export PDF Compact</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -70,76 +169,46 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             <div class="mb-3 p-3 rounded bg-red-50 text-red-800 border border-red-200"><?= esc($err) ?></div>
         <?php endif; ?>
 
-        <!-- Credit control banner -->
-        <?php if (isset($outstanding) && ($outstanding > 0 || isset($creditLimit))): ?>
-            <div class="mb-4 bg-white border rounded-lg p-4 shadow-sm flex flex-col gap-1">
-                <div class="text-sm text-gray-700 font-semibold">Credit Overview<?= isset($agingAsOf) ? ' — As of ' . esc($agingAsOf) : '' ?></div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-1">
-                    <div class="border rounded-md p-3">
-                        <div class="text-xs text-gray-500">Outstanding</div>
-                        <div class="text-lg font-semibold <?= ($outstanding > 0 ? 'text-rose-700' : 'text-gray-800') ?>"><?= $currencySymbol . number_format((float)$outstanding, 2) ?></div>
+        <!-- Account Summary -->
+        <div class="mb-4 bg-white border rounded-lg shadow-sm overflow-hidden">
+            <div class="px-4 py-3 bg-gradient-to-r from-slate-50 to-gray-50 border-b">
+                <h2 class="font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-blue-600"></i>
+                    Account Summary
+                </h2>
+            </div>
+            <div class="p-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Opening Balance -->
+                    <div class="text-center p-3 rounded-lg bg-blue-50 border border-blue-100">
+                        <div class="text-xs font-semibold text-blue-600 uppercase mb-1">Opening Balance</div>
+                        <div class="text-xl font-bold text-blue-900"><?= $currencySymbol . number_format($openingBalance, 2) ?></div>
                     </div>
-                    <div class="border rounded-md p-3">
-                        <div class="text-xs text-gray-500">Credit Limit</div>
-                        <div class="text-lg font-semibold"><?= isset($creditLimit) && $creditLimit !== null ? ($currencySymbol . number_format((float)$creditLimit, 2)) : '—' ?></div>
+
+                    <!-- Total Debit (Outstanding) -->
+                    <div class="text-center p-3 rounded-lg bg-rose-50 border border-rose-100">
+                        <div class="text-xs font-semibold text-rose-600 uppercase mb-1">Total Outstanding</div>
+                        <div class="text-xl font-bold text-rose-900"><?= $currencySymbol . number_format($totalDebit, 2) ?></div>
                     </div>
-                    <div class="border rounded-md p-3">
-                        <div class="text-xs text-gray-500">Available</div>
-                        <div class="text-lg font-semibold <?= (isset($creditAvailable) && $creditAvailable < 0 ? 'text-rose-700' : 'text-emerald-700') ?>">
-                            <?= isset($creditAvailable) ? ($currencySymbol . number_format((float)$creditAvailable, 2)) : '—' ?>
-                        </div>
+
+                    <!-- Total Credit (Received) -->
+                    <div class="text-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                        <div class="text-xs font-semibold text-emerald-600 uppercase mb-1">Total Received</div>
+                        <div class="text-xl font-bold text-emerald-900"><?= $currencySymbol . number_format($totalCredit, 2) ?></div>
+                    </div>
+
+                    <!-- Closing Balance -->
+                    <div class="text-center p-3 rounded-lg <?= $closingBalance >= 0 ? 'bg-purple-50 border-purple-100' : 'bg-red-50 border-red-100' ?> border">
+                        <div class="text-xs font-semibold <?= $closingBalance >= 0 ? 'text-purple-600' : 'text-red-600' ?> uppercase mb-1">Closing Balance</div>
+                        <div class="text-xl font-bold <?= $closingBalance >= 0 ? 'text-purple-900' : 'text-red-900' ?>"><?= $currencySymbol . number_format($closingBalance, 2) ?></div>
                     </div>
                 </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Summary cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <div class="bg-white border rounded-lg p-4 shadow-sm">
-                <p class="text-xs text-gray-500">Opening Balance</p>
-                <p class="text-xl font-semibold text-gray-800"><?= $currencySymbol . number_format($openingBalance, 2) ?></p>
-            </div>
-            <div class="bg-white border rounded-lg p-4 shadow-sm">
-                <p class="text-xs text-gray-500">Total Debit</p>
-                <p class="text-xl font-semibold text-rose-600"><?= $currencySymbol . number_format($totalDebit, 2) ?></p>
-            </div>
-            <div class="bg-white border rounded-lg p-4 shadow-sm">
-                <p class="text-xs text-gray-500">Total Credit</p>
-                <p class="text-xl font-semibold text-emerald-600"><?= $currencySymbol . number_format($totalCredit, 2) ?></p>
-            </div>
-            <div class="bg-white border rounded-lg p-4 shadow-sm">
-                <p class="text-xs text-gray-500">Closing Balance</p>
-                <p class="text-xl font-semibold <?= ($closingBalance >= 0 ? 'text-gray-800' : 'text-rose-600') ?>">
-                    <?= $currencySymbol . number_format($closingBalance, 2) ?>
-                </p>
             </div>
         </div>
 
-        <!-- Aging summary -->
-        <?php if (!empty($agingBuckets ?? []) && ($outstanding ?? 0) > 0): ?>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                <div class="bg-white border rounded-lg p-4 shadow-sm">
-                    <p class="text-xs text-gray-500">0–30 days</p>
-                    <p class="text-lg font-semibold text-gray-800"><?= $currencySymbol . number_format((float)($agingBuckets['0_30'] ?? 0), 2) ?></p>
-                </div>
-                <div class="bg-white border rounded-lg p-4 shadow-sm">
-                    <p class="text-xs text-gray-500">31–60 days</p>
-                    <p class="text-lg font-semibold text-gray-800"><?= $currencySymbol . number_format((float)($agingBuckets['31_60'] ?? 0), 2) ?></p>
-                </div>
-                <div class="bg-white border rounded-lg p-4 shadow-sm">
-                    <p class="text-xs text-gray-500">61–90 days</p>
-                    <p class="text-lg font-semibold text-gray-800"><?= $currencySymbol . number_format((float)($agingBuckets['61_90'] ?? 0), 2) ?></p>
-                </div>
-                <div class="bg-white border rounded-lg p-4 shadow-sm">
-                    <p class="text-xs text-gray-500">90+ days</p>
-                    <p class="text-lg font-semibold text-gray-800"><?= $currencySymbol . number_format((float)($agingBuckets['90_plus'] ?? 0), 2) ?></p>
-                </div>
-            </div>
-        <?php endif; ?>
-
         <!-- Filters -->
-        <form method="get" class="bg-white border rounded-lg p-4 shadow-sm mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+        <form method="get" class="bg-white border rounded-md p-4 shadow-sm mb-2">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-2">
                 <div>
                     <label class="text-xs text-gray-500">From</label>
                     <input type="date" name="from" value="<?= $from ?>" class="w-full border rounded px-3 py-2">
@@ -194,6 +263,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                             <?php if ($showBalanceInTable && $canViewAmounts): ?>
                                 <th class="px-4 py-3 text-right">Balance (<?= esc($currencySymbol) ?>)</th>
                             <?php endif; ?>
+                            <th class="px-4 py-3 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y"></tbody>
@@ -205,6 +275,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                             <?php if ($showBalanceInTable && $canViewAmounts): ?>
                                 <th class="px-4 py-3 text-right font-semibold"><?= $currencySymbol . number_format($closingBalance, 2) ?></th>
                             <?php endif; ?>
+                            <th class="px-4 py-3"></th>
                         </tr>
                     </tfoot>
                 </table>
@@ -280,6 +351,28 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         render: function(d) {
                             return (parseFloat(d || 0)).toFixed(2);
                         }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            // Show reverse button only for payment/advance entries (credit > 0) and not already reversed
+                            var credit = parseFloat(row.credit || 0);
+                            var rowType = (row.type || '').toLowerCase();
+                            var isReversible = credit > 0 && (rowType === 'payment' || rowType === 'advance');
+                            var isReversal = rowType === 'reversal' || (row.description || '').indexOf('REVERSAL') !== -1;
+
+                            if (isReversible && !isReversal) {
+                                var refNo = row.ref_no ? String(row.ref_no).replace(/'/g, "\\'") : 'N/A';
+                                return '<button onclick="openReverseModal(' + row.id + ', \'' + refNo + '\', ' + credit + ')" ' +
+                                    'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors" ' +
+                                    'title="Reverse this payment">' +
+                                    '<i class="fas fa-undo"></i> Reverse' +
+                                    '</button>';
+                            }
+                            return '-';
+                        }
                     }
                 ],
                 language: {
@@ -291,4 +384,252 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
         }
     });
 </script>
+
+<!-- Reverse Payment Modal -->
+<div id="reversePaymentModal" class="fixed z-50 inset-0 hidden" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onclick="closeReverseModal()"></div>
+    <div class="flex items-center justify-center min-h-screen px-4 relative z-10">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-200 scale-95 opacity-0 reverse-modal-content overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold">Reverse Payment</h3>
+                </div>
+                <button onclick="closeReverseModal()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-5">
+                <form id="reversePaymentForm">
+                    <input type="hidden" id="reverseLedgerId">
+
+                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-sm text-red-800 mb-2">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            <strong>Warning:</strong> This action will create a reversal entry.
+                        </p>
+                        <div class="text-sm text-gray-700">
+                            <div><strong>Ref No:</strong> <span id="reverseRefNo"></span></div>
+                            <div><strong>Amount:</strong> <?= $currencySymbol ?><span id="reverseAmount"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Reversal <span class="text-red-500">*</span></label>
+                        <textarea name="reason" id="reverseReason" rows="3" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                            placeholder="Please provide a reason for reversing this payment..."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="px-5 py-3 bg-gray-50 border-t flex justify-end gap-2">
+                <button type="button" onclick="closeReverseModal()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="submitReversePayment()" class="btn bg-red-600 hover:bg-red-700 text-white">
+                    <i class="fas fa-undo mr-1"></i> Reverse Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Payment Modal -->
+<div id="customPaymentModal" class="fixed z-50 inset-0 hidden" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onclick="closeCustomPayment()"></div>
+    <div class="flex items-center justify-center min-h-screen px-4 relative z-10">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-200 scale-95 opacity-0 modal-content overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold">Custom Payment</h3>
+                </div>
+                <button onclick="closeCustomPayment()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-5">
+                <form id="customPaymentForm">
+                    <input type="hidden" id="customCustomerId" value="<?= $customer['id'] ?? 0 ?>">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
+                        <p class="text-lg font-semibold text-gray-900"><?= esc($customer['name'] ?? '') ?></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Type</label>
+                        <div class="flex gap-3">
+                            <label class="flex-1 relative">
+                                <input type="radio" name="transaction_type" value="payment" checked class="peer sr-only">
+                                <div class="p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-green-600 peer-checked:bg-green-50 text-center">
+                                    <i class="fas fa-arrow-down text-green-600 mb-1"></i>
+                                    <div class="font-semibold text-sm">Receive Payment</div>
+                                </div>
+                            </label>
+                            <label class="flex-1 relative">
+                                <input type="radio" name="transaction_type" value="advance" class="peer sr-only">
+                                <div class="p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:bg-blue-50 text-center">
+                                    <i class="fas fa-arrow-up text-blue-600 mb-1"></i>
+                                    <div class="font-semibold text-sm">Advance Payment</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Amount <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><?= $currencySymbol ?></span>
+                            <input type="number" id="customAmount" step="0.01" min="0.01" required
+                                class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-lg">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" name="payment_date" value="<?= date('Y-m-d') ?>"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Method</label>
+                            <select name="payment_method" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="cash">Cash</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="check">Check</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea name="description" rows="2" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="Payment description..."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="px-5 py-3 bg-gray-50 border-t flex justify-end gap-2">
+                <button type="button" onclick="closeCustomPayment()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="submitCustomPayment()" class="btn btn-primary">
+                    <i class="fas fa-check mr-1"></i> Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Reverse Payment Functions
+    function openReverseModal(ledgerId, refNo, amount) {
+        $('#reverseLedgerId').val(ledgerId);
+        $('#reverseRefNo').text(refNo);
+        $('#reverseAmount').text(parseFloat(amount).toFixed(2));
+        $('#reverseReason').val('');
+        $('#reversePaymentModal').removeClass('hidden');
+        $('.reverse-modal-content').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
+    }
+
+    function closeReverseModal() {
+        $('.reverse-modal-content').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
+        setTimeout(() => $('#reversePaymentModal').addClass('hidden'), 200);
+    }
+
+    function submitReversePayment() {
+        const reason = $('#reverseReason').val().trim();
+        if (!reason) {
+            alert('Please provide a reason for reversal');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to reverse this payment? This action cannot be undone.')) {
+            return;
+        }
+
+        const formData = {
+            ledger_id: $('#reverseLedgerId').val(),
+            reason: reason
+        };
+
+        $.ajax({
+            url: '<?= site_url('sales/reverse-payment') ?>',
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                closeReverseModal();
+                if (response.success) {
+                    alert('Payment reversed successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (response.message || 'Failed to reverse payment'));
+                }
+            },
+            error: function() {
+                alert('Failed to reverse payment. Please try again.');
+            }
+        });
+    }
+
+    // Custom Payment Functions
+    function openCustomPayment() {
+        $('#customPaymentModal').removeClass('hidden');
+        $('.modal-content').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
+    }
+
+    function closeCustomPayment() {
+        $('.modal-content').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
+        setTimeout(() => $('#customPaymentModal').addClass('hidden'), 200);
+    }
+
+    function submitCustomPayment() {
+        const amount = parseFloat($('#customAmount').val()) || 0;
+        if (amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+
+        const formData = {
+            customer_id: $('#customCustomerId').val(),
+            transaction_type: $('input[name="transaction_type"]:checked').val(),
+            amount: amount,
+            payment_date: $('#customPaymentForm input[name="payment_date"]').val(),
+            payment_method: $('#customPaymentForm select[name="payment_method"]').val(),
+            description: $('#customPaymentForm textarea[name="description"]').val()
+        };
+
+        if (!formData.description) {
+            alert('Please enter a description');
+            return;
+        }
+
+        $.ajax({
+            url: '<?= site_url('sales/process-custom-payment') ?>',
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                closeCustomPayment();
+                if (response.success) {
+                    alert('Payment recorded successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (response.message || 'Failed to record payment'));
+                }
+            },
+            error: function() {
+                alert('Failed to record payment. Please try again.');
+            }
+        });
+    }
+</script>
+
+<!-- Alpine.js for dropdown -->
+<script defer src="<?= base_url('assets/js/alpinejs.cdn.min.js') ?>"></script>
+
 <?= $this->endSection() ?>

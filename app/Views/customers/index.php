@@ -98,14 +98,15 @@
             edit: <?= json_encode(site_url('customers/edit')) ?>,
             delete: <?= json_encode(site_url('customers/delete')) ?>,
             viewLedger: <?= json_encode(site_url('customers/ledger')) ?>,
-            salesNew: <?= json_encode(site_url('sales/new')) ?>,
+            salesNew: <?= json_encode(site_url('sales/distributor')) ?>,
         };
 
         const table = $('#customersTable').DataTable({
             processing: true,
             serverSide: true,
             deferRender: true,
-            dom: 'Blfrtip',
+            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
+
             ajax: {
                 url: routes.datatable,
                 type: 'GET',
@@ -162,15 +163,7 @@
                         );
                     }
                 },
-                {
-                    extend: 'csvHtml5',
-                    text: '<i class="fas fa-file-csv mr-1"></i> CSV',
-                    className: 'btn btn-muted btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5]
-                    },
-                    title: 'customers'
-                },
+
                 {
                     extend: 'excelHtml5',
                     text: '<i class="fas fa-file-excel mr-1"></i> Excel',

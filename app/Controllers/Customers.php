@@ -311,42 +311,6 @@ class Customers extends \CodeIgniter\Controller
             }
         }
 
-        // Aging and credit control (as of $to or today)
-        $asOfDate = $to ?: date('Y-m-d');
-        $allUpToAsOf = $customerLedgerModel->getCustomerLedger($customerId, null, $asOfDate, null, null);
-        $openDebits = [];
-        foreach ($allUpToAsOf as $row) {
-            $debit = (float)($row['debit'] ?? 0);
-            $credit = (float)($row['credit'] ?? 0);
-            if ($debit > 0) {
-                $openDebits[] = ['date' => substr((string)($row['date'] ?? $asOfDate), 0, 10), 'amount' => $debit];
-            }
-            if ($credit > 0) {
-                $remaining = $credit;
-                while ($remaining > 0 && !empty($openDebits)) {
-                    $take = min((float)$openDebits[0]['amount'], $remaining);
-                    $openDebits[0]['amount'] -= $take;
-                    $remaining -= $take;
-                    if ($openDebits[0]['amount'] <= 0.00001) array_shift($openDebits);
-                }
-            }
-        }
-        $buckets = ['0_30' => 0.0, '31_60' => 0.0, '61_90' => 0.0, '90_plus' => 0.0];
-        $asOfTs = strtotime($asOfDate);
-        foreach ($openDebits as $od) {
-            $amt = max(0.0, (float)$od['amount']);
-            if ($amt <= 0) continue;
-            $days = (int) floor(($asOfTs - strtotime((string)$od['date'])) / 86400);
-            if ($days <= 30) $buckets['0_30'] += $amt;
-            elseif ($days <= 60) $buckets['31_60'] += $amt;
-            elseif ($days <= 90) $buckets['61_90'] += $amt;
-            else $buckets['90_plus'] += $amt;
-        }
-        $outstanding = array_sum($buckets);
-        $creditLimit = isset($customer['credit_limit']) ? (float)$customer['credit_limit'] : null;
-        $creditAvailable = $creditLimit !== null ? ($creditLimit - $outstanding) : null;
-        $overLimit = $creditLimit !== null ? ($creditAvailable < 0) : false;
-
         return view('customers/ledger', [
             'title'           => 'Customer Ledger',
             'customer'        => $customer,
@@ -361,12 +325,6 @@ class Customers extends \CodeIgniter\Controller
             'totalDebit'      => $totalDebit,
             'totalCredit'     => $totalCredit,
             'closingBalance'  => $running,
-            'agingBuckets'    => $buckets,
-            'agingAsOf'       => $asOfDate,
-            'outstanding'     => $outstanding,
-            'creditLimit'     => $creditLimit,
-            'creditAvailable' => $creditAvailable,
-            'overLimit'       => $overLimit,
         ]);
     }
 
@@ -414,41 +372,6 @@ class Customers extends \CodeIgniter\Controller
             }
         }
 
-        // Aging & credit (as of $to or today)
-        $asOfDate = $to ?: date('Y-m-d');
-        $allUpToAsOf = $customerLedgerModel->getCustomerLedger($customerId, null, $asOfDate, null, null);
-        $openDebits = [];
-        foreach ($allUpToAsOf as $row) {
-            $debit = (float)($row['debit'] ?? 0);
-            $credit = (float)($row['credit'] ?? 0);
-            if ($debit > 0) {
-                $openDebits[] = ['date' => substr((string)($row['date'] ?? $asOfDate), 0, 10), 'amount' => $debit];
-            }
-            if ($credit > 0) {
-                $remaining = $credit;
-                while ($remaining > 0 && !empty($openDebits)) {
-                    $take = min((float)$openDebits[0]['amount'], $remaining);
-                    $openDebits[0]['amount'] -= $take;
-                    $remaining -= $take;
-                    if ($openDebits[0]['amount'] <= 0.00001) array_shift($openDebits);
-                }
-            }
-        }
-        $buckets = ['0_30' => 0.0, '31_60' => 0.0, '61_90' => 0.0, '90_plus' => 0.0];
-        $asOfTs = strtotime($asOfDate);
-        foreach ($openDebits as $od) {
-            $amt = max(0.0, (float)$od['amount']);
-            if ($amt <= 0) continue;
-            $days = (int) floor(($asOfTs - strtotime((string)$od['date'])) / 86400);
-            if ($days <= 30) $buckets['0_30'] += $amt;
-            elseif ($days <= 60) $buckets['31_60'] += $amt;
-            elseif ($days <= 90) $buckets['61_90'] += $amt;
-            else $buckets['90_plus'] += $amt;
-        }
-        $outstanding = array_sum($buckets);
-        $creditLimit = isset($customer['credit_limit']) ? (float)$customer['credit_limit'] : null;
-        $creditAvailable = $creditLimit !== null ? ($creditLimit - $outstanding) : null;
-
         return view('customers/ledger_print', [
             'title'           => 'Customer Ledger - Print',
             'customer'        => $customer,
@@ -462,11 +385,6 @@ class Customers extends \CodeIgniter\Controller
             'type'            => $type,
             'q'               => $q,
             'showBalance'     => $showBalance,
-            'agingBuckets'    => $buckets,
-            'agingAsOf'       => $asOfDate,
-            'outstanding'     => $outstanding,
-            'creditLimit'     => $creditLimit,
-            'creditAvailable' => $creditAvailable,
         ]);
     }
 
@@ -971,6 +889,116 @@ class Customers extends \CodeIgniter\Controller
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $totalFiltered,
             'data' => $rows,
+        ]);
+    }
+
+    /**
+     * Show outstanding invoices for a customer
+     */
+    public function outstandingInvoices($customerId)
+    {
+        $customersModel = new M_customers();
+        $salesModel = new \App\Models\M_sales();
+
+        $customer = $customersModel->find($customerId);
+        if (!$customer) {
+            return redirect()->back()->with('error', 'Customer not found');
+        }
+
+        $invoices = $salesModel->select('id, invoice_no, created_at, total, due_amount, payment_status')
+            ->where('customer_id', $customerId)
+            ->where('due_amount >', 0)
+            ->whereIn('payment_status', ['partial', 'due'])
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        return view('customers/outstanding_invoices', [
+            'customer' => $customer,
+            'invoices' => $invoices,
+            'title' => 'Outstanding Invoices - ' . $customer['name']
+        ]);
+    }
+
+    /**
+     * Show lumpsum payment page for a customer
+     */
+    public function lumpsumPayment($customerId)
+    {
+        $customersModel = new M_customers();
+        $salesModel = new \App\Models\M_sales();
+
+        $customer = $customersModel->find($customerId);
+        if (!$customer) {
+            return redirect()->back()->with('error', 'Customer not found');
+        }
+
+        $invoices = $salesModel->select('id, invoice_no, created_at, total, due_amount, payment_status')
+            ->where('customer_id', $customerId)
+            ->where('due_amount >', 0)
+            ->whereIn('payment_status', ['partial', 'due'])
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        return view('customers/lumpsum_payment', [
+            'customer' => $customer,
+            'invoices' => $invoices,
+            'title' => 'Lumpsum Payment - ' . $customer['name']
+        ]);
+    }
+
+    public function agingAnalysis($customerId)
+    {
+        $customersModel = new M_customers();
+        $salesModel = new \App\Models\M_sales();
+
+        $customer = $customersModel->find($customerId);
+        if (!$customer) {
+            return redirect()->back()->with('error', 'Customer not found');
+        }
+
+        // Get all outstanding invoices
+        $invoices = $salesModel->select('id, invoice_no, created_at, total, due_amount, payment_status')
+            ->where('customer_id', $customerId)
+            ->where('due_amount >', 0)
+            ->whereIn('payment_status', ['partial', 'due'])
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        // Calculate aging buckets
+        $agingBuckets = [
+            '0_30' => 0,
+            '31_60' => 0,
+            '61_90' => 0,
+            '90_plus' => 0
+        ];
+
+        $totalOutstanding = 0;
+
+        foreach ($invoices as &$invoice) {
+            $dueAmount = (float)($invoice['due_amount'] ?? 0);
+            $totalOutstanding += $dueAmount;
+
+            $createdDate = new \DateTime($invoice['created_at']);
+            $now = new \DateTime();
+            $age = $now->diff($createdDate)->days;
+
+            if ($age <= 30) {
+                $agingBuckets['0_30'] += $dueAmount;
+            } elseif ($age <= 60) {
+                $agingBuckets['31_60'] += $dueAmount;
+            } elseif ($age <= 90) {
+                $agingBuckets['61_90'] += $dueAmount;
+            } else {
+                $agingBuckets['90_plus'] += $dueAmount;
+            }
+        }
+
+        return view('customers/aging_analysis', [
+            'customer' => $customer,
+            'invoices' => $invoices,
+            'agingBuckets' => $agingBuckets,
+            'outstanding' => $totalOutstanding,
+            'title' => 'Aging Analysis - ' . $customer['name']
         ]);
     }
 }
