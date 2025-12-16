@@ -83,6 +83,7 @@
 
         const routes = {
             datatable: <?= json_encode(site_url('purchases/datatable')) ?>,
+            ledgerBase: <?= json_encode(site_url('supplier-ledger/view')) ?>,
             view: <?= json_encode(site_url('purchases/view')) ?>,
             print: <?= json_encode(site_url('purchases/print')) ?>,
             edit: <?= json_encode(site_url('purchases/edit')) ?>,
@@ -152,8 +153,15 @@
                 {
                     data: 'supplier_name',
                     name: 'supplier_name',
-                    render: function(data) {
-                        return escapeHtml(data || 'N/A');
+                    render: function(data, type, row) {
+                        if (!permissions.view) {
+                            return escapeHtml(data || 'N/A');
+                        }
+
+                        const ledgerUrl = `${routes.ledgerBase}/${row.supplier_id}`;
+                        return `<a href="${ledgerUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">
+                        ${escapeHtml(data || 'N/A')}
+                        <i class="fas fa-book text-xs"></i></a>`;
                     }
                 },
                 {

@@ -817,6 +817,12 @@
                 if (confirm('Delete this item?')) {
                     removeItem(row);
                 }
+            } else if (e.key === 'F3') {
+                e.preventDefault();
+                $('.select2-customer').select2('open');
+            } else if (e.key === 'F4') {
+                e.preventDefault();
+                $('select[name="payment_method"]').focus();
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
                 const validItems = getValidCartItems();

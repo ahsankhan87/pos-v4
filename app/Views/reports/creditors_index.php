@@ -60,7 +60,8 @@
             processing: true,
             serverSide: true,
             deferRender: true,
-            dom: 'Blfrtip',
+            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
+
             ajax: {
                 url: routes.data,
                 type: 'GET',

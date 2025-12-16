@@ -374,6 +374,7 @@ class Sales extends \CodeIgniter\Controller
                         'debit' => $due_amount,
                         'credit' => 0,
                         'balance' => $ledgerModel->getCustomerBalance($customer_id) + $due_amount,
+                        'ref_no' => $effectiveInvoiceNo,
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
                 }
@@ -801,7 +802,8 @@ class Sales extends \CodeIgniter\Controller
                             'debit' => $dueAmount,
                             'credit' => 0,
                             'balance' => $newBalance,
-                            'created_at' => date('Y-m-d H:i:s')
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'ref_no' => $sale['invoice_no'] ?? '',
                         ]);
                     }
                 } catch (\Throwable $e) {
@@ -1392,6 +1394,7 @@ class Sales extends \CodeIgniter\Controller
                                 'debit' => 0,
                                 'credit' => $returnAmount,
                                 'balance' => $newBalance,
+                                'ref_no' => $sale['invoice_no'],
                                 'created_at' => date('Y-m-d H:i:s')
                             ]);
                         }
@@ -1482,6 +1485,7 @@ class Sales extends \CodeIgniter\Controller
                 'debit' => 0,
                 'credit' => $amount,
                 'balance' => $ledgerModel->getCustomerBalance($customer_id) - $amount,
+                'ref_no' => $sale['invoice_no'] ?? '',
                 'created_at' => date('Y-m-d H:i:s')
             ]);
 
@@ -1738,6 +1742,7 @@ class Sales extends \CodeIgniter\Controller
             return redirect()->back()->with('error', 'Invalid request');
         }
 
+        $salesModel = new M_sales();
         $ledgerModel = new \App\Models\CustomerLedgerModel();
         $customerModel = new M_customers();
 
@@ -1763,34 +1768,116 @@ class Sales extends \CodeIgniter\Controller
             ]);
         }
 
+        $db = $salesModel->db;
+        $db->transStart();
+
         try {
-            $credit = $amount;
             $type = $transactionType === 'payment' ? 'payment' : 'advance';
 
             if ($transactionType === 'advance') {
                 $description = 'Advance Payment - ' . $description;
             }
 
-            $ledgerModel->insert([
-                'customer_id' => $customerId,
-                'sale_id' => null,
-                'date' => $paymentDate . ' ' . date('H:i:s'),
-                'description' => $description . ' [' . strtoupper($paymentMethod) . ']',
-                'debit' => 0,
-                'credit' => $credit,
-                'balance' => 0, // Will be updated by trigger or separate process
-                'type' => $type,
-                'ref_no' => strtoupper($transactionType) . '-' . time(),
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            // If payment type, auto-distribute to outstanding invoices (FIFO)
+            if ($transactionType === 'payment') {
+                $remainingAmount = $amount;
 
-            logAction('custom_payment', "Custom {$transactionType} of {$amount} for Customer ID: {$customerId}");
+                // Get outstanding invoices ordered by date (FIFO)
+                $outstandingInvoices = $salesModel->where('customer_id', $customerId)
+                    ->where('due_amount >', 0)
+                    ->whereIn('payment_status', ['partial', 'due'])
+                    ->orderBy('created_at', 'ASC')
+                    ->findAll();
+
+                foreach ($outstandingInvoices as $sale) {
+                    if ($remainingAmount <= 0) break;
+
+                    $saleId = $sale['id'];
+                    $due = (float) $sale['due_amount'];
+                    $applyAmount = min($remainingAmount, $due);
+
+                    if ($applyAmount > 0) {
+                        // Update sale
+                        $newDue = $due - $applyAmount;
+                        $paymentStatus = $newDue <= 0.01 ? 'paid' : 'partial';
+
+                        $salesModel->update($saleId, [
+                            'due_amount' => $newDue,
+                            'payment_status' => $paymentStatus
+                        ]);
+
+                        // Ledger entry for this distribution
+                        $invoiceDesc = $description . ' - Invoice #' . $sale['invoice_no'];
+
+                        $ledgerModel->insert([
+                            'customer_id' => $customerId,
+                            'sale_id' => $saleId,
+                            'date' => $paymentDate . ' ' . date('H:i:s'),
+                            'description' => $invoiceDesc . ' [' . strtoupper($paymentMethod) . ']',
+                            'debit' => 0,
+                            'credit' => $applyAmount,
+                            'balance' => 0, // Will be updated by trigger or separate process
+                            'type' => $type,
+                            'ref_no' => strtoupper($transactionType) . '-' . time() . '-' . $saleId,
+                            'created_at' => date('Y-m-d H:i:s')
+                        ]);
+
+                        $remainingAmount -= $applyAmount;
+
+                        logAction('payment_received', "Custom payment of {$applyAmount} for Sale ID: {$saleId}, Invoice: {$sale['invoice_no']}");
+                    }
+                }
+
+                // If any amount remains, create a general ledger entry (advance/credit balance)
+                if ($remainingAmount > 0.01) {
+                    $ledgerModel->insert([
+                        'customer_id' => $customerId,
+                        'sale_id' => null,
+                        'date' => $paymentDate . ' ' . date('H:i:s'),
+                        'description' => $description . ' (Credit Balance) [' . strtoupper($paymentMethod) . ']',
+                        'debit' => 0,
+                        'credit' => $remainingAmount,
+                        'balance' => 0,
+                        'type' => 'advance',
+                        'ref_no' => 'ADV-' . time(),
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+
+                    logAction('custom_payment', "Custom payment of {$remainingAmount} recorded as credit balance for Customer ID: {$customerId}");
+                }
+            } else {
+                // Advance type - just create ledger entry
+                $ledgerModel->insert([
+                    'customer_id' => $customerId,
+                    'sale_id' => null,
+                    'date' => $paymentDate . ' ' . date('H:i:s'),
+                    'description' => $description . ' [' . strtoupper($paymentMethod) . ']',
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'balance' => 0, // Will be updated by trigger or separate process
+                    'type' => $type,
+                    'ref_no' => strtoupper($transactionType) . '-' . time(),
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+
+                logAction('custom_payment', "Custom {$transactionType} of {$amount} for Customer ID: {$customerId}");
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Transaction failed'
+                ]);
+            }
 
             return $this->response->setJSON([
                 'success' => true,
                 'message' => ucfirst($transactionType) . ' recorded successfully'
             ]);
         } catch (\Exception $e) {
+            $db->transRollback();
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()

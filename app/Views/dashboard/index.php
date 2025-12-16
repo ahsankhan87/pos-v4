@@ -154,8 +154,8 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Weekly Sales</p>
-                    <p class="text-2xl font-semibold"><?= session()->get('currency_symbol') . number_format($weeklySales, 2) ?></p>
+                    <p class="text-sm font-medium text-gray-500">This Month's Sales</p>
+                    <p class="text-2xl font-semibold"><?= session()->get('currency_symbol') . number_format($monthlySales, 2) ?></p>
                 </div>
             </div>
         </div>
@@ -305,10 +305,10 @@
         const salesChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: <?= json_encode(array_column($monthlySales, 'date')) ?>,
+                labels: <?= json_encode(array_column($monthlySalesData ?? [], 'date')) ?>,
                 datasets: [{
                     label: 'Daily Sales',
-                    data: <?= json_encode(array_column($monthlySales, 'amount')) ?>,
+                    data: <?= json_encode(array_column($monthlySalesData ?? [], 'amount')) ?>,
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     borderColor: 'rgba(59, 130, 246, 1)',
                     borderWidth: 2,

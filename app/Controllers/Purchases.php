@@ -111,7 +111,7 @@ class Purchases extends BaseController
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
         $filteredBuilder->select(
-            'p.id, p.invoice_no, p.supplier_invoice_no, p.date, p.grand_total, p.payment_status, p.status, p.paid_amount, ' .
+            'p.id, p.invoice_no, p.supplier_invoice_no,p.supplier_id, p.date, p.grand_total, p.payment_status, p.status, p.paid_amount, ' .
                 'GREATEST(COALESCE(p.grand_total, 0) - COALESCE(p.paid_amount, 0), 0) AS due_amount, ' .
                 'COALESCE(s.name, "N/A") AS supplier_name'
         );
@@ -456,6 +456,7 @@ class Purchases extends BaseController
         }
 
         $data = [
+            'invoice_no' => $purchase['invoice_no'], // Invoice no should not change
             'supplier_id' => $this->request->getPost('supplier_id'),
             'store_id' => $this->request->getPost('store_id'),
             'date' => $this->request->getPost('date'),
@@ -475,15 +476,30 @@ class Purchases extends BaseController
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
-        if ($this->purchaseModel->updatePurchase($id, $data, $processedItems)) {
+        $updateResult = $this->purchaseModel->updatePurchase($id, $data, $processedItems);
 
-            //audit log
-            logAction('purchase_updated', 'Updated purchase with ID: ' . $id . ', Invoice No: ' . $purchase['invoice_no'], ' Supplier ID', $data['supplier_id'], ' Data', json_encode($data));
+        if (!$updateResult) {
+            $modelErrors = $this->purchaseModel->errors();
+            $db = \Config\Database::connect();
+            $dbError = $db->error();
 
-            return redirect()->to("/purchases/view/$id")->with('message', 'Purchase updated successfully');
-        } else {
-            return redirect()->back()->withInput()->with('error', 'Failed to update purchase');
+            $errorMsg = 'Failed to update purchase (edit form) for purchase ID: ' . $id;
+            $errorMsg .= ' | Model Errors: ' . json_encode($modelErrors);
+            $errorMsg .= ' | DB Error: ' . json_encode($dbError);
+            $errorMsg .= ' | Update Data: ' . json_encode($data);
+            $errorMsg .= ' | Grand Total: ' . ($data['grand_total'] ?? 'N/A');
+            $errorMsg .= ' | Due Amount: ' . ($data['due_amount'] ?? 'N/A');
+            $errorMsg .= ' | Items Count: ' . count($processedItems);
+
+            log_message('error', $errorMsg);
+
+            return redirect()->back()->withInput()->with('error', 'Failed to update purchase. Check logs for details.');
         }
+
+        //audit log
+        logAction('purchase_updated', 'Updated purchase with ID: ' . $id . ', Invoice No: ' . $purchase['invoice_no'], ' Supplier ID', $data['supplier_id'], ' Data', json_encode($data));
+
+        return redirect()->to("/purchases/view/$id")->with('message', 'Purchase updated successfully');
     }
 
     public function delete()
@@ -777,7 +793,7 @@ class Purchases extends BaseController
             }
         }
 
-        // Create supplier ledger entry for return (credit - reduces supplier payable)
+        // Create supplier ledger entry for return (DEBIT - reduces what we owe supplier)
         if ($totalReturnAmount > 0) {
             $currentBalance = $supplierLedgerModel->getSupplierBalance($purchase['supplier_id']);
             $newBalance = $currentBalance - $totalReturnAmount;
@@ -788,8 +804,8 @@ class Purchases extends BaseController
                 'payment_id' => null,
                 'date' => date('Y-m-d'),
                 'description' => "Purchase Return - Invoice: {$purchase['invoice_no']} - {$reason}",
-                'debit' => 0,
-                'credit' => $totalReturnAmount,
+                'debit' => $totalReturnAmount,
+                'credit' => 0,
                 'balance' => $newBalance,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
@@ -942,5 +958,258 @@ class Purchases extends BaseController
         ];
 
         return view('purchases/reports/purchase_report', $data);
+    }
+
+    /**
+     * Process Supplier Payment (Lumpsum)
+     */
+    public function processSupplierPayment()
+    {
+        $supplierId = $this->request->getPost('supplier_id');
+        $amount = $this->request->getPost('amount');
+        $paymentDate = $this->request->getPost('payment_date');
+        $paymentMethod = $this->request->getPost('payment_method');
+        $referenceNo = $this->request->getPost('reference_no');
+        $description = $this->request->getPost('description');
+
+        // Validation
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'supplier_id' => 'required|numeric',
+            'amount' => 'required|decimal|greater_than[0]',
+            'payment_date' => 'required|valid_date',
+            'payment_method' => 'required',
+            'description' => 'required|min_length[3]'
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Please fill all required fields correctly.');
+        }
+
+        // Get supplier
+        $supplier = $this->supplierModel->find($supplierId);
+        if (!$supplier) {
+            return redirect()->back()->with('error', 'Supplier not found');
+        }
+
+        // Record payment in supplier ledger
+        $ledgerModel = new \App\Models\SupplierLedgerModel();
+
+        $ledgerData = [
+            'supplier_id' => $supplierId,
+            'purchase_id' => null,
+            'payment_id' => null,
+            'date' => $paymentDate,
+            'description' => $description . ($referenceNo ? ' (Ref: ' . $referenceNo . ')' : ''),
+            'debit' => $amount,
+            'credit' => 0,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        // Calculate new balance
+        $currentBalance = $ledgerModel->getSupplierBalance($supplierId);
+        $ledgerData['balance'] = $currentBalance - $amount;
+
+        // Insert ledger entry
+        if ($ledgerModel->insert($ledgerData)) {
+            // Log the action
+            logAction('supplier_payment_recorded', 'Supplier ID: ' . $supplierId . ', Amount: ' . $amount . ', Method: ' . $paymentMethod);
+
+            return redirect()->to('supplier-ledger/view/' . $supplierId)
+                ->with('success', 'Payment of ' . number_to_currency($amount, 'PKR', 'en_PK', 2) . ' recorded successfully');
+        } else {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to record payment. Please try again.');
+        }
+    }
+
+    /**
+     * Process Supplier Lumpsum Payment (with invoice-specific amounts)
+     */
+    public function processSupplierLumpsumPayment()
+    {
+        // Check if AJAX request
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $supplierId = $this->request->getPost('supplier_id');
+        $paymentAmount = $this->request->getPost('payment_amount');
+        $paymentDate = $this->request->getPost('payment_date');
+        $paymentMethod = $this->request->getPost('payment_method');
+        $referenceNo = $this->request->getPost('reference_no');
+        $notes = $this->request->getPost('notes');
+        $purchasePayments = $this->request->getPost('purchase_payments');
+
+        // Validation
+        if (!$supplierId || !$paymentAmount || !$paymentDate || !$paymentMethod) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Please fill all required fields'
+            ]);
+        }
+
+        if (!is_array($purchasePayments) || empty($purchasePayments)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Please select at least one purchase to apply payment'
+            ]);
+        }
+
+        // Get supplier
+        $supplier = $this->supplierModel->find($supplierId);
+        if (!$supplier) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Supplier not found'
+            ]);
+        }
+
+        $ledgerModel = new \App\Models\SupplierLedgerModel();
+        $db = \Config\Database::connect();
+
+        // Start transaction
+        $db->transStart();
+
+        try {
+            $totalApplied = 0;
+
+            // Get initial balance once before loop
+            $currentBalance = $ledgerModel->getSupplierBalance($supplierId);
+
+            // Create individual payment entries for each purchase
+            foreach ($purchasePayments as $payment) {
+                $ledgerId = $payment['ledger_id'] ?? 0;
+                $amount = (float)($payment['amount'] ?? 0);
+
+                if ($amount <= 0) continue;
+
+                // Get the original ledger entry to get purchase details
+                $originalEntry = $ledgerModel->find($ledgerId);
+                if (!$originalEntry || $originalEntry['supplier_id'] != $supplierId) {
+                    continue;
+                }
+
+                $purchaseId = $originalEntry['purchase_id'];
+                if (!$purchaseId) {
+                    continue;
+                }
+
+                // Get the purchase record
+                $purchase = $this->purchaseModel->find($purchaseId);
+                if (!$purchase) {
+                    continue;
+                }
+
+                // Create payment description
+                $description = $notes ?: 'Lumpsum payment for ' . $originalEntry['description'];
+                if ($referenceNo) {
+                    $description .= ' (Ref: ' . $referenceNo . ')';
+                }
+
+                // Update running balance (subtract payment from balance)
+                $currentBalance -= $amount;
+
+                // Insert payment entry in supplier ledger (DEBIT - liability decreases)
+                $paymentData = [
+                    'supplier_id' => $supplierId,
+                    'purchase_id' => $purchaseId,
+                    'payment_id' => null,
+                    'date' => $paymentDate . ' ' . date('H:i:s'),
+                    'description' => $description,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'balance' => $currentBalance,
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+
+                if (!$ledgerModel->insert($paymentData)) {
+                    throw new \Exception('Failed to create payment entry for ledger ID: ' . $ledgerId);
+                }
+
+                // Get the inserted ledger entry ID to use as payment_id reference
+                $ledgerPaymentId = $ledgerModel->getInsertID();
+
+                // Insert payment record in pos_purchases_payment table
+                $purchasePaymentData = [
+                    'purchase_id' => $purchaseId,
+                    'payment_date' => $paymentDate,
+                    'amount' => $amount,
+                    'payment_method' => $paymentMethod,
+                    'reference' => $referenceNo,
+                    'note' => $description,
+                    'created_by' => session()->get('user_id'),
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+
+                if (!$db->table('pos_purchase_payments')->insert($purchasePaymentData)) {
+                    throw new \Exception('Failed to create purchase payment record for purchase ID: ' . $purchaseId);
+                }
+
+                // Get the inserted payment ID
+                $purchasePaymentId = $db->insertID();
+
+                // Update the ledger entry with payment_id
+                if ($purchasePaymentId) {
+                    $ledgerModel->update($ledgerPaymentId, ['payment_id' => $purchasePaymentId]);
+                }
+
+                // Update purchase paid_amount and payment_status
+                $newPaidAmount = (float)$purchase['paid_amount'] + $amount;
+                $grandTotal = (float)$purchase['grand_total'];
+
+                // Determine payment status
+                if ($newPaidAmount >= $grandTotal - 0.01) {
+                    $paymentStatus = 'paid';
+                } elseif ($newPaidAmount > 0) {
+                    $paymentStatus = 'partial';
+                } else {
+                    $paymentStatus = 'pending';
+                }
+
+                // Update the purchase record
+                $updateData = [
+                    'paid_amount' => $newPaidAmount,
+                    'payment_status' => $paymentStatus
+                ];
+
+                if (!$this->purchaseModel->update($purchaseId, $updateData)) {
+                    throw new \Exception('Failed to update purchase payment status for purchase ID: ' . $purchaseId);
+                }
+
+                $totalApplied += $amount;
+            }
+
+            // Verify total applied matches payment amount
+            if (abs($totalApplied - $paymentAmount) > 0.01) {
+                throw new \Exception('Applied amount (' . $totalApplied . ') does not match payment amount (' . $paymentAmount . ')');
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Transaction failed. Please try again.'
+                ]);
+            }
+
+            // Log the action
+            logAction('supplier_lumpsum_payment', 'Supplier ID: ' . $supplierId . ', Amount: ' . $paymentAmount . ', Method: ' . $paymentMethod . ', Purchases: ' . count($purchasePayments));
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Payment of ' . number_to_currency($paymentAmount, session()->get('currency_code') ?: 'PKR', 'en_PK', 2) . ' recorded successfully'
+            ]);
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
     }
 }

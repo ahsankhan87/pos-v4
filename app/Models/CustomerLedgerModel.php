@@ -15,6 +15,7 @@ class CustomerLedgerModel extends Model
         'debit',
         'credit',
         'balance',
+        'ref_no',
         'created_at'
     ];
 

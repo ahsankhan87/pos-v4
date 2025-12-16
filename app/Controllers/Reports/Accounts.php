@@ -102,7 +102,7 @@ class Accounts extends BaseController
             ->groupBy('supplier_id');
 
         $base = $db->table('pos_suppliers s')
-            ->select('s.id, s.name, s.phone, s.email, s.address, COALESCE(s.opening_balance,0) as opening_balance, COALESCE(l.t_debit,0) as total_debit, COALESCE(l.t_credit,0) as total_credit, (COALESCE(s.opening_balance,0) + COALESCE(l.t_debit,0) - COALESCE(l.t_credit,0)) as balance')
+            ->select('s.id, s.name, s.phone, s.email, s.address, COALESCE(s.opening_balance,0) as opening_balance, COALESCE(l.t_debit,0) as total_debit, COALESCE(l.t_credit,0) as total_credit, (COALESCE(s.opening_balance,0) + COALESCE(l.t_credit,0) - COALESCE(l.t_debit,0)) as balance')
             ->join('(' . $ledgerSub->getCompiledSelect() . ') l', 'l.supplier_id = s.id', 'left');
 
         if ($storeId !== null) {

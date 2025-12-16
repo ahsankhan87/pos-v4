@@ -32,8 +32,9 @@ class Dashboard extends BaseController
         $data = [
             'title' => 'Dashboard',
             'todaySales' => $this->getTodaySales(),
-            'weeklySales' => $this->getWeeklySales(),
-            'monthlySales' => $this->getMonthlySales(),
+            //'weeklySales' => $this->getWeeklySales(),
+            'monthlySales' => $this->getMonthlySalesTotal(),
+            //'monthlySalesData' => $this->getMonthlySales(),
             'lowStockItems' => $this->getLowStockItems(),
             'recentSales' => $this->getRecentSales(5),
             'topProducts' => $this->getTopProducts(5),
@@ -89,6 +90,27 @@ class Dashboard extends BaseController
         }
         return $monthlySales;
     }
+
+    protected function getMonthlySalesTotal()
+    {
+        $cache = \Config\Services::cache();
+        $monthlySalesTotal = $cache->get('monthly_sales_total');
+
+        if (!$monthlySalesTotal) {
+            $monthlySalesTotal = $this->saleModel
+                ->selectSum('total')
+                ->where('MONTH(created_at)', date('m'))
+                ->where('YEAR(created_at)', date('Y'))
+                ->forStore()->get()
+                ->getRow()
+                ->total ?? 0;
+
+            // Cache the result for 1 hour
+            $cache->save('monthly_sales_total', $monthlySalesTotal, 3600);
+        }
+        return $monthlySalesTotal;
+    }
+
     protected function getWeeklySales()
     {
         $cache = \Config\Services::cache();
@@ -97,7 +119,7 @@ class Dashboard extends BaseController
         if (!$weeklySales) {
             $weeklySales = $this->saleModel
                 ->selectSum('total')
-                ->where('created_at >=', date('Y-m-d', strtotime('1')))
+                ->where('created_at >=', date('Y-m-d', strtotime('-7 days')))
                 ->forStore()->get()
                 ->getRow()
                 ->total ?? 0;
@@ -200,6 +222,7 @@ class Dashboard extends BaseController
         $cache->delete('today_sales');
         $cache->delete('weekly_sales');
         $cache->delete('monthly_sales');
+        $cache->delete('monthly_sales_total');
         $cache->delete('low_stock_items');
         $cache->delete('top_products');
         $cache->delete('inventory_value');

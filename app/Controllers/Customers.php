@@ -269,6 +269,7 @@ class Customers extends \CodeIgniter\Controller
         $customersModel = new M_customers();
         $customerLedgerModel = new \App\Models\CustomerLedgerModel();
 
+        // Get filter parameters - if none provided, all entries will be shown by default
         $from = $this->request->getGet('from');
         $to   = $this->request->getGet('to');
         $type = $this->request->getGet('type');
@@ -278,14 +279,17 @@ class Customers extends \CodeIgniter\Controller
         $customer = $customersModel->find($customerId);
         if (! $customer) return redirect()->back()->with('error', 'Customer not found');
 
-        // Opening balance before $from (includes customer's initial opening balance)
+        // Opening balance calculation
+        // If no $from date is selected, opening balance is just the customer's opening balance
+        // All ledger entries from the beginning will be shown
         $customerOpeningBalance = (float)($customer['opening_balance'] ?? 0.0);
         $openingBalance = $customerOpeningBalance;
         if ($from) {
             $openingBalance = $customerOpeningBalance + $customerLedgerModel->computeBalanceUntil($customerId, $from . ' 00:00:00');
         }
 
-        // Fetch entries with filters applied (date, type, text)
+        // Fetch all entries (or filtered by date/type if provided)
+        // If no filters provided, all customer ledger entries will be returned
         $entries = $customerLedgerModel->getCustomerLedger($customerId, $from, $to, $type, $q);
 
         // Append computed running balance and totals

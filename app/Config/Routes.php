@@ -367,6 +367,8 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     // Payments
     $routes->post('addPayment', 'Purchases::addPayment', ['filter' => 'permission:purchases.payments']);
     $routes->delete('deletePayment/(:num)', 'Purchases::deletePayment/$1', ['filter' => 'permission:purchases.payments']);
+    $routes->post('process-supplier-payment', 'Purchases::processSupplierPayment', ['filter' => 'permission:purchases.create']);
+    $routes->post('process-supplier-lumpsum-payment', 'Purchases::processSupplierLumpsumPayment', ['filter' => 'permission:purchases.create']);
 
     $routes->get('return/(:num)', 'Purchases::return/$1', ['filter' => 'permission:purchases.update']);
     $routes->post('processReturn/(:num)', 'Purchases::processReturn/$1', ['filter' => 'permission:purchases.update']);
@@ -378,7 +380,15 @@ $routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'SupplierLedger::index', ['filter' => 'permission:purchases.view']);
     $routes->get('view/(:num)', 'SupplierLedger::view/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('print/(:num)', 'SupplierLedger::print/$1', ['filter' => 'permission:purchases.view']);
+    $routes->get('aging-analysis/(:num)', 'SupplierLedger::agingAnalysis/$1', ['filter' => 'permission:purchases.view']);
+    $routes->get('outstanding-invoices/(:num)', 'SupplierLedger::outstandingInvoices/$1', ['filter' => 'permission:purchases.view']);
+    $routes->get('lumpsum-payment/(:num)', 'SupplierLedger::lumpsumPayment/$1', ['filter' => 'permission:purchases.create']);
+    $routes->get('custom-payment/(:num)', 'SupplierLedger::customPayment/$1', ['filter' => 'permission:purchases.create']);
+    $routes->post('process-custom-payment', 'SupplierLedger::processCustomPayment', ['filter' => 'permission:purchases.create']);
+    $routes->post('delete-payment', 'SupplierLedger::deletePayment', ['filter' => 'permission:purchases.delete']);
     $routes->post('update-opening-balance', 'SupplierLedger::updateOpeningBalance', ['filter' => 'permission:purchases.update']);
+    $routes->get('fix-accounting', 'SupplierLedger::fixAccounting', ['filter' => 'permission:purchases.update']);
+    $routes->post('fix-accounting', 'SupplierLedger::fixAccounting', ['filter' => 'permission:purchases.update']);
 });
 
 // Accounts Reports: Debtors & Creditors

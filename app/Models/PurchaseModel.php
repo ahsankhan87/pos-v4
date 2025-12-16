@@ -219,10 +219,10 @@ class PurchaseModel extends Model
             }
         }
 
-        // Create supplier ledger entry (debit - increase supplier payable)
+        // Create supplier ledger entry (CREDIT - liability increase - we owe them money)
         $currentBalance = $supplierLedgerModel->getSupplierBalance($data['supplier_id']);
-        $debitAmount = $data['grand_total'];
-        $newBalance = $currentBalance + $debitAmount;
+        $creditAmount = $data['grand_total'];
+        $newBalance = $currentBalance + $creditAmount;
 
         $supplierLedgerModel->insert([
             'supplier_id' => $data['supplier_id'],
@@ -230,10 +230,11 @@ class PurchaseModel extends Model
             'payment_id' => null,
             'date' => $data['date'],
             'description' => "Purchase Invoice: {$data['invoice_no']}",
-            'debit' => $debitAmount,
-            'credit' => 0,
+            'debit' => 0,
+            'credit' => $creditAmount,
             'balance' => $newBalance,
-            'created_at' => date('Y-m-d H:i:s')
+            'created_at' => date('Y-m-d H:i:s'),
+            'ref_no' => $data['invoice_no'] ?? '',
         ]);
 
         // Insert initial payment if exists
@@ -250,10 +251,10 @@ class PurchaseModel extends Model
             $this->db->table('pos_purchase_payments')->insert($paymentData);
             $paymentId = $this->db->insertID();
 
-            // Create supplier ledger entry for initial payment (credit - decrease supplier payable)
+            // Create supplier ledger entry for initial payment (DEBIT - liability decrease - we paid)
             $currentBalance = $newBalance;
-            $creditAmount = $data['paid_amount'];
-            $newBalance = $currentBalance - $creditAmount;
+            $debitAmount = $data['paid_amount'];
+            $newBalance = $currentBalance - $debitAmount;
 
             $supplierLedgerModel->insert([
                 'supplier_id' => $data['supplier_id'],
@@ -261,10 +262,11 @@ class PurchaseModel extends Model
                 'payment_id' => $paymentId,
                 'date' => $data['date'],
                 'description' => "Payment for Invoice: {$data['invoice_no']} - {$data['payment_method']}",
-                'debit' => 0,
-                'credit' => $creditAmount,
+                'debit' => $debitAmount,
+                'credit' => 0,
                 'balance' => $newBalance,
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s'),
+                'ref_no' => $data['invoice_no'] ?? '',
             ]);
         }
 
@@ -320,30 +322,77 @@ class PurchaseModel extends Model
         // Delete old items
         $this->db->table('pos_purchase_items')->where('purchase_id', $id)->delete();
 
-        // Update ledger if grand_total has changed
-        if ($oldPurchase['grand_total'] != $data['grand_total']) {
-            // Delete old purchase ledger entry (not payment entries)
-            $this->db->table('pos_supplier_ledger')
-                ->where('purchase_id', $id)
-                ->where('payment_id', null)
-                ->delete();
+        // Update ledger if supplier or grand_total has changed
+        $supplierChanged = $oldPurchase['supplier_id'] != $data['supplier_id'];
+        $amountChanged = $oldPurchase['grand_total'] != $data['grand_total'];
 
-            // Create new ledger entry with updated amount
+        if ($supplierChanged || $amountChanged) {
+            if ($supplierChanged) {
+                // When supplier changes, delete ALL ledger entries (purchase + payments) from old supplier
+                $this->db->table('pos_supplier_ledger')
+                    ->where('purchase_id', $id)
+                    ->delete();
+
+                // Recalculate old supplier's balance after deleting all entries for this purchase
+                $supplierLedgerModel->recalculateBalances($oldPurchase['supplier_id']);
+            } else {
+                // If only amount changed (supplier same), delete only the purchase entry (not payments)
+                $this->db->table('pos_supplier_ledger')
+                    ->where('purchase_id', $id)
+                    ->where('payment_id', null)
+                    ->delete();
+            }
+
+            // Create new purchase ledger entry with updated amount for new supplier (CREDIT - liability increase)
             $currentBalance = $supplierLedgerModel->getSupplierBalance($data['supplier_id']);
-            $debitAmount = $data['grand_total'];
-            $newBalance = $currentBalance + $debitAmount;
+            $creditAmount = $data['grand_total'];
+            $newBalance = $currentBalance + $creditAmount;
+
+            // Use invoice_no from data if available, otherwise from old purchase
+            $invoiceNo = $data['invoice_no'] ?? $oldPurchase['invoice_no'];
 
             $supplierLedgerModel->insert([
                 'supplier_id' => $data['supplier_id'],
                 'purchase_id' => $id,
                 'payment_id' => null,
                 'date' => $data['date'],
-                'description' => "Purchase ID: {$id} (Updated)",
-                'debit' => $debitAmount,
-                'credit' => 0,
+                'description' => "Purchase ID: {$id} INV: {$invoiceNo} (Updated)",
+                'debit' => 0,
+                'credit' => $creditAmount,
                 'balance' => $newBalance,
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s'),
+                'ref_no' => $invoiceNo ?? '',
             ]);
+
+            // If supplier changed, we need to re-add all payment entries to the new supplier
+            if ($supplierChanged) {
+                // Get all payment records for this purchase
+                $payments = $this->db->table('pos_purchase_payments')
+                    ->where('purchase_id', $id)
+                    ->get()
+                    ->getResultArray();
+
+
+                // Re-add payment entries to new supplier's ledger
+                foreach ($payments as $payment) {
+                    $paymentBalance = $supplierLedgerModel->getSupplierBalance($data['supplier_id']);
+                    $debitAmount = (float)$payment['amount'];
+                    $newPaymentBalance = $paymentBalance - $debitAmount;
+
+                    $supplierLedgerModel->insert([
+                        'supplier_id' => $data['supplier_id'],
+                        'purchase_id' => $id,
+                        'payment_id' => $payment['id'],
+                        'date' => $payment['payment_date'],
+                        'description' => "Payment for Invoice: {$invoiceNo} - {$payment['payment_method']}",
+                        'debit' => $debitAmount,
+                        'credit' => 0,
+                        'balance' => $newPaymentBalance,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'ref_no' => $invoiceNo ?? '',
+                    ]);
+                }
+            }
         }
 
         // Update purchase header
@@ -516,10 +565,10 @@ class PurchaseModel extends Model
             'payment_status' => $paymentStatus
         ]);
 
-        // Create supplier ledger entry (credit - decrease supplier payable)
+        // Create supplier ledger entry (DEBIT - decreases liability/supplier payable)
         $currentBalance = $supplierLedgerModel->getSupplierBalance($purchase['supplier_id']);
-        $creditAmount = $paymentData['amount'];
-        $newBalance = $currentBalance - $creditAmount;
+        $debitAmount = $paymentData['amount'];
+        $newBalance = $currentBalance - $debitAmount;
 
         $supplierLedgerModel->insert([
             'supplier_id' => $purchase['supplier_id'],
@@ -527,8 +576,8 @@ class PurchaseModel extends Model
             'payment_id' => $paymentId,
             'date' => $paymentData['payment_date'],
             'description' => "Payment for Invoice: {$purchase['invoice_no']} - {$paymentData['payment_method']}",
-            'debit' => 0,
-            'credit' => $creditAmount,
+            'debit' => $debitAmount,
+            'credit' => 0,
             'balance' => $newBalance,
             'created_at' => date('Y-m-d H:i:s')
         ]);

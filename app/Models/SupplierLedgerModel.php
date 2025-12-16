@@ -16,13 +16,21 @@ class SupplierLedgerModel extends Model
         'debit',
         'credit',
         'balance',
+        'ref_no',
         'created_at'
     ];
 
     public function getSupplierBalance($supplierId)
     {
-        $last = $this->where('supplier_id', $supplierId)->orderBy('date', 'DESC')->orderBy('id', 'DESC')->first();
-        return $last ? $last['balance'] : 0;
+        $result = $this->select('COALESCE(SUM(credit), 0) - COALESCE(SUM(debit), 0) AS balance')
+            ->where('supplier_id', $supplierId)
+            ->first();
+
+        if (!$result) {
+            return 0;
+        }
+
+        return (float)($result['balance'] ?? 0);
     }
 
     public function computeBalanceUntil($supplierId, $date)
@@ -35,7 +43,7 @@ class SupplierLedgerModel extends Model
 
         $balance = 0;
         foreach ($entries as $entry) {
-            $balance += $entry['debit'] - $entry['credit'];
+            $balance += $entry['credit'] - $entry['debit'];
         }
         return $balance;
     }
@@ -45,10 +53,10 @@ class SupplierLedgerModel extends Model
         $builder = $this->where('supplier_id', $supplierId);
 
         if ($startDate) {
-            $builder->where('date >=', $startDate);
+            $builder->where('date >=', $startDate . ' 00:00:00');
         }
         if ($endDate) {
-            $builder->where('date <=', $endDate);
+            $builder->where('date <=', $endDate . ' 23:59:59');
         }
 
         return $builder->orderBy('date', 'ASC')->orderBy('id', 'ASC')->findAll();
@@ -60,5 +68,39 @@ class SupplierLedgerModel extends Model
             ->where('credit >', 0)
             ->orderBy('date', 'ASC')
             ->findAll();
+    }
+
+    /**
+     * Recalculate balances for all ledger entries of a supplier
+     * Used after deleting an entry to ensure running balances are correct
+     * @param int $supplierId
+     * @return bool
+     */
+    public function recalculateBalances($supplierId)
+    {
+        // Get all entries for this supplier in chronological order
+        $entries = $this->where('supplier_id', $supplierId)
+            ->orderBy('date', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        if (empty($entries)) {
+            return true;
+        }
+
+        // Get supplier's opening balance
+        $supplierModel = new \App\Models\SuppliersModel();
+        $supplier = $supplierModel->find($supplierId);
+        $balance = (float)($supplier['opening_balance'] ?? 0);
+
+        // Recalculate and update each entry
+        foreach ($entries as $entry) {
+            $balance += (float)$entry['credit'] - (float)$entry['debit'];
+
+            // Update the balance for this entry
+            $this->update($entry['id'], ['balance' => $balance]);
+        }
+
+        return true;
     }
 }
