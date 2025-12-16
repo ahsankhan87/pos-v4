@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\CategoriesModel;
 use CodeIgniter\Controller;
 
-class Categories extends Controller
+class Categories extends BaseController
 {
     protected $categoriesModel;
 

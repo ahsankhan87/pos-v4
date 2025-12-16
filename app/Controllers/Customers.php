@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Models\M_customers;
 
-class Customers extends \CodeIgniter\Controller
+class Customers extends BaseController
 {
     /**
      * Constructor.

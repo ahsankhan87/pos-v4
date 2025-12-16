@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Models\ExpenseCategoryModel;
 
-class ExpenseCategories extends \CodeIgniter\Controller
+class ExpenseCategories extends BaseController
 {
     public function __construct()
     {

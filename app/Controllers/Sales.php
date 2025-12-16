@@ -15,7 +15,7 @@ use App\Models\EmployeesModel;
 use App\Models\SalesReturnModel;
 use App\Models\SettingsModel;
 
-class Sales extends \CodeIgniter\Controller
+class Sales extends BaseController
 {
     protected $cartModel;
     protected $productModel;

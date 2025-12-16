@@ -6,7 +6,7 @@ use App\Models\EmployeesModel;
 use App\Models\UserModel;
 use CodeIgniter\Controller;
 
-class Employees extends Controller
+class Employees extends BaseController
 {
     protected $employeeModel;
     protected $userModel;

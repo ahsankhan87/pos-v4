@@ -6,7 +6,7 @@ use App\Models\UserModel;
 use App\Models\RoleModel;
 use CodeIgniter\Controller;
 
-class Users extends Controller
+class Users extends BaseController
 {
     protected $userModel;
     protected $roleModel;

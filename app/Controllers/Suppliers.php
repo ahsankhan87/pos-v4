@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Models\SuppliersModel;
 
-class Suppliers extends \CodeIgniter\Controller
+class Suppliers extends BaseController
 {
     /**
      * Constructor.
