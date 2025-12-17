@@ -47,8 +47,14 @@ $purchases = $purchases ?? [];
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-green-100 text-sm">Supplier ID</p>
-                            <p class="text-2xl font-bold">#<?= esc($supplier['id'] ?? '') ?></p>
+                            <p class="text-green-100 text-sm">Current Balance</p>
+                            <p class="text-2xl font-bold">
+                                <?php
+                                $ledgerModel = new \App\Models\SupplierLedgerModel();
+                                $balance = $ledgerModel->getSupplierBalance($supplier['id']);
+                                echo number_to_currency($balance, $currencySymbol, 2);
+                                ?>
+                            </p>
                         </div>
                     </div>
                 </div>

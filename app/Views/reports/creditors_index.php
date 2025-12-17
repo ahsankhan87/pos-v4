@@ -37,6 +37,16 @@
                     </tr>
                 </thead>
                 <tbody></tbody>
+                <tfoot>
+                    <tr class="font-semibold bg-gray-100">
+                        <td colspan="3">TOTALS</td>
+                        <td class="text-right"></td>
+                        <td class="text-right"></td>
+                        <td class="text-right"></td>
+                        <td class="text-right"></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -79,12 +89,81 @@
                     text: '<i class="fas fa-print mr-1"></i> Print',
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
+                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        modifier: {
+                            page: 'all'
+                        }
                     },
                     title: 'Creditors (Suppliers Balances)',
                     customize: function(win) {
                         var $body = $(win.document.body);
                         var $table = $body.find('table');
+
+                        // Calculate totals from table rows
+                        var openingTotal = 0,
+                            debitsTotal = 0,
+                            creditsTotal = 0,
+                            balanceTotal = 0;
+
+                        $table.find('tbody tr').each(function() {
+                            var $cells = $(this).find('td');
+                            // Helper function to extract numeric value from cell text
+                            var extractNumber = function(cellText) {
+                                // Remove all HTML tags and get plain text
+                                var text = cellText.replace(/<[^>]*>/g, '').trim();
+                                // Remove currency symbols, spaces
+                                text = text.replace(/[^\d.,\-]/g, '');
+                                if (!text) return 0;
+
+                                // Handle negative sign
+                                var isNegative = text.indexOf('-') !== -1;
+                                text = text.replace(/\-/g, '');
+
+                                // Split by dots and commas to identify format
+                                var parts = text.split(/[.,]/);
+                                var result = 0;
+
+                                if (parts.length === 1) {
+                                    // No separators - simple number
+                                    result = parseFloat(parts[0]) || 0;
+                                } else if (parts.length === 2) {
+                                    // One separator - could be thousands or decimal
+                                    if (parts[1].length === 2) {
+                                        // Likely decimal (e.g., "1000.00" or "1000,00")
+                                        result = parseFloat(parts[0] + '.' + parts[1]);
+                                    } else {
+                                        // Likely thousands separator - concatenate
+                                        result = parseFloat(parts.join(''));
+                                    }
+                                } else {
+                                    // Multiple separators - last one is decimal if 2 digits after it
+                                    var lastPart = parts[parts.length - 1];
+                                    if (lastPart.length === 2) {
+                                        var intPart = parts.slice(0, -1).join('');
+                                        result = parseFloat(intPart + '.' + lastPart);
+                                    } else {
+                                        result = parseFloat(parts.join(''));
+                                    }
+                                }
+
+                                return isNegative ? -result : result;
+                            };
+                            openingTotal += extractNumber($cells.eq(3).text());
+                            debitsTotal += extractNumber($cells.eq(4).text());
+                            creditsTotal += extractNumber($cells.eq(5).text());
+                            balanceTotal += extractNumber($cells.eq(6).text());
+                        });
+
+                        // Add footer row to print table
+                        var $tfoot = $table.find('tfoot');
+                        if ($tfoot.length === 0) {
+                            $tfoot = $('<tfoot></tfoot>').appendTo($table);
+                        } else {
+                            $tfoot.find('tr').remove();
+                        }
+                        var $footerRow = $('<tr></tr>').appendTo($tfoot);
+                        $footerRow.html('<td colspan="3" style="font-weight:bold;">TOTALS</td><td style="text-align:right;font-weight:bold;">' + currency + openingTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + debitsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + creditsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + balanceTotal.toFixed(2) + '</td><td></td>');
+
                         $body.css({
                             'font-size': '11px',
                             'line-height': '1.25',
@@ -112,6 +191,10 @@
                                 table.dataTable tbody tr td {\
                                     border-top: 1px solid #f0f0f0 !important;\
                                 }\
+                                table.dataTable tfoot tr {\
+                                    background-color: #f3f4f6 !important;\
+                                    border-top: 2px solid #ddd !important;\
+                                }\
                             </style>'
                         );
                     }
@@ -121,18 +204,73 @@
                     text: '<i class="fas fa-file-csv mr-1"></i> CSV',
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
+                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        modifier: {
+                            page: 'all'
+                        }
                     },
-                    title: 'creditors'
+                    title: 'creditors',
+                    customize: function(csv) {
+                        var api = table.api();
+                        var openingTotal = 0,
+                            debitsTotal = 0,
+                            creditsTotal = 0,
+                            balanceTotal = 0;
+                        api.column(3).data().each(function(val) {
+                            openingTotal += parseFloat(val) || 0;
+                        });
+                        api.column(4).data().each(function(val) {
+                            debitsTotal += parseFloat(val) || 0;
+                        });
+                        api.column(5).data().each(function(val) {
+                            creditsTotal += parseFloat(val) || 0;
+                        });
+                        api.column(6).data().each(function(val) {
+                            balanceTotal += parseFloat(val) || 0;
+                        });
+                        var footerRow = ',,' + currency + openingTotal.toFixed(2) + ',' + currency + debitsTotal.toFixed(2) + ',' + currency + creditsTotal.toFixed(2) + ',' + currency + balanceTotal.toFixed(2);
+                        return csv + '\n' + footerRow;
+                    }
                 },
                 {
                     extend: 'excelHtml5',
                     text: '<i class="fas fa-file-excel mr-1"></i> Excel',
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
+                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        modifier: {
+                            page: 'all'
+                        }
                     },
-                    title: 'creditors'
+                    title: 'creditors',
+                    customize: function(xlsx) {
+                        var api = table.api();
+                        var openingTotal = 0,
+                            debitsTotal = 0,
+                            creditsTotal = 0,
+                            balanceTotal = 0;
+                        api.column(3).data().each(function(val) {
+                            openingTotal += parseFloat(val) || 0;
+                        });
+                        api.column(4).data().each(function(val) {
+                            debitsTotal += parseFloat(val) || 0;
+                        });
+                        api.column(5).data().each(function(val) {
+                            creditsTotal += parseFloat(val) || 0;
+                        });
+                        api.column(6).data().each(function(val) {
+                            balanceTotal += parseFloat(val) || 0;
+                        });
+
+                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        var rowCount = $('row', sheet).length + 1;
+                        var footerRow = '<row r="' + rowCount + '"><c r="A' + rowCount + '" t="str"><v>TOTALS</v></c>' +
+                            '<c r="D' + rowCount + '" t="n"><v>' + openingTotal.toFixed(2) + '</v></c>' +
+                            '<c r="E' + rowCount + '" t="n"><v>' + debitsTotal.toFixed(2) + '</v></c>' +
+                            '<c r="F' + rowCount + '" t="n"><v>' + creditsTotal.toFixed(2) + '</v></c>' +
+                            '<c r="G' + rowCount + '" t="n"><v>' + balanceTotal.toFixed(2) + '</v></c></row>';
+                        $('sheetData', sheet).append(footerRow);
+                    }
                 }
             ],
             columns: [{
@@ -179,6 +317,31 @@
                 search: "_INPUT_",
                 searchPlaceholder: "Search suppliers...",
                 lengthMenu: "Show _MENU_ entries"
+            },
+            footerCallback: function(row, data, start, end, display) {
+                var api = this.api();
+                var openingTotal = 0;
+                var debitsTotal = 0;
+                var creditsTotal = 0;
+                var balanceTotal = 0;
+
+                api.column(3).data().each(function(val) {
+                    openingTotal += parseFloat(val) || 0;
+                });
+                api.column(4).data().each(function(val) {
+                    debitsTotal += parseFloat(val) || 0;
+                });
+                api.column(5).data().each(function(val) {
+                    creditsTotal += parseFloat(val) || 0;
+                });
+                api.column(6).data().each(function(val) {
+                    balanceTotal += parseFloat(val) || 0;
+                });
+
+                $(api.column(3).footer()).html(currency + openingTotal.toFixed(2));
+                $(api.column(4).footer()).html(currency + debitsTotal.toFixed(2));
+                $(api.column(5).footer()).html(currency + creditsTotal.toFixed(2));
+                $(api.column(6).footer()).html('<span class="' + (balanceTotal >= 0 ? 'text-red-600' : 'text-green-700') + ' font-semibold">' + currency + balanceTotal.toFixed(2) + '</span>');
             }
         });
 

@@ -1,6 +1,8 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
-
+<?php
+$currencySymbol = session()->get('currency_symbol') ?: '$';
+?>
 <div class="min-h-screen bg-slate-100">
     <!-- Top Bar -->
     <div class="bg-white shadow-sm border-b border-gray-200">
@@ -37,7 +39,7 @@
                         <?php
                         $ledgerModel = new \App\Models\SupplierLedgerModel();
                         $balance = $ledgerModel->getSupplierBalance($supplier['id']);
-                        echo number_to_currency($balance, 'PKR', 'en_PK', 2);
+                        echo number_to_currency($balance, $currencySymbol, 2);
                         ?>
                     </p>
                 </div>

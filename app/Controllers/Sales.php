@@ -366,7 +366,7 @@ class Sales extends BaseController
                 // Ledger entry for credit sale
                 if ($payment_type === 'credit') {
                     $ledgerModel = new \App\Models\CustomerLedgerModel();
-                    $ledgerModel->insert([
+                    $ledgerInserted = $ledgerModel->insert([
                         'customer_id' => $customer_id,
                         'sale_id' => $sale_id,
                         'date' => $sale_date,
@@ -377,6 +377,11 @@ class Sales extends BaseController
                         'ref_no' => $effectiveInvoiceNo,
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
+                    if (!$ledgerInserted) {
+                        $ledgerErrors = $ledgerModel->errors();
+                        $dbError = $ledgerModel->db->error();
+                        throw new \Exception('Failed to create ledger entry for credit sale. ' . (!empty($ledgerErrors) ? json_encode($ledgerErrors) . ' ' : '') . (!empty($dbError) && ($dbError['code'] ?? 0) ? ('DB Error: ' . $dbError['message']) : ''));
+                    }
                 }
                 // Log the sale creation/completion
                 logAction('sale_created', 'Sale ID: ' . $sale_id . ', Customer ID: ' . $customer_id . ', Total: ' . $total . ($isDraftCompletion ? ' (completed draft)' : ''));
@@ -457,16 +462,6 @@ class Sales extends BaseController
 
             // Commit transaction
             $db->transComplete();
-
-            // Clear cart from session on successful sale
-            $sid = $this->request->getPost('sale_session_id');
-            if ($sid) {
-                $posSales = session()->get('pos_sales') ?? [];
-                if (isset($posSales[$sid])) {
-                    unset($posSales[$sid]);
-                    session()->set('pos_sales', $posSales);
-                }
-            }
 
             // Generate receipt
             return redirect()->to(site_url("/receipts/generate/{$sale_id}"))

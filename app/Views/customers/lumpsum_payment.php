@@ -48,8 +48,14 @@ $invoices = $invoices ?? [];
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-blue-100 text-sm">Customer ID</p>
-                            <p class="text-2xl font-bold">#<?= esc($customer['id'] ?? '') ?></p>
+                            <p class="text-blue-100 text-sm">Current Balance</p>
+                            <p class="text-2xl font-bold">
+                                <?php
+                                $ledgerModel = new \App\Models\CustomerLedgerModel();
+                                $balance = $ledgerModel->getCustomerBalance($customer['id']);
+                                echo number_to_currency($balance, $currencySymbol, 2);
+                                ?>
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -107,7 +107,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Summary Box -->
-        <?php if (!empty($transactions)): ?>
+        <?php if (!empty($transactions) || $openingBalance != 0): ?>
             <div class="bg-blue-50 border-l-4 border-r-1 border-blue-500 rounded-lg p-2 mb-2">
                 <h3 class="text-sm font-bold text-gray-900 mb-3">Summary</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -178,9 +178,9 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <?php if ($openingBalance != 0 && ($from || $to)): ?>
+                        <?php if ($openingBalance != 0): ?>
                             <tr class="bg-blue-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= esc($from ?? 'N/A') ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= esc($from ?? 'Start') ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">Opening Balance</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">-</td>

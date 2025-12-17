@@ -32,6 +32,17 @@ class SupplierLedgerModel extends Model
 
         return (float)($result['balance'] ?? 0);
     }
+    public function getOpeningBalance($supplierId)
+    {
+        $supplierModel = new \App\Models\SuppliersModel();
+        $supplier = $supplierModel->find($supplierId);
+
+        if (!$supplier) {
+            return 0;
+        }
+
+        return (float)($supplier['opening_balance'] ?? 0);
+    }
 
     public function computeBalanceUntil($supplierId, $date)
     {
