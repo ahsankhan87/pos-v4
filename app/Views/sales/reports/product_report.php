@@ -34,6 +34,18 @@ if (!function_exists('money_fmt')) {
     }
 }
 
+if (!function_exists('avg_price')) {
+    function avg_price($sales, $qty)
+    {
+        $sales = (float)$sales;
+        $qty = (float)$qty;
+        if ($qty <= 0) {
+            return 0.0;
+        }
+        return $sales / $qty;
+    }
+}
+
 if (!function_exists('formatQuantity')) {
     function formatQuantity($pieces, $cartonSize)
     {
@@ -224,14 +236,21 @@ if (!function_exists('formatQuantity')) {
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     <?php foreach ($items as $item): ?>
+                        <?php
+                        $rowQty = (float)($item['total_qty'] ?? 0);
+                        $rowSales = (float)($item['total_sales'] ?? 0);
+                        $rowAvg = avg_price($rowSales, $rowQty);
+                        ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-3 text-sm text-gray-900"><?= esc($item['product_name']) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= formatQuantity((float)($item['total_qty'] ?? 0), (float)($item['carton_size'] ?? 0)) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($item['total_sales'] ?? 0) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= formatQuantity($rowQty, (float)($item['carton_size'] ?? 0)) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowSales) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowAvg) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -240,6 +259,7 @@ if (!function_exists('formatQuantity')) {
                         <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Totals</td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
+                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></td>
                     </tr>
                 </tfoot>
             </table>

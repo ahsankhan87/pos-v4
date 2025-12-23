@@ -1,7 +1,46 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Sales Analytics</h1>
+    <div class="flex flex-col gap-3 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h1 class="text-2xl font-bold">Sales Analytics</h1>
+            <a class="px-3 py-1.5 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600 text-sm font-medium bg-white"
+                href="<?= site_url('analytics/comparative') ?>?range=<?= urlencode($range ?? 'last30_days') ?>">
+                Comparative Analysis
+            </a>
+        </div>
+
+        <?php
+        $currentRange = $range ?? 'last30_days';
+        $ranges = [
+            'last30_days' => 'Last 30 Days',
+            'this_month' => 'This Month',
+            'last_month' => 'Last Month',
+            'last3_months' => 'Last 3 Months',
+            'last6_months' => 'Last 6 Months',
+            'this_year' => 'This Year',
+            'last_year' => 'Last Year',
+        ];
+        ?>
+
+        <div class="flex flex-wrap gap-2">
+            <?php foreach ($ranges as $key => $label): ?>
+                <?php
+                $isActive = ((string)$currentRange === (string)$key);
+                $cls = $isActive
+                    ? 'px-3 py-1.5 rounded-full bg-blue-600 text-white text-sm font-medium'
+                    : 'px-3 py-1.5 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600 text-sm font-medium bg-white';
+                ?>
+                <a class="<?= $cls ?>" href="<?= site_url('analytics') ?>?range=<?= urlencode($key) ?>">
+                    <?= esc($label) ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="text-sm text-gray-500">
+            Showing data from <span class="font-medium text-gray-700"><?= esc($expenseFrom ?? '') ?></span> to <span class="font-medium text-gray-700"><?= esc($expenseTo ?? '') ?></span>
+        </div>
+    </div>
 
     <!-- Summary Cards -->
     <!-- <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -27,13 +66,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Daily Sales Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Daily Sales (Last 30 Days)</h2>
+            <h2 class="text-xl font-semibold mb-4">Daily Sales</h2>
             <canvas id="dailySalesChart" height="300"></canvas>
         </div>
 
         <!-- Monthly Sales Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Monthly Sales (Last 12 Months)</h2>
+            <h2 class="text-xl font-semibold mb-4">Monthly Sales</h2>
             <canvas id="monthlySalesChart" height="300"></canvas>
         </div>
     </div>
@@ -41,7 +80,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Top Products Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Top Selling Products (Last 30 Days)</h2>
+            <h2 class="text-xl font-semibold mb-4">Top Selling Products</h2>
             <canvas id="topProductsChart" height="300"></canvas>
         </div>
 
@@ -52,11 +91,22 @@
         </div>
     </div>
 
+    <!-- Expense Category Report -->
+    <div class="grid grid-cols-2 gap-6 mt-6">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-1">Expenses by Category</h2>
+            <p class="text-sm text-gray-500 mb-4">Range: <?= esc($expenseFrom ?? '') ?> to <?= esc($expenseTo ?? '') ?></p>
+            <canvas id="expenseCategoryChart" height="220"></canvas>
+        </div>
+    </div>
+
 </div>
 
 <!-- Chart.js -->
 <script src="<?php echo base_url() ?>assets/js/chartjs/chart.js"></script>
 <script>
+    const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
+
     // Daily Sales Chart
     const dailyCtx = document.getElementById('dailySalesChart').getContext('2d');
     const dailyChart = new Chart(dailyCtx, {
@@ -245,5 +295,54 @@
             }
         }
     });
+
+    // Expense Category Report (Last 30 Days)
+    const expenseCatEl = document.getElementById('expenseCategoryChart');
+    if (expenseCatEl) {
+        const expenseCtx = expenseCatEl.getContext('2d');
+        const expenseLabels = <?= json_encode(array_column($expenseCategories ?? [], 'category_name')) ?>;
+        const expenseTotals = <?= json_encode(array_map(function ($v) {
+                                    return (float)$v;
+                                }, array_column($expenseCategories ?? [], 'total'))) ?>;
+
+        const baseColors = [
+            'rgba(59, 130, 246, 0.7)',
+            'rgba(16, 185, 129, 0.7)',
+            'rgba(245, 158, 11, 0.7)',
+            'rgba(239, 68, 68, 0.7)',
+            'rgba(139, 92, 246, 0.7)',
+            'rgba(20, 184, 166, 0.7)',
+            'rgba(236, 72, 153, 0.7)',
+            'rgba(75, 85, 99, 0.7)'
+        ];
+        const borderColors = baseColors.map(c => c.replace('0.7', '1'));
+        const bg = expenseLabels.map((_, i) => baseColors[i % baseColors.length]);
+        const bd = expenseLabels.map((_, i) => borderColors[i % borderColors.length]);
+
+        new Chart(expenseCtx, {
+            type: 'doughnut',
+            data: {
+                labels: expenseLabels,
+                datasets: [{
+                    label: 'Total Expense',
+                    data: expenseTotals,
+                    backgroundColor: bg,
+                    borderColor: bd,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + currencySymbol + ' ' + (context.raw ?? 0).toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 </script>
 <?= $this->endSection() ?>

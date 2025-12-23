@@ -494,14 +494,14 @@
                             class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </td>
                     <td class="px-3 py-3 text-center">
-                        <input type="number" value="${item.price}" min="0" step="0.01" 
+                        <input type="number" value="${item.price}" min="0" step="0.001" 
                             onchange="updatePrice(${idx}, this.value)"
                             data-field="price" data-row="${idx}"
                             class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </td>
                     <td class="px-3 py-3 text-center">
                         <div class="flex items-center gap-1">
-                            <input type="number" value="${item.discount}" min="0" step="0.01" 
+                            <input type="number" value="${item.discount}" min="0" step="0.001" 
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-field="discount" data-row="${idx}"
                                 class="cart-field w-16 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">

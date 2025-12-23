@@ -2,7 +2,7 @@
 
 namespace App\Services\Licensing;
 
-use App\Config\Billing as BillingConfig;
+use App\Config\Billingcfg as BillingConfig;
 use App\Models\LicenseModel;
 use App\Models\PlanModel;
 use App\Models\SubscriptionModel;
@@ -16,7 +16,7 @@ class LicenseService
 
     public function __construct()
     {
-        $this->billing = config('Billing');
+        $this->billing = config('Billingcfg');
         $this->licenseModel = new LicenseModel();
         $this->planModel = new PlanModel();
         $this->subscriptionModel = new SubscriptionModel();
@@ -24,7 +24,8 @@ class LicenseService
 
     protected function secret()
     {
-        $secret = $this->billing->licenseSecret;
+        // $secret = $this->billing->licenseSecret;
+        $secret = getenv('LICENSE_SECRET') ?: "";
         if (!$secret) {
             // Fallback to app encryption key or app.baseURL to avoid empty secret in dev
             $secret = getenv('encryption.key') ?: (getenv('app.baseURL') ?: 'kasbook-dev-secret');

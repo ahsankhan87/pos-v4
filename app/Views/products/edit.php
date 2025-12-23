@@ -167,11 +167,12 @@
                             <div class="flex gap-2">
                                 <input type="text" name="barcode" id="product-barcode" value="<?= esc(old('barcode', $product['barcode'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Leave blank to keep existing">
                             </div>
-                            <?php if (!empty($errors['barcode'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['barcode']) ?></p><?php endif; ?>
-                            <?php $img = barcode_image($product['barcode'] ?? ''); ?>
-                            <div id="barcode-preview-wrap" class="mt-2 border border-dashed rounded-lg p-3 bg-gray-50 <?= empty($product['barcode']) ? 'hidden' : '' ?>">
-                                <img id="barcode-preview" src="<?= $img ?>" alt="Barcode preview" class="max-h-24 mx-auto" />
-                            </div>
+                            <?php if (!empty($errors['barcode'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['barcode']) ?></p>
+                                <?php $img = barcode_image($product['barcode'] ?? ''); ?>
+                                <div id="barcode-preview-wrap" class="mt-2 border border-dashed rounded-lg p-3 bg-gray-50 <?= empty($product['barcode']) ? 'hidden' : '' ?>">
+                                    <img id="barcode-preview" src="<?= $img ?>" alt="Barcode preview" class="max-h-24 mx-auto" />
+                                </div>
+                            <?php endif; ?>
                             <p class="text-xs text-gray-500">Tip: You can scan or type a barcode. Leave blank to keep existing.</p>
                         </div>
                     </div>

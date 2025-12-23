@@ -1706,4 +1706,598 @@ class Sales extends BaseController
         $pdf->Output($filename, 'D');
         exit;
     }
+
+    // Inactive Customers Report (Not bought in last 30 days)
+    protected function inactiveCustomersData(int $storeId, int $days, $area): array
+    {
+        $area = trim((string)$area);
+        if ($area === '') {
+            $area = null;
+        }
+
+        $customerModel = new \App\Models\M_customers();
+        $salesModel = new \App\Models\M_sales();
+
+        // Load distinct areas for filter dropdown
+        $areaRows = (new \App\Models\M_customers())
+            ->forStore($storeId)
+            ->select('area')
+            ->where('area !=', '')
+            ->groupBy('area')
+            ->orderBy('area', 'ASC')
+            ->findAll();
+        $areas = [];
+        foreach ($areaRows as $r) {
+            $a = trim((string)($r['area'] ?? ''));
+            if ($a !== '') {
+                $areas[] = $a;
+            }
+        }
+
+        // Get all active customers for the store (+ optional area filter)
+        $customerQuery = $customerModel->forStore($storeId)->orderBy('name', 'ASC');
+        if ($area !== null) {
+            $customerQuery->where('area', $area);
+        }
+        $allCustomers = $customerQuery->findAll();
+
+        // Get customers who made purchases in the last X days
+        $cutoffDate = date('Y-m-d', strtotime('-' . $days . ' days'));
+        $recentCustomers = $salesModel
+            ->distinct()
+            ->select('customer_id')
+            ->where('store_id', $storeId)
+            ->where('created_at >=', $cutoffDate . ' 00:00:00')
+            ->findAll();
+
+        $recentCustomerIds = array_column($recentCustomers, 'customer_id');
+
+        // Find inactive customers (those not in recent list)
+        $inactiveCustomers = [];
+        foreach ($allCustomers as $customer) {
+            if (!in_array($customer['id'], $recentCustomerIds)) {
+                // Get last purchase date for this customer
+                $lastSale = $salesModel
+                    ->where('customer_id', $customer['id'])
+                    ->where('store_id', $storeId)
+                    ->orderBy('created_at', 'DESC')
+                    ->first();
+
+                $inactiveCustomers[] = [
+                    'id' => $customer['id'],
+                    'name' => $customer['name'],
+                    'email' => $customer['email'] ?? '',
+                    'phone' => $customer['phone'] ?? '',
+                    'area' => $customer['area'] ?? '',
+                    'last_purchase' => $lastSale ? $lastSale['created_at'] : 'Never',
+                    'days_inactive' => $lastSale ? floor((strtotime('now') - strtotime($lastSale['created_at'])) / 86400) : 'N/A',
+                ];
+            }
+        }
+
+        // Sort by last purchase date (most recent first)
+        usort($inactiveCustomers, function ($a, $b) {
+            $dateA = $a['last_purchase'] === 'Never' ? 0 : strtotime($a['last_purchase']);
+            $dateB = $b['last_purchase'] === 'Never' ? 0 : strtotime($b['last_purchase']);
+            return $dateB - $dateA;
+        });
+
+        return [
+            'customers' => $inactiveCustomers,
+            'cutoffDate' => $cutoffDate,
+            'area' => $area,
+            'areas' => $areas,
+        ];
+    }
+
+    public function inactiveCustomersReport()
+    {
+        $days = (int)($this->request->getGet('days') ?? 30);
+        $area = $this->request->getGet('area');
+
+        $storeId = session('store_id');
+        $data = $this->inactiveCustomersData($storeId, $days, $area);
+        return view('sales/reports/inactive_customers_report', [
+            'title' => 'Inactive Customers Report (Last ' . $days . ' Days)',
+            'customers' => $data['customers'],
+            'days' => $days,
+            'cutoffDate' => $data['cutoffDate'],
+            'area' => $data['area'],
+            'areas' => $data['areas'],
+        ]);
+    }
+
+    public function inactiveCustomersReportPrint()
+    {
+        $days = (int)($this->request->getGet('days') ?? 30);
+        $area = $this->request->getGet('area');
+        $storeId = session('store_id');
+        $data = $this->inactiveCustomersData($storeId, $days, $area);
+        return view('sales/reports/inactive_customers_report_print', [
+            'title' => 'Inactive Customers Report (Last ' . $days . ' Days) - Print',
+            'customers' => $data['customers'],
+            'days' => $days,
+            'cutoffDate' => $data['cutoffDate'],
+            'area' => $data['area'],
+        ]);
+    }
+
+    public function exportInactiveCustomersExcel()
+    {
+        $days = (int)($this->request->getGet('days') ?? 30);
+        $area = $this->request->getGet('area');
+        $storeId = session('store_id');
+        $data = $this->inactiveCustomersData($storeId, $days, $area);
+        $inactiveCustomers = [];
+        foreach ($data['customers'] as $customer) {
+            $inactiveCustomers[] = [
+                $customer['name'] ?? '',
+                $customer['email'] ?? '',
+                $customer['phone'] ?? '',
+                $customer['last_purchase'] ?? '',
+                $customer['days_inactive'] ?? '',
+            ];
+        }
+
+        header('Content-Type: application/vnd.ms-excel');
+        $filename = 'inactive_customers_report_' . $days . 'days_' . date('Y-m-d') . '.xls';
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Customer', 'Email', 'Phone', 'Last Purchase', 'Days Inactive']);
+        foreach ($inactiveCustomers as $customer) {
+            fputcsv($out, $customer);
+        }
+        fclose($out);
+        exit;
+    }
+
+    public function exportInactiveCustomersPDF()
+    {
+        $days = (int)($this->request->getGet('days') ?? 30);
+        $area = $this->request->getGet('area');
+        $storeId = session('store_id');
+        $data = $this->inactiveCustomersData($storeId, $days, $area);
+        $inactiveCustomers = $data['customers'];
+
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
+        $pdf = new \TCPDF();
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 10);
+        $title = 'Inactive Customers Report (Last ' . $days . ' Days)';
+        if (!empty($data['area'])) {
+            $title .= ' - Area: ' . $data['area'];
+        }
+        $html = '<h2>' . $title . '</h2><table border="1" cellpadding="4"><tr>' .
+            '<th>Customer</th><th>Email</th><th>Phone</th><th>Last Purchase</th><th>Days Inactive</th></tr>';
+        foreach ($inactiveCustomers as $customer) {
+            $html .= '<tr><td>' . $customer['name'] . '</td><td>' .
+                $customer['email'] . '</td><td>' .
+                $customer['phone'] . '</td><td>' .
+                $customer['last_purchase'] . '</td><td>' .
+                $customer['days_inactive'] . '</td></tr>';
+        }
+        $html .= '</table>';
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $filename = 'inactive_customers_report_' . $days . 'days_' . date('Y-m-d') . '.pdf';
+        $pdf->Output($filename, 'D');
+        exit;
+    }
+
+    protected function taxReportSummary($storeId, $from, $to)
+    {
+        $db = \Config\Database::connect();
+        $row = $db->table('pos_sales')
+            ->select('COALESCE(SUM(total_tax),0) as total_tax')
+            ->where('store_id', $storeId)
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59')
+            ->get()
+            ->getRowArray();
+
+        return [
+            'total_tax' => (float)($row['total_tax'] ?? 0),
+        ];
+    }
+
+    protected function taxReportDailyRows($storeId, $from, $to)
+    {
+        $db = \Config\Database::connect();
+        $rows = $db->table('pos_sales')
+            ->select('DATE(created_at) as sale_date, COALESCE(SUM(total_tax),0) as total_tax')
+            ->where('store_id', $storeId)
+            ->where('created_at >=', $from . ' 00:00:00')
+            ->where('created_at <=', $to . ' 23:59:59')
+            ->groupBy('DATE(created_at)')
+            ->orderBy('sale_date', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = [
+                'sale_date' => (string)($r['sale_date'] ?? ''),
+                'total_tax' => (float)($r['total_tax'] ?? 0),
+            ];
+        }
+
+        return $out;
+    }
+
+    protected function taxReportPurchaseSummary($storeId, $from, $to)
+    {
+        $fromTs = $from . ' 00:00:00';
+        $toTs = $to . ' 23:59:59';
+        $db = \Config\Database::connect();
+        $row = $db->table('pos_purchases')
+            ->select('COALESCE(SUM(tax_amount),0) as purchase_tax')
+            ->where('store_id', $storeId)
+            ->where('date >=', $fromTs)
+            ->where('date <=', $toTs)
+            ->whereIn('status', ['received', 'pending', 'ordered'])
+            ->get()
+            ->getRowArray();
+
+        return [
+            'purchase_tax' => (float)($row['purchase_tax'] ?? 0),
+        ];
+    }
+
+    protected function taxReportPurchaseDailyRows($storeId, $from, $to)
+    {
+        $fromTs = $from . ' 00:00:00';
+        $toTs = $to . ' 23:59:59';
+        $db = \Config\Database::connect();
+        $rows = $db->table('pos_purchases')
+            ->select('DATE(date) as purchase_date, COALESCE(SUM(tax_amount),0) as purchase_tax')
+            ->where('store_id', $storeId)
+            ->where('date >=', $fromTs)
+            ->where('date <=', $toTs)
+            ->whereIn('status', ['received', 'pending', 'ordered'])
+            ->groupBy('DATE(date)')
+            ->orderBy('purchase_date', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = [
+                'date' => (string)($r['purchase_date'] ?? ''),
+                'purchase_tax' => (float)($r['purchase_tax'] ?? 0),
+            ];
+        }
+        return $out;
+    }
+
+    public function taxReport()
+    {
+        $from = $this->request->getGet('from') ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+
+        $storeId = session('store_id');
+
+        $summary = $this->taxReportSummary($storeId, $from, $to);
+        $purchaseSummary = $this->taxReportPurchaseSummary($storeId, $from, $to);
+
+        $salesDaily = $this->taxReportDailyRows($storeId, $from, $to);
+        $purchaseDaily = $this->taxReportPurchaseDailyRows($storeId, $from, $to);
+
+        // Merge daily rows by date
+        $map = [];
+        foreach ($salesDaily as $r) {
+            $d = (string)($r['sale_date'] ?? '');
+            if ($d === '') {
+                continue;
+            }
+            $map[$d] = $r;
+            $map[$d]['purchase_tax'] = 0.0;
+            $map[$d]['net_tax'] = (float)($r['total_tax'] ?? 0);
+        }
+        foreach ($purchaseDaily as $p) {
+            $d = (string)($p['date'] ?? '');
+            if ($d === '') {
+                continue;
+            }
+            if (!isset($map[$d])) {
+                $map[$d] = [
+                    'sale_date' => $d,
+                    'total_tax' => 0.0,
+                ];
+            }
+            $map[$d]['purchase_tax'] = (float)($p['purchase_tax'] ?? 0);
+            $map[$d]['net_tax'] = (float)($map[$d]['total_tax'] ?? 0) - (float)($map[$d]['purchase_tax'] ?? 0);
+        }
+        ksort($map);
+        $dailyRows = array_values($map);
+
+        $summary['purchase_tax'] = (float)($purchaseSummary['purchase_tax'] ?? 0);
+        $summary['net_tax'] = (float)($summary['total_tax'] ?? 0) - (float)($summary['purchase_tax'] ?? 0);
+
+        // Previous period comparison (same number of days)
+        $daysLen = (int)floor((strtotime($to) - strtotime($from)) / 86400) + 1;
+        $prevTo = date('Y-m-d', strtotime($from . ' -1 day'));
+        $prevFrom = date('Y-m-d', strtotime($prevTo . ' -' . max(0, $daysLen - 1) . ' days'));
+        $prevSummary = $this->taxReportSummary($storeId, $prevFrom, $prevTo);
+        $prevPurchaseSummary = $this->taxReportPurchaseSummary($storeId, $prevFrom, $prevTo);
+
+        $prevSummary['purchase_tax'] = (float)($prevPurchaseSummary['purchase_tax'] ?? 0);
+        $prevSummary['net_tax'] = (float)($prevSummary['total_tax'] ?? 0) - (float)($prevSummary['purchase_tax'] ?? 0);
+
+        $taxGrowth = ($prevSummary['total_tax'] ?? 0) > 0 ? (($summary['total_tax'] - $prevSummary['total_tax']) / $prevSummary['total_tax']) * 100 : null;
+        $purchaseTaxGrowth = ($prevSummary['purchase_tax'] ?? 0) > 0 ? (($summary['purchase_tax'] - $prevSummary['purchase_tax']) / $prevSummary['purchase_tax']) * 100 : null;
+
+        return view('sales/reports/tax_report', [
+            'title' => 'Tax Report',
+            'from' => $from,
+            'to' => $to,
+            'summary' => $summary,
+            'dailyRows' => $dailyRows,
+            'prevFrom' => $prevFrom,
+            'prevTo' => $prevTo,
+            'prevSummary' => $prevSummary,
+            'taxGrowth' => $taxGrowth,
+            'purchaseTaxGrowth' => $purchaseTaxGrowth,
+        ]);
+    }
+
+    // Expense Report
+    protected function expenseReportRows(string $from, string $to): array
+    {
+        $db = \Config\Database::connect();
+        $storeId = session('store_id');
+
+        $builder = $db->table('pos_expenses e')
+            ->select('e.*, c.name as category_name')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to)
+            ->orderBy('e.date', 'DESC');
+
+        if ($storeId !== null && $storeId !== '') {
+            $builder->where('e.store_id', $storeId);
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
+    public function expenseReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $expenses = $this->expenseReportRows($from, $to);
+
+        $totalAmount = 0;
+        $totalTax = 0;
+        foreach ($expenses as $expense) {
+            $totalAmount += (float)($expense['amount'] ?? 0);
+            $totalTax += (float)($expense['tax'] ?? 0);
+        }
+
+        return view('sales/reports/expense_report', [
+            'title' => 'Expense Report',
+            'expenses' => $expenses,
+            'from' => $from,
+            'to' => $to,
+            'totalAmount' => $totalAmount,
+            'totalTax' => $totalTax,
+        ]);
+    }
+
+    public function expenseReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $expenses = $this->expenseReportRows($from, $to);
+
+        $totalAmount = 0;
+        $totalTax = 0;
+        foreach ($expenses as $expense) {
+            $totalAmount += (float)($expense['amount'] ?? 0);
+            $totalTax += (float)($expense['tax'] ?? 0);
+        }
+
+        return view('sales/reports/expense_report_print', [
+            'title' => 'Expense Report - Print',
+            'expenses' => $expenses,
+            'from' => $from,
+            'to' => $to,
+            'totalAmount' => $totalAmount,
+            'totalTax' => $totalTax,
+        ]);
+    }
+
+    public function exportExpenseReportExcel()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $expenses = $this->expenseReportRows($from, $to);
+
+        header('Content-Type: application/vnd.ms-excel');
+        $filename = $from === $to ? ('expense_report_' . $from . '.xls') : ('expense_report_' . $from . '_to_' . $to . '.xls');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Date', 'Category', 'Vendor', 'Description', 'Amount', 'Tax', 'Total', 'Notes']);
+        foreach ($expenses as $expense) {
+            $total = ((float)($expense['amount'] ?? 0)) + ((float)($expense['tax'] ?? 0));
+            fputcsv($out, [
+                $expense['date'],
+                $expense['category_name'] ?? 'Uncategorized',
+                $expense['vendor'] ?? '',
+                $expense['description'] ?? '',
+                number_format((float)($expense['amount'] ?? 0), 2),
+                number_format((float)($expense['tax'] ?? 0), 2),
+                number_format($total, 2),
+                $expense['notes'] ?? '',
+            ]);
+        }
+        fclose($out);
+        exit;
+    }
+
+    public function exportExpenseReportPDF()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $expenses = $this->expenseReportRows($from, $to);
+
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
+        $pdf = new \TCPDF();
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 10);
+        $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
+        $html = '<h2>Expense Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
+            '<th>Date</th><th>Category</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Tax</th><th>Total</th><th>Notes</th></tr>';
+        foreach ($expenses as $expense) {
+            $total = ((float)($expense['amount'] ?? 0)) + ((float)($expense['tax'] ?? 0));
+            $html .= '<tr><td>' . $expense['date'] . '</td><td>' .
+                ($expense['category_name'] ?? 'Uncategorized') . '</td><td>' .
+                ($expense['vendor'] ?? '') . '</td><td>' .
+                ($expense['description'] ?? '') . '</td><td>' .
+                number_format((float)($expense['amount'] ?? 0), 2) . '</td><td>' .
+                number_format((float)($expense['tax'] ?? 0), 2) . '</td><td>' .
+                number_format($total, 2) . '</td><td>' .
+                ($expense['notes'] ?? '') . '</td></tr>';
+        }
+        $html .= '</table>';
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $filename = $from === $to ? ('expense_report_' . $from . '.pdf') : ('expense_report_' . $from . '_to_' . $to . '.pdf');
+        $pdf->Output($filename, 'D');
+        exit;
+    }
+
+    // Category-wise Expense Report
+    public function expenseCategoryReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $db = \Config\Database::connect();
+        $storeId = session('store_id');
+
+        $builder = $db->table('pos_expenses e')
+            ->select('e.category_id, c.name as category_name, COUNT(e.id) as expense_count, COALESCE(SUM(e.amount),0) as total_amount, COALESCE(SUM(e.tax),0) as total_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to)
+            ->groupBy('e.category_id')
+            ->orderBy('total_amount', 'DESC');
+
+        if ($storeId !== null && $storeId !== '') {
+            $builder->where('e.store_id', $storeId);
+        }
+
+        $rows = $builder->get()->getResultArray();
+
+        $grandAmount = 0.0;
+        $grandTax = 0.0;
+        $grandCount = 0;
+        foreach ($rows as $r) {
+            $grandAmount += (float)($r['total_amount'] ?? 0);
+            $grandTax += (float)($r['total_tax'] ?? 0);
+            $grandCount += (int)($r['expense_count'] ?? 0);
+        }
+
+        return view('sales/reports/expense_category_report', [
+            'title' => 'Category-wise Expense Report',
+            'rows' => $rows,
+            'from' => $from,
+            'to' => $to,
+            'grandAmount' => $grandAmount,
+            'grandTax' => $grandTax,
+            'grandCount' => $grandCount,
+        ]);
+    }
+
+    public function expenseCategoryReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $db = \Config\Database::connect();
+        $storeId = session('store_id');
+
+        $builder = $db->table('pos_expenses e')
+            ->select('e.category_id, c.name as category_name, COUNT(e.id) as expense_count, COALESCE(SUM(e.amount),0) as total_amount, COALESCE(SUM(e.tax),0) as total_tax')
+            ->join('pos_expense_categories c', 'c.id = e.category_id', 'left')
+            ->where('e.date >=', $from)
+            ->where('e.date <=', $to)
+            ->groupBy('e.category_id')
+            ->orderBy('total_amount', 'DESC');
+
+        if ($storeId !== null && $storeId !== '') {
+            $builder->where('e.store_id', $storeId);
+        }
+
+        $rows = $builder->get()->getResultArray();
+
+        $grandAmount = 0.0;
+        $grandTax = 0.0;
+        $grandCount = 0;
+        foreach ($rows as $r) {
+            $grandAmount += (float)($r['total_amount'] ?? 0);
+            $grandTax += (float)($r['total_tax'] ?? 0);
+            $grandCount += (int)($r['expense_count'] ?? 0);
+        }
+
+        return view('sales/reports/expense_category_report_print', [
+            'title' => 'Category-wise Expense Report - Print',
+            'rows' => $rows,
+            'from' => $from,
+            'to' => $to,
+            'grandAmount' => $grandAmount,
+            'grandTax' => $grandTax,
+            'grandCount' => $grandCount,
+        ]);
+    }
 }

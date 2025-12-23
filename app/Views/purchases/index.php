@@ -110,7 +110,7 @@
                     d.status = currentStatus || '';
                 }
             },
-            dom: 'Bfrtip',
+            dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
             buttons: [{
                     extend: 'excel',
                     text: '<i class="fas fa-file-excel"></i> Excel',

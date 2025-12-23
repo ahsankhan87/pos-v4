@@ -149,14 +149,60 @@ function money_fmt($v)
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="flex items-end gap-2">
+                <div class="flex items-end gap-2 flex">
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> Apply
                     </button>
+
                     <?php if (can('reports.view')): ?>
-                        <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
-                            <i class="fas fa-print mr-2"></i> Print
-                        </a>
+                        <!-- Reports Dropdown (Alpine.js) -->
+                        <div class="relative inline-block" x-data="{ open: false }">
+                            <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Reports</span>
+                                <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
+                            </button>
+
+                            <div x-show="open"
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                                style="display: none;">
+
+                                <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-print w-5 text-gray-700"></i>
+                                    <span class="font-medium">Print Sales Report</span>
+                                </a>
+
+                                <a href="<?= site_url('sales/expense-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-receipt w-5 text-blue-600"></i>
+                                    <span class="font-medium">Expense Report</span>
+                                </a>
+
+                                <a href="<?= site_url('sales/expense-category-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-layer-group w-5 text-indigo-600"></i>
+                                    <span class="font-medium">Expense (Category-wise)</span>
+                                </a>
+
+                                <a href="<?= site_url('sales/tax-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-percentage w-5 text-rose-600"></i>
+                                    <span class="font-medium">Tax Report</span>
+                                </a>
+
+                                <div class="border-t border-gray-100 my-1"></div>
+
+                                <a href="<?= site_url('sales/inactive-customers-report?days=30') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-user-clock w-5 text-orange-600"></i>
+                                    <span class="font-medium">Inactive Customers (30 days)</span>
+                                </a>
+                            </div>
+                        </div>
+
                         <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-soft">
                             <i class="fas fa-list mr-2"></i> Items
                         </a>
@@ -263,6 +309,8 @@ function money_fmt($v)
 <script src="<?= base_url() ?>assets/datatable-1.11.5/vfs_fonts.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
+<!-- Alpine.js for dropdown (same asset used in Products page) -->
+<script defer src="<?= base_url('assets/js/alpinejs.cdn.min.js') ?>"></script>
 <script>
     // Quick ranges helper & DataTables init
     (function() {

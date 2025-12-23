@@ -37,12 +37,19 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('customer-report', 'Reports\Sales::customerReport', ['filter' => 'permission:reports.view']);
     $routes->get('category-report', 'Reports\Sales::categoryReport', ['filter' => 'permission:reports.view']);
     $routes->get('unit-report', 'Reports\Sales::unitReport', ['filter' => 'permission:reports.view']);
+    $routes->get('inactive-customers-report', 'Reports\Sales::inactiveCustomersReport', ['filter' => 'permission:reports.view']);
+    $routes->get('tax-report', 'Reports\Sales::taxReport', ['filter' => 'permission:reports.view']);
+    $routes->get('expense-report', 'Reports\Sales::expenseReport', ['filter' => 'permission:reports.view']);
+    $routes->get('expense-category-report', 'Reports\Sales::expenseCategoryReport', ['filter' => 'permission:reports.view']);
     // Print views
     $routes->get('report/print', 'Reports\Sales::reportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('product-report/print', 'Reports\Sales::productReportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('customer-report/print', 'Reports\Sales::customerReportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('category-report/print', 'Reports\Sales::categoryReportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('unit-report/print', 'Reports\Sales::unitReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('inactive-customers-report/print', 'Reports\Sales::inactiveCustomersReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('expense-report/print', 'Reports\Sales::expenseReportPrint', ['filter' => 'permission:reports.view']);
+    $routes->get('expense-category-report/print', 'Reports\Sales::expenseCategoryReportPrint', ['filter' => 'permission:reports.view']);
     $routes->get('profit-loss-report/print', 'Reports\Sales::profitLossReportPrint', ['filter' => 'permission:reports.profitloss']);
     $routes->get('report/export', 'Reports\Sales::exportReport', ['filter' => 'permission:reports.export']);
     $routes->get('product-report/export', 'Reports\Sales::exportProductReport', ['filter' => 'permission:reports.export']);
@@ -57,6 +64,10 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('category-report/export_pdf', 'Reports\Sales::exportCategoryReportPDF', ['filter' => 'permission:reports.export']);
     $routes->get('unit-report/export_excel', 'Reports\Sales::exportUnitReportExcel', ['filter' => 'permission:reports.export']);
     $routes->get('unit-report/export_pdf', 'Reports\Sales::exportUnitReportPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('inactive-customers-report/export_excel', 'Reports\Sales::exportInactiveCustomersExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('inactive-customers-report/export_pdf', 'Reports\Sales::exportInactiveCustomersPDF', ['filter' => 'permission:reports.export']);
+    $routes->get('expense-report/export_excel', 'Reports\Sales::exportExpenseReportExcel', ['filter' => 'permission:reports.export']);
+    $routes->get('expense-report/export_pdf', 'Reports\Sales::exportExpenseReportPDF', ['filter' => 'permission:reports.export']);
     $routes->get('employee-report', 'Reports\Sales::employeeReport', ['filter' => 'permission:reports.view']);
     $routes->get('employee-commission-report', 'Reports\Sales::employeeCommissionReport', ['filter' => 'permission:reports.view']);
     // Employee report exports
@@ -184,6 +195,8 @@ $routes->group('user-stores', ['filter' => 'auth'], function ($routes) {
 
 $routes->group('analytics', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Analytics::index', ['filter' => 'permission:analytics.view,feature:analytics']);
+    $routes->get('comparative', 'Analytics::comparative', ['filter' => 'permission:analytics.view,feature:analytics']);
+    $routes->get('comparative-data', 'Analytics::getComparativeAnalysis', ['filter' => 'permission:analytics.view,feature:analytics']);
     $routes->get('summary', 'Reports\Sales::summary', ['filter' => 'permission:analytics.view,feature:analytics']);
 });
 $routes->group('reports/sales', ['filter' => 'auth'], function ($routes) {

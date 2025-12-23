@@ -1038,7 +1038,7 @@
                     <td class="px-2 py-1.5 text-center">
                         <div class="relative">
                             <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-xs"><?= session()->get('currency_symbol') ?></span>
-                            <input type="number" min="0" step="0.01" value="${item.price.toFixed(2)}" 
+                            <input type="number" min="0" step="0.001" value="${item.price.toFixed(3)}" 
                                 onchange="updatePrice(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
                                 class="cart-price-input w-24 pl-3 pr-1 text-center border border-gray-300 rounded py-1 text-sm font-semibold focus:ring-1 focus:ring-blue-500">

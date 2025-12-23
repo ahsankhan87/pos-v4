@@ -166,7 +166,8 @@
                         </form>
                     </div>
 
-                    <?php $billingCfg = config('Billing'); ?>
+                    <?php //$billingCfg = config('Billingcfg'); 
+                    ?>
                     <div class="border rounded-md p-4 <?= ($daysLeft !== null && $daysLeft <= 7) ? 'bg-yellow-50 border-yellow-200' : '' ?>">
                         <div class="text-lg font-semibold mb-1">Need Help Renewing?</div>
                         <?php if ($daysLeft !== null && $daysLeft <= 7): ?>
@@ -174,23 +175,23 @@
                                 Your subscription <?= ($daysLeft === 0 ? 'has expired' : 'is nearing expiry') ?>.
                             </div>
                         <?php endif; ?>
-                        <a target="_blank" rel="noopener" href="<?= esc($billingCfg->supportWebsite) ?>" class="w-full inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700">
-                            <i class="fas fa-globe mr-2"></i> Visit <?= parse_url($billingCfg->supportWebsite, PHP_URL_HOST) ?: 'Website' ?>
+                        <a target="_blank" rel="noopener" href="<?= esc("https://khybersoft.com") ?>" class="w-full inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700">
+                            <i class="fas fa-globe mr-2"></i> Visit <?= parse_url("https://khybersoft.com", PHP_URL_HOST) ?: 'Website' ?>
                         </a>
-                        <?php if (!empty($billingCfg->supportEmail)): ?>
-                            <div class="mt-2 text-sm"><i class="fas fa-envelope mr-2"></i><?= esc($billingCfg->supportEmail) ?></div>
-                        <?php endif; ?>
-                        <?php if (!empty($billingCfg->supportPhone)): ?>
-                            <div class="mt-2 grid grid-cols-2 gap-2">
-                                <a href="tel:<?= preg_replace('/[^0-9+]/', '', $billingCfg->supportPhone) ?>" class="inline-flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-800">
-                                    <i class="fas fa-phone mr-2"></i> Call
-                                </a>
-                                <a target="_blank" rel="noopener" href="https://wa.me/<?= preg_replace('/[^0-9]/', '', $billingCfg->supportPhone) ?>" class="inline-flex items-center justify-center px-3 py-2 bg-green-500 hover:bg-green-600 rounded text-white">
-                                    <i class="fab fa-whatsapp mr-2"></i> WhatsApp
-                                </a>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">Phone: <?= esc($billingCfg->supportPhone) ?></div>
-                        <?php endif; ?>
+                        <div class="mt-2 text-sm"><i class="fas fa-envelope mr-2"></i><?= esc("sales@khybersoft.com") ?></div>
+                        <?php //if (!empty($billingCfg->supportPhone)): 
+                        ?>
+                        <div class="mt-2 grid grid-cols-2 gap-2">
+                            <a href="tel:<?= preg_replace('/[^0-9+]/', '', '+92 345 9079213') ?>" class="inline-flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-800">
+                                <i class="fas fa-phone mr-2"></i> Call
+                            </a>
+                            <a target="_blank" rel="noopener" href="https://wa.me/<?= preg_replace('/[^0-9]/', '', '+92 345 9079213') ?>" class="inline-flex items-center justify-center px-3 py-2 bg-green-500 hover:bg-green-600 rounded text-white">
+                                <i class="fab fa-whatsapp mr-2"></i> WhatsApp
+                            </a>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Phone: <?= esc('+92 345 9079213') ?></div>
+                        <?php //endif; 
+                        ?>
                     </div>
                 </div>
             </div>

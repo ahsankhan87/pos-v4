@@ -4,7 +4,7 @@ namespace App\Config;
 
 use CodeIgniter\Config\BaseConfig;
 
-class Billing extends BaseConfig
+class Billingcfg extends BaseConfig
 {
     public $defaultProvider = 'manual'; // manual, stripe, paypal, etc.
     public $currency = 'USD';
@@ -26,7 +26,7 @@ class Billing extends BaseConfig
 
     // Support/renewal contact info
     public $supportWebsite = 'https://khybersoft.com';
-    public $supportEmail = 'ahsankhan50@gmail.com';
+    public $supportEmail = 'sales@khybersoft.com';
     public $supportPhone = '+92 345 9079213';
 
     public function __construct()
