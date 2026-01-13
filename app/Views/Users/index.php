@@ -49,6 +49,7 @@
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th scope="col">ID</th>
                         <th scope="col">Name</th>
                         <th scope="col">Username</th>
                         <th scope="col">Email</th>
@@ -70,6 +71,9 @@
                             }
                             ?>
                             <tr>
+                                <td class="text-sm text-slate-500">
+                                    <?= esc($user['id']) ?>
+                                </td>
                                 <td class="text-sm font-medium text-slate-700">
                                     <?= esc($user['name']) ?>
                                 </td>

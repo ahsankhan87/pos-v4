@@ -145,7 +145,7 @@ if ($employee_id && !empty($employees)) {
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft"><i class="fas fa-filter mr-2"></i> Apply</button>
-                    <?php if (can('reports.view')): ?>
+                    <?php if (can('reports.unit_sales')): ?>
                         <a href="<?= site_url('sales/unit-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft"><i class="fas fa-print mr-2"></i> Print</a>
                     <?php endif; ?>
                 </div>

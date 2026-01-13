@@ -47,7 +47,7 @@
 
         @media print {
             .no-print {
-                display: none;
+                display: none !important;
             }
 
             body {
@@ -60,6 +60,7 @@
 <body>
     <?php
     $currency = session()->get('currency_symbol') ?? '$';
+    $q = isset($q) ? (string)$q : '';
     $totalQty = 0;
     $totalSales = 0;
     $productCount = 0;
@@ -72,6 +73,17 @@
         function money_fmt($v)
         {
             return number_format((float)$v, 2, '.', ',');
+        }
+    }
+    if (!function_exists('avg_price')) {
+        function avg_price($sales, $qty)
+        {
+            $sales = (float)$sales;
+            $qty = (float)$qty;
+            if ($qty <= 0) {
+                return 0.0;
+            }
+            return $sales / $qty;
         }
     }
     if (!function_exists('formatQuantity')) {
@@ -89,28 +101,37 @@
     <h2>Product-wise Sales Report</h2>
     <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
     <p>Range: Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+
     <table>
         <thead>
             <tr>
                 <th>Product</th>
                 <th class="text-right">Total Quantity</th>
                 <th class="text-right">Total Sales</th>
+                <th class="text-right">Avg</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach (($items ?? []) as $item): ?>
+                <?php
+                $rowQty = (float)($item['total_qty'] ?? 0);
+                $rowSales = (float)($item['total_sales'] ?? 0);
+                $rowAvg = avg_price($rowSales, $rowQty);
+                ?>
                 <tr>
                     <td><?= esc($item['product_name']) ?></td>
-                    <td class="text-right"><?= formatQuantity((float)($item['total_qty'] ?? 0), (float)($item['carton_size'] ?? 0)) ?></td>
-                    <td class="text-right"><?= esc($currency) . ' ' . money_fmt($item['total_sales'] ?? 0) ?></td>
+                    <td class="text-right"><?= formatQuantity($rowQty, (float)($item['carton_size'] ?? 0)) ?></td>
+                    <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowSales) ?></td>
+                    <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowAvg) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
         <tfoot>
             <tr>
                 <th class="text-right">Totals</th>
-                <th class="text-right"><?= number_format($totalQty, 2) ?></th>
-                <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
+                <th id="totalQtyCellPrint" class="text-right"><?= number_format($totalQty, 2) ?></th>
+                <th id="totalSalesCellPrint" class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
+                <th id="totalAvgCellPrint" class="text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></th>
             </tr>
         </tfoot>
     </table>

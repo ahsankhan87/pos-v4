@@ -154,7 +154,7 @@ function money_fmt($v)
                         <i class="fas fa-filter mr-2"></i> Apply
                     </button>
 
-                    <?php if (can('reports.view')): ?>
+                    <?php if (canAny(['reports.daily_sales', 'reports.sale_items', 'reports.expense_report', 'reports.expense_category_report', 'reports.tax_report', 'reports.inactive_customers'])): ?>
                         <!-- Reports Dropdown (Alpine.js) -->
                         <div class="relative inline-block" x-data="{ open: false }">
                             <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
@@ -174,38 +174,51 @@ function money_fmt($v)
                                 class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
                                 style="display: none;">
 
-                                <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-print w-5 text-gray-700"></i>
-                                    <span class="font-medium">Print Sales Report</span>
-                                </a>
 
-                                <a href="<?= site_url('sales/expense-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-receipt w-5 text-blue-600"></i>
-                                    <span class="font-medium">Expense Report</span>
-                                </a>
+                                <?php if (can('reports.daily_sales')): ?>
+                                    <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-print w-5 text-gray-700"></i>
+                                        <span class="font-medium">Print Sales Report</span>
+                                    </a>
+                                <?php endif; ?>
 
-                                <a href="<?= site_url('sales/expense-category-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-layer-group w-5 text-indigo-600"></i>
-                                    <span class="font-medium">Expense (Category-wise)</span>
-                                </a>
+                                <?php if (can('reports.expense_report')): ?>
+                                    <a href="<?= site_url('sales/expense-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-receipt w-5 text-blue-600"></i>
+                                        <span class="font-medium">Expense Report</span>
+                                    </a>
+                                <?php endif; ?>
 
-                                <a href="<?= site_url('sales/tax-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-percentage w-5 text-rose-600"></i>
-                                    <span class="font-medium">Tax Report</span>
-                                </a>
+                                <?php if (can('reports.expense_category_report')): ?>
+                                    <a href="<?= site_url('sales/expense-category-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-layer-group w-5 text-indigo-600"></i>
+                                        <span class="font-medium">Expense (Category-wise)</span>
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php if (can('reports.tax_report')): ?>
+                                    <a href="<?= site_url('sales/tax-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-percentage w-5 text-rose-600"></i>
+                                        <span class="font-medium">Tax Report</span>
+                                    </a>
+                                <?php endif; ?>
 
                                 <div class="border-t border-gray-100 my-1"></div>
 
-                                <a href="<?= site_url('sales/inactive-customers-report?days=30') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-user-clock w-5 text-orange-600"></i>
-                                    <span class="font-medium">Inactive Customers (30 days)</span>
-                                </a>
+                                <?php if (can('reports.inactive_customers')): ?>
+                                    <a href="<?= site_url('sales/inactive-customers-report?days=30') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-user-clock w-5 text-orange-600"></i>
+                                        <span class="font-medium">Inactive Customers (30 days)</span>
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         </div>
 
-                        <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-soft">
-                            <i class="fas fa-list mr-2"></i> Items
-                        </a>
+                        <?php if (can('reports.sale_items')): ?>
+                            <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-soft">
+                                <i class="fas fa-list mr-2"></i> Items
+                            </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
                 <!-- <div class="flex items-end gap-2">

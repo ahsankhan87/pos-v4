@@ -24,9 +24,34 @@ class PermissionFilter implements FilterInterface
             return; // allow
         }
 
-        // Check each required permission (non-admins)
-        foreach ($arguments as $permission) {
-            if (!$userModel->hasPermission($session->get('user_id'), $permission)) {
+        $arguments = is_array($arguments) ? $arguments : [];
+
+        // Check required permissions (non-admins)
+        // Supports:
+        // - "perm.name" (required)
+        // - "any:perm.a|perm.b|perm.c" (any-of)
+        foreach ($arguments as $arg) {
+            $arg = trim((string) $arg);
+            if ($arg === '') {
+                continue;
+            }
+
+            $allowed = false;
+
+            if (strpos($arg, 'any:') === 0) {
+                $list = trim(substr($arg, 4));
+                $candidates = array_values(array_filter(array_map('trim', explode('|', $list))));
+                foreach ($candidates as $permission) {
+                    if ($userModel->hasPermission($session->get('user_id'), $permission)) {
+                        $allowed = true;
+                        break;
+                    }
+                }
+            } else {
+                $allowed = $userModel->hasPermission($session->get('user_id'), $arg);
+            }
+
+            if (!$allowed) {
                 $req = service('request');
                 if ($req && method_exists($req, 'isAJAX') && $req->isAJAX()) {
                     return service('response')->setJSON([

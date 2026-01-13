@@ -1,6 +1,12 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 
+<?php
+helper('permission');
+$canEditLinePrice = can('sales.edit_price');
+$canEditLineDiscount = can('sales.edit_discount');
+?>
+
 <!-- Professional POS Terminal Layout -->
 <div class="min-h-screen bg-slate-100">
     <!-- Compact Top Bar -->
@@ -569,6 +575,10 @@
         return cartons + ' ctns';
     }
 
+    // Role/permission-based locks
+    const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
+    const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
+
     $(document).ready(function() {
         // Update time every second
         function updateTime() {
@@ -1039,9 +1049,10 @@
                         <div class="relative">
                             <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-xs"><?= session()->get('currency_symbol') ?></span>
                             <input type="number" min="0" step="0.001" value="${item.price.toFixed(3)}" 
+                                ${CAN_EDIT_PRICE ? '' : 'readonly tabindex="-1"'}
                                 onchange="updatePrice(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
-                                class="cart-price-input w-24 pl-3 pr-1 text-center border border-gray-300 rounded py-1 text-sm font-semibold focus:ring-1 focus:ring-blue-500">
+                                class="cart-price-input w-24 pl-3 pr-1 text-center border border-gray-300 rounded py-1 text-sm font-semibold focus:ring-1 focus:ring-blue-500${CAN_EDIT_PRICE ? '' : ' bg-gray-100 cursor-not-allowed'}">
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
@@ -1079,11 +1090,13 @@
                     <td class="px-2 py-1.5 text-center">
                         <div class="flex items-center justify-center gap-1">
                             <input type="number" min="0" step="0.01" value="${(parseFloat(item.discount||0)).toFixed(2)}"
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-cart-idx="${idx}"
-                                class="item-discount-input w-20 text-center border border-gray-300 rounded py-1 text-sm font-semibold">
+                                class="item-discount-input w-20 text-center border border-gray-300 rounded py-1 text-sm font-semibold${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
                             <select onchange="updateItemDiscountType(${idx}, this.value)"
-                                data-cart-idx="${idx}" class="item-discount-type text-xs border border-gray-300 rounded px-1.5 py-1">
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                data-cart-idx="${idx}" class="item-discount-type text-xs border border-gray-300 rounded px-1.5 py-1${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
                                 <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
                                 <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
                             </select>
@@ -1430,6 +1443,7 @@
         };
 
         window.updatePrice = function(idx, price) {
+            if (!CAN_EDIT_PRICE) return;
             skipRefocus = true; // Prevent barcode refocus
             const restoreFocus = {
                 idx: idx,
@@ -1443,6 +1457,7 @@
         };
 
         window.updateItemDiscount = function(idx, val) {
+            if (!CAN_EDIT_DISCOUNT) return;
             skipRefocus = true;
             const restoreFocus = {
                 idx: idx,
@@ -1456,6 +1471,7 @@
         };
 
         window.updateItemDiscountType = function(idx, t) {
+            if (!CAN_EDIT_DISCOUNT) return;
             skipRefocus = true;
             const restoreFocus = {
                 idx: idx,
@@ -1588,6 +1604,7 @@
             // F8 - Focus first item discount input
             else if (e.key === 'F8') {
                 e.preventDefault();
+                if (!CAN_EDIT_DISCOUNT) return false;
                 const firstDisc = document.querySelector('.item-discount-input');
                 if (firstDisc) {
                     firstDisc.focus();

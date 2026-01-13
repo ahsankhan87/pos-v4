@@ -288,6 +288,7 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
+        $q = trim((string) $this->request->getGet('q'));
         if ($from > $to) {
             $temp = $from;
             $from = $to;
@@ -297,7 +298,7 @@ class Sales extends BaseController
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
         $itemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
+            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
@@ -305,6 +306,13 @@ class Sales extends BaseController
             ->where('pos_sales.store_id', $storeId);
         if (!empty($employeeId)) {
             $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        if ($q !== '') {
+            $itemsBuilder
+                ->groupStart()
+                ->like('pos_products.name', $q)
+                ->orLike('pos_products.code', $q)
+                ->groupEnd();
         }
         $items = $itemsBuilder->groupBy('pos_sale_items.product_id')->orderBy('pos_products.category_id', 'ASC')->orderBy('total_sales', 'DESC')->findAll();
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
@@ -315,6 +323,7 @@ class Sales extends BaseController
             'to' => $to,
             'employees' => $employees,
             'employee_id' => $employeeId,
+            'q' => $q,
         ]);
 
         // Preload sale items for interactive per-sale detail (avoid extra queries on row click)
@@ -375,6 +384,7 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
+        $q = trim((string) $this->request->getGet('q'));
         if ($from > $to) {
             $temp = $from;
             $from = $to;
@@ -384,7 +394,7 @@ class Sales extends BaseController
         $saleItemsModel = new \App\Models\M_sale_items();
         $productModel = new \App\Models\M_products();
         $itemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
+            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
             ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
             ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
@@ -392,6 +402,13 @@ class Sales extends BaseController
             ->where('pos_sales.store_id', $storeId);
         if (!empty($employeeId)) {
             $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        if ($q !== '') {
+            $itemsBuilder
+                ->groupStart()
+                ->like('pos_products.name', $q)
+                ->orLike('pos_products.code', $q)
+                ->groupEnd();
         }
         $items = $itemsBuilder->groupBy('pos_sale_items.product_id')->orderBy('pos_products.category_id', 'ASC')->orderBy('total_sales', 'DESC')->findAll();
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
@@ -403,6 +420,7 @@ class Sales extends BaseController
             'employees' => $employees,
             'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
             'employee_id' => $employeeId,
+            'q' => $q,
         ]);
     }
 

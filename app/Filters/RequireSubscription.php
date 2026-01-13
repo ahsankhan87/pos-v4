@@ -11,6 +11,13 @@ class RequireSubscription implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
+        // Ensure this page can be reached even when subscription is missing.
+        // (Also handled by Filters.php except list, but keeping this as a safety net.)
+        $path = trim((string) $request->getUri()->getPath(), '/');
+        if ($path === 'no-access') {
+            return null;
+        }
+
         $userId = session()->get('user_id');
         if (!$userId) {
             return redirect()->to('/login');
@@ -49,6 +56,7 @@ class RequireSubscription implements FilterInterface
                     'ends_at' => $now,
                 ]);
                 $support = config('Billing')->supportWebsite;
+
                 return redirect()->to('/billing/manage')->with('error', 'Your subscription has expired. Please renew or activate a license. Visit: ' . $support);
             }
         }

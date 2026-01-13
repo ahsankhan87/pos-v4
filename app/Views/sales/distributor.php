@@ -1,6 +1,12 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 
+<?php
+helper('permission');
+$canEditLinePrice = can('sales.edit_price');
+$canEditLineDiscount = can('sales.edit_discount');
+?>
+
 <!-- Professional Sales Invoice Layout -->
 <div class="min-h-screen bg-gray-50">
     <!-- Compact Header -->
@@ -285,6 +291,9 @@
 
 <script>
     $(document).ready(function() {
+        // Role/permission-based locks
+        const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
+        const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
         // ============================================
         // Helper Functions
         // ============================================
@@ -495,19 +504,22 @@
                     </td>
                     <td class="px-3 py-3 text-center">
                         <input type="number" value="${item.price}" min="0" step="0.001" 
+                            ${CAN_EDIT_PRICE ? '' : 'readonly tabindex="-1"'}
                             onchange="updatePrice(${idx}, this.value)"
                             data-field="price" data-row="${idx}"
-                            class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_PRICE ? '' : ' bg-gray-100 cursor-not-allowed'}">
                     </td>
                     <td class="px-3 py-3 text-center">
                         <div class="flex items-center gap-1">
                             <input type="number" value="${item.discount}" min="0" step="0.001" 
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-field="discount" data-row="${idx}"
-                                class="cart-field w-16 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                class="cart-field w-16 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
                             <select onchange="updateItemDiscountType(${idx}, this.value)" 
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
                                 data-field="discount_type" data-row="${idx}"
-                                class="cart-field w-16 px-1 py-1.5 text-xs border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                class="cart-field w-16 px-1 py-1.5 text-xs border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
                                 <option value="fixed" ${item.discount_type === 'fixed' ? 'selected' : ''}><?= session()->get('currency_symbol') ?></option>
                                 <option value="percentage" ${item.discount_type === 'percentage' ? 'selected' : ''}>%</option>
                             </select>
@@ -632,8 +644,8 @@
                     quantity: cart[idx].quantity, // Keep the edited quantity
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
-                    discount: cart[idx].discount, // Keep the edited discount
-                    discount_type: cart[idx].discount_type
+                    discount: CAN_EDIT_DISCOUNT ? cart[idx].discount : 0,
+                    discount_type: CAN_EDIT_DISCOUNT ? cart[idx].discount_type : 'fixed'
                 };
                 renderCart();
             }
@@ -722,6 +734,7 @@
         };
 
         window.updatePrice = function(idx, price) {
+            if (!CAN_EDIT_PRICE) return;
             price = parseFloat(price);
             if (price < 0) price = 0;
             cart[idx].price = price;
@@ -730,6 +743,7 @@
         };
 
         window.updateItemDiscount = function(idx, val) {
+            if (!CAN_EDIT_DISCOUNT) return;
             let v = parseFloat(val);
             if (isNaN(v) || v < 0) v = 0;
             cart[idx].discount = v;
@@ -738,6 +752,7 @@
         };
 
         window.updateItemDiscountType = function(idx, t) {
+            if (!CAN_EDIT_DISCOUNT) return;
             cart[idx].discount_type = (t === 'percentage') ? 'percentage' : 'fixed';
             // Just recalculate totals without re-rendering to preserve focus
             calculateTotals();
@@ -835,7 +850,12 @@
 
         // Function to move to next/previous field
         function moveToNextField(currentRow, currentField, backwards = false) {
-            const fieldOrder = ['product', 'quantity', 'price', 'discount', 'discount_type'];
+            const fieldOrder = ['product', 'quantity'];
+            if (CAN_EDIT_PRICE) fieldOrder.push('price');
+            if (CAN_EDIT_DISCOUNT) {
+                fieldOrder.push('discount');
+                fieldOrder.push('discount_type');
+            }
             const currentFieldIndex = fieldOrder.indexOf(currentField);
 
             let nextRow = currentRow;

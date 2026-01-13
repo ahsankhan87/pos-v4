@@ -124,6 +124,8 @@ class Sales extends BaseController
     // Cart processing and sale creation
     public function create()
     {
+        helper('permission');
+
         $salesModel = new M_sales();
         $saleItemsModel = new M_sale_items();
         $productModel = new M_products();
@@ -142,11 +144,17 @@ class Sales extends BaseController
         $customer_id = (int) ($this->request->getPost('customer_id') ?: 0);
         $cart_data = $this->request->getPost('cart_data');
         $items = json_decode($cart_data, true);
+        $canEditLinePrice = can('sales.edit_price');
+        $canEditLineDiscount = can('sales.edit_discount');
         // Discount handling: prefer item-wise discount if provided per line
         $discountInput = (float) ($this->request->getPost('discount') ?? 0);
         $total = $this->request->getPost('grand_total') ?? 0;
         $subtotal = (float) ($this->request->getPost('subtotal') ?? 0);
         $discount_type = $this->request->getPost('discount_type') ?? 'fixed';
+        if (!$canEditLineDiscount) {
+            $discountInput = 0.0;
+            $discount_type = 'fixed';
+        }
         $totalDiscount = 0.0;
         $total_tax = $this->request->getPost('total_tax') ?? 0;
         $payment_method = $this->request->getPost('payment_method');
@@ -168,7 +176,7 @@ class Sales extends BaseController
             $errors[] = 'Cart is empty.';
         } else {
             foreach ($items as $item) {
-                if (!isset($item['id']) || !isset($item['price']) || !isset($item['quantity']) || $item['quantity'] < 0.01) {
+                if (!isset($item['id']) || !isset($item['quantity']) || (float) $item['quantity'] < 0.01) {
                     $errors[] = 'Invalid product in cart.';
                     break;
                 }
@@ -177,6 +185,50 @@ class Sales extends BaseController
         if (!empty($errors)) {
             return redirect()->back()->withInput()->with('error', implode(' ', $errors));
         }
+
+        // Enforce server-side restrictions for price/discount edits per role permissions.
+        // This prevents users from bypassing the UI by tampering with cart_data.
+        $sanitizedItems = [];
+        foreach ($items as $line) {
+            $productId = (int) ($line['id'] ?? 0);
+            if ($productId <= 0) {
+                return redirect()->back()->withInput()->with('error', 'Invalid product in cart.');
+            }
+
+            $product = $productModel->forStore()->find($productId);
+            if (!$product) {
+                return redirect()->back()->withInput()->with('error', 'Product not found for sale item.');
+            }
+
+            $qty = (float) ($line['quantity'] ?? 0);
+            if ($qty < 0.01) {
+                return redirect()->back()->withInput()->with('error', 'Invalid quantity in cart.');
+            }
+
+            $effectivePrice = $canEditLinePrice
+                ? (float) ($line['price'] ?? ($product['price'] ?? 0))
+                : (float) ($product['price'] ?? 0);
+            if ($effectivePrice < 0) $effectivePrice = 0;
+
+            $effectiveDiscount = $canEditLineDiscount ? (float) ($line['discount'] ?? 0) : 0.0;
+            if ($effectiveDiscount < 0) $effectiveDiscount = 0.0;
+
+            $effectiveDiscountType = 'fixed';
+            if ($canEditLineDiscount && isset($line['discount_type']) && strtolower((string) $line['discount_type']) === 'percentage') {
+                $effectiveDiscountType = 'percentage';
+            }
+
+            $line['price'] = $effectivePrice;
+            $line['quantity'] = $qty;
+            $line['discount'] = $effectiveDiscount;
+            $line['discount_type'] = $effectiveDiscountType;
+            if (!isset($line['cost_price'])) {
+                $line['cost_price'] = (float) ($product['cost_price'] ?? 0);
+            }
+
+            $sanitizedItems[] = $line;
+        }
+        $items = $sanitizedItems;
 
         // Server-side safeguard: compute subtotal and item-wise discounts from items
         if (is_array($items) && !empty($items)) {
