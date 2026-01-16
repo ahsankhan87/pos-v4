@@ -4,6 +4,7 @@
 $from = isset($from) ? $from : (isset($date) ? $date : date('Y-m-d'));
 $to = isset($to) ? $to : (isset($date) ? $date : date('Y-m-d'));
 $employee_id = isset($employee_id) ? $employee_id : '';
+$q = isset($q) ? (string) $q : '';
 $currency = session()->get('currency_symbol') ?? '$';
 $totalSales = 0;
 $totalDiscount = 0;
@@ -29,6 +30,15 @@ if (!empty($employee_id) && !empty($employees)) {
         }
     }
 }
+
+$printParams = [
+    'from' => $from,
+    'to' => $to,
+];
+if ($employee_id !== '') {
+    $printParams['employee_id'] = $employee_id;
+}
+$printUrl = site_url('sales/customer-report/print?' . http_build_query($printParams));
 ?>
 
 <style>
@@ -128,6 +138,7 @@ if (!empty($employee_id) && !empty($employees)) {
                 <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if ($employeeName): ?> · Employee: <span class="font-medium text-gray-700"><?= esc($employeeName) ?></span><?php endif; ?></p>
             </div>
             <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 w-full lg:w-auto">
+                <input type="hidden" name="q" value="<?= esc($q) ?>">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
@@ -151,12 +162,12 @@ if (!empty($employee_id) && !empty($employees)) {
                         <i class="fas fa-filter mr-2"></i> Apply
                     </button>
                     <?php if (can('reports.customer_sales')): ?>
-                        <a href="<?= site_url('sales/customer-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                        <button type="button" id="btnPrintCompact" data-print-url="<?= esc($printUrl) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
                             <i class="fas fa-print mr-2"></i> Print
-                        </a>
+                        </button>
                     <?php endif; ?>
                 </div>
-                <div class="flex items-end gap-2">
+                <!-- <div class="flex items-end gap-2">
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
                     <?php if (can('reports.export')): ?>
                         <a href="<?= site_url('sales/customer-report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>"
@@ -168,7 +179,7 @@ if (!empty($employee_id) && !empty($employees)) {
                             <i class="fas fa-file-csv mr-2"></i> CSV
                         </a>
                     <?php endif; ?>
-                </div>
+                </div> -->
                 <div class="sm:col-span-2 md:col-span-5">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
                         <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
@@ -182,27 +193,33 @@ if (!empty($employee_id) && !empty($employees)) {
         <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                 <div class="text-xs text-blue-700">Total Sales</div>
-                <div class="mt-1 text-xl font-semibold text-blue-900"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></div>
+                <div class="mt-1 text-xl font-semibold text-blue-900"><span id="totalSalesCard"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></span></div>
             </div>
             <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
                 <div class="text-xs text-emerald-700">Total Discount</div>
-                <div class="mt-1 text-xl font-semibold text-emerald-900"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></div>
+                <div class="mt-1 text-xl font-semibold text-emerald-900"><span id="totalDiscountCard"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></span></div>
             </div>
             <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
                 <div class="text-xs text-amber-700">Sales Count</div>
-                <div class="mt-1 text-xl font-semibold text-amber-900"><?= number_format($saleCount) ?></div>
+                <div class="mt-1 text-xl font-semibold text-amber-900"><span id="saleCountCard"><?= number_format($saleCount) ?></span></div>
             </div>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div class="text-xs text-gray-600">Customers</div>
-                <div class="mt-1 text-xl font-semibold text-gray-900"><?= number_format($customerCount) ?></div>
+                <div class="mt-1 text-xl font-semibold text-gray-900"><span id="customerCountCard"><?= number_format($customerCount) ?></span></div>
             </div>
         </div>
     </div>
 
     <div class="bg-white shadow rounded-lg print-container">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <h3 class="text-lg font-semibold text-gray-900">Totals by Customer</h3>
-            <div class="text-sm text-gray-500">Showing <?= number_format($customerCount) ?> records</div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="no-print w-full sm:w-72">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Search Customer</label>
+                    <input type="text" id="customerSearch" value="<?= esc($q) ?>" placeholder="Type customer name..." class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
+                </div>
+                <div class="text-sm text-gray-500">Showing <span id="recordCount"><?= number_format($customerCount) ?></span> records</div>
+            </div>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -214,22 +231,26 @@ if (!empty($employee_id) && !empty($employees)) {
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Discount</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
+                <tbody id="customersTbody" class="bg-white divide-y divide-gray-100">
                     <?php foreach ($sales as $row): ?>
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50" data-sales="<?= (float) ($row['total_sales'] ?? 0) ?>" data-discount="<?= (float) ($row['total_discount'] ?? 0) ?>" data-sale-count="<?= (int) ($row['sale_count'] ?? 0) ?>">
                             <td class="px-6 py-3 text-sm text-gray-900"><?= esc($row['customer_name']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_discount'] ?? 0) ?></td>
                         </tr>
                     <?php endforeach; ?>
+
+                    <tr id="noMatchesRow" style="display:none;">
+                        <td colspan="4" class="px-6 py-6 text-center text-sm text-gray-500">No matching customers.</td>
+                    </tr>
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
                         <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Totals</td>
-                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($saleCount) ?></td>
-                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
-                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></td>
+                        <td id="totalSaleCountCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($saleCount) ?></td>
+                        <td id="totalSalesCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
+                        <td id="totalDiscountCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></td>
                     </tr>
                 </tfoot>
             </table>
@@ -262,6 +283,95 @@ if (!empty($employee_id) && !empty($employees)) {
                 toInput.value = fmt(to);
             });
         });
+
+        // client-side customer search + totals
+        const searchInput = document.getElementById('customerSearch');
+        const tbody = document.getElementById('customersTbody');
+        const recordCount = document.getElementById('recordCount');
+        const noMatchesRow = document.getElementById('noMatchesRow');
+
+        const currencySymbol = <?= json_encode($currency) ?>;
+        const totalSalesCard = document.getElementById('totalSalesCard');
+        const totalDiscountCard = document.getElementById('totalDiscountCard');
+        const saleCountCard = document.getElementById('saleCountCard');
+        const customerCountCard = document.getElementById('customerCountCard');
+
+        const totalSaleCountCell = document.getElementById('totalSaleCountCell');
+        const totalSalesCell = document.getElementById('totalSalesCell');
+        const totalDiscountCell = document.getElementById('totalDiscountCell');
+
+        function fmtNumber(value, decimals) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return (0).toFixed(decimals);
+            return n.toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+            });
+        }
+
+        function fmtMoney(value) {
+            return currencySymbol + ' ' + fmtNumber(value, 2);
+        }
+
+        function applyFilter() {
+            if (!tbody) return;
+
+            const q = (searchInput?.value || '').trim().toLowerCase();
+            const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r !== noMatchesRow);
+
+            let visible = 0;
+            let sumSales = 0;
+            let sumDiscount = 0;
+            let sumSaleCount = 0;
+
+            rows.forEach(row => {
+                const text = (row.innerText || '').toLowerCase();
+                const match = !q || text.includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) {
+                    visible++;
+                    sumSales += parseFloat(row.getAttribute('data-sales') || '0') || 0;
+                    sumDiscount += parseFloat(row.getAttribute('data-discount') || '0') || 0;
+                    sumSaleCount += parseInt(row.getAttribute('data-sale-count') || '0', 10) || 0;
+                }
+            });
+
+            if (recordCount) recordCount.textContent = fmtNumber(visible, 0);
+            if (noMatchesRow) noMatchesRow.style.display = visible === 0 ? '' : 'none';
+
+            if (totalSalesCard) totalSalesCard.textContent = fmtMoney(sumSales);
+            if (totalDiscountCard) totalDiscountCard.textContent = fmtMoney(sumDiscount);
+            if (saleCountCard) saleCountCard.textContent = fmtNumber(sumSaleCount, 0);
+            if (customerCountCard) customerCountCard.textContent = fmtNumber(visible, 0);
+
+            if (totalSaleCountCell) totalSaleCountCell.textContent = fmtNumber(sumSaleCount, 0);
+            if (totalSalesCell) totalSalesCell.textContent = fmtMoney(sumSales);
+            if (totalDiscountCell) totalDiscountCell.textContent = fmtMoney(sumDiscount);
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilter);
+            applyFilter();
+        }
+
+        // print compact layout via /print route, passing current search query
+        const btnPrintCompact = document.getElementById('btnPrintCompact');
+        if (btnPrintCompact) {
+            btnPrintCompact.addEventListener('click', function() {
+                const baseUrl = btnPrintCompact.getAttribute('data-print-url') || '';
+                if (!baseUrl) return;
+
+                const url = new URL(baseUrl, window.location.origin);
+                const q = (searchInput?.value || '').trim();
+                if (q) {
+                    url.searchParams.set('q', q);
+                } else {
+                    url.searchParams.delete('q');
+                }
+
+                window.open(url.toString(), '_blank');
+            });
+        }
     })();
 </script>
 

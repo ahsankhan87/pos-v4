@@ -430,6 +430,7 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
+        $q = trim((string) ($this->request->getGet('q') ?? ''));
         if ($from > $to) {
             $temp = $from;
             $from = $to;
@@ -450,6 +451,13 @@ class Sales extends BaseController
         foreach ($sales as &$sale) {
             $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
             $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
+        }
+
+        if ($q !== '') {
+            $sales = array_values(array_filter($sales, static function ($row) use ($q) {
+                $name = (string) ($row['customer_name'] ?? '');
+                return stripos($name, $q) !== false;
+            }));
         }
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/customer_report', [
@@ -459,6 +467,7 @@ class Sales extends BaseController
             'to' => $to,
             'employees' => $employees,
             'employee_id' => $employeeId,
+            'q' => $q,
         ]);
     }
 
@@ -468,6 +477,7 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
+        $q = trim((string) ($this->request->getGet('q') ?? ''));
         if ($from > $to) {
             $temp = $from;
             $from = $to;
@@ -488,6 +498,13 @@ class Sales extends BaseController
         foreach ($sales as &$sale) {
             $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
             $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
+        }
+
+        if ($q !== '') {
+            $sales = array_values(array_filter($sales, static function ($row) use ($q) {
+                $name = (string) ($row['customer_name'] ?? '');
+                return stripos($name, $q) !== false;
+            }));
         }
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/customer_report_print', [
@@ -498,6 +515,7 @@ class Sales extends BaseController
             'employees' => $employees,
             'employee_id' => $employeeId,
             'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+            'q' => $q,
         ]);
     }
 

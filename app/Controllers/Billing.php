@@ -157,7 +157,7 @@ class Billing extends BaseController
                 $data['subscription'] = $this->subs->getActiveForUser($userId); // refresh
                 return view('billing/activate', $data);
             }
-            $support = config('Billing')->supportWebsite;
+            $support = "https://khybersoft.com";
             $data['error'] = $msg . ' For help, visit: ' . $support;
             return view('billing/activate', $data);
         }

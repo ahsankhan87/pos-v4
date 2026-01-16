@@ -2,6 +2,10 @@
 <?= $this->section('content') ?>
 
 <?php
+helper('permission');
+$canEditLinePrice = can('sales.edit_price');
+$canEditLineDiscount = can('sales.edit_discount');
+
 $currencySymbol = session()->get('currency_symbol') ?? '$';
 $storedDiscount = (float) ($sale['total_discount'] ?? 0);
 $storedTax = (float) ($sale['total_tax'] ?? 0);
@@ -580,6 +584,17 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         return cartons + ' ctns';
     }
 
+    // Role/permission-based locks (same behavior as sales/new)
+    const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
+    const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
+
+    function buildCartTabSequence(hasUnit) {
+        let seq = hasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+        if (!CAN_EDIT_PRICE) seq = seq.filter(f => f !== 'price');
+        if (!CAN_EDIT_DISCOUNT) seq = seq.filter(f => f !== 'discount' && f !== 'discount_type');
+        return seq;
+    }
+
     $(document).ready(function() {
         // Update time every second
         function updateTime() {
@@ -621,7 +636,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             const idx = parseInt(ae.getAttribute('data-cart-idx'));
             if (isNaN(idx)) return;
             const hasUnit = !!document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
-            const baseSeq = hasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+            const baseSeq = buildCartTabSequence(hasUnit);
             const currentField = ae.getAttribute('data-field') || (ae.classList.contains('cart-qty-input') ? 'qty' : (ae.classList.contains('cart-price-input') ? 'price' : (ae.classList.contains('item-discount-input') ? 'discount' : (ae.classList.contains('cart-unit-selector') ? 'unit' : 'discount_type'))));
             let i = baseSeq.indexOf(currentField);
             if (i === -1) return;
@@ -631,7 +646,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 if (i === 0) {
                     targetIdx = idx - 1;
                     const prevHasUnit = !!document.querySelector(`select.cart-unit-selector[data-cart-idx="${targetIdx}"]`);
-                    const prevSeq = prevHasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+                    const prevSeq = buildCartTabSequence(prevHasUnit);
                     targetField = prevSeq[prevSeq.length - 1];
                 } else {
                     targetField = baseSeq[i - 1];
@@ -640,7 +655,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 if (i === baseSeq.length - 1) {
                     targetIdx = idx + 1;
                     const nextHasUnit = !!document.querySelector(`select.cart-unit-selector[data-cart-idx="${targetIdx}"]`);
-                    const nextSeq = nextHasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
+                    const nextSeq = buildCartTabSequence(nextHasUnit);
                     targetField = nextSeq[0];
                 } else {
                     targetField = baseSeq[i + 1];
@@ -1108,9 +1123,10 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <div class="relative">
                             <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><?= session()->get('currency_symbol') ?></span>
                             <input type="number" min="0" step="0.01" value="${formatCurrency(item.price)}" 
+                                ${CAN_EDIT_PRICE ? '' : 'readonly tabindex="-1"'}
                                 onchange="updatePrice(${idx}, this.value)" 
                                 data-cart-idx="${idx}" data-field="price"
-                                class="cart-price-input w-20 pl-3 pr-1 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold focus:ring-1 focus:ring-blue-500">
+                                class="cart-price-input w-20 pl-3 pr-1 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold focus:ring-1 focus:ring-blue-500${CAN_EDIT_PRICE ? '' : ' bg-gray-100 cursor-not-allowed'}">
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
@@ -1143,10 +1159,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     <td class="px-2 py-1.5 text-center">
                         <div class="flex items-center justify-center gap-1">
                             <input type="number" min="0" step="0.01" value="${(parseFloat(item.discount||0)).toFixed(2)}"
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-cart-idx="${idx}" data-field="discount"
-                                class="item-discount-input w-16 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold">
-                            <select onchange="updateItemDiscountType(${idx}, this.value)" data-cart-idx="${idx}" data-field="discount_type" class="item-discount-type text-[10px] border border-gray-300 rounded px-1 py-0.5">
+                                class="item-discount-input w-16 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                            <select onchange="updateItemDiscountType(${idx}, this.value)" 
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                data-cart-idx="${idx}" data-field="discount_type" class="item-discount-type text-[10px] border border-gray-300 rounded px-1 py-0.5${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
                                 <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
                                 <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
                             </select>
@@ -1438,6 +1457,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         };
 
         window.updatePrice = function(idx, price) {
+            if (!CAN_EDIT_PRICE) return;
             skipRefocus = true; // Prevent barcode refocus
             const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
             nextFocusAfterRender = null;
@@ -1448,6 +1468,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         };
 
         window.updateItemDiscount = function(idx, val) {
+            if (!CAN_EDIT_DISCOUNT) return;
             skipRefocus = true;
             const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
             nextFocusAfterRender = null;
@@ -1458,6 +1479,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         };
 
         window.updateItemDiscountType = function(idx, t) {
+            if (!CAN_EDIT_DISCOUNT) return;
             skipRefocus = true;
             const restoreFocus = nextFocusAfterRender || captureFocusDescriptor();
             nextFocusAfterRender = null;
@@ -1550,6 +1572,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             // F8 - Focus first item discount input
             else if (e.key === 'F8') {
                 e.preventDefault();
+                if (!CAN_EDIT_DISCOUNT) return false;
                 const firstDisc = document.querySelector('.item-discount-input');
                 if (firstDisc) {
                     firstDisc.focus();

@@ -763,13 +763,13 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                         $bannerInfo = subscription_info();
                         $showRenewBanner = $bannerInfo['active'] && ($bannerInfo['days_left'] !== null) && ($bannerInfo['days_left'] <= 3) && !session()->get('dismiss_renewal_banner');
                         if ($showRenewBanner):
-                            $billingCfg = config('Billing');
+                            //$billingCfg = config('Billing');
                         ?>
                             <div class="mb-3 rounded-md border border-yellow-200 bg-yellow-50 p-3 flex items-start justify-between">
                                 <div class="text-sm text-yellow-900">
                                     <strong>Heads up:</strong> Your <?= $bannerInfo['is_trial'] ? 'trial' : 'subscription' ?> <?= $bannerInfo['days_left'] === 0 ? 'has expired' : 'is ending soon' ?>.
-                                    Visit <a target="_blank" rel="noopener" href="<?= esc($billingCfg->supportWebsite) ?>" class="underline">our website</a>
-                                    <?php if (!empty($billingCfg->supportPhone)): ?> or <a href="tel:<?= preg_replace('/[^0-9+]/', '', $billingCfg->supportPhone) ?>" class="underline">call us</a><?php endif; ?> to renew.
+                                    Visit <a target="_blank" rel="noopener" href="https://khybersoft.com" class="underline">our website</a>
+                                    or <a href="tel:<?= preg_replace('/[^0-9+]/', '', '+923459079213') ?>" class="underline">call us</a> to <a href="billing/manage">renew subscription</a>.
                                 </div>
                                 <form method="post" action="<?= site_url('billing/dismiss-banner') ?>">
                                     <?= csrf_field() ?>

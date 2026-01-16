@@ -56,11 +56,22 @@
 <body>
     <?php
     $currency = session()->get('currency_symbol') ?? '$';
+    $q = isset($q) ? (string) $q : '';
+
+    $salesFiltered = [];
+    foreach (($sales ?? []) as $row) {
+        $name = (string) ($row['customer_name'] ?? '');
+        if ($q !== '' && stripos($name, $q) === false) {
+            continue;
+        }
+        $salesFiltered[] = $row;
+    }
+
     $totalSales = 0;
     $totalDiscount = 0;
     $saleCount = 0;
     $customerCount = 0;
-    foreach (($sales ?? []) as $s) {
+    foreach ($salesFiltered as $s) {
         $totalSales += (float)($s['total_sales'] ?? 0);
         $totalDiscount += (float)($s['total_discount'] ?? 0);
         $saleCount += (int)($s['sale_count'] ?? 0);
@@ -76,6 +87,10 @@
     <h2>Customer-wise Sales Report</h2>
     <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
     <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <?php if ($q !== ''): ?>
+        <p>Search: <?= esc($q) ?></p>
+    <?php endif; ?>
+
     <table>
         <thead>
             <tr>
@@ -86,7 +101,7 @@
             </tr>
         </thead>
         <tbody>
-            <?php foreach (($sales ?? []) as $row): ?>
+            <?php foreach ($salesFiltered as $row): ?>
                 <tr>
                     <td><?= esc($row['customer_name']) ?></td>
                     <td class="text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
@@ -94,6 +109,12 @@
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($row['total_discount'] ?? 0) ?></td>
                 </tr>
             <?php endforeach; ?>
+
+            <?php if (empty($salesFiltered)): ?>
+                <tr>
+                    <td colspan="4" style="text-align:center; padding: 10px; color: #666;">No matching customers.</td>
+                </tr>
+            <?php endif; ?>
         </tbody>
         <tfoot>
             <tr>
@@ -104,6 +125,7 @@
             </tr>
         </tfoot>
     </table>
+
     <div class="no-print">
         <button onclick="window.print()">Print</button>
         <button onclick="window.close()">Close</button>

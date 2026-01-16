@@ -149,14 +149,12 @@ if ($employee_id && !empty($employees)) {
                         <a href="<?= site_url('sales/category-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft"><i class="fas fa-print mr-2"></i> Print</a>
                     <?php endif; ?>
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
-                    <?php if (can('reports.export')): ?>
+                    <!-- <?php if (can('reports.export')): ?>
                         <a href="<?= site_url('sales/category-report/export_pdf?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 shadow-soft"><i class="fas fa-file-pdf mr-2"></i> PDF</a>
                         <a href="<?= site_url('sales/category-report/export_excel?from=' . urlencode($from) . '&to=' . urlencode($to) . $empParam) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-yellow-400 text-gray-900 hover:bg-yellow-500 shadow-soft"><i class="fas fa-file-csv mr-2"></i> CSV</a>
-                    <?php endif; ?>
+                    <?php endif; ?> -->
                 </div>
-                <div class="flex items-end gap-2">
 
-                </div>
                 <div class="sm:col-span-2 md:col-span-6">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
                         <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
