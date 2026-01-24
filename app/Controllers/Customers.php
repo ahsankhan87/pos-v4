@@ -791,10 +791,12 @@ class Customers extends BaseController
         // Check available columns for compatibility
         $hasType = false;
         $hasRefNo = false;
+        $hasBalance = false;
         try {
             $fieldNames = $db->getFieldNames('pos_customer_ledger');
             $hasType = in_array('type', $fieldNames, true);
             $hasRefNo = in_array('ref_no', $fieldNames, true);
+            $hasBalance = in_array('balance', $fieldNames, true);
         } catch (\Throwable $e) {
         }
 
@@ -805,6 +807,7 @@ class Customers extends BaseController
             'type',        // 3
             'debit',       // 4
             'credit',      // 5
+            'balance',     // 6
         ];
 
         // Base builder for counts
@@ -847,13 +850,14 @@ class Customers extends BaseController
         $select = 'cl.id, cl.date, cl.description, cl.debit, cl.credit, cl.sale_id';
         if ($hasRefNo) $select .= ', cl.ref_no';
         if ($hasType) $select .= ', cl.type';
+        if ($hasBalance) $select .= ', cl.balance';
         $filtered->select($select)->where('cl.customer_id', (int)$customerId);
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 0);
             $orderColumn = $columns[$orderColumnIndex] ?? 'date';
             $orderDir = strtolower($orderRequest['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
-            if (($orderColumn === 'ref_no' && !$hasRefNo) || ($orderColumn === 'type' && !$hasType)) {
+            if (($orderColumn === 'ref_no' && !$hasRefNo) || ($orderColumn === 'type' && !$hasType) || ($orderColumn === 'balance' && !$hasBalance)) {
                 $orderColumn = 'date';
             }
             $filtered->orderBy('cl.' . $orderColumn, $orderDir);
@@ -873,6 +877,9 @@ class Customers extends BaseController
                 $d = (float)($e['debit'] ?? 0);
                 $c = (float)($e['credit'] ?? 0);
                 $e['type'] = $d > 0 && $c == 0 ? 'sale' : ($c > 0 && $d == 0 ? 'payment' : 'adjustment');
+            }
+            if (!$hasBalance) {
+                $e['balance'] = $e['balance'] ?? 0;
             }
             $etype = strtolower((string)($e['type'] ?? ''));
             $saleId = (int)($e['sale_id'] ?? 0);

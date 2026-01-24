@@ -392,6 +392,7 @@ $routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'SupplierLedger::index', ['filter' => 'permission:purchases.view']);
     $routes->get('view/(:num)', 'SupplierLedger::view/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('print/(:num)', 'SupplierLedger::print/$1', ['filter' => 'permission:purchases.view']);
+    $routes->get('print-compact/(:num)', 'SupplierLedger::printCompact/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('aging-analysis/(:num)', 'SupplierLedger::agingAnalysis/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('outstanding-invoices/(:num)', 'SupplierLedger::outstandingInvoices/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('lumpsum-payment/(:num)', 'SupplierLedger::lumpsumPayment/$1', ['filter' => 'permission:purchases.create']);

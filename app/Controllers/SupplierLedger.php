@@ -210,6 +210,67 @@ class SupplierLedger extends BaseController
     }
 
     /**
+     * Print supplier ledger (POS80 compact)
+     */
+    public function printCompact($supplierId)
+    {
+        $supplier = $this->supplierModel->find($supplierId);
+
+        if (!$supplier) {
+            return redirect()->to('/supplier-ledger')->with('error', 'Supplier not found');
+        }
+
+        // Get date filters
+        $from = $this->request->getGet('from') ?? date('Y-m-01');
+        $to = $this->request->getGet('to') ?? date('Y-m-d');
+
+        // Get opening balance
+        $openingBalance = 0;
+        if (!empty($supplier['opening_balance'])) {
+            $openingBalance = (float)$supplier['opening_balance'];
+        }
+
+        $transactionsBeforeRange = $this->ledgerModel
+            ->where('supplier_id', $supplierId)
+            ->where('date <', $from)
+            ->orderBy('date', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        foreach ($transactionsBeforeRange as $trans) {
+            $openingBalance += (float)$trans['credit'] - (float)$trans['debit'];
+        }
+
+        // Get transactions
+        $transactions = $this->ledgerModel->getTransactions($supplierId, $from, $to);
+
+        // Calculate running balance
+        $runningBalance = $openingBalance;
+        foreach ($transactions as &$transaction) {
+            $runningBalance += (float)$transaction['credit'] - (float)$transaction['debit'];
+            $transaction['running_balance'] = $runningBalance;
+        }
+
+        $closingBalance = $runningBalance;
+        $totalDebit = array_sum(array_column($transactions, 'debit'));
+        $totalCredit = array_sum(array_column($transactions, 'credit'));
+
+        $data = [
+            'title' => 'Supplier Ledger - ' . $supplier['name'],
+            'supplier' => $supplier,
+            'transactions' => $transactions,
+            'openingBalance' => $openingBalance,
+            'closingBalance' => $closingBalance,
+            'totalDebit' => $totalDebit,
+            'totalCredit' => $totalCredit,
+            'from' => $from,
+            'to' => $to
+        ];
+
+        return view('supplier_ledger/print_compact', $data);
+    }
+
+    /**
      * Aging Analysis for supplier
      */
     public function agingAnalysis($supplierId)

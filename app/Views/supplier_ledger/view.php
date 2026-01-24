@@ -98,6 +98,13 @@
                                 <i class="fas fa-print w-5 text-gray-500"></i>
                                 <span class="font-medium">Print Ledger</span>
                             </a>
+
+                            <a href="<?= base_url('supplier-ledger/print-compact/' . $supplier['id'] . '?from=' . $from . '&to=' . $to) ?>"
+                                target="_blank"
+                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-receipt w-5 text-gray-500"></i>
+                                <span class="font-medium">Print POS80 (Compact)</span>
+                            </a>
                         </div>
                     </div>
                 </div>

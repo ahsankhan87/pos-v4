@@ -11,7 +11,7 @@ $q    = esc((string)($q ?? ''));
 $customer = $customer ?? null;
 $showBalance = isset($showBalance) ? (bool)$showBalance : true;
 $canViewAmounts = can_view_amounts();
-$showBalanceInTable = false; // Interactive table omits running balance for performance
+$showBalanceInTable = false; // Hidden for now
 $hiddenAmountsStyle = $canViewAmounts ? '' : 'style="display:none;"';
 
 // Compute quick totals in view as fallback (controller can pass these too)
@@ -293,6 +293,77 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
     document.addEventListener('DOMContentLoaded', function() {
         if (window.jQuery && jQuery.fn.DataTable) {
             var canView = <?= $canViewAmounts ? 'true' : 'false' ?>;
+            var showBal = <?= $showBalance ? 'true' : 'false' ?>;
+
+            var columns = [{
+                    data: 'date'
+                },
+                {
+                    data: 'ref_no',
+                    render: function(data, type, row) {
+                        if (row.ref_url && type === 'display') {
+                            return '<a href="' + row.ref_url + '" class="text-blue-600 hover:underline">' + (data || '-') + '</a>';
+                        }
+                        return data || '-';
+                    }
+                },
+                {
+                    data: 'description'
+                },
+                {
+                    data: 'type',
+                    render: function(data) {
+                        var badge = 'bg-gray-100 text-gray-700';
+                        if (data === 'sale') badge = 'bg-blue-100 text-blue-700';
+                        else if (data === 'payment') badge = 'bg-emerald-100 text-emerald-700';
+                        else if (data === 'return') badge = 'bg-orange-100 text-orange-700';
+                        else if (data === 'adjustment') badge = 'bg-purple-100 text-purple-700';
+                        return '<span class="inline-flex items-center text-xs px-2 py-1 rounded ' + badge + '">' + (data || '-') + '</span>';
+                    }
+                },
+                {
+                    data: 'debit',
+                    className: 'text-right',
+                    visible: canView,
+                    render: function(d) {
+                        return (parseFloat(d || 0)).toFixed(2);
+                    }
+                },
+                {
+                    data: 'credit',
+                    className: 'text-right',
+                    visible: canView,
+                    render: function(d) {
+                        return (parseFloat(d || 0)).toFixed(2);
+                    }
+                }
+            ];
+
+            // Balance column intentionally hidden for now
+
+            columns.push({
+                data: null,
+                className: 'text-center',
+                orderable: false,
+                render: function(data, type, row) {
+                    // Show reverse button only for payment/advance entries (credit > 0) and not already reversed
+                    var credit = parseFloat(row.credit || 0);
+                    var rowType = (row.type || '').toLowerCase();
+                    var isReversible = credit > 0 && (rowType === 'payment' || rowType === 'advance');
+                    var isReversal = rowType === 'reversal' || (row.description || '').indexOf('REVERSAL') !== -1;
+
+                    if (isReversible && !isReversal) {
+                        var refNo = row.ref_no ? String(row.ref_no).replace(/'/g, "\\'") : 'N/A';
+                        return '<button onclick="openReverseModal(' + row.id + ', \'\'' + refNo + '\'\', ' + credit + ')" ' +
+                            'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors" ' +
+                            'title="Reverse this payment">' +
+                            '<i class="fas fa-undo"></i> Reverse' +
+                            '</button>';
+                    }
+                    return '-';
+                }
+            });
+
             var table = jQuery('#ledgerTable').DataTable({
                 serverSide: true,
                 processing: true,
@@ -310,71 +381,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         d.q = '<?= $q ?>';
                     }
                 },
-                columns: [{
-                        data: 'date'
-                    },
-                    {
-                        data: 'ref_no',
-                        render: function(data, type, row) {
-                            if (row.ref_url && type === 'display') {
-                                return '<a href="' + row.ref_url + '" class="text-blue-600 hover:underline">' + (data || '-') + '</a>';
-                            }
-                            return data || '-';
-                        }
-                    },
-                    {
-                        data: 'description'
-                    },
-                    {
-                        data: 'type',
-                        render: function(data) {
-                            var badge = 'bg-gray-100 text-gray-700';
-                            if (data === 'sale') badge = 'bg-blue-100 text-blue-700';
-                            else if (data === 'payment') badge = 'bg-emerald-100 text-emerald-700';
-                            else if (data === 'return') badge = 'bg-orange-100 text-orange-700';
-                            else if (data === 'adjustment') badge = 'bg-purple-100 text-purple-700';
-                            return '<span class="inline-flex items-center text-xs px-2 py-1 rounded ' + badge + '">' + (data || '-') + '</span>';
-                        }
-                    },
-                    {
-                        data: 'debit',
-                        className: 'text-right',
-                        visible: canView,
-                        render: function(d) {
-                            return (parseFloat(d || 0)).toFixed(2);
-                        }
-                    },
-                    {
-                        data: 'credit',
-                        className: 'text-right',
-                        visible: canView,
-                        render: function(d) {
-                            return (parseFloat(d || 0)).toFixed(2);
-                        }
-                    },
-                    {
-                        data: null,
-                        className: 'text-center',
-                        orderable: false,
-                        render: function(data, type, row) {
-                            // Show reverse button only for payment/advance entries (credit > 0) and not already reversed
-                            var credit = parseFloat(row.credit || 0);
-                            var rowType = (row.type || '').toLowerCase();
-                            var isReversible = credit > 0 && (rowType === 'payment' || rowType === 'advance');
-                            var isReversal = rowType === 'reversal' || (row.description || '').indexOf('REVERSAL') !== -1;
-
-                            if (isReversible && !isReversal) {
-                                var refNo = row.ref_no ? String(row.ref_no).replace(/'/g, "\\'") : 'N/A';
-                                return '<button onclick="openReverseModal(' + row.id + ', \'' + refNo + '\', ' + credit + ')" ' +
-                                    'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors" ' +
-                                    'title="Reverse this payment">' +
-                                    '<i class="fas fa-undo"></i> Reverse' +
-                                    '</button>';
-                            }
-                            return '-';
-                        }
-                    }
-                ],
+                columns: columns,
                 language: {
                     search: 'Search in table:',
                     lengthMenu: 'Show _MENU_',

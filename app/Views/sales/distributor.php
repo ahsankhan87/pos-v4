@@ -144,7 +144,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Date</label>
-                            <input type="date" name="sale_date" value="<?= date('Y-m-d') ?>" class="w-full text-sm rounded border-gray-300">
+                            <input type="datetime-local" name="sale_date" value="<?= date('Y-m-d\TH:i:s') ?>" class="w-full text-sm rounded border-gray-300">
                         </div>
 
                         <div>
@@ -256,6 +256,10 @@ $canEditLineDiscount = can('sales.edit_discount');
                             <div class="mt-2 flex justify-between">
                                 <span class="text-gray-600">Change:</span>
                                 <span id="changeAmount" class="font-bold text-green-600"><?= session()->get('currency_symbol') ?>0.00</span>
+                            </div>
+                            <div class="mt-1 flex justify-between">
+                                <span class="text-gray-600">Due:</span>
+                                <span id="dueAmount" class="font-bold text-red-600 hidden"><?= session()->get('currency_symbol') ?>0.00</span>
                             </div>
                         </div>
                     </div>
@@ -703,18 +707,41 @@ $canEditLineDiscount = can('sales.edit_discount');
 
         function updatePaymentSummaries() {
             const tendered = parseFloat($('#tenderedAmountInput').val()) || 0;
-            const diff = tendered - lastGrandTotal;
             const currency = '<?= session()->get('currency_symbol') ?>';
+
+            const payType = String($('#payment_type').val() || 'cash').toLowerCase();
+
+            // Credit flow: no change; remaining becomes due
+            if (payType === 'credit') {
+                const due = Math.max(0, lastGrandTotal - tendered);
+                $('#changeAmount').text(currency + '0.00').removeClass('text-green-600').addClass('text-gray-700');
+                if (due > 0.005) {
+                    $('#dueAmount').text(currency + due.toFixed(2)).removeClass('hidden');
+                } else {
+                    $('#dueAmount').addClass('hidden');
+                }
+
+                $('#tendered_amount').val(tendered.toFixed(2));
+                $('#change_amount').val('0.00');
+                return;
+            }
+
+            const diff = tendered - lastGrandTotal;
 
             if (diff >= 0) {
                 $('#changeAmount').text(currency + diff.toFixed(2)).removeClass('text-red-600').addClass('text-green-600');
+                $('#dueAmount').addClass('hidden');
             } else {
+                const due = Math.abs(diff);
                 $('#changeAmount').text(currency + '0.00').removeClass('text-green-600').addClass('text-gray-700');
+                $('#dueAmount').text(currency + due.toFixed(2)).removeClass('hidden');
             }
 
             $('#tendered_amount').val(tendered.toFixed(2));
             $('#change_amount').val(Math.max(0, diff).toFixed(2));
         }
+
+        $('#payment_type').on('change', updatePaymentSummaries);
 
         $('#discount, #discount_type, #taxRate, #tenderedAmountInput').on('change input', () => {
             calculateTotals();
