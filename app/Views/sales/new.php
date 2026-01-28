@@ -578,6 +578,9 @@ $canEditLineDiscount = can('sales.edit_discount');
     // Role/permission-based locks
     const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
     const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
+    // Per-installation setting from Settings page: show/hide item discount type dropdown (fixed/%).
+    // When hidden, all item discounts are treated as fixed.
+    const SHOW_ITEM_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
 
     $(document).ready(function() {
         // Update time every second
@@ -1011,11 +1014,14 @@ $canEditLineDiscount = can('sales.edit_discount');
             let subtotal = 0; // gross subtotal before discounts
             let totalDiscount = 0;
 
+            const showItemDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_ITEM_DISCOUNT_TYPE;
+
             cart.forEach((item, idx) => {
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                 let lineDiscount = 0;
                 if (item.discount && parseFloat(item.discount) > 0) {
-                    if ((item.discount_type || 'fixed') === 'percentage') {
+                    const effectiveDiscountType = SHOW_ITEM_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+                    if (effectiveDiscountType === 'percentage') {
                         lineDiscount = lineBase * (parseFloat(item.discount) / 100);
                     } else {
                         lineDiscount = parseFloat(item.discount);
@@ -1031,6 +1037,15 @@ $canEditLineDiscount = can('sales.edit_discount');
                 const hasCartons = cartonSize > 1;
                 // Do NOT auto-switch display unit; always keep user's chosen unit. Default stays 'pieces'.
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
+
+                const discountTypeControl = showItemDiscountTypeDropdown ? `
+                            <select onchange="updateItemDiscountType(${idx}, this.value)"
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                data-cart-idx="${idx}" class="item-discount-type text-xs border border-gray-300 rounded px-1.5 py-1${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
+                                <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
+                            </select>
+                        ` : ``;
 
                 tbody += `
                 <tr class="hover:bg-gray-50 transition-colors" data-cart-idx="${idx}">
@@ -1093,13 +1108,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                                 ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-cart-idx="${idx}"
-                                class="item-discount-input w-20 text-center border border-gray-300 rounded py-1 text-sm font-semibold${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
-                            <select onchange="updateItemDiscountType(${idx}, this.value)"
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
-                                data-cart-idx="${idx}" class="item-discount-type text-xs border border-gray-300 rounded px-1.5 py-1${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
-                                <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
-                                <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
-                            </select>
+                                class="item-discount-input w-24 text-center border border-gray-300 rounded py-1 text-sm font-semibold${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                            ${discountTypeControl}
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
@@ -1220,7 +1230,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     const base = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                     let d = 0;
                     if (item.discount && parseFloat(item.discount) > 0) {
-                        if ((item.discount_type || 'fixed') === 'percentage') {
+                        const effectiveDiscountType = SHOW_ITEM_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+                        if (effectiveDiscountType === 'percentage') {
                             d = base * (parseFloat(item.discount) / 100);
                         } else {
                             d = parseFloat(item.discount);
@@ -1471,7 +1482,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updateItemDiscountType = function(idx, t) {
-            if (!CAN_EDIT_DISCOUNT) return;
+            if (!CAN_EDIT_DISCOUNT || !SHOW_ITEM_DISCOUNT_TYPE) return;
             skipRefocus = true;
             const restoreFocus = {
                 idx: idx,
@@ -1648,6 +1659,11 @@ $canEditLineDiscount = can('sales.edit_discount');
                 // Confirm and submit
                 if (confirm('Complete this sale?')) {
                     // Update cart data before submit
+                    if (!SHOW_ITEM_DISCOUNT_TYPE) {
+                        cart.forEach(it => {
+                            it.discount_type = 'fixed';
+                        });
+                    }
                     $('#cart-data').val(JSON.stringify(cart));
                     $('form')[0].submit();
                 }

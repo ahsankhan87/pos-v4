@@ -22,15 +22,19 @@ class SupplierLedgerModel extends Model
 
     public function getSupplierBalance($supplierId)
     {
-        $result = $this->select('COALESCE(SUM(credit), 0) - COALESCE(SUM(debit), 0) AS balance')
+        // NOTE:
+        // Supplier opening balance is stored on pos_suppliers.opening_balance (not as a ledger row).
+        // Most callers expect this method to return the *full* supplier balance (opening + movements).
+        $supplierModel = new \App\Models\SuppliersModel();
+        $supplier = $supplierModel->find($supplierId);
+        $opening = (float)($supplier['opening_balance'] ?? 0);
+
+        $result = $this->select('COALESCE(SUM(credit), 0) - COALESCE(SUM(debit), 0) AS movement')
             ->where('supplier_id', $supplierId)
             ->first();
 
-        if (!$result) {
-            return 0;
-        }
-
-        return (float)($result['balance'] ?? 0);
+        $movement = $result ? (float)($result['movement'] ?? 0) : 0.0;
+        return $opening + $movement;
     }
     public function getOpeningBalance($supplierId)
     {

@@ -569,7 +569,7 @@ class SupplierLedger extends BaseController
         }
 
         $supplierId = (int) $this->request->getPost('supplier_id');
-        $transactionType = $this->request->getPost('transaction_type'); // 'payment' or 'advance'
+        $transactionType = (string) $this->request->getPost('transaction_type'); // 'payment' or 'receipt' (legacy: 'payout')
         $amount = (float) $this->request->getPost('amount');
         $paymentDate = $this->request->getPost('payment_date') ?: date('Y-m-d');
         $paymentMethod = $this->request->getPost('payment_method') ?: 'cash';
@@ -590,178 +590,50 @@ class SupplierLedger extends BaseController
             ]);
         }
 
-        $db = \Config\Database::connect();
-        $db->transStart();
-
         try {
-            $purchaseModel = new \App\Models\PurchaseModel();
-
-            // Determine debit/credit based on transaction type
-            if ($transactionType === 'advance') {
-                // Advance payment is a DEBIT (reduces liability - we're prepaying)
-                $description = 'Advance Payment - ' . $description;
-                $debit = 0;
-                $credit = $amount;
-                $balanceChange = $amount; // Increases debit (advance receivable)
-            } else {
-                // Regular payment is a DEBIT (reduces accounts payable)
-                // Auto-distribute to outstanding invoices
-                $debit = $amount;
-                $credit = 0;
-                $balanceChange = $amount;
-
-                // Get all transactions for FIFO calculation
-                $allTransactions = $this->ledgerModel
-                    ->where('supplier_id', $supplierId)
-                    ->orderBy('date', 'ASC')
-                    ->orderBy('id', 'ASC')
-                    ->findAll();
-
-                // Track open credits (purchases that haven't been fully paid)
-                $openCredits = [];
-
-                foreach ($allTransactions as $trans) {
-                    if ((float)$trans['credit'] > 0 && !empty($trans['purchase_id'])) {
-                        $openCredits[$trans['id']] = [
-                            'id' => $trans['id'],
-                            'purchase_id' => $trans['purchase_id'],
-                            'amount' => (float)$trans['credit'],
-                            'remaining' => (float)$trans['credit']
-                        ];
-                    } elseif ((float)$trans['debit'] > 0) {
-                        $paymentAmount = (float)$trans['debit'];
-
-                        foreach ($openCredits as $id => &$credit_item) {
-                            if ($paymentAmount <= 0) break;
-
-                            if ($credit_item['remaining'] > 0) {
-                                $applied = min($credit_item['remaining'], $paymentAmount);
-                                $credit_item['remaining'] -= $applied;
-                                $paymentAmount -= $applied;
-
-                                if ($credit_item['remaining'] <= 0.01) {
-                                    unset($openCredits[$id]);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Distribute payment to outstanding invoices (FIFO)
-                $remainingAmount = $amount;
-                foreach ($openCredits as $credit_item) {
-                    if ($remainingAmount <= 0.01) break;
-
-                    $purchaseId = $credit_item['purchase_id'];
-                    $purchase = $purchaseModel->find($purchaseId);
-
-                    if (!$purchase) continue;
-
-                    $applyAmount = min($credit_item['remaining'], $remainingAmount);
-
-                    // Insert into pos_purchase_payments
-                    $paymentRecord = [
-                        'purchase_id' => $purchaseId,
-                        'payment_date' => $paymentDate,
-                        'amount' => $applyAmount,
-                        'payment_method' => $paymentMethod,
-                        'reference' => '',
-                        'note' => $description,
-                        'created_by' => session()->get('user_id'),
-                        'created_at' => date('Y-m-d H:i:s')
-                    ];
-
-                    if (!$db->table('pos_purchase_payments')->insert($paymentRecord)) {
-                        throw new \Exception('Failed to create purchase payment record');
-                    }
-
-                    $purchasePaymentId = $db->insertID();
-
-                    // Update purchase paid_amount and payment_status
-                    $newPaidAmount = (float)$purchase['paid_amount'] + $applyAmount;
-                    $grandTotal = (float)$purchase['grand_total'];
-
-                    if ($newPaidAmount >= $grandTotal - 0.01) {
-                        $paymentStatus = 'paid';
-                    } elseif ($newPaidAmount > 0) {
-                        $paymentStatus = 'partial';
-                    } else {
-                        $paymentStatus = 'pending';
-                    }
-
-                    if (!$purchaseModel->update($purchaseId, [
-                        'paid_amount' => $newPaidAmount,
-                        'payment_status' => $paymentStatus
-                    ])) {
-                        throw new \Exception('Failed to update purchase for ID: ' . $purchaseId);
-                    }
-
-                    // Insert ledger entry for this payment to specific invoice
-                    // Payment = DEBIT (reduces liability)
-                    $this->ledgerModel->insert([
-                        'supplier_id' => $supplierId,
-                        'purchase_id' => $purchaseId,
-                        'payment_id' => $purchasePaymentId,
-                        'date' => $paymentDate . ' ' . date('H:i:s'),
-                        'description' => 'Payment - ' . ($purchase['invoice_no'] ?? 'Invoice') . ' [' . strtoupper($paymentMethod) . ']',
-                        'debit' => $applyAmount,
-                        'credit' => 0,
-                        'balance' => $this->ledgerModel->getSupplierBalance($supplierId) - $applyAmount,
-                        'ref_no' => 'PAY-' . time() . '-' . $purchaseId,
-                        'created_at' => date('Y-m-d H:i:s')
-                    ]);
-
-                    $remainingAmount -= $applyAmount;
-                }
-
-                // If there's remaining amount (no outstanding invoices), create a general payment entry
-                if ($remainingAmount > 0.01) {
-                    $this->ledgerModel->insert([
-                        'supplier_id' => $supplierId,
-                        'purchase_id' => null,
-                        'payment_id' => null,
-                        'date' => $paymentDate . ' ' . date('H:i:s'),
-                        'description' => 'Payment - ' . $description . ' [' . strtoupper($paymentMethod) . ']',
-                        'debit' => $remainingAmount,
-                        'credit' => 0,
-                        'balance' => $this->ledgerModel->getSupplierBalance($supplierId) - $remainingAmount,
-                        'ref_no' => 'PAY-' . time(),
-                        'created_at' => date('Y-m-d H:i:s')
-                    ]);
-                }
-
-                $db->transComplete();
-
-                if ($db->transStatus() === false) {
-                    throw new \Exception('Transaction failed');
-                }
-
-                logAction('supplier_payment_auto_distributed', "Auto-distributed payment of {$amount} for Supplier ID: {$supplierId}");
-
+            if (!in_array($transactionType, ['payment', 'receipt', 'payout'], true)) {
                 return $this->response->setJSON([
-                    'success' => true,
-                    'message' => 'Payment of ' . number_to_currency($amount, 'PKR', 'en_PK', 2) . ' recorded and distributed successfully'
+                    'success' => false,
+                    'message' => 'Invalid transaction type'
                 ]);
             }
 
-            // For advance payments, just create ledger entry
+            // Back-compat: previously used "payout" in UI; treat it as "receipt".
+            if ($transactionType === 'payout') {
+                $transactionType = 'receipt';
+            }
+
+            // Supplier ledger convention in this app:
+            // - Balance = opening + SUM(credit) - SUM(debit)
+            // - Pay supplier => DEBIT (reduces payable)
+            // - Receive from supplier (refund/return/settlement) => CREDIT
+            if ($transactionType === 'payment') {
+                $debit = $amount;
+                $credit = 0.0;
+                $refNo = 'PAY-' . time();
+                $finalDescription = 'Payment - ' . $description . ' [' . strtoupper($paymentMethod) . ']';
+            } else {
+                $debit = 0.0;
+                $credit = $amount;
+                $refNo = 'RCV-' . time();
+                $finalDescription = 'Receipt - ' . $description . ' [' . strtoupper($paymentMethod) . ']';
+            }
+
+            $currentBalance = $this->ledgerModel->getSupplierBalance($supplierId);
+            $newBalance = $currentBalance + $credit - $debit;
+
             $this->ledgerModel->insert([
                 'supplier_id' => $supplierId,
                 'purchase_id' => null,
+                'payment_id' => null,
                 'date' => $paymentDate . ' ' . date('H:i:s'),
-                'description' => $description . ' [' . strtoupper($paymentMethod) . ']',
+                'description' => $finalDescription,
                 'debit' => $debit,
                 'credit' => $credit,
-                'balance' => $this->ledgerModel->getSupplierBalance($supplierId) + $balanceChange,
-                'ref_no' => strtoupper($transactionType) . '-' . time(),
+                'balance' => $newBalance,
+                'ref_no' => $refNo,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                throw new \Exception('Transaction failed');
-            }
 
             logAction('supplier_custom_payment', "Custom {$transactionType} of {$amount} for Supplier ID: {$supplierId}");
 
@@ -770,12 +642,134 @@ class SupplierLedger extends BaseController
                 'message' => ucfirst($transactionType) . ' recorded successfully'
             ]);
         } catch (\Exception $e) {
-            $db->transRollback();
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Reverse a manual supplier ledger transaction (no purchase link)
+     * Creates a new ledger entry with opposite debit/credit instead of deleting history.
+     */
+    public function reversePayment()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $ledgerId = (int) $this->request->getPost('ledger_id');
+        $reason = trim((string) $this->request->getPost('reason'));
+
+        if ($ledgerId <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ledger ID is required'
+            ]);
+        }
+
+        $ledgerEntry = $this->ledgerModel->find($ledgerId);
+        if (!$ledgerEntry) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ledger entry not found'
+            ]);
+        }
+
+        // Only allow reversal of manual entries (no purchase link)
+        if (!empty($ledgerEntry['purchase_id'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Cannot reverse a purchase-linked entry here. Please reverse it from the purchase/payment module.'
+            ]);
+        }
+
+        $refNo = (string)($ledgerEntry['ref_no'] ?? '');
+        $desc = (string)($ledgerEntry['description'] ?? '');
+        if ($refNo !== '' && strpos($refNo, 'REV-') === 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'This entry is already a reversal.'
+            ]);
+        }
+        if ($desc !== '' && stripos($desc, 'REVERSAL') !== false) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'This entry is already a reversal.'
+            ]);
+        }
+
+        $supplierId = (int)($ledgerEntry['supplier_id'] ?? 0);
+        if ($supplierId <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid supplier on ledger entry'
+            ]);
+        }
+
+        $supplier = $this->supplierModel->find($supplierId);
+        if (!$supplier) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Supplier not found'
+            ]);
+        }
+
+        $originalDebit = (float)($ledgerEntry['debit'] ?? 0);
+        $originalCredit = (float)($ledgerEntry['credit'] ?? 0);
+        if ($originalDebit <= 0.0 && $originalCredit <= 0.0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Nothing to reverse for this entry'
+            ]);
+        }
+
+        $reference = $refNo !== '' ? $refNo : ('LEDGER-' . $ledgerId);
+
+        // Prevent double reversal by looking for an existing reversal referencing this ref
+        $existing = $this->ledgerModel
+            ->where('supplier_id', $supplierId)
+            ->like('description', 'REVERSAL of Ref: ' . $reference)
+            ->first();
+        if ($existing) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'This transaction is already reversed.'
+            ]);
+        }
+
+        // Reverse effect on balance: swap debit/credit
+        $reverseDebit = $originalCredit;
+        $reverseCredit = $originalDebit;
+
+        $currentBalance = $this->ledgerModel->getSupplierBalance($supplierId);
+        $newBalance = $currentBalance + $reverseCredit - $reverseDebit;
+
+        $reverseDesc = 'REVERSAL of Ref: ' . $reference;
+        if ($reason !== '') {
+            $reverseDesc .= ' - ' . $reason;
+        }
+
+        $this->ledgerModel->insert([
+            'supplier_id' => $supplierId,
+            'purchase_id' => null,
+            'payment_id' => null,
+            'date' => date('Y-m-d H:i:s'),
+            'description' => $reverseDesc,
+            'debit' => $reverseDebit,
+            'credit' => $reverseCredit,
+            'balance' => $newBalance,
+            'ref_no' => 'REV-' . time(),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        logAction('supplier_payment_reversed', 'Reversed ledger entry ID: ' . $ledgerId . ' for Supplier ID: ' . $supplierId . ', Ref: ' . $reference);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Transaction reversed successfully'
+        ]);
     }
 
     /**

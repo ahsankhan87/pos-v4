@@ -119,7 +119,7 @@ class Accounts extends BaseController
         }
 
         if ($onlyOutstanding) {
-            $base->where('(COALESCE(s.opening_balance,0) + COALESCE(l.t_debit,0) - COALESCE(l.t_credit,0)) != 0', null, false);
+            $base->where('(COALESCE(s.opening_balance,0) + COALESCE(l.t_credit,0) - COALESCE(l.t_debit,0)) != 0', null, false);
         }
 
         $totalBase = $db->table('pos_suppliers s');

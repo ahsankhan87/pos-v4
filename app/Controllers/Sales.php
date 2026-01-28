@@ -87,7 +87,9 @@ class Sales extends BaseController
         $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
         $data['title'] = 'New Sale';
         $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
-        $data['taxRate'] = $settingModel->first()['tax_rate'] ?? 0;
+        $settingsRow = $settingModel->first() ?? [];
+        $data['taxRate'] = $settingsRow['tax_rate'] ?? 0;
+        $data['salesShowDiscountType'] = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
 
         // No session-based prefill; cart is managed in-memory on the client now
 
@@ -112,7 +114,9 @@ class Sales extends BaseController
         $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
         $data['title'] = 'New Sale';
         $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
-        $data['taxRate'] = $settingModel->first()['tax_rate'] ?? 0;
+        $settingsRow = $settingModel->first() ?? [];
+        $data['taxRate'] = $settingsRow['tax_rate'] ?? 0;
+        $data['salesShowDiscountType'] = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
 
         // No session-based prefill; cart is managed in-memory on the client now
 
@@ -1746,7 +1750,6 @@ class Sales extends BaseController
                         'debit' => 0,
                         'credit' => $applyAmount,
                         'balance' => 0, // Will be updated by trigger or separate process
-                        'type' => 'payment',
                         'ref_no' => 'PMT-' . time() . '-' . $saleId,
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
@@ -1794,16 +1797,23 @@ class Sales extends BaseController
         $customerModel = new M_customers();
 
         $customerId = (int) $this->request->getPost('customer_id');
-        $transactionType = $this->request->getPost('transaction_type'); // 'payment' or 'advance'
+        $transactionType = strtolower((string)($this->request->getPost('transaction_type') ?? '')); // 'payment' | 'payout'
         $amount = (float) $this->request->getPost('amount');
         $paymentDate = $this->request->getPost('payment_date') ?: date('Y-m-d');
         $paymentMethod = $this->request->getPost('payment_method') ?: 'cash';
-        $description = $this->request->getPost('description');
+        $description = trim((string)($this->request->getPost('description') ?? ''));
 
-        if ($amount <= 0 || !$description) {
+        if ($amount <= 0 || $description === '') {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Invalid amount or missing description'
+            ]);
+        }
+
+        if (!in_array($transactionType, ['payment', 'payout'], true)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid transaction type'
             ]);
         }
 
@@ -1819,96 +1829,54 @@ class Sales extends BaseController
         $db->transStart();
 
         try {
-            $type = $transactionType === 'payment' ? 'payment' : 'advance';
+            // Customer ledger convention in this app:
+            // balance = opening_balance + SUM(debit) - SUM(credit)
+            // So: debit increases customer balance (customer owes more), credit decreases it (customer pays / overpays).
+            $nowTime = date('H:i:s');
+            $entryDateTime = $paymentDate . ' ' . $nowTime;
+            $methodTag = ' [' . strtoupper((string)$paymentMethod) . ']';
 
-            if ($transactionType === 'advance') {
-                $description = 'Advance Payment - ' . $description;
-            }
+            $debit = 0.0;
+            $credit = 0.0;
+            $type = $transactionType;
+            $refPrefix = 'TXN';
+            $finalDescription = $description;
 
-            // If payment type, auto-distribute to outstanding invoices (FIFO)
             if ($transactionType === 'payment') {
-                $remainingAmount = $amount;
-
-                // Get outstanding invoices ordered by date (FIFO)
-                $outstandingInvoices = $salesModel->where('customer_id', $customerId)
-                    ->where('due_amount >', 0)
-                    ->whereIn('payment_status', ['partial', 'due'])
-                    ->orderBy('created_at', 'ASC')
-                    ->findAll();
-
-                foreach ($outstandingInvoices as $sale) {
-                    if ($remainingAmount <= 0) break;
-
-                    $saleId = $sale['id'];
-                    $due = (float) $sale['due_amount'];
-                    $applyAmount = min($remainingAmount, $due);
-
-                    if ($applyAmount > 0) {
-                        // Update sale
-                        $newDue = $due - $applyAmount;
-                        $paymentStatus = $newDue <= 0.01 ? 'paid' : 'partial';
-
-                        $salesModel->update($saleId, [
-                            'due_amount' => $newDue,
-                            'payment_status' => $paymentStatus
-                        ]);
-
-                        // Ledger entry for this distribution
-                        $invoiceDesc = $description . ' - Invoice #' . $sale['invoice_no'];
-
-                        $ledgerModel->insert([
-                            'customer_id' => $customerId,
-                            'sale_id' => $saleId,
-                            'date' => $paymentDate . ' ' . date('H:i:s'),
-                            'description' => $invoiceDesc . ' [' . strtoupper($paymentMethod) . ']',
-                            'debit' => 0,
-                            'credit' => $applyAmount,
-                            'balance' => 0, // Will be updated by trigger or separate process
-                            'type' => $type,
-                            'ref_no' => strtoupper($transactionType) . '-' . time() . '-' . $saleId,
-                            'created_at' => date('Y-m-d H:i:s')
-                        ]);
-
-                        $remainingAmount -= $applyAmount;
-
-                        logAction('payment_received', "Custom payment of {$applyAmount} for Sale ID: {$saleId}, Invoice: {$sale['invoice_no']}");
-                    }
-                }
-
-                // If any amount remains, create a general ledger entry (advance/credit balance)
-                if ($remainingAmount > 0.01) {
-                    $ledgerModel->insert([
-                        'customer_id' => $customerId,
-                        'sale_id' => null,
-                        'date' => $paymentDate . ' ' . date('H:i:s'),
-                        'description' => $description . ' (Credit Balance) [' . strtoupper($paymentMethod) . ']',
-                        'debit' => 0,
-                        'credit' => $remainingAmount,
-                        'balance' => 0,
-                        'type' => 'advance',
-                        'ref_no' => 'ADV-' . time(),
-                        'created_at' => date('Y-m-d H:i:s')
-                    ]);
-
-                    logAction('custom_payment', "Custom payment of {$remainingAmount} recorded as credit balance for Customer ID: {$customerId}");
-                }
-            } else {
-                // Advance type - just create ledger entry
-                $ledgerModel->insert([
-                    'customer_id' => $customerId,
-                    'sale_id' => null,
-                    'date' => $paymentDate . ' ' . date('H:i:s'),
-                    'description' => $description . ' [' . strtoupper($paymentMethod) . ']',
-                    'debit' => 0,
-                    'credit' => $amount,
-                    'balance' => 0, // Will be updated by trigger or separate process
-                    'type' => $type,
-                    'ref_no' => strtoupper($transactionType) . '-' . time(),
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
-
-                logAction('custom_payment', "Custom {$transactionType} of {$amount} for Customer ID: {$customerId}");
+                $credit = $amount;
+                //$type = 'payment';
+                $refPrefix = 'PMT';
+                $finalDescription = 'Payment Received - ' . $description;
+            } else { // payout
+                // payout = money paid out to customer (refund/withdrawal of their credit balance)
+                // This should be a DEBIT in this ledger convention.
+                $debit = $amount;
+                //$type = 'payout';
+                $refPrefix = 'OUT';
+                $finalDescription = 'Payout - ' . $description;
             }
+
+            $currentBalance = (float) $ledgerModel->getCustomerBalance($customerId);
+            $newBalance = round($currentBalance + $debit - $credit, 2);
+
+            $inserted = $ledgerModel->insert([
+                'customer_id' => $customerId,
+                'sale_id' => null,
+                'date' => $entryDateTime,
+                'description' => $finalDescription . $methodTag,
+                'debit' => $debit,
+                'credit' => $credit,
+                'balance' => $newBalance,
+                'ref_no' => $refPrefix . '-' . time(),
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if (!$inserted) {
+                $errs = $ledgerModel->errors();
+                throw new \Exception('Failed to record ledger entry. ' . (!empty($errs) ? json_encode($errs) : ''));
+            }
+
+            logAction('custom_payment', "Custom {$transactionType} of {$amount} for Customer ID: {$customerId}");
 
             $db->transComplete();
 
@@ -1960,11 +1928,22 @@ class Sales extends BaseController
                 ]);
             }
 
-            // Only allow reversal of payment/advance entries (credit > 0)
-            if ((float)$ledgerEntry['credit'] <= 0) {
+            // Only allow reversal of payment/payout entries (credit > 0 or debit > 0)
+            // (customer ledger convention: balance += debit - credit)
+            $origCredit = (float)($ledgerEntry['credit'] ?? 0);
+            $origDebit = (float)($ledgerEntry['debit'] ?? 0);
+            if ($origCredit <= 0 && $origDebit <= 0) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'Only payment entries can be reversed'
+                    'message' => 'Only payment/payout entries can be reversed'
+                ]);
+            }
+
+            // Prevent reversing a reversal
+            if (strtolower((string)($ledgerEntry['type'] ?? '')) === 'reversal') {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Reversal entries cannot be reversed'
                 ]);
             }
 
@@ -1982,29 +1961,118 @@ class Sales extends BaseController
                 ]);
             }
 
-            // Create reversal entry (debit to reverse the credit)
+            // Create reversal entry:
+            // - If original is CREDIT (payment received), reversal is DEBIT
+            // - If original is DEBIT (payout given), reversal is CREDIT
+            $revDebit = 0.0;
+            $revCredit = 0.0;
+            $revAmount = 0.0;
+            if ($origCredit > 0) {
+                $revDebit = $origCredit;
+                $revAmount = $origCredit;
+            } else {
+                $revCredit = $origDebit;
+                $revAmount = $origDebit;
+            }
+
+            $currentBalance = (float) $ledgerModel->getCustomerBalance((int)$ledgerEntry['customer_id']);
+            $newBalance = round($currentBalance + $revDebit - $revCredit, 2);
+
             $reversalData = [
                 'customer_id' => $ledgerEntry['customer_id'],
                 'sale_id' => $ledgerEntry['sale_id'] ?? null,
                 'date' => date('Y-m-d H:i:s'),
                 'description' => 'REVERSAL of Ref: ' . $refNo . ' - ' . $reason,
-                'debit' => $ledgerEntry['credit'], // Reverse the credit as debit
-                'credit' => 0,
-                'balance' => 0,
-                'type' => 'reversal',
+                'debit' => $revDebit,
+                'credit' => $revCredit,
+                'balance' => $newBalance,
                 'ref_no' => 'REV-' . time(),
                 'created_at' => date('Y-m-d H:i:s')
             ];
 
             $ledgerModel->insert($reversalData);
 
-            logAction('payment_reversal', "Reversed payment ID: {$ledgerId}, Ref: {$refNo}, Amount: {$ledgerEntry['credit']}, Reason: {$reason}");
+            logAction('payment_reversal', "Reversed ledger ID: {$ledgerId}, Ref: {$refNo}, Amount: {$revAmount}, Reason: {$reason}");
 
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'Payment reversed successfully'
             ]);
         } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Delete a manual customer ledger entry (custom payment/payout/reversal).
+     * Only entries with no sale_id can be deleted.
+     */
+    public function deleteLedgerEntry()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $ledgerModel = new \App\Models\CustomerLedgerModel();
+        $ledgerId = (int) $this->request->getPost('ledger_id');
+
+        if ($ledgerId <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ledger ID is required'
+            ]);
+        }
+
+        $ledgerEntry = $ledgerModel->find($ledgerId);
+        if (!$ledgerEntry) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ledger entry not found'
+            ]);
+        }
+
+        // Only allow deletion of manual entries
+        if (!empty($ledgerEntry['sale_id'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Cannot delete an entry linked to a sale. Please delete/edit it from the Sale module.'
+            ]);
+        }
+
+        $customerId = (int)($ledgerEntry['customer_id'] ?? 0);
+        if ($customerId <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid customer on ledger entry'
+            ]);
+        }
+
+        $db = $ledgerModel->db;
+        $db->transStart();
+
+        try {
+            if (!$ledgerModel->delete($ledgerId)) {
+                throw new \Exception('Failed to delete ledger entry');
+            }
+
+            $ledgerModel->recalculateBalances($customerId);
+
+            $db->transComplete();
+            if ($db->transStatus() === false) {
+                throw new \Exception('Transaction failed');
+            }
+
+            logAction('customer_ledger_deleted', 'Deleted customer ledger entry ID: ' . $ledgerId . ' for Customer ID: ' . $customerId);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Ledger entry deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            $db->transRollback();
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()

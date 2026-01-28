@@ -2,6 +2,7 @@
 <?= $this->section('content') ?>
 <?php
 helper('permissions');
+helper('permission');
 $currencySymbol = session()->get('currency_symbol') ?: '$';
 // Values now passed in by controller
 $from = esc((string)($from ?? ''));
@@ -13,6 +14,9 @@ $showBalance = isset($showBalance) ? (bool)$showBalance : true;
 $canViewAmounts = can_view_amounts();
 $showBalanceInTable = false; // Hidden for now
 $hiddenAmountsStyle = $canViewAmounts ? '' : 'style="display:none;"';
+
+$canDeleteLedger = function_exists('can') ? can('sales.delete') : true;
+$canReverseLedger = function_exists('can') ? can('sales.update') : true;
 
 // Compute quick totals in view as fallback (controller can pass these too)
 $totalDebit = 0.0;
@@ -293,6 +297,8 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
     document.addEventListener('DOMContentLoaded', function() {
         if (window.jQuery && jQuery.fn.DataTable) {
             var canView = <?= $canViewAmounts ? 'true' : 'false' ?>;
+            var canDeleteLedger = <?= $canDeleteLedger ? 'true' : 'false' ?>;
+            var canReverseLedger = <?= $canReverseLedger ? 'true' : 'false' ?>;
             var showBal = <?= $showBalance ? 'true' : 'false' ?>;
 
             var columns = [{
@@ -316,8 +322,10 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         var badge = 'bg-gray-100 text-gray-700';
                         if (data === 'sale') badge = 'bg-blue-100 text-blue-700';
                         else if (data === 'payment') badge = 'bg-emerald-100 text-emerald-700';
+                        else if (data === 'payout') badge = 'bg-rose-100 text-rose-700';
                         else if (data === 'return') badge = 'bg-orange-100 text-orange-700';
                         else if (data === 'adjustment') badge = 'bg-purple-100 text-purple-700';
+                        else if (data === 'reversal') badge = 'bg-red-100 text-red-700';
                         return '<span class="inline-flex items-center text-xs px-2 py-1 rounded ' + badge + '">' + (data || '-') + '</span>';
                     }
                 },
@@ -346,21 +354,42 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                 className: 'text-center',
                 orderable: false,
                 render: function(data, type, row) {
-                    // Show reverse button only for payment/advance entries (credit > 0) and not already reversed
+                    // Show reverse button for reversible transactions (payment credit or payout debit)
                     var credit = parseFloat(row.credit || 0);
+                    var debit = parseFloat(row.debit || 0);
                     var rowType = (row.type || '').toLowerCase();
-                    var isReversible = credit > 0 && (rowType === 'payment' || rowType === 'advance');
+                    var isReversible = (rowType === 'payment' && credit > 0) || (rowType === 'payout' && debit > 0);
                     var isReversal = rowType === 'reversal' || (row.description || '').indexOf('REVERSAL') !== -1;
 
-                    if (isReversible && !isReversal) {
-                        var refNo = row.ref_no ? String(row.ref_no).replace(/'/g, "\\'") : 'N/A';
-                        return '<button onclick="openReverseModal(' + row.id + ', \'\'' + refNo + '\'\', ' + credit + ')" ' +
+                    var saleId = parseInt(row.sale_id || 0);
+                    var isManual = !saleId;
+                    var actions = [];
+
+                    if (canReverseLedger && isReversible && !isReversal) {
+                        var refNo = row.ref_no ? String(row.ref_no) : 'N/A';
+                        var refArg = JSON.stringify(refNo);
+                        var amount = credit > 0 ? credit : debit;
+                        actions.push(
+                            '<button onclick=\'openReverseModal(' + row.id + ', ' + refArg + ', ' + amount + ')\' ' +
                             'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors" ' +
-                            'title="Reverse this payment">' +
+                            'title="Reverse this transaction">' +
                             '<i class="fas fa-undo"></i> Reverse' +
-                            '</button>';
+                            '</button>'
+                        );
                     }
-                    return '-';
+
+                    if (canDeleteLedger && isManual) {
+                        var descArg = JSON.stringify(String(row.description || ''));
+                        actions.push(
+                            '<button onclick=\'deleteLedgerEntry(' + row.id + ', ' + descArg + ')\' ' +
+                            'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors" ' +
+                            'title="Delete this entry">' +
+                            '<i class="fas fa-trash"></i> Delete' +
+                            '</button>'
+                        );
+                    }
+
+                    return actions.length ? actions.join(' ') : '-';
                 }
             });
 
@@ -369,7 +398,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                 processing: true,
                 pagingType: 'full_numbers',
                 order: [
-                    [0, 'desc']
+                    [0, 'asc']
                 ],
                 pageLength: 25,
                 ajax: {
@@ -392,7 +421,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
     });
 </script>
 
-<!-- Reverse Payment Modal -->
+<!-- Reverse Transaction Modal -->
 <div id="reversePaymentModal" class="fixed z-50 inset-0 hidden" role="dialog" aria-modal="true">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onclick="closeReverseModal()"></div>
     <div class="flex items-center justify-center min-h-screen px-4 relative z-10">
@@ -402,7 +431,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
                         <i class="fas fa-undo"></i>
                     </div>
-                    <h3 class="text-lg font-semibold">Reverse Payment</h3>
+                    <h3 class="text-lg font-semibold">Reverse Transaction</h3>
                 </div>
                 <button onclick="closeReverseModal()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center">
                     <i class="fas fa-times"></i>
@@ -480,10 +509,10 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                                 </div>
                             </label>
                             <label class="flex-1 relative">
-                                <input type="radio" name="transaction_type" value="advance" class="peer sr-only">
-                                <div class="p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:bg-blue-50 text-center">
-                                    <i class="fas fa-arrow-up text-blue-600 mb-1"></i>
-                                    <div class="font-semibold text-sm">Advance Payment</div>
+                                <input type="radio" name="transaction_type" value="payout" class="peer sr-only">
+                                <div class="p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-red-600 peer-checked:bg-red-50 text-center">
+                                    <i class="fas fa-arrow-up text-red-600 mb-1"></i>
+                                    <div class="font-semibold text-sm">Payout (Give Money)</div>
                                 </div>
                             </label>
                         </div>
@@ -493,7 +522,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         <label class="block text-sm font-medium text-gray-700 mb-2">Amount <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><?= $currencySymbol ?></span>
-                            <input type="number" id="customAmount" step="0.01" min="0.01" required
+                            <input type="number" id="customAmount" step="0.01" min="0.01" required autofocus=""
                                 class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-lg">
                         </div>
                     </div>
@@ -572,14 +601,14 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             success: function(response) {
                 closeReverseModal();
                 if (response.success) {
-                    alert('Payment reversed successfully!');
+                    alert('Transaction reversed successfully!');
                     location.reload();
                 } else {
-                    alert('Error: ' + (response.message || 'Failed to reverse payment'));
+                    alert('Error: ' + (response.message || 'Failed to reverse transaction'));
                 }
             },
             error: function() {
-                alert('Failed to reverse payment. Please try again.');
+                alert('Failed to reverse transaction. Please try again.');
             }
         });
     }
@@ -631,6 +660,31 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             },
             error: function() {
                 alert('Failed to record payment. Please try again.');
+            }
+        });
+    }
+
+    function deleteLedgerEntry(ledgerId, description) {
+        if (!confirm('Delete this ledger entry?\n\n' + description + '\n\nThis will permanently remove the entry.')) {
+            return;
+        }
+
+        $.ajax({
+            url: '<?= site_url('sales/delete-ledger-entry') ?>',
+            method: 'POST',
+            data: {
+                ledger_id: ledgerId
+            },
+            success: function(response) {
+                if (response && response.success) {
+                    alert(response.message || 'Ledger entry deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (response.message || 'Failed to delete ledger entry'));
+                }
+            },
+            error: function() {
+                alert('Failed to delete ledger entry. Please try again.');
             }
         });
     }

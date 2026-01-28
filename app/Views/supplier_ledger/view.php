@@ -1,5 +1,11 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
+<?php
+// UI permission helper
+helper('permission');
+$canReverse = function_exists('can') ? can('purchases.update') : true;
+$canDelete = function_exists('can') ? can('purchases.delete') : true;
+?>
 <div class="min-h-screen bg-slate-100">
     <!-- Top Bar -->
     <div class="bg-white shadow-sm border-b border-gray-200">
@@ -46,7 +52,7 @@
                             <a href="<?= base_url('supplier-ledger/custom-payment/' . $supplier['id']) ?>"
                                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                 <i class="fas fa-hand-holding-usd w-5 text-blue-600"></i>
-                                <span class="font-medium">Custom/Advance Payment</span>
+                                <span class="font-medium">Custom Transaction</span>
                             </a>
                         </div>
                     </div>
@@ -187,7 +193,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if ($openingBalance != 0): ?>
                             <tr class="bg-blue-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= esc($from ?? 'Start') ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-order="0"><?= esc($from ?? 'Start') ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">Opening Balance</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">-</td>
@@ -202,8 +208,8 @@
                         <?php if (!empty($transactions)): ?>
                             <?php foreach ($transactions as $transaction): ?>
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <?= date('d M Y', strtotime($transaction['date'])) ?>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-order="<?= (int)strtotime((string)($transaction['date'] ?? '')) ?>">
+                                        <?= date('d M Y', strtotime((string)($transaction['date'] ?? ''))) ?>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         <?= esc($transaction['description']) ?>
@@ -215,6 +221,10 @@
                                                 target="_blank">
                                                 View
                                             </a>
+                                        <?php elseif (!empty($transaction['ref_no'])): ?>
+                                            <span class="text-gray-700 font-mono text-xs">
+                                                <?= esc($transaction['ref_no']) ?>
+                                            </span>
                                         <?php else: ?>
                                             <span class="text-gray-500">-</span>
                                         <?php endif; ?>
@@ -241,12 +251,30 @@
                                         <?= number_to_currency($transaction['running_balance'], 'PKR', 'en_PK', 2) ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                        <?php
+                                        $refNo = (string)($transaction['ref_no'] ?? '');
+                                        $desc = (string)($transaction['description'] ?? '');
+                                        $isReversal = ($refNo !== '' && strpos($refNo, 'REV-') === 0) || (stripos($desc, 'REVERSAL') !== false);
+                                        ?>
+
                                         <?php if (!$transaction['purchase_id']): ?>
-                                            <button onclick="deletePayment(<?= $transaction['id'] ?>, `<?= addslashes(esc($transaction['description'])) ?>`)"
-                                                class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors text-xs font-medium">
-                                                <i class="fas fa-trash-alt mr-1"></i>
-                                                Delete
-                                            </button>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <?php if (!$isReversal && $canReverse): ?>
+                                                    <button onclick='reversePayment(<?= (int)$transaction['id'] ?>, <?= json_encode($desc) ?>)'
+                                                        class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors text-xs font-medium">
+                                                        <i class="fas fa-undo mr-1"></i>
+                                                        Reverse
+                                                    </button>
+                                                <?php endif; ?>
+
+                                                <?php if ($canDelete): ?>
+                                                    <button onclick='deletePayment(<?= (int)$transaction['id'] ?>, <?= json_encode($desc) ?>)'
+                                                        class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors text-xs font-medium">
+                                                        <i class="fas fa-trash mr-1"></i>
+                                                        Delete
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
                                         <?php else: ?>
                                             <span class="text-gray-400 text-xs">-</span>
                                         <?php endif; ?>
@@ -331,9 +359,41 @@
         });
     });
 
-    // Delete payment function
+    // Reverse manual transaction function (creates a reversal entry)
+    function reversePayment(ledgerId, description) {
+        const reason = prompt('Reason for reversal (optional):') || '';
+
+        if (!confirm('Reverse this transaction?\n\n' + description + (reason ? ('\n\nReason: ' + reason) : '') + '\n\nThis will create a reversal entry.')) {
+            return;
+        }
+
+        $.ajax({
+            url: '<?= base_url('supplier-ledger/reverse-payment') ?>',
+            type: 'POST',
+            data: {
+                ledger_id: ledgerId,
+                reason: reason,
+                <?= csrf_token() ?>: '<?= csrf_hash() ?>'
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred while reversing the transaction. Please try again.');
+                console.error(error);
+            }
+        });
+    }
+
+    // Delete manual transaction function (hard delete; use with care)
     function deletePayment(ledgerId, description) {
-        if (!confirm('Are you sure you want to delete this payment entry?\n\n' + description + '\n\nThis action cannot be undone.')) {
+        if (!confirm('Delete this transaction?\n\n' + description + '\n\nThis will permanently remove the entry.')) {
             return;
         }
 
@@ -354,7 +414,7 @@
                 }
             },
             error: function(xhr, status, error) {
-                alert('An error occurred while deleting the payment. Please try again.');
+                alert('An error occurred while deleting the transaction. Please try again.');
                 console.error(error);
             }
         });

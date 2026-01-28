@@ -876,7 +876,27 @@ class Customers extends BaseController
             if (!$hasType) {
                 $d = (float)($e['debit'] ?? 0);
                 $c = (float)($e['credit'] ?? 0);
-                $e['type'] = $d > 0 && $c == 0 ? 'sale' : ($c > 0 && $d == 0 ? 'payment' : 'adjustment');
+                $refNo = $hasRefNo ? strtoupper((string)($e['ref_no'] ?? '')) : '';
+                $desc  = strtoupper((string)($e['description'] ?? ''));
+
+                // If schema has no `type` column, infer it from ref_no/description.
+                // - OUT-* or "PAYOUT" => payout (money given to customer)
+                // - REV-* or "REVERSAL" => reversal
+                if ($desc !== '' && strpos($desc, 'REVERSAL') !== false) {
+                    $e['type'] = 'reversal';
+                } elseif ($refNo !== '' && substr($refNo, 0, 4) === 'REV-') {
+                    $e['type'] = 'reversal';
+                } elseif ($d > 0 && $c == 0) {
+                    if (($desc !== '' && strpos($desc, 'PAYOUT') !== false) || ($refNo !== '' && substr($refNo, 0, 4) === 'OUT-')) {
+                        $e['type'] = 'payout';
+                    } else {
+                        $e['type'] = 'sale';
+                    }
+                } elseif ($c > 0 && $d == 0) {
+                    $e['type'] = 'payment';
+                } else {
+                    $e['type'] = 'adjustment';
+                }
             }
             if (!$hasBalance) {
                 $e['balance'] = $e['balance'] ?? 0;

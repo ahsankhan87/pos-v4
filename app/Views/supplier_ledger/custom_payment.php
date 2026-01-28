@@ -65,14 +65,14 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                                 </div>
                                 <div>
                                     <p class="font-semibold">Payment</p>
-                                    <p class="text-xs text-gray-500">Against existing purchases</p>
+                                    <p class="text-xs text-gray-500">Pay supplier (Debit / reduces payable)</p>
                                 </div>
                             </div>
                             <div class="absolute inset-0 border-2 border-blue-500 rounded-lg opacity-0 peer-checked:opacity-100 pointer-events-none"></div>
                         </label>
 
                         <label class="relative flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-500 transition-colors">
-                            <input type="radio" name="transaction_type" value="advance" class="peer sr-only">
+                            <input type="radio" name="transaction_type" value="receipt" class="peer sr-only">
                             <div class="flex items-center gap-3 peer-checked:text-green-600">
                                 <div class="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-green-600 peer-checked:bg-green-600 relative">
                                     <div class="absolute inset-0 flex items-center justify-center">
@@ -80,8 +80,8 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="font-semibold">Advance</p>
-                                    <p class="text-xs text-gray-500">Pay in advance</p>
+                                    <p class="font-semibold">Receipt</p>
+                                    <p class="text-xs text-gray-500">Money received from supplier (Credit / refund/settlement)</p>
                                 </div>
                             </div>
                             <div class="absolute inset-0 border-2 border-green-500 rounded-lg opacity-0 peer-checked:opacity-100 pointer-events-none"></div>
@@ -158,7 +158,7 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                     <button type="submit"
                         class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-check-circle mr-2"></i>
-                        Record Payment
+                        Record Transaction
                     </button>
                     <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
                         class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200 border border-gray-300">
@@ -173,10 +173,10 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
             <div class="flex items-start">
                 <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
                 <div class="text-sm text-gray-700">
-                    <p class="font-semibold mb-1">Payment Types:</p>
+                    <p class="font-semibold mb-1">Transaction Types:</p>
                     <ul class="list-disc list-inside space-y-1 ml-2">
-                        <li><strong>Payment:</strong> Use for paying against existing purchases</li>
-                        <li><strong>Advance:</strong> Use when paying in advance before receiving goods</li>
+                        <li><strong>Payment:</strong> Pay supplier (Debit)</li>
+                        <li><strong>Receipt:</strong> Receive money from supplier (Credit)</li>
                     </ul>
                 </div>
             </div>
@@ -219,8 +219,8 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
         // Update radio button styling
         $('input[type="radio"][name="transaction_type"]').on('change', function() {
             const selected = $(this).val();
-            if (selected === 'advance') {
-                $('#description').attr('placeholder', 'Enter advance payment details...');
+            if (selected === 'receipt' || selected === 'payout') {
+                $('#description').attr('placeholder', 'Enter receipt details...');
             } else {
                 $('#description').attr('placeholder', 'Enter payment details or notes...');
             }

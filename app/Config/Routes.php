@@ -104,6 +104,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->post('process-lumpsum-payment', 'Sales::processLumpsumPayment', ['filter' => 'permission:sales.update']);
     $routes->post('process-custom-payment', 'Sales::processCustomPayment', ['filter' => 'permission:sales.update']);
     $routes->post('reverse-payment', 'Sales::reversePayment', ['filter' => 'permission:sales.update']);
+    $routes->post('delete-ledger-entry', 'Sales::deleteLedgerEntry', ['filter' => 'permission:sales.delete']);
 
     // Delete
     $routes->delete('delete/(:num)', 'Sales::delete/$1', ['filter' => 'permission:sales.delete']);
@@ -398,6 +399,7 @@ $routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
     $routes->get('lumpsum-payment/(:num)', 'SupplierLedger::lumpsumPayment/$1', ['filter' => 'permission:purchases.create']);
     $routes->get('custom-payment/(:num)', 'SupplierLedger::customPayment/$1', ['filter' => 'permission:purchases.create']);
     $routes->post('process-custom-payment', 'SupplierLedger::processCustomPayment', ['filter' => 'permission:purchases.create']);
+    $routes->post('reverse-payment', 'SupplierLedger::reversePayment', ['filter' => 'permission:purchases.update']);
     $routes->post('delete-payment', 'SupplierLedger::deletePayment', ['filter' => 'permission:purchases.delete']);
     $routes->post('update-opening-balance', 'SupplierLedger::updateOpeningBalance', ['filter' => 'permission:purchases.update']);
     $routes->get('fix-accounting', 'SupplierLedger::fixAccounting', ['filter' => 'permission:purchases.update']);

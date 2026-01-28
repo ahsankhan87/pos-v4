@@ -298,6 +298,10 @@ $canEditLineDiscount = can('sales.edit_discount');
         // Role/permission-based locks
         const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
         const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
+
+        // Per-installation setting from Settings page: show/hide item discount type dropdown (fixed/%).
+        // When hidden, all item discounts are treated as fixed.
+        const SHOW_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
         // ============================================
         // Helper Functions
         // ============================================
@@ -474,11 +478,14 @@ $canEditLineDiscount = can('sales.edit_discount');
             let subtotal = 0;
             let totalDiscount = 0;
 
+            const showDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE;
+
             cart.forEach((item, idx) => {
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                 let lineDiscount = 0;
                 if (item.discount && parseFloat(item.discount) > 0) {
-                    if ((item.discount_type || 'fixed') === 'percentage') {
+                    const effectiveDiscountType = SHOW_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+                    if (effectiveDiscountType === 'percentage') {
                         lineDiscount = lineBase * (parseFloat(item.discount) / 100);
                     } else {
                         lineDiscount = parseFloat(item.discount);
@@ -491,6 +498,16 @@ $canEditLineDiscount = can('sales.edit_discount');
 
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const stockDisplay = cartonSize > 1 ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
+
+                const discountTypeControl = showDiscountTypeDropdown ? `
+                            <select onchange="updateItemDiscountType(${idx}, this.value)" 
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                data-field="discount_type" data-row="${idx}"
+                                class="cart-field w-16 px-1 py-1.5 text-xs border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                <option value="fixed" ${(item.discount_type || 'fixed') === 'fixed' ? 'selected' : ''}"><?= session()->get('currency_symbol') ?></option>
+                                <option value="percentage" ${(item.discount_type || 'fixed') === 'percentage' ? 'selected' : ''}>%</option>
+                            </select>
+                        ` : ``;
 
                 tbody += `
                 <tr class="hover:bg-gray-50" data-cart-idx="${idx}">
@@ -519,14 +536,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                                 ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-field="discount" data-row="${idx}"
-                                class="cart-field w-16 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
-                            <select onchange="updateItemDiscountType(${idx}, this.value)" 
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
-                                data-field="discount_type" data-row="${idx}"
-                                class="cart-field w-16 px-1 py-1.5 text-xs border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
-                                <option value="fixed" ${item.discount_type === 'fixed' ? 'selected' : ''}><?= session()->get('currency_symbol') ?></option>
-                                <option value="percentage" ${item.discount_type === 'percentage' ? 'selected' : ''}>%</option>
-                            </select>
+                                class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                            ${discountTypeControl}
                         </div>
                     </td>
                     <td class="px-3 py-3 text-right">
@@ -649,7 +660,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
                     discount: CAN_EDIT_DISCOUNT ? cart[idx].discount : 0,
-                    discount_type: CAN_EDIT_DISCOUNT ? cart[idx].discount_type : 'fixed'
+                    discount_type: (CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE) ? (cart[idx].discount_type || 'fixed') : 'fixed'
                 };
                 renderCart();
             }
@@ -666,7 +677,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     const base = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                     let d = 0;
                     if (item.discount && parseFloat(item.discount) > 0) {
-                        if ((item.discount_type || 'fixed') === 'percentage') {
+                        const effectiveDiscountType = SHOW_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+                        if (effectiveDiscountType === 'percentage') {
                             d = base * (parseFloat(item.discount) / 100);
                         } else {
                             d = parseFloat(item.discount);
@@ -779,7 +791,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updateItemDiscountType = function(idx, t) {
-            if (!CAN_EDIT_DISCOUNT) return;
+            if (!CAN_EDIT_DISCOUNT || !SHOW_DISCOUNT_TYPE) return;
             cart[idx].discount_type = (t === 'percentage') ? 'percentage' : 'fixed';
             // Just recalculate totals without re-rendering to preserve focus
             calculateTotals();
@@ -819,6 +831,11 @@ $canEditLineDiscount = can('sales.edit_discount');
                 showFormErrors(['Cart is empty. Please add products to continue.']);
                 return false;
             }
+            if (!SHOW_DISCOUNT_TYPE) {
+                validItems.forEach(it => {
+                    it.discount_type = 'fixed';
+                });
+            }
             // Update cart data with only valid items
             $('#cart-data').val(JSON.stringify(validItems));
         });
@@ -831,6 +848,11 @@ $canEditLineDiscount = can('sales.edit_discount');
             }
             if (confirm('Save this sale as a draft?')) {
                 $('#draft-flag').val('1');
+                if (!SHOW_DISCOUNT_TYPE) {
+                    validItems.forEach(it => {
+                        it.discount_type = 'fixed';
+                    });
+                }
                 $('#cart-data').val(JSON.stringify(validItems));
                 $('form').attr('action', '<?= site_url('sales/save-draft') ?>');
                 $('form')[0].submit();
@@ -846,11 +868,15 @@ $canEditLineDiscount = can('sales.edit_discount');
             // Tab or Enter to move to next field
             if (e.key === 'Tab' || e.key === 'Enter') {
                 e.preventDefault();
+                // Commit value BEFORE moving focus / adding new row (prevents losing edits on re-render)
+                $field.trigger('change');
                 moveToNextField(row, field, e.shiftKey);
             }
             // Up/Down arrow keys to move between rows (same column)
             else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                 e.preventDefault();
+                // Commit current edit before moving rows
+                $field.trigger('change');
                 moveToRow(row, field, e.key === 'ArrowUp' ? -1 : 1);
             }
             // Delete key to remove the current row
@@ -881,7 +907,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             if (CAN_EDIT_PRICE) fieldOrder.push('price');
             if (CAN_EDIT_DISCOUNT) {
                 fieldOrder.push('discount');
-                fieldOrder.push('discount_type');
+                if (SHOW_DISCOUNT_TYPE) fieldOrder.push('discount_type');
             }
             const currentFieldIndex = fieldOrder.indexOf(currentField);
 

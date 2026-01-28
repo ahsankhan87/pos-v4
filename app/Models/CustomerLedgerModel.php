@@ -12,6 +12,7 @@ class CustomerLedgerModel extends Model
         'sale_id',
         'date',
         'description',
+        'type',
         'debit',
         'credit',
         'balance',
@@ -72,5 +73,32 @@ class CustomerLedgerModel extends Model
             ->findAll();
 
         return $payments;
+    }
+
+    /**
+     * Recalculate running balances for all ledger entries of a customer.
+     * Useful after deleting a manual ledger entry.
+     */
+    public function recalculateBalances(int $customerId): bool
+    {
+        $entries = $this->where('customer_id', $customerId)
+            ->orderBy('date', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        if (empty($entries)) {
+            return true;
+        }
+
+        $customerModel = new \App\Models\M_customers();
+        $customer = $customerModel->find($customerId);
+        $balance = (float)($customer['opening_balance'] ?? 0);
+
+        foreach ($entries as $entry) {
+            $balance += (float)($entry['debit'] ?? 0) - (float)($entry['credit'] ?? 0);
+            $this->update($entry['id'], ['balance' => round($balance, 2)]);
+        }
+
+        return true;
     }
 }
