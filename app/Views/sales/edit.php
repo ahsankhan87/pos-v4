@@ -587,11 +587,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
     // Role/permission-based locks (same behavior as sales/new)
     const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
     const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
+    const SHOW_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
 
     function buildCartTabSequence(hasUnit) {
         let seq = hasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
         if (!CAN_EDIT_PRICE) seq = seq.filter(f => f !== 'price');
         if (!CAN_EDIT_DISCOUNT) seq = seq.filter(f => f !== 'discount' && f !== 'discount_type');
+        if (!SHOW_DISCOUNT_TYPE) seq = seq.filter(f => f !== 'discount_type');
         return seq;
     }
 
@@ -1087,6 +1089,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             let subtotal = 0; // gross
             let totalDiscount = 0;
 
+            const showDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE;
+
             cart.forEach((item, idx) => {
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                 let lineDiscount = 0;
@@ -1105,6 +1109,15 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const hasCartons = cartonSize > 1;
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' pcs');
+
+                const discountTypeControl = showDiscountTypeDropdown ? `
+                            <select onchange="updateItemDiscountType(${idx}, this.value)" 
+                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                data-cart-idx="${idx}" data-field="discount_type" class="item-discount-type text-[10px] border border-gray-300 rounded px-1 py-0.5${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
+                                <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
+                            </select>
+                        ` : ``;
 
                 tbody += `
                 <tr class="hover:bg-gray-50 transition-colors" data-cart-idx="${idx}">
@@ -1163,12 +1176,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-cart-idx="${idx}" data-field="discount"
                                 class="item-discount-input w-16 text-center border border-gray-300 rounded py-0.5 text-xs font-semibold${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
-                            <select onchange="updateItemDiscountType(${idx}, this.value)" 
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
-                                data-cart-idx="${idx}" data-field="discount_type" class="item-discount-type text-[10px] border border-gray-300 rounded px-1 py-0.5${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
-                                <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
-                                <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
-                            </select>
+                            ${discountTypeControl}
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
@@ -1251,7 +1259,10 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 }
 
                 // 3) Else, barcode fallback unless editing cart or totals inputs
-                const editableFields = ['discount', 'discount_type', 'taxRate', 'tenderedAmountInput'];
+                const editableFields = ['discount', 'taxRate', 'tenderedAmountInput'];
+                if (SHOW_DISCOUNT_TYPE) {
+                    editableFields.push('discount_type');
+                }
                 const isEditingField = editableFields.includes(activeElement?.id) ||
                     (activeElement?.type === 'number' && activeElement?.closest('tr'));
 

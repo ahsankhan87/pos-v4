@@ -5,14 +5,19 @@ $from = isset($from) ? $from : (isset($date) ? $date : date('Y-m-d'));
 $to = isset($to) ? $to : $from;
 $employee_id = isset($employee_id) ? $employee_id : '';
 $currency = session()->get('currency_symbol') ?? '$';
+$canProfit = can('reports.profit_loss');
 $totalQty = 0;
 $totalSales = 0;
+$totalProfit = 0;
 $productCount = 0;
 
 if (!empty($items)) {
     foreach ($items as $it) {
         $totalQty += (float)($it['total_qty'] ?? 0);
         $totalSales += (float)($it['total_sales'] ?? 0);
+        if ($canProfit) {
+            $totalProfit += (float)($it['profit'] ?? 0);
+        }
         $productCount++;
     }
 }
@@ -51,15 +56,18 @@ if (!function_exists('formatQuantity')) {
     {
         $pieces = (float)$pieces;
         $cartonSize = (float)$cartonSize;
+
+        $sign = $pieces < 0 ? '-' : '';
+        $piecesAbs = abs($pieces);
         if (!$cartonSize || $cartonSize <= 1) {
-            return number_format($pieces, 2) . ' pcs';
+            return $sign . number_format($piecesAbs, 2) . ' pcs';
         }
-        $cartons = floor($pieces / $cartonSize);
-        $remaining = $pieces - ($cartons * $cartonSize);
+        $cartons = floor($piecesAbs / $cartonSize);
+        $remaining = $piecesAbs - ($cartons * $cartonSize);
         if ($remaining > 0) {
-            return number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+            return $sign . number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
         }
-        return number_format($cartons) . ' ctns';
+        return $sign . number_format($cartons) . ' ctns';
     }
 }
 
@@ -222,7 +230,7 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             </form>
         </div>
 
-        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stats-summary">
+        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 <?= $canProfit ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                 <div class="text-xs text-blue-700">Total Sales</div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><span id="totalSalesCard"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></span></div>
@@ -235,6 +243,12 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                 <div class="text-xs text-gray-600">Products</div>
                 <div class="mt-1 text-xl font-semibold text-gray-900"><span id="totalProductsCard"><?= number_format($productCount) ?></span></div>
             </div>
+            <?php if ($canProfit): ?>
+                <div class="bg-purple-50 border border-purple-100 rounded-lg p-4">
+                    <div class="text-xs text-purple-700">Profit</div>
+                    <div class="mt-1 text-xl font-semibold text-purple-900"><span id="totalProfitCard"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></span></div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -263,6 +277,9 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg</th>
+                        <?php if ($canProfit): ?>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
 
@@ -272,8 +289,9 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                         $rowQty = (float)($item['total_qty'] ?? 0);
                         $rowSales = (float)($item['total_sales'] ?? 0);
                         $rowAvg = avg_price($rowSales, $rowQty);
+                        $rowProfit = (float)($item['profit'] ?? 0);
                         ?>
-                        <tr class="hover:bg-gray-50" data-qty="<?= esc($rowQty) ?>" data-sales="<?= esc($rowSales) ?>">
+                        <tr class="hover:bg-gray-50" data-qty="<?= esc($rowQty) ?>" data-sales="<?= esc($rowSales) ?>" data-profit="<?= esc($rowProfit) ?>">
                             <td class="px-6 py-3 text-sm text-gray-900">
                                 <div class="font-medium"><?= esc($item['product_name']) ?></div>
                                 <?php if (!empty($item['product_code'])): ?>
@@ -283,12 +301,15 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= formatQuantity($rowQty, (float)($item['carton_size'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowSales) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowAvg) ?></td>
+                            <?php if ($canProfit): ?>
+                                <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowProfit) ?></td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
 
                     <!-- added: "no matches" row -->
                     <tr id="noMatchesRow" style="display:none;">
-                        <td colspan="4" class="px-6 py-6 text-sm text-gray-500 text-center">No matching products.</td>
+                        <td colspan="<?= $canProfit ? '5' : '4' ?>" class="px-6 py-6 text-sm text-gray-500 text-center">No matching products.</td>
                     </tr>
                 </tbody>
 
@@ -298,6 +319,9 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                         <td id="totalQtyCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty) ?></td>
                         <td id="totalSalesCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
                         <td id="totalAvgCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></td>
+                        <?php if ($canProfit): ?>
+                            <td id="totalProfitCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></td>
+                        <?php endif; ?>
                     </tr>
                 </tfoot>
             </table>
@@ -345,9 +369,11 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
         const totalSalesCard = document.getElementById('totalSalesCard');
         const totalQtyCard = document.getElementById('totalQtyCard');
         const totalProductsCard = document.getElementById('totalProductsCard');
+        const totalProfitCard = document.getElementById('totalProfitCard');
         const totalQtyCell = document.getElementById('totalQtyCell');
         const totalSalesCell = document.getElementById('totalSalesCell');
         const totalAvgCell = document.getElementById('totalAvgCell');
+        const totalProfitCell = document.getElementById('totalProfitCell');
 
         function fmtNumber(value, decimals) {
             const n = Number(value);
@@ -371,6 +397,7 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             let visible = 0;
             let sumQty = 0;
             let sumSales = 0;
+            let sumProfit = 0;
             rows.forEach(row => {
                 const text = (row.innerText || '').toLowerCase();
                 const match = !q || text.includes(q);
@@ -379,8 +406,10 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                     visible++;
                     const rowQty = parseFloat(row.getAttribute('data-qty') || '0') || 0;
                     const rowSales = parseFloat(row.getAttribute('data-sales') || '0') || 0;
+                    const rowProfit = parseFloat(row.getAttribute('data-profit') || '0') || 0;
                     sumQty += rowQty;
                     sumSales += rowSales;
+                    sumProfit += rowProfit;
                 }
             });
 
@@ -391,10 +420,12 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             if (totalSalesCard) totalSalesCard.textContent = fmtMoney(sumSales);
             if (totalQtyCard) totalQtyCard.textContent = fmtNumber(sumQty, 0);
             if (totalProductsCard) totalProductsCard.textContent = fmtNumber(visible, 0);
+            if (totalProfitCard) totalProfitCard.textContent = fmtMoney(sumProfit);
 
             if (totalQtyCell) totalQtyCell.textContent = fmtNumber(sumQty, 0);
             if (totalSalesCell) totalSalesCell.textContent = fmtMoney(sumSales);
             if (totalAvgCell) totalAvgCell.textContent = fmtMoney(avg);
+            if (totalProfitCell) totalProfitCell.textContent = fmtMoney(sumProfit);
         }
 
         if (searchInput) {

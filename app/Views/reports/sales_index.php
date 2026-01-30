@@ -173,7 +173,8 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 
         async function loadKPIs() {
             const data = await fetchJSON('<?= site_url('reports/sales/summary') ?>');
-            document.getElementById('kpiRevenue').textContent = currency + (data.total_sales ?? 0).toFixed(2);
+            const revenue = (data.net_sales ?? data.total_sales ?? data.gross_sales ?? 0);
+            document.getElementById('kpiRevenue').textContent = currency + Number(revenue || 0).toFixed(2);
             document.getElementById('kpiTx').textContent = data.transactions ?? 0;
             document.getElementById('kpiAov').textContent = currency + (data.average_sale ?? 0).toFixed(2);
             document.getElementById('kpiDisc').textContent = '-' + currency + (data.discount_total ?? 0).toFixed(2);

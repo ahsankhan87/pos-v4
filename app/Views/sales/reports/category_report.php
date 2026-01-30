@@ -5,14 +5,19 @@ $from = $from ?? date('Y-m-d');
 $to = $to ?? date('Y-m-d');
 $employee_id = $employee_id ?? '';
 $currency = session()->get('currency_symbol') ?? '$';
+$canProfit = can('reports.profit_loss');
 $totalSales = 0;
 $totalQty = 0;
+$totalProfit = 0;
 $rowCount = 0;
 $totalSaleCount = 0;
 foreach ($rows as $r) {
     $totalSales += (float)($r['total_sales'] ?? 0);
     $totalQty += (float)($r['total_qty'] ?? 0);
     $totalSaleCount += (int)($r['sale_count'] ?? 0);
+    if ($canProfit) {
+        $totalProfit += (float)($r['profit'] ?? 0);
+    }
     $rowCount++;
 }
 function money_fmt($v)
@@ -197,6 +202,9 @@ if ($employee_id && !empty($employees)) {
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sales Count</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
+                        <?php if ($canProfit): ?>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -206,6 +214,9 @@ if ($employee_id && !empty($employees)) {
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((float)($row['total_qty'] ?? 0), 2) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>
+                            <?php if ($canProfit): ?>
+                                <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['profit'] ?? 0) ?></td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -215,6 +226,9 @@ if ($employee_id && !empty($employees)) {
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalSaleCount) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty, 2) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
+                        <?php if ($canProfit): ?>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></td>
+                        <?php endif; ?>
                     </tr>
                 </tfoot>
             </table>

@@ -36,10 +36,6 @@
             text-align: right;
         }
 
-        .text-center {
-            text-align: center;
-        }
-
         .no-print {
             margin-top: 10px;
             text-align: center;
@@ -61,14 +57,21 @@
     <?php
     $currency = session()->get('currency_symbol') ?? '$';
     $q = isset($q) ? (string)$q : '';
+    $canProfit = can('reports.profit_loss');
+
     $totalQty = 0;
     $totalSales = 0;
+    $totalProfit = 0;
     $productCount = 0;
     foreach (($items ?? []) as $it) {
         $totalQty += (float)($it['total_qty'] ?? 0);
         $totalSales += (float)($it['total_sales'] ?? 0);
+        if ($canProfit) {
+            $totalProfit += (float)($it['profit'] ?? 0);
+        }
         $productCount++;
     }
+
     if (!function_exists('money_fmt')) {
         function money_fmt($v)
         {
@@ -91,24 +94,40 @@
         {
             $pieces = (float)$pieces;
             $cartonSize = (float)$cartonSize;
-            if (!$cartonSize || $cartonSize <= 1) return number_format($pieces, 2) . ' pcs';
-            $cartons = floor($pieces / $cartonSize);
-            $remaining = $pieces - ($cartons * $cartonSize);
-            return $remaining > 0 ? (number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs') : (number_format($cartons) . ' ctns');
+
+            $sign = $pieces < 0 ? '-' : '';
+            $piecesAbs = abs($pieces);
+            if (!$cartonSize || $cartonSize <= 1) {
+                return $sign . number_format($piecesAbs, 2) . ' pcs';
+            }
+
+            $cartons = floor($piecesAbs / $cartonSize);
+            $remaining = $piecesAbs - ($cartons * $cartonSize);
+            if ($remaining > 0) {
+                return $sign . number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+            }
+            return $sign . number_format($cartons) . ' ctns';
         }
     }
     ?>
+
     <h2>Product-wise Sales Report</h2>
     <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
-    <p>Range: Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <?php if ($q !== ''): ?>
+        <p>Search: <?= esc($q) ?></p>
+    <?php endif; ?>
 
     <table>
         <thead>
             <tr>
-                <th>Product</th>
+                <th style="text-align:left;">Product</th>
                 <th class="text-right">Total Quantity</th>
                 <th class="text-right">Total Sales</th>
                 <th class="text-right">Avg</th>
+                <?php if ($canProfit): ?>
+                    <th class="text-right">Profit</th>
+                <?php endif; ?>
             </tr>
         </thead>
         <tbody>
@@ -117,21 +136,33 @@
                 $rowQty = (float)($item['total_qty'] ?? 0);
                 $rowSales = (float)($item['total_sales'] ?? 0);
                 $rowAvg = avg_price($rowSales, $rowQty);
+                $rowProfit = (float)($item['profit'] ?? 0);
                 ?>
                 <tr>
-                    <td><?= esc($item['product_name']) ?></td>
+                    <td style="text-align:left;">
+                        <?= esc($item['product_name'] ?? '') ?>
+                        <?php if (!empty($item['product_code'])): ?>
+                            <div style="font-size:10px;color:#555;">(<?= esc($item['product_code']) ?>)</div>
+                        <?php endif; ?>
+                    </td>
                     <td class="text-right"><?= formatQuantity($rowQty, (float)($item['carton_size'] ?? 0)) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowSales) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowAvg) ?></td>
+                    <?php if ($canProfit): ?>
+                        <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowProfit) ?></td>
+                    <?php endif; ?>
                 </tr>
             <?php endforeach; ?>
         </tbody>
         <tfoot>
             <tr>
                 <th class="text-right">Totals</th>
-                <th id="totalQtyCellPrint" class="text-right"><?= number_format($totalQty, 2) ?></th>
-                <th id="totalSalesCellPrint" class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
-                <th id="totalAvgCellPrint" class="text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></th>
+                <th class="text-right"><?= number_format($totalQty, 2) ?></th>
+                <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
+                <th class="text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></th>
+                <?php if ($canProfit): ?>
+                    <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></th>
+                <?php endif; ?>
             </tr>
         </tfoot>
     </table>

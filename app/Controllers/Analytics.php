@@ -215,8 +215,12 @@ class Analytics extends BaseController
         $expenses = (float)($expenseAgg['sum_amount'] ?? 0) + (float)($expenseAgg['sum_tax'] ?? 0);
 
         // Net revenue / net COGS after returns
-        $netSales = max(0.0, $totalSales - $returnsRevenue);
-        $netCogs = max(0.0, $cogs - $returnsCost);
+        // Allow negatives (e.g. returns exceed sales in the selected period)
+        $netSales = $totalSales - $returnsRevenue;
+        $netCogs = $cogs - $returnsCost;
+
+        // Average sale based on net sales (keeps it consistent with return-deduction)
+        $averageSale = $transactionCount > 0 ? ($netSales / $transactionCount) : 0.0;
 
         $grossProfit = $netSales - $netCogs;
         $netProfit = $grossProfit - $expenses;

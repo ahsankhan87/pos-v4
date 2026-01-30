@@ -56,14 +56,19 @@
 <body>
     <?php
     $currency = session()->get('currency_symbol') ?? '$';
+    $canProfit = can('reports.profit_loss');
     $totalSales = 0;
     $totalQty = 0;
+    $totalProfit = 0;
     $rowCount = 0;
     $totalSaleCount = 0;
     foreach (($rows ?? []) as $r) {
         $totalSales += (float)($r['total_sales'] ?? 0);
         $totalQty += (float)($r['total_qty'] ?? 0);
         $totalSaleCount += (int)($r['sale_count'] ?? 0);
+        if ($canProfit) {
+            $totalProfit += (float)($r['profit'] ?? 0);
+        }
         $rowCount++;
     }
     if (!function_exists('money_fmt')) {
@@ -83,6 +88,9 @@
                 <th class="text-right">Sales Count</th>
                 <th class="text-right">Total Quantity</th>
                 <th class="text-right">Total Sales</th>
+                <?php if ($canProfit): ?>
+                    <th class="text-right">Profit</th>
+                <?php endif; ?>
             </tr>
         </thead>
         <tbody>
@@ -92,6 +100,9 @@
                     <td class="text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                     <td class="text-right"><?= number_format((float)($row['total_qty'] ?? 0), 2) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>
+                    <?php if ($canProfit): ?>
+                        <td class="text-right"><?= esc($currency) . ' ' . money_fmt($row['profit'] ?? 0) ?></td>
+                    <?php endif; ?>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -101,6 +112,9 @@
                 <th class="text-right"><?= number_format($totalSaleCount) ?></th>
                 <th class="text-right"><?= number_format($totalQty, 2) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
+                <?php if ($canProfit): ?>
+                    <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></th>
+                <?php endif; ?>
             </tr>
         </tfoot>
     </table>

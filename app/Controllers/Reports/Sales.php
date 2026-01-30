@@ -9,6 +9,483 @@ class Sales extends BaseController
 {
     protected $reports;
 
+    protected function buildProductReportItems(string $from, string $to, $storeId, $employeeId = null, string $q = '', bool $includeProfit = false): array
+    {
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $salesSelect =
+            'pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size,' .
+            ' SUM(pos_sale_items.quantity) as gross_qty,' .
+            ' SUM(pos_sale_items.subtotal) as gross_sales';
+        if ($includeProfit) {
+            $salesSelect .= ", SUM(CASE WHEN (pos_products.type = 'service' OR pos_products.is_stock_tracked = 0) THEN 0 ELSE (pos_sale_items.cost_price * pos_sale_items.quantity) END) as gross_cost";
+        }
+
+        $salesBuilder = $saleItemsModel
+            ->select($salesSelect)
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+
+        if (!empty($employeeId)) {
+            $salesBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+
+        if ($q !== '') {
+            $salesBuilder
+                ->groupStart()
+                ->like('pos_products.name', $q)
+                ->orLike('pos_products.code', $q)
+                ->groupEnd();
+        }
+
+        $salesRows = $salesBuilder
+            ->groupBy('pos_sale_items.product_id')
+            ->findAll();
+
+        // Aggregate returns in the same range and subtract them from sales.
+        $salesReturnModel = new \App\Models\SalesReturnModel();
+
+        $returnsSelect =
+            'pos_sales_returns.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size,' .
+            ' SUM(pos_sales_returns.quantity) as qty_returned,' .
+            ' SUM(pos_sales_returns.return_amount) as amount_returned';
+        if ($includeProfit) {
+            $returnsSelect .= ", SUM(CASE WHEN (pos_products.type <> 'service' AND pos_products.is_stock_tracked = 1) THEN (pos_sales_returns.quantity * pos_sale_items.cost_price) ELSE 0 END) as cost_returned";
+        }
+
+        $returnsBuilder = $salesReturnModel
+            ->select($returnsSelect)
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+
+        if ($includeProfit) {
+            $returnsBuilder->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left');
+        }
+
+        if (!empty($employeeId)) {
+            $returnsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+
+        if ($q !== '') {
+            $returnsBuilder
+                ->groupStart()
+                ->like('pos_products.name', $q)
+                ->orLike('pos_products.code', $q)
+                ->groupEnd();
+        }
+
+        $returnRows = $returnsBuilder
+            ->groupBy('pos_sales_returns.product_id')
+            ->findAll();
+
+        $returnsByProduct = [];
+        foreach ($returnRows as $r) {
+            $pid = $r['product_id'];
+            $returnsByProduct[$pid] = [
+                'qty_returned' => (float)($r['qty_returned'] ?? 0),
+                'amount_returned' => (float)($r['amount_returned'] ?? 0),
+                'cost_returned' => $includeProfit ? (float)($r['cost_returned'] ?? 0) : 0.0,
+                'category_id' => $r['category_id'] ?? null,
+                'product_name' => $r['product_name'] ?? null,
+                'product_code' => $r['product_code'] ?? null,
+                'carton_size' => $r['carton_size'] ?? null,
+            ];
+        }
+
+        $itemsByProduct = [];
+        foreach ($salesRows as $row) {
+            $pid = $row['product_id'];
+            $grossQty = (float)($row['gross_qty'] ?? 0);
+            $grossSales = (float)($row['gross_sales'] ?? 0);
+            $grossCost = $includeProfit ? (float)($row['gross_cost'] ?? 0) : 0.0;
+
+            $retQty = 0.0;
+            $retSales = 0.0;
+            $retCost = 0.0;
+            if (isset($returnsByProduct[$pid])) {
+                $retQty = $returnsByProduct[$pid]['qty_returned'];
+                $retSales = $returnsByProduct[$pid]['amount_returned'];
+                $retCost = $returnsByProduct[$pid]['cost_returned'];
+            }
+
+            // Allow negative (returns greater than sales)
+            $row['total_qty'] = $grossQty - $retQty;
+            $row['total_sales'] = $grossSales - $retSales;
+            if ($includeProfit) {
+                $row['total_cost'] = $grossCost - $retCost;
+                $row['profit'] = $row['total_sales'] - $row['total_cost'];
+            }
+
+            unset($row['gross_qty'], $row['gross_sales'], $row['gross_cost']);
+            $itemsByProduct[$pid] = $row;
+        }
+
+        // Include products that have returns but no sales in the selected range.
+        foreach ($returnsByProduct as $pid => $ret) {
+            if (isset($itemsByProduct[$pid])) {
+                continue;
+            }
+            $itemsByProduct[$pid] = [
+                'product_id' => $pid,
+                'category_id' => $ret['category_id'],
+                'product_name' => $ret['product_name'] ?? 'Unknown',
+                'product_code' => $ret['product_code'] ?? '',
+                'carton_size' => $ret['carton_size'] ?? 0,
+                'total_qty' => -1 * (float)($ret['qty_returned'] ?? 0),
+                'total_sales' => -1 * (float)($ret['amount_returned'] ?? 0),
+            ];
+            if ($includeProfit) {
+                $itemsByProduct[$pid]['total_cost'] = -1 * (float)($ret['cost_returned'] ?? 0);
+                $itemsByProduct[$pid]['profit'] = (-1 * (float)($ret['amount_returned'] ?? 0)) - (-1 * (float)($ret['cost_returned'] ?? 0));
+            }
+        }
+
+        $items = array_values($itemsByProduct);
+
+        usort($items, static function ($a, $b) {
+            $ac = (int)($a['category_id'] ?? 0);
+            $bc = (int)($b['category_id'] ?? 0);
+            if ($ac !== $bc) {
+                return $ac <=> $bc;
+            }
+            $as = (float)($a['total_sales'] ?? 0);
+            $bs = (float)($b['total_sales'] ?? 0);
+            if ($as === $bs) {
+                return 0;
+            }
+            return ($as < $bs) ? 1 : -1;
+        });
+
+        return $items;
+    }
+
+    protected function buildCustomerReportRows(string $from, string $to, $storeId, $employeeId = null, string $q = ''): array
+    {
+        $salesModel = new \App\Models\M_sales();
+        $salesBuilder = $salesModel
+            ->select('pos_sales.customer_id, pos_customers.name as customer_name, SUM(pos_sales.total) as gross_sales, SUM(pos_sales.total_discount) as total_discount, COUNT(pos_sales.id) as sale_count')
+            ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        if ($q !== '') {
+            $salesBuilder->like('pos_customers.name', $q);
+        }
+        $salesRows = $salesBuilder->groupBy('pos_sales.customer_id')->findAll();
+
+        $returnsModel = new \App\Models\SalesReturnModel();
+        $returnsBuilder = $returnsModel
+            ->select('pos_sales.customer_id, pos_customers.name as customer_name, SUM(pos_sales_returns.return_amount) as return_total')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        if ($q !== '') {
+            $returnsBuilder->like('pos_customers.name', $q);
+        }
+        $returnRows = $returnsBuilder->groupBy('pos_sales.customer_id')->findAll();
+
+        $returnsByCustomer = [];
+        foreach ($returnRows as $r) {
+            $cid = $r['customer_id'] ?? 0;
+            $returnsByCustomer[$cid] = [
+                'customer_name' => $r['customer_name'] ?? 'Unknown',
+                'return_total' => (float)($r['return_total'] ?? 0),
+            ];
+        }
+
+        $rowsByCustomer = [];
+        foreach ($salesRows as $s) {
+            $cid = $s['customer_id'] ?? 0;
+            $gross = (float)($s['gross_sales'] ?? 0);
+            $ret = (float)($returnsByCustomer[$cid]['return_total'] ?? 0);
+            $rowsByCustomer[$cid] = [
+                'customer_id' => $cid,
+                'customer_name' => $s['customer_name'] ?? 'Unknown',
+                'total_sales' => $gross - $ret,
+                'total_discount' => (float)($s['total_discount'] ?? 0),
+                'sale_count' => (int)($s['sale_count'] ?? 0),
+            ];
+        }
+
+        // Customers with returns but no sales in range
+        foreach ($returnsByCustomer as $cid => $r) {
+            if (isset($rowsByCustomer[$cid])) {
+                continue;
+            }
+            $rowsByCustomer[$cid] = [
+                'customer_id' => $cid,
+                'customer_name' => $r['customer_name'] ?? 'Unknown',
+                'total_sales' => -1 * (float)($r['return_total'] ?? 0),
+                'total_discount' => 0.0,
+                'sale_count' => 0,
+            ];
+        }
+
+        $rows = array_values($rowsByCustomer);
+        usort($rows, static function ($a, $b) {
+            $as = (float)($a['total_sales'] ?? 0);
+            $bs = (float)($b['total_sales'] ?? 0);
+            if ($as === $bs) return 0;
+            return ($as < $bs) ? 1 : -1;
+        });
+        return $rows;
+    }
+
+    protected function buildUnitReportRows(string $from, string $to, $storeId, $employeeId = null): array
+    {
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $salesBuilder = $saleItemsModel
+            ->select('pos_units.id as unit_id, pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as gross_qty, SUM(pos_sale_items.subtotal) as gross_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $salesRows = $salesBuilder->groupBy('pos_units.id')->findAll();
+
+        $returnsModel = new \App\Models\SalesReturnModel();
+        $returnsBuilder = $returnsModel
+            ->select('pos_units.id as unit_id, pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sales_returns.quantity) as qty_returned, SUM(pos_sales_returns.return_amount) as amount_returned')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnRows = $returnsBuilder->groupBy('pos_units.id')->findAll();
+
+        $returnsByUnit = [];
+        foreach ($returnRows as $r) {
+            $uid = $r['unit_id'] ?? 0;
+            $returnsByUnit[$uid] = [
+                'unit_name' => $r['unit_name'] ?? '—',
+                'abbreviation' => $r['abbreviation'] ?? '',
+                'qty_returned' => (float)($r['qty_returned'] ?? 0),
+                'amount_returned' => (float)($r['amount_returned'] ?? 0),
+            ];
+        }
+
+        $rowsByUnit = [];
+        foreach ($salesRows as $s) {
+            $uid = $s['unit_id'] ?? 0;
+            $grossQty = (float)($s['gross_qty'] ?? 0);
+            $grossSales = (float)($s['gross_sales'] ?? 0);
+            $retQty = (float)($returnsByUnit[$uid]['qty_returned'] ?? 0);
+            $retSales = (float)($returnsByUnit[$uid]['amount_returned'] ?? 0);
+            $rowsByUnit[$uid] = [
+                'unit_id' => $uid,
+                'unit_name' => $s['unit_name'] ?? '—',
+                'abbreviation' => $s['abbreviation'] ?? '',
+                'total_qty' => $grossQty - $retQty,
+                'total_sales' => $grossSales - $retSales,
+                'sale_count' => (int)($s['sale_count'] ?? 0),
+            ];
+        }
+
+        // Units with returns but no sales in range
+        foreach ($returnsByUnit as $uid => $r) {
+            if (isset($rowsByUnit[$uid])) {
+                continue;
+            }
+            $rowsByUnit[$uid] = [
+                'unit_id' => $uid,
+                'unit_name' => $r['unit_name'] ?? '—',
+                'abbreviation' => $r['abbreviation'] ?? '',
+                'total_qty' => -1 * (float)($r['qty_returned'] ?? 0),
+                'total_sales' => -1 * (float)($r['amount_returned'] ?? 0),
+                'sale_count' => 0,
+            ];
+        }
+
+        $rows = array_values($rowsByUnit);
+        usort($rows, static function ($a, $b) {
+            $as = (float)($a['total_sales'] ?? 0);
+            $bs = (float)($b['total_sales'] ?? 0);
+            if ($as === $bs) return 0;
+            return ($as < $bs) ? 1 : -1;
+        });
+        return $rows;
+    }
+
+    protected function buildCategoryReportRows(string $from, string $to, $storeId, $employeeId = null, bool $includeProfit = false): array
+    {
+        $saleItemsModel = new \App\Models\M_sale_items();
+        $salesSelect =
+            'pos_categories.id as category_id, pos_categories.name as category_name,' .
+            ' SUM(pos_sale_items.quantity) as gross_qty,' .
+            ' SUM(pos_sale_items.subtotal) as gross_sales,';
+        if ($includeProfit) {
+            $salesSelect .= " SUM(CASE WHEN (pos_products.type = 'service' OR pos_products.is_stock_tracked = 0) THEN 0 ELSE (pos_sale_items.cost_price * pos_sale_items.quantity) END) as gross_cost,";
+        }
+        $salesSelect .= ' COUNT(DISTINCT pos_sales.id) as sale_count';
+
+        $salesBuilder = $saleItemsModel
+            ->select($salesSelect)
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $salesRows = $salesBuilder->groupBy('pos_categories.id')->findAll();
+
+        $returnsModel = new \App\Models\SalesReturnModel();
+        $returnsSelect =
+            'pos_categories.id as category_id, pos_categories.name as category_name,' .
+            ' SUM(pos_sales_returns.quantity) as qty_returned,' .
+            ' SUM(pos_sales_returns.return_amount) as amount_returned';
+        if ($includeProfit) {
+            $returnsSelect .= ", SUM(CASE WHEN (pos_products.type <> 'service' AND pos_products.is_stock_tracked = 1) THEN (pos_sales_returns.quantity * pos_sale_items.cost_price) ELSE 0 END) as cost_returned";
+        }
+
+        $returnsBuilder = $returnsModel
+            ->select($returnsSelect)
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+
+        if ($includeProfit) {
+            $returnsBuilder->join('pos_sale_items', 'pos_sale_items.sale_id = pos_sales_returns.sale_id AND pos_sale_items.product_id = pos_sales_returns.product_id', 'left');
+        }
+        if (!empty($employeeId)) {
+            $returnsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnRows = $returnsBuilder->groupBy('pos_categories.id')->findAll();
+
+        $returnsByCategory = [];
+        foreach ($returnRows as $r) {
+            $cid = $r['category_id'] ?? 0;
+            $returnsByCategory[$cid] = [
+                'category_name' => $r['category_name'] ?? 'Uncategorized',
+                'qty_returned' => (float)($r['qty_returned'] ?? 0),
+                'amount_returned' => (float)($r['amount_returned'] ?? 0),
+                'cost_returned' => $includeProfit ? (float)($r['cost_returned'] ?? 0) : 0.0,
+            ];
+        }
+
+        $rowsByCategory = [];
+        foreach ($salesRows as $s) {
+            $cid = $s['category_id'] ?? 0;
+            $grossQty = (float)($s['gross_qty'] ?? 0);
+            $grossSales = (float)($s['gross_sales'] ?? 0);
+            $grossCost = $includeProfit ? (float)($s['gross_cost'] ?? 0) : 0.0;
+            $retQty = (float)($returnsByCategory[$cid]['qty_returned'] ?? 0);
+            $retSales = (float)($returnsByCategory[$cid]['amount_returned'] ?? 0);
+            $retCost = $includeProfit ? (float)($returnsByCategory[$cid]['cost_returned'] ?? 0) : 0.0;
+
+            $rowsByCategory[$cid] = [
+                'category_id' => $cid,
+                'category_name' => $s['category_name'] ?? 'Uncategorized',
+                'total_qty' => $grossQty - $retQty,
+                'total_sales' => $grossSales - $retSales,
+                'sale_count' => (int)($s['sale_count'] ?? 0),
+            ];
+
+            if ($includeProfit) {
+                $totalCost = $grossCost - $retCost;
+                $profit = ($grossSales - $retSales) - $totalCost;
+                $rowsByCategory[$cid]['total_cost'] = $totalCost;
+                $rowsByCategory[$cid]['profit'] = $profit;
+            }
+        }
+
+        // Categories with returns but no sales in range
+        foreach ($returnsByCategory as $cid => $r) {
+            if (isset($rowsByCategory[$cid])) {
+                continue;
+            }
+            $rowsByCategory[$cid] = [
+                'category_id' => $cid,
+                'category_name' => $r['category_name'] ?? 'Uncategorized',
+                'total_qty' => -1 * (float)($r['qty_returned'] ?? 0),
+                'total_sales' => -1 * (float)($r['amount_returned'] ?? 0),
+                'sale_count' => 0,
+            ];
+            if ($includeProfit) {
+                $rowsByCategory[$cid]['total_cost'] = -1 * (float)($r['cost_returned'] ?? 0);
+                $rowsByCategory[$cid]['profit'] = (-1 * (float)($r['amount_returned'] ?? 0)) - (-1 * (float)($r['cost_returned'] ?? 0));
+            }
+        }
+
+        $rows = array_values($rowsByCategory);
+        usort($rows, static function ($a, $b) {
+            $as = (float)($a['total_sales'] ?? 0);
+            $bs = (float)($b['total_sales'] ?? 0);
+            if ($as === $bs) return 0;
+            return ($as < $bs) ? 1 : -1;
+        });
+
+        return $rows;
+    }
+
+    protected function applyReturnsToSaleRows(array $saleRows, $storeId): array
+    {
+        if (empty($saleRows)) {
+            return $saleRows;
+        }
+        $saleIds = [];
+        foreach ($saleRows as $r) {
+            if (!isset($r['id'])) {
+                continue;
+            }
+            $saleIds[] = $r['id'];
+        }
+        $saleIds = array_values(array_filter($saleIds));
+        if (empty($saleIds)) {
+            return $saleRows;
+        }
+
+        $returnsModel = new \App\Models\SalesReturnModel();
+        $returnRows = $returnsModel
+            ->select('pos_sales_returns.sale_id, SUM(pos_sales_returns.return_amount) as return_total')
+            ->whereIn('pos_sales_returns.sale_id', $saleIds)
+            ->where('pos_sales_returns.store_id', $storeId)
+            ->groupBy('pos_sales_returns.sale_id')
+            ->findAll();
+
+        $returnsBySale = [];
+        foreach ($returnRows as $r) {
+            $returnsBySale[$r['sale_id']] = (float)($r['return_total'] ?? 0);
+        }
+
+        foreach ($saleRows as &$row) {
+            $sid = $row['id'] ?? null;
+            $ret = ($sid !== null && isset($returnsBySale[$sid])) ? $returnsBySale[$sid] : 0.0;
+            $gross = (float)($row['total_amount'] ?? 0);
+            $row['returns_amount'] = $ret;
+            $row['total_amount'] = $gross - $ret; // overwrite with net total
+        }
+        unset($row);
+
+        return $saleRows;
+    }
+
     public function __construct()
     {
         $this->reports = new SalesReports();
@@ -295,26 +772,9 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $productModel = new \App\Models\M_products();
-        $itemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        if ($q !== '') {
-            $itemsBuilder
-                ->groupStart()
-                ->like('pos_products.name', $q)
-                ->orLike('pos_products.code', $q)
-                ->groupEnd();
-        }
-        $items = $itemsBuilder->groupBy('pos_sale_items.product_id')->orderBy('pos_products.category_id', 'ASC')->orderBy('total_sales', 'DESC')->findAll();
+        helper('permission');
+        $includeProfit = function_exists('can') ? can('reports.profit_loss') : false;
+        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, $q, $includeProfit);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/product_report', [
             'title' => 'Product-wise Sales Report',
@@ -391,26 +851,9 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $productModel = new \App\Models\M_products();
-        $itemsBuilder = $saleItemsModel
-            ->select('pos_sale_items.product_id, pos_products.category_id, pos_products.name as product_name, pos_products.code as product_code, pos_products.carton_size, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        if ($q !== '') {
-            $itemsBuilder
-                ->groupStart()
-                ->like('pos_products.name', $q)
-                ->orLike('pos_products.code', $q)
-                ->groupEnd();
-        }
-        $items = $itemsBuilder->groupBy('pos_sale_items.product_id')->orderBy('pos_products.category_id', 'ASC')->orderBy('total_sales', 'DESC')->findAll();
+        helper('permission');
+        $includeProfit = function_exists('can') ? can('reports.profit_loss') : false;
+        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, $q, $includeProfit);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/product_report_print', [
             'title' => 'Product-wise Sales Report - Print',
@@ -437,28 +880,7 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $salesModel = new \App\Models\M_sales();
-        $customerModel = new \App\Models\M_customers();
-        $salesBuilder = $salesModel
-            ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
-            ->where('created_at >=', $from . ' 00:00:00')
-            ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId);
-        if (!empty($employeeId)) {
-            $salesBuilder->where('employee_id', (int)$employeeId);
-        }
-        $sales = $salesBuilder->groupBy('customer_id')->findAll();
-        foreach ($sales as &$sale) {
-            $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
-            $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
-        }
-
-        if ($q !== '') {
-            $sales = array_values(array_filter($sales, static function ($row) use ($q) {
-                $name = (string) ($row['customer_name'] ?? '');
-                return stripos($name, $q) !== false;
-            }));
-        }
+        $sales = $this->buildCustomerReportRows($from, $to, $storeId, $employeeId, $q);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/customer_report', [
             'title' => 'Customer-wise Sales Report',
@@ -484,28 +906,7 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $salesModel = new \App\Models\M_sales();
-        $customerModel = new \App\Models\M_customers();
-        $salesBuilder = $salesModel
-            ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
-            ->where('created_at >=', $from . ' 00:00:00')
-            ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId);
-        if (!empty($employeeId)) {
-            $salesBuilder->where('employee_id', (int)$employeeId);
-        }
-        $sales = $salesBuilder->groupBy('customer_id')->findAll();
-        foreach ($sales as &$sale) {
-            $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
-            $sale['customer_name'] = $customer ? $customer['name'] : 'Unknown';
-        }
-
-        if ($q !== '') {
-            $sales = array_values(array_filter($sales, static function ($row) use ($q) {
-                $name = (string) ($row['customer_name'] ?? '');
-                return stripos($name, $q) !== false;
-            }));
-        }
+        $sales = $this->buildCustomerReportRows($from, $to, $storeId, $employeeId, $q);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/customer_report_print', [
             'title' => 'Customer-wise Sales Report - Print',
@@ -531,19 +932,9 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_categories.id as category_id, pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $categoriesData = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+        helper('permission');
+        $includeProfit = function_exists('can') ? can('reports.profit_loss') : false;
+        $categoriesData = $this->buildCategoryReportRows($from, $to, $storeId, $employeeId, $includeProfit);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/category_report', [
             'title' => 'Category-wise Sales Report',
@@ -567,19 +958,9 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_categories.id as category_id, pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $rows = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+        helper('permission');
+        $includeProfit = function_exists('can') ? can('reports.profit_loss') : false;
+        $rows = $this->buildCategoryReportRows($from, $to, $storeId, $employeeId, $includeProfit);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/category_report_print', [
             'title' => 'Category-wise Sales Report - Print',
@@ -604,19 +985,7 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_units.id as unit_id, pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $unitsData = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+        $unitsData = $this->buildUnitReportRows($from, $to, $storeId, $employeeId);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/unit_report', [
             'title' => 'Unit-wise Sales Report',
@@ -640,19 +1009,7 @@ class Sales extends BaseController
             $to = $temp;
         }
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_units.id as unit_id, pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $rows = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+        $rows = $this->buildUnitReportRows($from, $to, $storeId, $employeeId);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/unit_report_print', [
             'title' => 'Unit-wise Sales Report - Print',
@@ -1167,18 +1524,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $productModel = new \App\Models\M_products();
-        $itemsBuilder = $saleItemsModel
-            ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $items = $itemsBuilder->groupBy('product_id')->orderBy('total_sales', 'DESC')->findAll();
+        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, '');
 
         header('Content-Type: application/vnd.ms-excel');
         $filename = $from === $to ? ('product_sales_report_' . $from . '.xls') : ('product_sales_report_' . $from . '_to_' . $to . '.xls');
@@ -1186,11 +1532,10 @@ class Sales extends BaseController
         $output = fopen('php://output', 'w');
         fputcsv($output, ['Product', 'Total Quantity', 'Total Sales']);
         foreach ($items as $item) {
-            $product = $productModel->find($item['product_id']);
             fputcsv($output, [
-                $product ? $product['name'] : 'Unknown',
-                $item['total_qty'],
-                $item['total_sales']
+                $item['product_name'] ?? 'Unknown',
+                $item['total_qty'] ?? 0,
+                $item['total_sales'] ?? 0
             ]);
         }
         fclose($output);
@@ -1210,18 +1555,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $productModel = new \App\Models\M_products();
-        $itemsBuilder = $saleItemsModel
-            ->select('product_id, SUM(quantity) as total_qty, SUM(subtotal) as total_sales')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $itemsBuilder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $items = $itemsBuilder->groupBy('product_id')->orderBy('total_sales', 'DESC')->findAll();
+        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, '');
 
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
@@ -1231,10 +1565,9 @@ class Sales extends BaseController
         $html = '<h2>Product-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
             '<th>Product</th><th>Total Quantity</th><th>Total Sales</th></tr>';
         foreach ($items as $item) {
-            $product = $productModel->find($item['product_id']);
-            $html .= '<tr><td>' . ($product ? $product['name'] : 'Unknown') . '</td><td>' .
-                $item['total_qty'] . '</td><td>' .
-                $item['total_sales'] . '</td></tr>';
+            $html .= '<tr><td>' . ($item['product_name'] ?? 'Unknown') . '</td><td>' .
+                ($item['total_qty'] ?? 0) . '</td><td>' .
+                ($item['total_sales'] ?? 0) . '</td></tr>';
         }
         $html .= '</table>';
         $pdf->writeHTML($html, true, false, true, false, '');
@@ -1256,17 +1589,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $salesModel = new \App\Models\M_sales();
-        $customerModel = new \App\Models\M_customers();
-        $salesBuilder = $salesModel
-            ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
-            ->where('created_at >=', $from . ' 00:00:00')
-            ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId);
-        if (!empty($employeeId)) {
-            $salesBuilder->where('employee_id', (int)$employeeId);
-        }
-        $sales = $salesBuilder->groupBy('customer_id')->findAll();
+        $sales = $this->buildCustomerReportRows($from, $to, $storeId, $employeeId, '');
 
         header('Content-Type: application/vnd.ms-excel');
         $filename = $from === $to ? ('customer_sales_report_' . $from . '.xls') : ('customer_sales_report_' . $from . '_to_' . $to . '.xls');
@@ -1274,12 +1597,11 @@ class Sales extends BaseController
         $output = fopen('php://output', 'w');
         fputcsv($output, ['Customer', 'Sales Count', 'Total Sales', 'Total Discount']);
         foreach ($sales as $sale) {
-            $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
             fputcsv($output, [
-                $customer ? $customer['name'] : 'Unknown',
-                $sale['sale_count'],
-                $sale['total_sales'],
-                $sale['total_discount']
+                $sale['customer_name'] ?? 'Unknown',
+                $sale['sale_count'] ?? 0,
+                $sale['total_sales'] ?? 0,
+                $sale['total_discount'] ?? 0
             ]);
         }
         fclose($output);
@@ -1299,17 +1621,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $salesModel = new \App\Models\M_sales();
-        $customerModel = new \App\Models\M_customers();
-        $salesBuilder = $salesModel
-            ->select('customer_id, SUM(total) as total_sales, SUM(total_discount) as total_discount, COUNT(id) as sale_count')
-            ->where('created_at >=', $from . ' 00:00:00')
-            ->where('created_at <=', $to . ' 23:59:59')
-            ->forStore($storeId);
-        if (!empty($employeeId)) {
-            $salesBuilder->where('employee_id', (int)$employeeId);
-        }
-        $sales = $salesBuilder->groupBy('customer_id')->findAll();
+        $sales = $this->buildCustomerReportRows($from, $to, $storeId, $employeeId, '');
 
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
@@ -1319,11 +1631,10 @@ class Sales extends BaseController
         $html = '<h2>Customer-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
             '<th>Customer</th><th>Sales Count</th><th>Total Sales</th><th>Total Discount</th></tr>';
         foreach ($sales as $sale) {
-            $customer = $customerModel->forStore($storeId)->find($sale['customer_id']);
-            $html .= '<tr><td>' . ($customer ? $customer['name'] : 'Unknown') . '</td><td>' .
-                $sale['sale_count'] . '</td><td>' .
-                $sale['total_sales'] . '</td><td>' .
-                $sale['total_discount'] . '</td></tr>';
+            $html .= '<tr><td>' . ($sale['customer_name'] ?? 'Unknown') . '</td><td>' .
+                ($sale['sale_count'] ?? 0) . '</td><td>' .
+                ($sale['total_sales'] ?? 0) . '</td><td>' .
+                ($sale['total_discount'] ?? 0) . '</td></tr>';
         }
         $html .= '</table>';
         $pdf->writeHTML($html, true, false, true, false, '');
@@ -1345,19 +1656,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $rows = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+        $rows = $this->buildCategoryReportRows($from, $to, $storeId, $employeeId);
 
         header('Content-Type: application/vnd.ms-excel');
         $filename = $from === $to ? ('category_sales_report_' . $from . '.xls') : ('category_sales_report_' . $from . '_to_' . $to . '.xls');
@@ -1384,19 +1683,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_categories.name as category_name, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $rows = $builder->groupBy('pos_categories.id')->orderBy('total_sales', 'DESC')->findAll();
+        $rows = $this->buildCategoryReportRows($from, $to, $storeId, $employeeId);
 
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
@@ -1427,19 +1714,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $rows = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+        $rows = $this->buildUnitReportRows($from, $to, $storeId, $employeeId);
 
         header('Content-Type: application/vnd.ms-excel');
         $filename = $from === $to ? ('unit_sales_report_' . $from . '.xls') : ('unit_sales_report_' . $from . '_to_' . $to . '.xls');
@@ -1467,19 +1742,7 @@ class Sales extends BaseController
         }
 
         $storeId = session('store_id');
-        $saleItemsModel = new \App\Models\M_sale_items();
-        $builder = $saleItemsModel
-            ->select('pos_units.name as unit_name, pos_units.abbreviation, SUM(pos_sale_items.quantity) as total_qty, SUM(pos_sale_items.subtotal) as total_sales, COUNT(DISTINCT pos_sales.id) as sale_count')
-            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
-            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
-            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
-            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
-            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
-            ->where('pos_sales.store_id', $storeId);
-        if (!empty($employeeId)) {
-            $builder->where('pos_sales.employee_id', (int)$employeeId);
-        }
-        $rows = $builder->groupBy('pos_units.id')->orderBy('total_sales', 'DESC')->findAll();
+        $rows = $this->buildUnitReportRows($from, $to, $storeId, $employeeId);
 
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
@@ -1501,11 +1764,10 @@ class Sales extends BaseController
     // Employee reports
     public function employeeReport()
     {
-        $date = $this->request->getGet('date') ?? date('Y-m-d');
         $storeId = session('store_id');
         $selectedEmployeeId = $this->request->getGet('employee_id');
-        $startDate = $this->request->getGet('start_date') ?? date('Y-m-d', strtotime('-30 days'));
-        $endDate = $this->request->getGet('end_date') ?? date('Y-m-d');
+        $startDate = $this->request->getGet('from') ?? $this->request->getGet('start_date') ?? date('Y-m-d', strtotime('-30 days'));
+        $endDate = $this->request->getGet('to') ?? $this->request->getGet('end_date') ?? date('Y-m-d');
 
         $salesModel = new \App\Models\M_sales();
         $employeeModel = new \App\Models\EmployeesModel();
@@ -1525,14 +1787,16 @@ class Sales extends BaseController
             $query->where('DATE(pos_sales.created_at) <=', $endDate);
         }
         $reportData = $query->orderBy('pos_sales.created_at', 'DESC')->findAll();
+        $reportData = $this->applyReturnsToSaleRows($reportData, $storeId);
 
         $data = [
             'title' => 'Employee-wise Sales & Commission Report',
             'employees' => $employeeModel->forStore()->findAll(),
             'reportData' => $reportData,
             'selectedEmployeeId' => $selectedEmployeeId,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
+            // Views use from/to
+            'from' => $startDate,
+            'to' => $endDate,
         ];
         return view('sales/reports/employee_report', $data);
     }
@@ -1545,8 +1809,8 @@ class Sales extends BaseController
 
         $employees = $employeeModel->forStore()->findAll();
         $selectedEmployeeId = $this->request->getGet('employee_id');
-        $startDate = $this->request->getGet('start_date') ?: date('Y-m-01');
-        $endDate = $this->request->getGet('end_date') ?: date('Y-m-d');
+        $startDate = $this->request->getGet('from') ?? ($this->request->getGet('start_date') ?: date('Y-m-01'));
+        $endDate = $this->request->getGet('to') ?? ($this->request->getGet('end_date') ?: date('Y-m-d'));
 
         $builder = $salesModel
             ->select('pos_sales.id, pos_sales.created_at as sale_date, pos_sales.employee_id, pos_sales.commission_amount, pos_sales.total as total_amount, pos_employees.name as employee_name, pos_customers.name as customer_name')
@@ -1559,6 +1823,7 @@ class Sales extends BaseController
             $builder->where('pos_sales.employee_id', $selectedEmployeeId);
         }
         $reportData = $builder->orderBy('pos_sales.created_at', 'DESC')->findAll();
+        $reportData = $this->applyReturnsToSaleRows($reportData, session('store_id'));
 
         return view('sales/reports/employee_commission_report', [
             'title' => 'Employee-wise Sales & Commission Report',
@@ -1589,8 +1854,8 @@ class Sales extends BaseController
     {
         $storeId = session('store_id');
         $selectedEmployeeId = $this->request->getGet('employee_id');
-        $startDate = $this->request->getGet('start_date') ?? date('Y-m-d', strtotime('-30 days'));
-        $endDate = $this->request->getGet('end_date') ?? date('Y-m-d');
+        $startDate = $this->request->getGet('from') ?? $this->request->getGet('start_date') ?? date('Y-m-d', strtotime('-30 days'));
+        $endDate = $this->request->getGet('to') ?? $this->request->getGet('end_date') ?? date('Y-m-d');
 
         $salesModel = new \App\Models\M_sales();
         $query = $salesModel
@@ -1604,6 +1869,7 @@ class Sales extends BaseController
             $query->where('pos_sales.employee_id', $selectedEmployeeId);
         }
         $rows = $query->orderBy('pos_sales.created_at', 'DESC')->findAll();
+        $rows = $this->applyReturnsToSaleRows($rows, $storeId);
 
         header('Content-Type: application/vnd.ms-excel');
         $filename = 'employee_report_' . $startDate . '_to_' . $endDate . '.xls';
@@ -1628,8 +1894,8 @@ class Sales extends BaseController
     {
         $storeId = session('store_id');
         $selectedEmployeeId = $this->request->getGet('employee_id');
-        $startDate = $this->request->getGet('start_date') ?? date('Y-m-d', strtotime('-30 days'));
-        $endDate = $this->request->getGet('end_date') ?? date('Y-m-d');
+        $startDate = $this->request->getGet('from') ?? $this->request->getGet('start_date') ?? date('Y-m-d', strtotime('-30 days'));
+        $endDate = $this->request->getGet('to') ?? $this->request->getGet('end_date') ?? date('Y-m-d');
 
         $salesModel = new \App\Models\M_sales();
         $query = $salesModel
@@ -1643,6 +1909,7 @@ class Sales extends BaseController
             $query->where('pos_sales.employee_id', $selectedEmployeeId);
         }
         $rows = $query->orderBy('pos_sales.created_at', 'DESC')->findAll();
+        $rows = $this->applyReturnsToSaleRows($rows, $storeId);
 
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
@@ -1668,8 +1935,8 @@ class Sales extends BaseController
     public function exportEmployeeCommissionReportExcel()
     {
         $selectedEmployeeId = $this->request->getGet('employee_id');
-        $startDate = $this->request->getGet('start_date') ?: date('Y-m-01');
-        $endDate = $this->request->getGet('end_date') ?: date('Y-m-d');
+        $startDate = $this->request->getGet('from') ?? ($this->request->getGet('start_date') ?: date('Y-m-01'));
+        $endDate = $this->request->getGet('to') ?? ($this->request->getGet('end_date') ?: date('Y-m-d'));
 
         $salesModel = new \App\Models\M_sales();
         $builder = $salesModel
@@ -1683,6 +1950,7 @@ class Sales extends BaseController
             $builder->where('pos_sales.employee_id', $selectedEmployeeId);
         }
         $rows = $builder->orderBy('pos_sales.created_at', 'DESC')->findAll();
+        $rows = $this->applyReturnsToSaleRows($rows, session('store_id'));
 
         header('Content-Type: application/vnd.ms-excel');
         $filename = 'employee_commission_report_' . $startDate . '_to_' . $endDate . '.xls';
@@ -1706,8 +1974,8 @@ class Sales extends BaseController
     public function exportEmployeeCommissionReportPDF()
     {
         $selectedEmployeeId = $this->request->getGet('employee_id');
-        $startDate = $this->request->getGet('start_date') ?: date('Y-m-01');
-        $endDate = $this->request->getGet('end_date') ?: date('Y-m-d');
+        $startDate = $this->request->getGet('from') ?? ($this->request->getGet('start_date') ?: date('Y-m-01'));
+        $endDate = $this->request->getGet('to') ?? ($this->request->getGet('end_date') ?: date('Y-m-d'));
 
         $salesModel = new \App\Models\M_sales();
         $builder = $salesModel
@@ -1721,6 +1989,7 @@ class Sales extends BaseController
             $builder->where('pos_sales.employee_id', $selectedEmployeeId);
         }
         $rows = $builder->orderBy('pos_sales.created_at', 'DESC')->findAll();
+        $rows = $this->applyReturnsToSaleRows($rows, session('store_id'));
 
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();

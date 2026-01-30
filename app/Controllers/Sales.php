@@ -535,6 +535,7 @@ class Sales extends BaseController
         $productModel = new M_products();
         $customerModel = new M_customers();
         $inventoryModel = new M_inventory();
+        $settingModel = new \App\Models\SettingsModel();
 
         $sale = $salesModel->forStore()->find($saleId);
         if (!$sale) {
@@ -879,6 +880,8 @@ class Sales extends BaseController
 
         $employees = $this->employeeModel->forStore()->findAll();
         $userRole = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
+        $settingsRow = $settingModel->first() ?? [];
+        $salesShowDiscountType = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
 
         return view('sales/edit', [
             'sale' => $sale,
@@ -889,6 +892,7 @@ class Sales extends BaseController
             'userRole' => $userRole,
             'title' => 'Edit Sale',
             'cartItems' => $cartItems,
+            'salesShowDiscountType' => $salesShowDiscountType,
         ]);
     }
 

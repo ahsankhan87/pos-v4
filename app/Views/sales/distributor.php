@@ -226,8 +226,6 @@ $canEditLineDiscount = can('sales.edit_discount');
 
                     <div class="p-4 space-y-2 text-sm">
                         <input type="hidden" name="subtotal" id="subtotal" value="0">
-                        <input type="hidden" name="total_discount" id="total_discount" value="0">
-                        <input type="hidden" name="total_tax" id="total_tax" value="0">
                         <input type="hidden" name="grand_total" id="grand_total" value="0">
 
                         <div class="flex justify-between">
