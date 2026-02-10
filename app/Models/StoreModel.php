@@ -20,7 +20,8 @@ class StoreModel extends Model
         'is_default',
         'currency_code',
         'currency_symbol',
-        'timezone'
+        'timezone',
+        'website_url',
     ];
     protected $useTimestamps = true;
 
