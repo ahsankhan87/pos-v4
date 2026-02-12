@@ -7,14 +7,14 @@
     <title><?= esc($title ?? 'Product-wise Sales Report - Print') ?></title>
     <style>
         @page {
-            margin: 4mm;
+            margin: 0.8cm;
         }
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.2;
-            margin: 6mm;
+            font-size: 11px;
+            line-height: 1.3;
+            margin: 0.8cm;
         }
 
         h2 {
@@ -34,7 +34,7 @@
         td {
             border: 1px solid #000;
             padding: 2px 4px;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         thead th {

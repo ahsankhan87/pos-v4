@@ -125,18 +125,36 @@
             }
         }
 
+        // Detect thermal receipt layout vs A4/invoice layouts
+        const isThermalReceipt = /id\s*=\s*(["'])invoice-POS\1/i.test(content);
+
         doc.open();
         doc.write('<!doctype html><html><head>');
         doc.write('<meta charset="utf-8">');
         doc.write('<meta name="viewport" content="width=device-width, initial-scale=1">');
+        // Base styles first
         doc.write('<style>');
         doc.write('html,body{margin:0;padding:8px;font-family:Arial,Helvetica,sans-serif;color:#111;}');
         doc.write('table{width:100%;border-collapse:collapse;}');
         doc.write('td,th{font-size:11px;padding:2px;vertical-align:top;}');
         doc.write('.text-right{text-align:right}.text-center{text-align:center}');
-        doc.write('@media print { @page { margin: 0;!important } html,body{padding:0!important;margin:0!important;overflow:hidden!important;} #invoice-POS{ width:80mm !important; max-width:80mm !important; margin:0 auto !important; } }');
         doc.write('</style>');
+
+        // Template head styles next (may include its own @page rules)
         if (headExtra) doc.write(headExtra);
+
+        // Print overrides LAST so they win against template styles
+        doc.write('<style id="receipt-print-overrides">');
+        doc.write('@media print {');
+        doc.write('  html,body{padding:0!important;margin:0!important;}');
+        doc.write('  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}');
+        // Only force @page margin 0 for thermal receipts; allow A4 templates to keep their own margins
+        if (isThermalReceipt) {
+            doc.write('  @page { margin: 0 !important; }');
+            doc.write('  #invoice-POS{ width:80mm !important; max-width:80mm !important; margin:0 auto !important; }');
+        }
+        doc.write('}');
+        doc.write('</style>');
         doc.write('</head><body>');
         if (content) doc.write(content);
         doc.write('</body></html>');
@@ -144,6 +162,25 @@
 
         // Mark iframe as ready after content is loaded
         frame.dataset.ready = 'true';
+
+        // Intercept Ctrl+P inside the iframe too (if the user clicked inside preview)
+        try {
+            doc.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && !e.altKey && !e.shiftKey && (e.key === 'p' || e.key === 'P')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    if (window.parent && typeof window.parent.printReceiptOnly === 'function') {
+                        window.parent.printReceiptOnly();
+                    } else {
+                        setTimeout(function() {
+                            doc.defaultView && doc.defaultView.print && doc.defaultView.print();
+                        }, 100);
+                    }
+                    return false;
+                }
+            }, true);
+        } catch (_) {}
 
         // Autosize iframe height to content
         function resize() {
@@ -160,7 +197,43 @@
     })();
 
     // Print the iframe (isolated)
-    function printReceiptOnly() {
+    async function waitForFrameAssets(frame) {
+        const doc = frame.contentDocument || frame.contentWindow?.document;
+        if (!doc) return;
+
+        // Wait a tick for layout/styles to apply
+        await new Promise(r => setTimeout(r, 60));
+
+        // Fonts (if supported)
+        try {
+            if (doc.fonts && doc.fonts.ready) {
+                await Promise.race([
+                    doc.fonts.ready,
+                    new Promise(r => setTimeout(r, 300))
+                ]);
+            }
+        } catch (_) {}
+
+        // Images
+        try {
+            const imgs = Array.from(doc.images || []);
+            if (imgs.length) {
+                await Promise.race([
+                    Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
+                        img.addEventListener('load', res, {
+                            once: true
+                        });
+                        img.addEventListener('error', res, {
+                            once: true
+                        });
+                    }))),
+                    new Promise(r => setTimeout(r, 500))
+                ]);
+            }
+        } catch (_) {}
+    }
+
+    async function printReceiptOnly() {
         const frame = document.getElementById('preview');
         if (!frame) {
             console.error('Receipt frame not found');
@@ -177,11 +250,11 @@
 
         if (frame.contentWindow) {
             try {
-                // Focus and print the iframe
+                await waitForFrameAssets(frame);
                 frame.contentWindow.focus();
                 setTimeout(function() {
                     frame.contentWindow.print();
-                }, 50);
+                }, 80);
                 return;
             } catch (err) {
                 console.error('Iframe print failed:', err);
@@ -205,13 +278,8 @@
             e.stopPropagation();
             e.stopImmediatePropagation();
 
-            const frame = document.getElementById('preview');
-            if (frame && frame.contentWindow && frame.dataset.ready) {
-                frame.contentWindow.focus();
-                frame.contentWindow.print();
-            } else {
-                printReceiptOnly();
-            }
+            // Always go through the same print flow as the Print button
+            printReceiptOnly();
             return false;
         }
         // Ctrl+Shift+P -> Browser print preview (parent page with @media print rules)
@@ -257,7 +325,7 @@
                 window.history.back();
             }
         }
-    });
+    }, true);
     // Hint banner is always visible; no persistence needed
 
     async function sendReceiptWhatsApp() {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <style>
         @media print {
-            @page { margin: 0.4cm; }
+            @page { margin: 0.6cm; }
             body { margin: 0; }
             /* Force strong, visible table lines on print */
             table { border: 1px solid #000 !important; border-collapse: collapse !important; }
@@ -27,13 +27,13 @@
         }
         .header p {
             margin: 2px 0;
-            color: #7f8c8d;
+            color: #000;
         }
         .receipt-info { display: flex; gap: 6px; margin-bottom: 6px; }
         .info-block { flex: 1; padding: 6px; background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
         .info-block h3 { margin: 0 0 6px 0; font-size: 12px; color: #2c3e50; }
         .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px;font-size: 10px; }
-        .muted { color: #667085; }
+        .muted { color: #000; }
         .badge { display: inline-block; padding: 2px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 10px; }
         table {
             width: 100%;
@@ -42,7 +42,7 @@
         }
         thead {
             background: #f2f4f7;
-            color: #111827;
+            color: #000;
         }
         th {
             padding: 4px 6px;
@@ -77,7 +77,7 @@
             padding-top: 6px;
             border-top: 1px solid #ecf0f1;
             text-align: center;
-            color: #7f8c8d;
+            color: #000;
         }
         .footer p {
             margin: 2px 0;
@@ -122,7 +122,7 @@
         <thead>
             <tr>
                 <th style="width: 45%;">Item Description</th>
-                <th class="text-center" style="width: 10%;">Quantity</th>
+                <th class="text-center" style="width: 15%;">Quantity</th>
                 <th class="text-right" style="width: 15%;">Unit Price</th>
                 <th class="text-right" style="width: 15%;">Line Discount</th>
                 <th class="text-right" style="width: 15%;">Line Total</th>
@@ -158,10 +158,11 @@
     </div>
 
     <div class="footer">
-        
-<p><strong>کمپنی کے ساتھ ہر قسم کا لین دین صرف کمپیوٹرائزڈ بل پر قابلِ قبول ہے۔
-شکایت یا معلومات کے لیے اس نمبر پر رابطہ کریں: 
-03359567729</strong></p>
+        <p>
+            <strong>کمپنی کے ساتھ ہر قسم کا لین دین صرف کمپیوٹرائزڈ بل پر قابلِ قبول ہے۔
+            شکایت یا معلومات کے لیے اس نمبر پر رابطہ کریں: 
+            03359567729</strong>
+        </p>
 
     </div>
 </body>
