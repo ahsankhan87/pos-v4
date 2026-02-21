@@ -31,11 +31,24 @@ class Receipts extends BaseController
             return redirect()->back()->with('error', 'Sale not found.');
         }
 
+        $descRaw = trim((string)($sale['description'] ?? ''));
+        $descSafe = htmlspecialchars($descRaw, ENT_QUOTES, 'UTF-8');
+        $descSafeBr = $descSafe !== '' ? nl2br($descSafe) : '';
+        $descBlock = $descSafeBr !== ''
+            ? ('<div style="margin-top:10px;border:1px solid #e5e7eb;border-radius:6px;padding:8px;background:#fafafa;font-size:11px;">'
+                . '<strong>Description:</strong> ' . $descSafeBr
+                . '</div>')
+            : '';
+
         // Get receipt template
         $template = $this->templateModel->getDefaultTemplate();
         if (!$template) {
             return redirect()->back()->with('error', 'Receipt template not found.');
         }
+
+        $templateHtml = (string) ($template['template'] ?? '');
+        $templateHasDescPlaceholder = (strpos($templateHtml, '{{description_block}}') !== false) || (strpos($templateHtml, '{{description}}') !== false);
+        $isThermalTemplate = preg_match('/id\s*=\s*(["\'])invoice-POS\1/i', $templateHtml) === 1;
 
         $loggedInStore = $this->M_stores->find(session()->get('store_id'));
 
@@ -117,6 +130,8 @@ class Receipts extends BaseController
             '{{currency}}' => $currency,
             '{{employee}}' => $sale['employee_name'] ?? '',
             '{{employee_phone}}' => $sale['employee_phone'] ?? '',
+            '{{description}}' => $descSafeBr,
+            '{{description_block}}' => $descBlock,
         ];
 
         // Generate receipt HTML
@@ -125,6 +140,16 @@ class Receipts extends BaseController
             array_values($replacements),
             $template['template']
         );
+
+        // Fallback: If the template doesn't include the placeholders, inject the description
+        // for non-thermal layouts so A4/invoice templates still print invoice notes.
+        if (!$templateHasDescPlaceholder && !$isThermalTemplate && $descBlock !== '') {
+            if (stripos($receiptHtml, '</body>') !== false) {
+                $receiptHtml = preg_replace('/<\/body>/i', $descBlock . '</body>', $receiptHtml, 1);
+            } else {
+                $receiptHtml .= $descBlock;
+            }
+        }
 
         // Return as PDF or wrapped HTML view
         if ($isPdfOutput) {
@@ -151,10 +176,23 @@ class Receipts extends BaseController
             return $this->response->setJSON(['success' => false, 'error' => 'Sale not found'])->setStatusCode(404);
         }
 
+        $descRaw = trim((string)($sale['description'] ?? ''));
+        $descSafe = htmlspecialchars($descRaw, ENT_QUOTES, 'UTF-8');
+        $descSafeBr = $descSafe !== '' ? nl2br($descSafe) : '';
+        $descBlock = $descSafeBr !== ''
+            ? ('<div style="margin-top:10px;border:1px solid #e5e7eb;border-radius:6px;padding:8px;background:#fafafa;font-size:11px;">'
+                . '<strong>Description:</strong> ' . $descSafeBr
+                . '</div>')
+            : '';
+
         $template = $this->templateModel->getDefaultTemplate();
         if (!$template) {
             return $this->response->setJSON(['success' => false, 'error' => 'Receipt template not found'])->setStatusCode(500);
         }
+
+        $templateHtml = (string) ($template['template'] ?? '');
+        $templateHasDescPlaceholder = (strpos($templateHtml, '{{description_block}}') !== false) || (strpos($templateHtml, '{{description}}') !== false);
+        $isThermalTemplate = preg_match('/id\s*=\s*(["\'])invoice-POS\1/i', $templateHtml) === 1;
 
         $loggedInStore = $this->M_stores->find(session()->get('store_id'));
 
@@ -228,7 +266,10 @@ class Receipts extends BaseController
             '{{ItemsCount}}' => count($sale['items']) ?? 0,
             '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
             '{{currency}}' => $currency,
-            '{{employee}}' => $sale['employee_name'] ?? ''
+            '{{employee}}' => $sale['employee_name'] ?? '',
+            '{{employee_phone}}' => $sale['employee_phone'] ?? '',
+            '{{description}}' => $descSafeBr,
+            '{{description_block}}' => $descBlock,
         ];
 
         $receiptHtml = str_replace(
@@ -236,6 +277,14 @@ class Receipts extends BaseController
             array_values($replacements),
             $template['template']
         );
+
+        if (!$templateHasDescPlaceholder && !$isThermalTemplate && $descBlock !== '') {
+            if (stripos($receiptHtml, '</body>') !== false) {
+                $receiptHtml = preg_replace('/<\/body>/i', $descBlock . '</body>', $receiptHtml, 1);
+            } else {
+                $receiptHtml .= $descBlock;
+            }
+        }
 
         // Ensure output directory exists: public/uploads/receipts
         $saveDir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'receipts';

@@ -703,8 +703,9 @@ class Sales extends BaseController
             $saleIds = array_column($sales, 'id');
             $saleItemsModel = new \App\Models\M_sale_items();
             $rows = $saleItemsModel
-                ->select('pos_sale_items.sale_id, pos_sale_items.product_id, pos_sale_items.quantity, pos_sale_items.price, pos_sale_items.cost_price, pos_sale_items.subtotal, pos_sale_items.discount, pos_sale_items.discount_type, pos_products.name as product_name, pos_products.code as product_code, pos_sales.invoice_no')
+                ->select('pos_sale_items.sale_id, pos_sale_items.product_id, pos_sale_items.quantity, pos_sale_items.price, pos_sale_items.cost_price, pos_sale_items.subtotal, pos_sale_items.discount, pos_sale_items.discount_type, pos_products.name as product_name, pos_products.code as product_code, pos_sales.invoice_no, pos_customers.name as customer_name')
                 ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id', 'left')
+                ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
                 ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
                 ->whereIn('pos_sale_items.sale_id', $saleIds)
                 ->orderBy('pos_sale_items.sale_id', 'ASC')
@@ -735,6 +736,7 @@ class Sales extends BaseController
                     'product_id' => $r['product_id'],
                     'product_name' => $r['product_name'] ?? 'Unknown',
                     'product_code' => $r['product_code'] ?? '',
+                    'customer_name' => $r['customer_name'] ?? 'Unknown',
                     'quantity' => $qty,
                     'unit_price' => $unitPrice,
                     'gross_line' => $grossLine,

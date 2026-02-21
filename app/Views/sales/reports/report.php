@@ -270,10 +270,10 @@ function money_fmt($v)
 
     <!-- Table -->
     <div class="bg-white shadow rounded-lg print-container">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <!-- <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">Detailed Transactions</h3>
             <div class="text-sm text-gray-500">Showing <?= number_format($count) ?> records</div>
-        </div>
+        </div> -->
         <div class="overflow-x-auto">
             <table id="dailySalesTable" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -357,7 +357,7 @@ function money_fmt($v)
                 order: [
                     [3, 'desc']
                 ],
-                dom: 'Bfrtip',
+                dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
                 buttons: [{
                         extend: 'print',
                         text: 'Print',

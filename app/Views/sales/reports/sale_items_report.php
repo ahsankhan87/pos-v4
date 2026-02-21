@@ -95,16 +95,17 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
     </div>
 
     <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <!-- <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">Items (Grouped by Sale)</h3>
             <div class="text-sm text-gray-500">Sales: <?= number_format(count($saleItemsBySale)) ?> · Lines: <?= number_format($totQty, 2) ?></div>
-        </div>
+        </div> -->
         <div class="overflow-x-auto">
             <table id="saleItemsFlatTable" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sale #</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
                         <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
@@ -119,7 +120,9 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                         <?php foreach ($items as $it): ?>
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2 text-sm text-gray-900">#<?= (int)$sid ?></td>
-                                <td class="px-4 py-2 text-sm"><a href="<?= site_url('sales/receipt/' . (int)$sid) ?>" target="_blank" class="text-blue-600 hover:underline"><?= esc($it['invoice_no'] ?? '—') ?></a></td>
+                                <td class="px-4 py-2 text-sm"><a href="<?= site_url('receipts/generate/' . (int)$sid) ?>" target="_blank" class="text-blue-600 hover:underline"><?= esc($it['invoice_no'] ?? '—') ?></a></td>
+
+                                <td class="px-4 py-2 text-sm text-gray-700"><?= esc($it['customer_name'] ?? 'Unknown') ?></td>
 
                                 <td class="px-4 py-2">
                                     <div class="text-sm font-semibold text-gray-900"><?= esc($it['product_name']) ?></div>
@@ -137,6 +140,7 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
+                        <td class="px-4 py-2 text-right text-xs font-semibold text-gray-700"></td>
                         <td class="px-4 py-2 text-right text-xs font-semibold text-gray-700"></td>
                         <td class="px-4 py-2 text-right text-xs font-semibold text-gray-700"></td>
                         <td class="px-4 py-2 text-xs font-semibold text-gray-700">TOTALS</td>
@@ -191,7 +195,7 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                 order: [
                     [0, 'asc']
                 ],
-                dom: 'Bfrtip',
+                dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
                 buttons: [{
                         extend: 'print',
                         text: 'Print Items',

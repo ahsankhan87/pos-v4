@@ -22,7 +22,10 @@ class CustomerLedgerModel extends Model
 
     public function getCustomerBalance($customerId)
     {
-        $last = $this->where('customer_id', $customerId)->orderBy('date', 'desc')->first();
+        $last = $this->where('customer_id', $customerId)
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
         return $last ? $last['balance'] : 0;
     }
 

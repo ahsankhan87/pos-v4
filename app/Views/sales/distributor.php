@@ -168,6 +168,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                                 <?php endforeach; ?>
                             </select>
                         </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                            <textarea name="description" id="sale_description" rows="2"
+                                class="w-full text-sm rounded border-gray-300"
+                                placeholder="Optional invoice notes..."><?= esc(old('description', '')) ?></textarea>
+                        </div>
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5">Pay Type</label>

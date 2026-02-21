@@ -13,6 +13,7 @@ class M_sales extends Model
         'customer_id',
         'invoice_no',
         'user_id',
+        'description',
         'total',
         'total_discount',
         'discount_type',

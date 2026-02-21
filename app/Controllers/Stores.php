@@ -257,8 +257,13 @@ class Stores extends BaseController
             return redirect()->back()->with('error', 'Store not found');
         }
 
-        session()->set('store_id', $storeId);
-        session()->set('store_name', $store['name']);
+        session()->set([
+            'store_id' => (int)$storeId,
+            'store_name' => $store['name'] ?? '',
+            'currency_code' => $store['currency_code'] ?? (session()->get('currency_code') ?? 'USD'),
+            'currency_symbol' => $store['currency_symbol'] ?? (session()->get('currency_symbol') ?? '$'),
+            'timezone' => $store['timezone'] ?? (session()->get('timezone') ?? 'UTC'),
+        ]);
 
         return redirect()->to('/');
     }

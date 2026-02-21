@@ -146,6 +146,7 @@ class Sales extends BaseController
             $sale_date = date('Y-m-d H:i:s');
         }
         $customer_id = (int) ($this->request->getPost('customer_id') ?: 0);
+        $description = trim((string) ($this->request->getPost('description') ?? ''));
         $cart_data = $this->request->getPost('cart_data');
         $items = json_decode($cart_data, true);
         $canEditLinePrice = can('sales.edit_price');
@@ -369,6 +370,7 @@ class Sales extends BaseController
                     $saleData = [
                         'created_at' => $sale_date,
                         'customer_id' => $customer_id,
+                        'description' => $description,
                         'payment_type' => $payment_type,
                         'payment_method' => $payment_method,
                         'total' => $total,
@@ -393,6 +395,7 @@ class Sales extends BaseController
                     $saleData = [
                         'created_at' => $sale_date,
                         'customer_id' => $customer_id,
+                        'description' => $description,
                         'total' => $total,
                         'total_discount' => $totalDiscount,
                         'discount_type' => $discount_type,
@@ -420,8 +423,9 @@ class Sales extends BaseController
                 }
 
                 // Ledger entry for credit sale
-                if ($payment_type === 'credit') {
+                if ($payment_type === 'credit' && (float)$due_amount > 0 && (int)$customer_id > 0) {
                     $ledgerModel = new \App\Models\CustomerLedgerModel();
+                    $newBalance = round((float)$ledgerModel->getCustomerBalance($customer_id) + (float)$due_amount, 2);
                     $ledgerInserted = $ledgerModel->insert([
                         'customer_id' => $customer_id,
                         'sale_id' => $sale_id,
@@ -429,7 +433,7 @@ class Sales extends BaseController
                         'description' => 'Credit Sale Invoice #' . $effectiveInvoiceNo,
                         'debit' => $due_amount,
                         'credit' => 0,
-                        'balance' => $ledgerModel->getCustomerBalance($customer_id) + $due_amount,
+                        'balance' => $newBalance,
                         'ref_no' => $effectiveInvoiceNo,
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
@@ -438,6 +442,9 @@ class Sales extends BaseController
                         $dbError = $ledgerModel->db->error();
                         throw new \Exception('Failed to create ledger entry for credit sale. ' . (!empty($ledgerErrors) ? json_encode($ledgerErrors) . ' ' : '') . (!empty($dbError) && ($dbError['code'] ?? 0) ? ('DB Error: ' . $dbError['message']) : ''));
                     }
+
+                    // Keep running balances consistent even for backdated entries.
+                    $ledgerModel->recalculateBalances((int)$customer_id);
                 }
                 // Log the sale creation/completion
                 logAction('sale_created', 'Sale ID: ' . $sale_id . ', Customer ID: ' . $customer_id . ', Total: ' . $total . ($isDraftCompletion ? ' (completed draft)' : ''));
@@ -643,15 +650,19 @@ class Sales extends BaseController
                         break;
                     }
 
-                    $availableStock = ($product['quantity'] ?? 0) + ($existingQuantities[$productId] ?? 0);
-                    if ($quantity > $availableStock) {
-                        $errors[] = sprintf(
-                            'Insufficient stock for %s. Requested %.2f, available %.2f.',
-                            $product['name'] ?? 'Unknown product',
-                            $quantity,
-                            $availableStock
-                        );
-                        break;
+                    $isServiceProduct = isset($product['type']) && strtolower((string)$product['type']) === 'service';
+                    $isStockTracked = !isset($product['is_stock_tracked']) || (int)$product['is_stock_tracked'] === 1;
+                    if (!$isServiceProduct && $isStockTracked) {
+                        $availableStock = (float)($product['quantity'] ?? 0) + (float)($existingQuantities[$productId] ?? 0);
+                        if ($quantity > $availableStock) {
+                            $errors[] = sprintf(
+                                'Insufficient stock for %s. Requested %.2f, available %.2f.',
+                                $product['name'] ?? 'Unknown product',
+                                $quantity,
+                                $availableStock
+                            );
+                            break;
+                        }
                     }
 
                     $lineBase = $price * $quantity;
@@ -841,11 +852,16 @@ class Sales extends BaseController
                 // Update customer ledger for credit edits
                 try {
                     $ledgerModel = new \App\Models\CustomerLedgerModel();
-                    // Remove any prior ledger entries for this sale
-                    $ledgerModel->where('sale_id', $saleId)->delete();
+                    $previousCustomerId = (int)($sale['customer_id'] ?? 0);
+                    // Remove only prior credit-sale invoice debit entry for this sale.
+                    // Do not remove payment/return ledger rows linked to same sale.
+                    $ledgerModel->where('sale_id', $saleId)
+                        ->where('debit >', 0)
+                        ->like('description', 'Credit Sale Invoice #')
+                        ->delete();
                     // Insert updated ledger entry only if credit and there is due
-                    if ($paymentType === 'credit' && $dueAmount > 0) {
-                        $newBalance = (float)$ledgerModel->getCustomerBalance($customerId) + (float)$dueAmount;
+                    if ($paymentType === 'credit' && $dueAmount > 0 && $customerId > 0) {
+                        $newBalance = round((float)$ledgerModel->getCustomerBalance($customerId) + (float)$dueAmount, 2);
                         $ledgerModel->insert([
                             'customer_id' => $customerId,
                             'sale_id' => $saleId,
@@ -857,6 +873,15 @@ class Sales extends BaseController
                             'created_at' => date('Y-m-d H:i:s'),
                             'ref_no' => $sale['invoice_no'] ?? '',
                         ]);
+                    }
+
+                    // Recalculate for both previous and current customer in case sale/customer changed.
+                    $affectedCustomerIds = array_values(array_unique(array_filter([
+                        $previousCustomerId,
+                        (int)$customerId,
+                    ])));
+                    foreach ($affectedCustomerIds as $affectedCustomerId) {
+                        $ledgerModel->recalculateBalances((int)$affectedCustomerId);
                     }
                 } catch (\Throwable $e) {
                     throw new \Exception('Failed to update customer ledger: ' . $e->getMessage());
@@ -1020,6 +1045,7 @@ class Sales extends BaseController
         $productModel = new M_products();
 
         $customer_id = $this->request->getPost('customer_id');
+        $description = trim((string) ($this->request->getPost('description') ?? ''));
         $cart_data = $this->request->getPost('cart_data');
         $items = json_decode($cart_data, true);
         $discountInput = (float)($this->request->getPost('discount') ?? 0);
@@ -1131,6 +1157,7 @@ class Sales extends BaseController
 
         $saleData = [
             'customer_id' => $customer_id,
+            'description' => $description,
             'total' => $total,
             'total_discount' => $totalDiscount,
             'discount_type' => $discount_type,
@@ -1273,6 +1300,7 @@ class Sales extends BaseController
             'prefillCustomerId' => (int)($sale['customer_id'] ?? 0),
             'prefillEmployeeId' => (int)($sale['employee_id'] ?? 0),
             'prefillPaymentMethod' => $sale['payment_method'] ?? 'cash',
+            'prefillDescription' => $sale['description'] ?? '',
         ]);
     }
 

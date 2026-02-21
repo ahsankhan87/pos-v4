@@ -211,7 +211,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     discountType: <?= json_encode($prefillDiscountType ?? 'fixed') ?>,
                     customerId: <?= json_encode($prefillCustomerId ?? 0) ?>,
                     employeeId: <?= json_encode($prefillEmployeeId ?? 0) ?>,
-                    paymentMethod: <?= json_encode($prefillPaymentMethod ?? 'cash') ?>
+                    paymentMethod: <?= json_encode($prefillPaymentMethod ?? 'cash') ?>,
+                    description: <?= json_encode($prefillDescription ?? '') ?>
                 };
             </script>
         <?php endif; ?>
@@ -348,6 +349,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                                     <option value="<?= $employee['id'] ?>"><?= esc($employee['name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Description</label>
+                            <textarea name="description" id="sale_description" rows="2"
+                                class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500"
+                                placeholder="Optional invoice notes..."><?= esc(old('description', $prefillDescription ?? '')) ?></textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-1.5">
@@ -1540,6 +1548,9 @@ $canEditLineDiscount = can('sales.edit_discount');
                 }
                 if (window.__DRAFT_PREFILL__.paymentMethod) {
                     $('select[name="payment_method"]').val(window.__DRAFT_PREFILL__.paymentMethod).trigger('change');
+                }
+                if (typeof window.__DRAFT_PREFILL__.description === 'string') {
+                    $('#sale_description').val(window.__DRAFT_PREFILL__.description);
                 }
             } catch (e) {
                 console.warn('Draft prefill failed', e);
