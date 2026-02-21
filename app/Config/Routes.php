@@ -34,6 +34,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('report/items', 'Reports\Sales::saleItemsReport', ['filter' => 'permission:reports.sale_items']);
     $routes->get('product-report', 'Reports\Sales::productReport', ['filter' => 'permission:reports.product_sales']);
     $routes->get('customer-report', 'Reports\Sales::customerReport', ['filter' => 'permission:reports.customer_sales']);
+    $routes->get('gift-issued-report', 'Reports\Sales::giftIssuedReport', ['filter' => 'permission:reports.customer_sales']);
     $routes->get('category-report', 'Reports\Sales::categoryReport', ['filter' => 'permission:reports.category_sales']);
     $routes->get('unit-report', 'Reports\Sales::unitReport', ['filter' => 'permission:reports.unit_sales']);
     $routes->get('inactive-customers-report', 'Reports\Sales::inactiveCustomersReport', ['filter' => 'permission:reports.inactive_customers']);

@@ -99,6 +99,23 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a1a1a1;
         }
+
+        .reports-submenu {
+            position: relative;
+        }
+
+        .reports-submenu-content {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-4px);
+            transition: all 0.18s ease;
+        }
+
+        .reports-submenu:hover>.reports-submenu-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
     </style>
 </head>
 
@@ -227,53 +244,83 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                     </button>
                                     <div class="dropdown-content absolute left-0 mt-1 w-56 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible transition-all duration-200 z-50">
                                         <div class="py-1">
-                                            <a href="<?= site_url('reports/sales') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Summary
-                                            </a>
-                                            <a href="<?= site_url('reports/purchases') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Summary
-                                            </a>
-                                            <a href="<?= site_url('reports/inventory') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-file-alt mr-2"></i> Inventory Reports
-                                            </a>
-                                            <div class="border-t border-gray-100"></div>
-                                            <div class="px-4 py-2 text-[11px] uppercase tracking-wide text-gray-400">Accounts</div>
-                                            <a href="<?= site_url('reports/debtors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-users mr-2 text-red-600"></i> Debtors (Customers)
-                                            </a>
-                                            <a href="<?= site_url('reports/creditors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-truck mr-2 text-purple-600"></i> Creditors (Suppliers)
-                                            </a>
-                                            <div class="border-t border-gray-100"></div>
-                                            <a href="<?= site_url('analytics') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-chart-line mr-2"></i> Sales Analytics
-                                            </a>
+                                            <div class="reports-submenu">
+                                                <button type="button" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-between">
+                                                    <span><i class="fas fa-chart-line mr-2"></i> Sales</span>
+                                                    <i class="fas fa-chevron-right text-xs"></i>
+                                                </button>
+                                                <div class="reports-submenu-content absolute left-full top-0 ml-1 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                                    <div class="py-1">
+                                                        <a href="<?= site_url('reports/sales') ?>" accesskey="r" title="Shortcut: Ctrl+Alt+R" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Summary
+                                                        </a>
+                                                        <a href="<?= site_url('analytics') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-chart-bar mr-2"></i> Sales Analytics
+                                                        </a>
+                                                        <a href="<?= site_url('sales/report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-calendar-day mr-2"></i> Daily Sales
+                                                        </a>
+                                                        <a href="<?= site_url('sales/product-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-box mr-2"></i> Product Sales
+                                                        </a>
+                                                        <a href="<?= site_url('sales/customer-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-user-tie mr-2"></i> Customer Sales
+                                                        </a>
+                                                        <a href="<?= site_url('sales/gift-issued-report') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                            <i class="fas fa-gift mr-2"></i> Gift Issued Report
+                                                        </a>
+                                                        <a href="<?= site_url('sales/category-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-tags mr-2"></i> Category Sales
+                                                        </a>
+                                                        <a href="<?= site_url('sales/unit-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-ruler mr-2"></i> Unit Sales
+                                                        </a>
+                                                        <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-user-friends mr-2"></i> Employee Sales
+                                                        </a>
+                                                        <a href="<?= site_url('sales/profit-loss-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-chart-line mr-2 text-green-600"></i> Profit & Loss
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                            <a href="<?= site_url('sales/report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-calendar-day mr-2"></i> Daily Sales
-                                            </a>
-                                            <a href="<?= site_url('sales/product-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-box mr-2"></i> Product Sales
-                                            </a>
-                                            <a href="<?= site_url('sales/customer-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-user-tie mr-2"></i> Customer Sales
-                                            </a>
-                                            <a href="<?= site_url('sales/category-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-tags mr-2"></i> Category Sales
-                                            </a>
-                                            <a href="<?= site_url('sales/unit-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-ruler mr-2"></i> Unit Sales
-                                            </a>
-                                            <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-user-friends mr-2"></i> Employee Sales
-                                            </a>
-                                            <div class="border-t border-gray-100"></div>
-                                            <a href="<?= site_url('purchases/report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-shopping-cart mr-2 text-purple-600"></i> <span class="font-semibold">Purchase Report</span>
-                                            </a>
-                                            <a href="<?= site_url('sales/profit-loss-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                                <i class="fas fa-chart-line mr-2 text-green-600"></i> <span class="font-semibold">Profit & Loss</span>
-                                            </a>
+                                            <div class="reports-submenu">
+                                                <button type="button" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-between">
+                                                    <span><i class="fas fa-shopping-cart mr-2"></i> Purchases</span>
+                                                    <i class="fas fa-chevron-right text-xs"></i>
+                                                </button>
+                                                <div class="reports-submenu-content absolute left-full top-0 ml-1 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                                    <div class="py-1">
+                                                        <a href="<?= site_url('reports/purchases') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Summary
+                                                        </a>
+                                                        <a href="<?= site_url('purchases/report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-receipt mr-2"></i> Purchase Report
+                                                        </a>
+                                                        <a href="<?= site_url('reports/inventory') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-file-alt mr-2"></i> Inventory Reports
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="reports-submenu">
+                                                <button type="button" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-between">
+                                                    <span><i class="fas fa-book mr-2"></i> Accounts</span>
+                                                    <i class="fas fa-chevron-right text-xs"></i>
+                                                </button>
+                                                <div class="reports-submenu-content absolute left-full top-0 ml-1 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                                    <div class="py-1">
+                                                        <a href="<?= site_url('reports/debtors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-users mr-2 text-red-600"></i> Debtors (Customers)
+                                                        </a>
+                                                        <a href="<?= site_url('reports/creditors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-truck mr-2 text-purple-600"></i> Creditors (Suppliers)
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -467,59 +514,73 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 <i class="fas fa-chevron-down text-xs"></i>
                             </button>
                             <div class="mobile-dropdown-menu hidden pl-4 mt-1 space-y-1">
-                                <a href="<?= site_url('reports/sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Sales Summary
-                                </a>
-                                <a href="<?= site_url('reports/purchases') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Summary
-                                </a>
-                                <a href="<?= site_url('reports/inventory') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-file-alt mr-2"></i> Inventory Reports
-                                </a>
-                                <div class="border-t border-blue-600 my-1"></div>
-                                <div class="px-3 py-1 text-[11px] uppercase tracking-wide text-blue-200">Accounts</div>
-                                <a href="<?= site_url('reports/debtors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-users mr-2 text-red-300"></i> Debtors (Customers)
-                                </a>
-                                <a href="<?= site_url('reports/creditors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-truck mr-2 text-purple-300"></i> Creditors (Suppliers)
-                                </a>
+                                <div>
+                                    <button class="mobile-submenu-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-600">
+                                        <span class="flex items-center"><i class="fas fa-chart-line mr-2"></i> Sales</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </button>
+                                    <div class="mobile-submenu hidden pl-3 mt-1 space-y-1">
+                                        <a href="<?= site_url('reports/sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-file-invoice-dollar mr-2"></i> Sales Summary</a>
+                                        <a href="<?= site_url('analytics') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-chart-bar mr-2"></i> Sales Analytics</a>
+                                        <a href="<?= site_url('sales/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-calendar-day mr-2"></i> Daily Sales</a>
+                                        <a href="<?= site_url('sales/product-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-box mr-2"></i> Product Sales</a>
+                                        <a href="<?= site_url('sales/customer-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-user-tie mr-2"></i> Customer Sales</a>
+                                        <a href="<?= site_url('sales/category-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-tags mr-2"></i> Category Sales</a>
+                                        <a href="<?= site_url('sales/unit-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-ruler mr-2"></i> Unit Sales</a>
+                                        <a href="<?= site_url('sales/gift-issued-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center"><i class="fas fa-gift mr-2"></i> Gift Issued Report</a>
+                                        <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-user-friends mr-2"></i> Employee Sales</a>
+                                        <a href="<?= site_url('sales/profit-loss-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-chart-line mr-2 text-green-400"></i> <span class="font-semibold">Profit & Loss</span></a>
+                                    </div>
+                                </div>
 
-                                <a href="<?= site_url('analytics') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-chart-line mr-2"></i> Sales Analytics
-                                </a>
-                                <div class="border-t border-blue-600 my-1"></div>
-                                <div class="px-3 py-1 text-[11px] uppercase tracking-wide text-blue-200">Sales</div>
-                                <a href="<?= site_url('sales/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-calendar-day mr-2"></i> Daily Sales
-                                </a>
-                                <a href="<?= site_url('sales/product-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-box mr-2"></i> Product Sales
-                                </a>
-                                <a href="<?= site_url('sales/customer-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-user-tie mr-2"></i> Customer Sales
-                                </a>
-                                <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-user-friends mr-2"></i> Employee Sales
-                                </a>
-                                <div class="border-t border-blue-600 my-1"></div>
-                                <a href="<?= site_url('purchases/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-shopping-cart mr-2 text-purple-400"></i> <span class="font-semibold">Purchase Report</span>
-                                </a>
-                                <a href="<?= site_url('sales/profit-loss-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-chart-line mr-2 text-green-400"></i> <span class="font-semibold">Profit & Loss</span>
-                                </a>
+                                <div>
+                                    <button class="mobile-submenu-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-600">
+                                        <span class="flex items-center"><i class="fas fa-shopping-cart mr-2"></i> Purchases</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </button>
+                                    <div class="mobile-submenu hidden pl-3 mt-1 space-y-1">
+                                        <a href="<?= site_url('reports/purchases') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-file-invoice-dollar mr-2"></i> Purchases Summary</a>
+                                        <a href="<?= site_url('purchases/report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-shopping-cart mr-2 text-purple-400"></i> <span class="font-semibold">Purchase Report</span></a>
+                                        <a href="<?= site_url('reports/inventory') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-file-alt mr-2"></i> Inventory Reports</a>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <button class="mobile-submenu-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-600">
+                                        <span class="flex items-center"><i class="fas fa-book mr-2"></i> Accounts</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </button>
+                                    <div class="mobile-submenu hidden pl-3 mt-1 space-y-1">
+                                        <a href="<?= site_url('reports/debtors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-users mr-2 text-red-300"></i> Debtors (Customers)</a>
+                                        <a href="<?= site_url('reports/creditors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-truck mr-2 text-purple-300"></i> Creditors (Suppliers)</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="border-t border-blue-600 pt-2 mt-2">
                             <!-- Mobile Settings Links -->
                             <?php /* Mobile subscription pill removed from header as requested */ ?>
+                            <a href="<?= site_url('stores/show/' . session()->get('store_id')) ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-user-cog mr-2"></i> Profile
+                            </a>
                             <a href="<?= site_url('users') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-users mr-2"></i> Users
                             </a>
                             <a href="<?= site_url('roles') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-user-shield mr-2"></i> Roles
+                            </a>
+                            <a href="<?= site_url('stores') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-store mr-2"></i> Stores / Branches
+                            </a>
+                            <a href="<?= site_url('settings') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-cog mr-2"></i> Settings
+                            </a>
+                            <a href="<?= site_url('logs') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-file-alt mr-2"></i> Audit Log
+                            </a>
+                            <a href="<?= site_url('backup') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-database mr-2"></i> Backup
                             </a>
                             <a href="<?= site_url('billing/manage') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-id-badge mr-2"></i> Subscription
@@ -684,6 +745,16 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <?php else: ?>
                                                 <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+R</span>
                                             <?php endif; ?>
+                                        </a>
+                                    <?php endif; ?>
+
+                                    <?php if (can('reports.customer_sales')): ?>
+                                        <div class="px-3 pt-2 pb-1">
+                                            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Gift Reports</p>
+                                        </div>
+                                        <a href="<?= site_url('sales/gift-issued-report') ?>" class="group flex items-center pl-8 pr-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                            <i class="fas fa-gift mr-3 <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
+                                            <span class="<?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'font-bold' : '' ?>">Gift Issued Report</span>
                                         </a>
                                     <?php endif; ?>
                                 </div>
@@ -887,6 +958,36 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                 menu.classList.toggle('hidden');
 
                 // Toggle chevron direction
+                if (chevron) {
+                    chevron.classList.toggle('fa-chevron-down');
+                    chevron.classList.toggle('fa-chevron-up');
+                }
+            });
+        });
+
+        // Mobile second-level submenu toggle (inside Reports)
+        document.querySelectorAll('.mobile-submenu-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const submenu = this.nextElementSibling;
+                const chevron = this.querySelector('.fa-chevron-down, .fa-chevron-up');
+                if (!submenu) return;
+
+                const parentMenu = this.closest('.mobile-dropdown-menu');
+                if (parentMenu) {
+                    parentMenu.querySelectorAll('.mobile-submenu').forEach(otherSubmenu => {
+                        if (otherSubmenu !== submenu) {
+                            otherSubmenu.classList.add('hidden');
+                            const otherBtn = otherSubmenu.previousElementSibling;
+                            const otherChevron = otherBtn ? otherBtn.querySelector('.fa-chevron-down, .fa-chevron-up') : null;
+                            if (otherChevron) {
+                                otherChevron.classList.remove('fa-chevron-up');
+                                otherChevron.classList.add('fa-chevron-down');
+                            }
+                        }
+                    });
+                }
+
+                submenu.classList.toggle('hidden');
                 if (chevron) {
                     chevron.classList.toggle('fa-chevron-down');
                     chevron.classList.toggle('fa-chevron-up');
