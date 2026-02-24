@@ -35,7 +35,7 @@ abstract class BaseController extends Controller
      *
      * @var list<string>
      */
-    protected $helpers = ['permission', 'form'];
+    protected $helpers = ['permission', 'form', 'locale'];
 
     /**
      * Be sure to declare properties for any property fetch you initialized.
@@ -50,6 +50,17 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
+
+        $supportedLocales = config('App')->supportedLocales ?? ['en'];
+        $sessionLocale = (string) session('locale');
+        $activeLocale = in_array($sessionLocale, $supportedLocales, true)
+            ? $sessionLocale
+            : (config('App')->defaultLocale ?? 'en');
+
+        if ($request instanceof IncomingRequest) {
+            $request->setLocale($activeLocale);
+        }
+        service('language')->setLocale($activeLocale);
 
         // Preload any models, libraries, etc, here.
 

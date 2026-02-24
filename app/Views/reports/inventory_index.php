@@ -7,49 +7,49 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 ?>
 <div class="max-w-full mx-auto px-4 py-4">
     <div class="flex items-center justify-between mb-4">
-        <h1 class="text-xl font-bold">Inventory Reports</h1>
+        <h1 class="text-xl font-bold"><?= esc(lang('Reports.inventory_reports_title')) ?></h1>
         <form id="filterForm" class="flex gap-2 items-end">
             <div>
-                <label class="text-xs text-gray-600">Start</label>
+                <label class="text-xs text-gray-600"><?= esc(lang('Reports.start')) ?></label>
                 <input type="date" name="start_date" value="<?= $start ?>" class="border rounded px-2 py-1" />
             </div>
             <div>
-                <label class="text-xs text-gray-600">End</label>
+                <label class="text-xs text-gray-600"><?= esc(lang('Reports.end')) ?></label>
                 <input type="date" name="end_date" value="<?= $end ?>" class="border rounded px-2 py-1" />
             </div>
-            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded">Apply</button>
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded"><?= esc(lang('Reports.apply')) ?></button>
         </form>
     </div>
 
     <div id="kpiCards" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Stock Valuation (Cost)</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.stock_valuation_cost')) ?></div>
             <div id="valCost" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Retail Value</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.retail_value')) ?></div>
             <div id="valRetail" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Items</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.items')) ?></div>
             <div id="valItems" class="text-lg font-bold">-</div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Stock movement</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.stock_movement')) ?></h3>
             <canvas id="movementTrend" height="120"></canvas>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Low stock</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.low_stock')) ?></h3>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Product</th>
-                        <th class="py-1">Code</th>
-                        <th class="py-1 text-right">Qty</th>
-                        <th class="py-1 text-right">Alert</th>
+                        <th class="py-1"><?= esc(lang('Reports.product')) ?></th>
+                        <th class="py-1"><?= esc(lang('Reports.code')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.qty')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.alert')) ?></th>
                     </tr>
                 </thead>
                 <tbody id="lowStockBody"></tbody>
@@ -58,14 +58,14 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
     </div>
 
     <div class="bg-white rounded shadow p-3 mt-4">
-        <h3 class="font-semibold mb-2">Slow movers</h3>
+        <h3 class="font-semibold mb-2"><?= esc(lang('Reports.slow_movers')) ?></h3>
         <table class="w-full text-sm">
             <thead>
                 <tr class="text-left text-gray-500">
-                    <th class="py-1">Product</th>
-                    <th class="py-1">Code</th>
-                    <th class="py-1 text-right">Sold (range)</th>
-                    <th class="py-1 text-right">On hand</th>
+                    <th class="py-1"><?= esc(lang('Reports.product')) ?></th>
+                    <th class="py-1"><?= esc(lang('Reports.code')) ?></th>
+                    <th class="py-1 text-right"><?= esc(lang('Reports.sold_range')) ?></th>
+                    <th class="py-1 text-right"><?= esc(lang('Reports.on_hand')) ?></th>
                 </tr>
             </thead>
             <tbody id="slowMoversBody"></tbody>
@@ -78,12 +78,17 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 <script>
     (function() {
         const currency = <?= json_encode($currency) ?>;
+        const texts = {
+            networkError: <?= json_encode(lang('Reports.network_error'), JSON_UNESCAPED_UNICODE) ?>,
+            stockIn: <?= json_encode(lang('Reports.stock_in'), JSON_UNESCAPED_UNICODE) ?>,
+            stockOut: <?= json_encode(lang('Reports.stock_out'), JSON_UNESCAPED_UNICODE) ?>
+        };
         const form = document.getElementById('filterForm');
         const qs = () => new URLSearchParams(new FormData(form)).toString();
 
         async function fetchJSON(url) {
             const res = await fetch(url + '?' + qs());
-            if (!res.ok) throw new Error('Network');
+            if (!res.ok) throw new Error(texts.networkError);
             return res.json();
         }
 
@@ -103,11 +108,11 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
                     data: {
                         labels: [],
                         datasets: [{
-                            label: 'In',
+                            label: texts.stockIn,
                             data: [],
                             backgroundColor: '#16a34a'
                         }, {
-                            label: 'Out',
+                            label: texts.stockOut,
                             data: [],
                             backgroundColor: '#ef4444'
                         }]

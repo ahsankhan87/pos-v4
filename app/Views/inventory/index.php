@@ -4,24 +4,24 @@
 function formatQuantity($pieces, $cartonSize)
 {
     if (!$cartonSize || $cartonSize <= 1) {
-        return number_format($pieces, 2) . ' pcs';
+        return number_format($pieces, 2) . ' ' . lang('Inventory.pcs');
     }
 
     $cartons = floor($pieces / $cartonSize);
     $remaining = $pieces - ($cartons * $cartonSize);
 
     if ($remaining > 0) {
-        return number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+        return number_format($cartons) . ' ' . lang('Inventory.ctns') . ' + ' . number_format($remaining, 2) . ' ' . lang('Inventory.pcs');
     }
-    return number_format($cartons) . ' ctns';
+    return number_format($cartons) . ' ' . lang('Inventory.ctns');
 }
 ?>
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Inventory Management</h1>
+    <h1 class="text-2xl font-bold mb-6"><?= lang('Inventory.inventoryManagement') ?></h1>
 
     <?php if (session()->getFlashdata('success')) : ?>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong class="font-bold">Success!</strong>
+            <strong class="font-bold"><?= lang('Inventory.success') ?></strong>
             <span class="block sm:inline"><?= session()->getFlashdata('success') ?></span>
         </div>
     <?php endif; ?>
@@ -30,20 +30,20 @@ function formatQuantity($pieces, $cartonSize)
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <?php if (can('products.view')): ?>
             <a href="<?= base_url('products') ?>" class="bg-gray-20 p-4 rounded-lg shadow text-center hover:bg-gray-50 transition">
-                <h3 class="font-medium text-gray-900">View All Products</h3>
-                <p class="text-sm text-gray-500">Manage your product catalog</p>
+                <h3 class="font-medium text-gray-900"><?= lang('Inventory.viewAllProducts') ?></h3>
+                <p class="text-sm text-gray-500"><?= lang('Inventory.manageProductCatalog') ?></p>
             </a>
         <?php endif; ?>
         <?php if (can('sales.view')): ?>
             <a href="<?= base_url('sales') ?>" class="bg-gray-20 p-4 rounded-lg shadow text-center hover:bg-gray-50 transition">
-                <h3 class="font-medium text-gray-900">Sales Dashboard</h3>
-                <p class="text-sm text-gray-500">View sales reports</p>
+                <h3 class="font-medium text-gray-900"><?= lang('Inventory.salesDashboard') ?></h3>
+                <p class="text-sm text-gray-500"><?= lang('Inventory.viewSalesReports') ?></p>
             </a>
         <?php endif; ?>
         <?php if (can('inventory.view')): ?>
             <a href="<?= base_url('inventory/audit') ?>" class="bg-gray-20 p-4 rounded-lg shadow text-center hover:bg-gray-50 transition">
-                <h3 class="font-medium text-gray-900">Inventory Audit</h3>
-                <p class="text-sm text-gray-500">Perform stock count</p>
+                <h3 class="font-medium text-gray-900"><?= lang('Inventory.inventoryAudit') ?></h3>
+                <p class="text-sm text-gray-500"><?= lang('Inventory.performStockCount') ?></p>
             </a>
         <?php endif; ?>
     </div>
@@ -51,17 +51,17 @@ function formatQuantity($pieces, $cartonSize)
     <!-- Low Stock Alert -->
     <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
         <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
-            <h2 class="text-lg font-medium text-red-700">Low Stock Products</h2>
+            <h2 class="text-lg font-medium text-red-700"><?= lang('Inventory.lowStockProducts') ?></h2>
         </div>
         <?php if (!empty($lowStock)): ?>
             <div class="overflow-x-auto">
                 <table id="lowStockTable" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alert Level</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Inventory.product') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Inventory.currentStock') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Inventory.alertLevel') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Inventory.action') ?></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -83,7 +83,7 @@ function formatQuantity($pieces, $cartonSize)
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <?php if (can('inventory.update')): ?>
-                                        <a href="<?= base_url("inventory/adjust/{$product['id']}") ?>" class="text-blue-600 hover:text-blue-900">Adjust Stock</a>
+                                        <a href="<?= base_url("inventory/adjust/{$product['id']}") ?>" class="text-blue-600 hover:text-blue-900"><?= lang('Inventory.adjustStock') ?></a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -93,7 +93,7 @@ function formatQuantity($pieces, $cartonSize)
             </div>
         <?php else: ?>
             <div class="p-6 text-center text-gray-500">
-                No products below stock threshold
+                <?= lang('Inventory.noProductsBelowThreshold') ?>
             </div>
         <?php endif; ?>
     </div>
@@ -102,6 +102,16 @@ function formatQuantity($pieces, $cartonSize)
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/dataTables.buttons.min.js"></script>
 <script>
+    const inventoryTexts = {
+        searchProducts: <?= json_encode(lang('Inventory.searchProducts'), JSON_UNESCAPED_UNICODE) ?>,
+        showProductsPerPage: <?= json_encode(lang('Inventory.showProductsPerPage'), JSON_UNESCAPED_UNICODE) ?>,
+        showingLowStockProducts: <?= json_encode(lang('Inventory.showingLowStockProducts'), JSON_UNESCAPED_UNICODE) ?>,
+        noLowStockProducts: <?= json_encode(lang('Inventory.noLowStockProducts'), JSON_UNESCAPED_UNICODE) ?>,
+        filteredFromTotalProducts: <?= json_encode(lang('Inventory.filteredFromTotalProducts'), JSON_UNESCAPED_UNICODE) ?>,
+        noMatchingProducts: <?= json_encode(lang('Inventory.noMatchingProducts'), JSON_UNESCAPED_UNICODE) ?>,
+        noProductsBelowThreshold: <?= json_encode(lang('Inventory.noProductsBelowThreshold'), JSON_UNESCAPED_UNICODE) ?>
+    };
+
     $(document).ready(function() {
         <?php if (!empty($lowStock)): ?>
             $('#lowStockTable').DataTable({
@@ -110,13 +120,13 @@ function formatQuantity($pieces, $cartonSize)
                     [1, "asc"]
                 ], // Sort by Current Stock (ascending - lowest first)
                 "language": {
-                    "search": "Search products:",
-                    "lengthMenu": "Show _MENU_ products per page",
-                    "info": "Showing _START_ to _END_ of _TOTAL_ low stock products",
-                    "infoEmpty": "No low stock products",
-                    "infoFiltered": "(filtered from _MAX_ total products)",
-                    "zeroRecords": "No matching products found",
-                    "emptyTable": "No products below stock threshold"
+                    "search": inventoryTexts.searchProducts,
+                    "lengthMenu": inventoryTexts.showProductsPerPage,
+                    "info": inventoryTexts.showingLowStockProducts,
+                    "infoEmpty": inventoryTexts.noLowStockProducts,
+                    "infoFiltered": inventoryTexts.filteredFromTotalProducts,
+                    "zeroRecords": inventoryTexts.noMatchingProducts,
+                    "emptyTable": inventoryTexts.noProductsBelowThreshold
                 },
                 "columnDefs": [{
                     "targets": 3, // Action column

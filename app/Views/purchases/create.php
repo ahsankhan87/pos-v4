@@ -3,9 +3,9 @@
 <div class="min-h-screen bg-slate-100">
     <div class="max-w-full mx-auto px-2 sm:px-6 lg:px-2 py-2">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Create New Purchase</h1>
+            <h1 class="text-2xl font-bold text-gray-800"><?= lang('Purchases.create_new_purchase') ?></h1>
             <button type="button" id="showHelpModal" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-all">
-                <i class="fas fa-keyboard mr-2"></i>Keyboard Shortcuts <kbd class="ml-2 bg-white/20 px-2 py-1 rounded text-xs">?</kbd>
+                <i class="fas fa-keyboard mr-2"></i><?= lang('Purchases.keyboard_shortcuts') ?> <kbd class="ml-2 bg-white/20 px-2 py-1 rounded text-xs">?</kbd>
             </button>
         </div>
         <!-- Keyboard Shortcuts Modal -->
@@ -14,7 +14,7 @@
                 <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
                     <div class="flex items-center">
                         <i class="fas fa-keyboard text-white text-2xl mr-3"></i>
-                        <h2 class="text-xl font-bold text-white">Keyboard Shortcuts</h2>
+                        <h2 class="text-xl font-bold text-white"><?= lang('Purchases.keyboard_shortcuts') ?></h2>
                     </div>
                     <button type="button" id="closeHelpModal" class="text-white hover:bg-white/20 rounded-lg p-2 transition-all">
                         <i class="fas fa-times text-xl"></i>
@@ -25,31 +25,31 @@
                         <!-- Navigation & Search -->
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-search text-blue-600 mr-2"></i>Navigation & Search
+                                <i class="fas fa-search text-blue-600 mr-2"></i><?= lang('Purchases.navigation_search') ?>
                             </h3>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Focus Barcode Input</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.focus_barcode_input') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F1</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Product Search</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.product_search') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F2</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Select Customer</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.select_supplier_shortcut') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F3</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Select Employee</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.select_payment_method_shortcut') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F4</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Select Discount</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.select_discount') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F8</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Close Dropdowns</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.close_dropdowns') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Esc</kbd>
                                 </div>
                             </div>
@@ -58,23 +58,23 @@
                         <!-- Cart Operations -->
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-shopping-cart text-green-600 mr-2"></i>Cart Operations
+                                <i class="fas fa-shopping-cart text-green-600 mr-2"></i><?= lang('Purchases.cart_operations') ?>
                             </h3>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Increase Last Item Qty</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.increase_last_item_qty') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">+ or =</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Decrease Last Item Qty</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.decrease_last_item_qty') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">-</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Remove Last Item</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.remove_last_item') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Del</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Clear Entire Cart</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.clear_entire_cart') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F12</kbd>
                                 </div>
                             </div>
@@ -83,23 +83,23 @@
                         <!-- Payment & Checkout -->
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-money-bill-wave text-emerald-600 mr-2"></i>Payment & Checkout
+                                <i class="fas fa-money-bill-wave text-emerald-600 mr-2"></i><?= lang('Purchases.payment_checkout') ?>
                             </h3>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Enter Tendered Amount</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.enter_tendered_amount') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F6</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Tax Rate Input</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.tax_rate_input') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F7</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Save as Draft</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.save_as_draft') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F5</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Complete Sale</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.complete_purchase') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Ctrl+S</kbd> OR
                                     <kbd class="px-3 py-1 bg-green-600 text-white rounded font-mono text-sm font-bold">F9</kbd>
                                 </div>
@@ -109,15 +109,15 @@
                         <!-- Help & Other -->
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-question-circle text-purple-600 mr-2"></i>Help & Other
+                                <i class="fas fa-question-circle text-purple-600 mr-2"></i><?= lang('Purchases.help_other') ?>
                             </h3>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Toggle This Help</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.toggle_help') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">? or F1</kbd>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                    <span class="text-sm text-gray-700">Quick Total Calculation</span>
+                                    <span class="text-sm text-gray-700"><?= lang('Purchases.quick_total_calculation') ?></span>
                                     <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Ctrl+T</kbd>
                                 </div>
                             </div>
@@ -127,20 +127,20 @@
                     <!-- Tips Section -->
                     <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <h4 class="font-bold text-blue-900 mb-2 flex items-center">
-                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Pro Tips
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i><?= lang('Purchases.pro_tips') ?>
                         </h4>
                         <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                            <li>Use barcode scanner or F1 input for fastest product entry</li>
-                            <li>Press Enter in barcode field to search and add product instantly</li>
-                            <li>Use +/- keys to quickly adjust quantity of the last added item</li>
-                            <li>F9 for instant checkout when ready (with confirmation)</li>
-                            <li>All dropdowns support keyboard typing for quick selection</li>
+                            <li><?= lang('Purchases.tip_barcode_fast_entry') ?></li>
+                            <li><?= lang('Purchases.tip_enter_to_add') ?></li>
+                            <li><?= lang('Purchases.tip_plus_minus_quantity') ?></li>
+                            <li><?= lang('Purchases.tip_f9_checkout') ?></li>
+                            <li><?= lang('Purchases.tip_dropdown_keyboard') ?></li>
                         </ul>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-3 flex justify-end border-t border-gray-200">
                     <button type="button" id="closeHelpModalBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium">
-                        Got it!
+                        <?= lang('Purchases.got_it') ?>
                     </button>
                 </div>
             </div>
@@ -155,7 +155,7 @@
         <?php $errors = session()->getFlashdata('errors'); ?>
         <?php if (! empty($errors)) : ?>
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-                <p class="font-bold">Please correct the errors below:</p>
+                <p class="font-bold"><?= lang('Purchases.correct_errors_below') ?></p>
                 <ul class="mt-2 list-disc list-inside">
                     <?php foreach ($errors as $error) : ?>
                         <li><?= esc($error) ?></li>
@@ -169,23 +169,23 @@
                 <!-- Left Column - Purchase Info -->
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Information</h2>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_information') ?></h2>
 
                         <div class="space-y-4">
                             <div>
-                                <label for="invoice_no" class="block text-sm font-medium text-gray-700">Invoice No</label>
+                                <label for="invoice_no" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.invoice_no') ?></label>
                                 <input type="text" id="invoice_no" name="invoice_no" value="<?= $invoice_no ?>" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100">
                             </div>
 
                             <div>
-                                <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+                                <label for="date" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.date') ?></label>
                                 <input type="datetime-local" id="date" name="date" value="<?= $today ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
                             <div>
-                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F3</kbd></label>
+                                <label for="supplier_id" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.supplier') ?> <span class="text-red-500">*</span> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F3</kbd></label>
                                 <select id="supplier_id" name="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                                    <option value="">Select Supplier</option>
+                                    <option value=""><?= lang('Purchases.select_supplier') ?></option>
                                     <?php foreach ($suppliers as $supplier): ?>
                                         <option value="<?= $supplier['id'] ?>"><?= $supplier['name'] ?></option>
                                     <?php endforeach; ?>
@@ -193,45 +193,45 @@
                             </div>
 
                             <div>
-                                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                                <label for="status" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.status') ?></label>
                                 <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <option value="received" selected>Received</option>
-                                    <option value="pending">Pending</option>
+                                    <option value="received" selected><?= lang('Purchases.received') ?></option>
+                                    <option value="pending"><?= lang('Purchases.pending') ?></option>
                                     <!-- <option value="ordered">Ordered</option> -->
                                 </select>
                             </div>
 
                             <div>
-                                <label for="supplier_invoice_no" class="block text-sm font-medium text-gray-700">Supplier Invoice No</label>
-                                <input type="text" id="supplier_invoice_no" name="supplier_invoice_no" maxlength="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Enter supplier's invoice number">
+                                <label for="supplier_invoice_no" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.supplier_invoice_no') ?></label>
+                                <input type="text" id="supplier_invoice_no" name="supplier_invoice_no" maxlength="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="<?= lang('Purchases.enter_supplier_invoice_number') ?>">
                             </div>
 
                             <div>
-                                <label for="invoice_image" class="block text-sm font-medium text-gray-700">Invoice Image</label>
+                                <label for="invoice_image" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.invoice_image') ?></label>
                                 <input type="file" id="invoice_image" name="invoice_image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                <p class="mt-1 text-xs text-gray-500">Max 5MB. Accepted formats: JPG, PNG, GIF</p>
+                                <p class="mt-1 text-xs text-gray-500"><?= lang('Purchases.max_5mb_formats') ?></p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Payment Information -->
                     <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                        <h2 class="text-lg font-medium text-gray-900 mb-4">Payment Information</h2>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.payment_information') ?></h2>
 
                         <div class="space-y-4">
                             <div>
-                                <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method *</label>
+                                <label for="payment_method" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.payment_method') ?> *</label>
                                 <select id="payment_method" name="payment_method" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <option value="cash">Cash</option>
-                                    <option value="credit_card">Credit Card</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="check">Check</option>
-                                    <option value="other">Other</option>
+                                    <option value="cash"><?= lang('Purchases.cash') ?></option>
+                                    <option value="credit_card"><?= lang('Purchases.credit_card') ?></option>
+                                    <option value="bank_transfer"><?= lang('Purchases.bank_transfer') ?></option>
+                                    <option value="check"><?= lang('Purchases.check') ?></option>
+                                    <option value="other"><?= lang('Purchases.other') ?></option>
                                 </select>
                             </div>
 
                             <div>
-                                <label for="paid_amount" class="block text-sm font-medium text-gray-700">Amount Paid <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F6</kbd></label>
+                                <label for="paid_amount" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.amount_paid') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F6</kbd></label>
                                 <input type="number" id="paid_amount" name="paid_amount" value="0" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                         </div>
@@ -239,7 +239,7 @@
 
                     <!-- Notes -->
                     <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                        <h2 class="text-lg font-medium text-gray-900 mb-4">Notes</h2>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.notes') ?></h2>
                         <textarea id="note" name="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                     </div>
                 </div>
@@ -247,7 +247,7 @@
                 <!-- Right Column - Items -->
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Items</h2>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_items') ?></h2>
 
                         <!-- Barcode and Product Search -->
                         <div class="mb-4">
@@ -255,12 +255,12 @@
                                 <!-- Barcode Scanner -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-barcode mr-1"></i>Barcode Scanner <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd>
+                                        <i class="fas fa-barcode mr-1"></i><?= lang('Purchases.barcode_scanner') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd>
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="barcode-input"
                                             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                            placeholder="Scan or enter barcode">
+                                            placeholder="<?= lang('Purchases.scan_or_enter_barcode') ?>">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="fas fa-barcode text-gray-400"></i>
                                         </div>
@@ -270,7 +270,7 @@
                                 <!-- Product Search -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-search mr-1"></i>Product Search <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F2</kbd>
+                                        <i class="fas fa-search mr-1"></i><?= lang('Purchases.product_search') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F2</kbd>
                                     </label>
                                     <select id="product_select" class="w-full select2-search">
                                         <option></option>
@@ -283,12 +283,12 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.product') ?></th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.quantity') ?></th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.cost_price') ?></th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.unit_price') ?></th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.subtotal') ?></th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.action') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="itemsTableBody" class="bg-white divide-y divide-gray-200">
@@ -301,11 +301,11 @@
                         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <div class="flex justify-between">
-                                    <span class="font-medium">Subtotal:</span>
+                                    <span class="font-medium"><?= lang('Purchases.subtotal') ?>:</span>
                                     <span id="subtotal"><?= session()->get('currency_symbol') ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="font-medium">Discount: <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F8</kbd></span>
+                                    <span class="font-medium"><?= lang('Purchases.discount') ?>: <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F8</kbd></span>
                                     <div class="flex items-center">
                                         <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" class="w-20 mr-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         <select id="discount_type" name="discount_type" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -315,34 +315,34 @@
                                     </div>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="font-medium">Tax:</span>
+                                    <span class="font-medium"><?= lang('Purchases.tax') ?>:</span>
                                     <input id="tax_rate" type="number" id="tax_rate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.01"
                                         class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="font-medium">Shipping Cost:</span>
+                                    <span class="font-medium"><?= lang('Purchases.shipping_cost') ?>:</span>
                                     <input type="number" id="shipping_cost" name="shipping_cost" value="0" min="0" step="0.01" class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
                             <div class="bg-gray-50 p-4 rounded-md">
                                 <div class="flex justify-between text-lg font-bold">
-                                    <span>Grand Total:</span>
+                                    <span><?= lang('Purchases.grand_total') ?>:</span>
                                     <span id="grand_total"><?= session()->get('currency_symbol') ?>0.00</span>
                                     <input type="text" id="grand_total" name="grand_total" value="0" hidden>
                                 </div>
                                 <div class="border-t border-gray-300 mt-2 pt-2">
                                     <div class="flex justify-between">
-                                        <span>Tax Amount:</span>
+                                        <span><?= lang('Purchases.tax_amount') ?>:</span>
                                         <span id="taxAmount"><?= session()->get('currency_symbol') ?>0.00</span>
                                         <input type="hidden" id="total_tax" name="total_tax" value="0" />
                                     </div>
                                 </div>
                                 <div class="flex justify-between mt-2">
-                                    <span>Amount Paid:</span>
+                                    <span><?= lang('Purchases.amount_paid') ?>:</span>
                                     <span id="paid_amount_display"><?= session()->get('currency_symbol') ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between mt-2">
-                                    <span>Due Amount:</span>
+                                    <span><?= lang('Purchases.due_amount') ?>:</span>
                                     <span id="due_amount"><?= session()->get('currency_symbol') ?>0.00</span>
                                 </div>
                             </div>
@@ -355,7 +355,7 @@
                     <!-- Form Actions -->
                     <div class="mt-6 flex justify-end space-x-3">
                         <!-- <button type="button" id="saveDraftBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Save Draft</button> -->
-                        <button type="submit" class="btn btn-primary">Save Purchase <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd></button>
+                        <button type="submit" class="btn btn-primary"><?= lang('Purchases.save_purchase') ?> <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd></button>
                     </div>
                 </div>
             </div>
@@ -397,6 +397,25 @@
         const $paidAmountDisplayEl = $('#paid_amount_display');
         const $dueAmountEl = $('#due_amount');
 
+        const i18n = {
+            typeToSearchProducts: <?= json_encode(lang('Purchases.type_to_search_products')) ?>,
+            unknown: <?= json_encode(lang('Purchases.unknown')) ?>,
+            na: <?= json_encode(lang('Purchases.na')) ?>,
+            code: <?= json_encode(lang('Purchases.code')) ?>,
+            stock: <?= json_encode(lang('Purchases.stock')) ?>,
+            searching: <?= json_encode(lang('Purchases.searching')) ?>,
+            productWithBarcodeNotFound: <?= json_encode(lang('Purchases.product_with_barcode_not_found')) ?>,
+            errorSearchingProduct: <?= json_encode(lang('Purchases.error_searching_product')) ?>,
+            invalidProductData: <?= json_encode(lang('Purchases.invalid_product_data')) ?>,
+            pieces: <?= json_encode(lang('Purchases.pieces')) ?>,
+            cartons: <?= json_encode(lang('Purchases.cartons')) ?>,
+            ctns: <?= json_encode(lang('Purchases.ctns')) ?>,
+            pleaseAddAtLeastOneItem: <?= json_encode(lang('Purchases.please_add_at_least_one_item')) ?>,
+            pleaseSelectSupplierForPurchase: <?= json_encode(lang('Purchases.please_select_supplier_for_purchase')) ?>,
+            saveThisPurchase: <?= json_encode(lang('Purchases.save_this_purchase')) ?>,
+            clearAllItemsFromPurchase: <?= json_encode(lang('Purchases.clear_all_items_from_purchase')) ?>,
+        };
+
         // Hidden items input
         const $itemsInput = $('#items');
 
@@ -416,7 +435,7 @@
         function init() {
             // Initialize Select2 with AJAX for product search
             $('.select2-search').select2({
-                placeholder: 'Type to search products...',
+                placeholder: i18n.typeToSearchProducts,
                 allowClear: true,
                 minimumInputLength: 0,
                 width: '100%',
@@ -436,7 +455,7 @@
                         return {
                             results: products.map(product => ({
                                 id: product.id,
-                                text: `${product.name || 'Unknown'} - ${product.code || 'N/A'}`,
+                                text: `${product.name || i18n.unknown} - ${product.code || i18n.na}`,
                                 name: product.name,
                                 code: product.code,
                                 cost_price: product.cost_price,
@@ -459,7 +478,7 @@
                         <div class="flex items-center justify-between p-1">
                             <div class="flex-1">
                                 <div class="font-medium text-gray-900 text-sm">${product.name}</div>
-                                <div class="text-xs text-gray-500">Code: ${product.code || 'N/A'} • Stock: ${parseFloat(product.quantity || 0).toFixed(2)}</div>
+                                <div class="text-xs text-gray-500">${i18n.code}: ${product.code || i18n.na} • ${i18n.stock}: ${parseFloat(product.quantity || 0).toFixed(2)}</div>
                             </div>
                             <div class="text-right ml-2">
                                 <div class="font-bold text-blue-600 text-sm"><?= session()->get('currency_symbol') ?>${parseFloat(product.cost_price || 0).toFixed(2)}</div>
@@ -525,7 +544,7 @@
                     e.preventDefault();
                     const barcode = $(this).val().trim();
                     if (barcode) {
-                        $(this).prop('disabled', true).val('Searching...');
+                        $(this).prop('disabled', true).val(i18n.searching);
                         $.get('<?= site_url('api/products/barcode') ?>', {
                                 barcode: barcode
                             })
@@ -533,11 +552,11 @@
                                 if (product && product.id) {
                                     addProduct(product);
                                 } else {
-                                    alert(`Product with barcode "${barcode}" not found`);
+                                    alert(i18n.productWithBarcodeNotFound.replace('{barcode}', barcode));
                                 }
                             })
                             .fail(function() {
-                                alert('Error searching for product. Please try again.');
+                                alert(i18n.errorSearchingProduct);
                             })
                             .always(function() {
                                 $('#barcode-input').prop('disabled', false).val('').focus();
@@ -599,7 +618,7 @@
         // Add product from barcode or search
         function addProduct(product) {
             if (!product || !product.id) {
-                alert('Invalid product data');
+                alert(i18n.invalidProductData);
                 return;
             }
 
@@ -649,7 +668,7 @@
 
             const cartonSize = parseFloat(item.carton_size) || 0;
             const hasCartons = cartonSize > 1;
-            const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' pcs');
+            const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : (item.stock + ' ' + i18n.pieces);
 
             const $row = $(`
             <tr id="${rowId}" class="item-row" data-product-id="${item.product_id}">
@@ -658,7 +677,7 @@
                         <div class="ml-4">
                             <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
                             <div class="text-sm text-gray-500">${escapeHtml(item.code)}</div>
-                            <div class="text-xs text-gray-400">Stock: ${stockDisplay}</div>
+                            <div class="text-xs text-gray-400">${i18n.stock}: ${stockDisplay}</div>
                         </div>
                     </div>
                     <input type="hidden" name="items[${item.product_id}][product_id]" value="${item.product_id}">
@@ -669,10 +688,10 @@
                             value="${item.quantity.toFixed(2)}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
                         ${hasCartons ? `
                         <select class="item-unit-selector w-full text-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
-                            <option value="pieces" selected>Pieces</option>
-                            <option value="cartons">Cartons (${cartonSize} pcs)</option>
+                            <option value="pieces" selected>${i18n.pieces}</option>
+                            <option value="cartons">${i18n.cartons} (${cartonSize} ${i18n.pieces})</option>
                         </select>
-                        ` : '<div class="text-xs text-gray-500">pieces</div>'}
+                        ` : `<div class="text-xs text-gray-500">${i18n.pieces}</div>`}
                     </div>
                 </td>
                 <td class="px-2 py-4">
@@ -922,7 +941,7 @@
 
             // Validate form
             if (purchaseItems.length === 0) {
-                alert('Please add at least one item to the purchase');
+                alert(i18n.pleaseAddAtLeastOneItem);
                 return;
             }
 
@@ -937,7 +956,7 @@
         function saveAsDraft() {
             // Validate form
             if (purchaseItems.length === 0) {
-                alert('Please add at least one item to the purchase');
+                alert(i18n.pleaseAddAtLeastOneItem);
                 return;
             }
 
@@ -968,16 +987,16 @@
         // Helper function to format quantity with carton display
         function formatQuantity(pieces, cartonSize) {
             if (!cartonSize || cartonSize <= 1) {
-                return parseFloat(pieces).toFixed(2) + ' pcs';
+                return parseFloat(pieces).toFixed(2) + ' ' + i18n.pieces;
             }
 
             const cartons = Math.floor(pieces / cartonSize);
             const remaining = pieces - (cartons * cartonSize);
 
             if (remaining > 0) {
-                return cartons + ' ctns + ' + remaining.toFixed(2) + ' pcs';
+                return cartons + ' ' + i18n.ctns + ' + ' + remaining.toFixed(2) + ' ' + i18n.pieces;
             }
-            return cartons + ' ctns';
+            return cartons + ' ' + i18n.ctns;
         }
 
         // Helper function to escape HTML
@@ -1062,17 +1081,17 @@
             else if (e.key === 'F9' || (e.ctrlKey && e.key === 's') || (e.ctrlKey && e.key === 'S')) {
                 e.preventDefault();
                 if (purchaseItems.length === 0) {
-                    alert('Please add at least one item to the purchase');
+                    alert(i18n.pleaseAddAtLeastOneItem);
                     return false;
                 }
                 if ($('#supplier_id').val() === '0' || $('#supplier_id').val() === '') {
-                    alert('Please select a supplier for this purchase');
+                    alert(i18n.pleaseSelectSupplierForPurchase);
                     $('#supplier_id').select2('open');
                     return false;
                 }
 
                 // Confirm and submit
-                if (confirm('Save this purchase?')) {
+                if (confirm(i18n.saveThisPurchase)) {
                     updateItemsInput();
                     //$purchaseForm.off('submit');
                     $purchaseForm.submit();
@@ -1082,7 +1101,7 @@
             // F12 - Clear all items
             else if (e.key === 'F12' && !isInput && purchaseItems.length > 0) {
                 e.preventDefault();
-                if (confirm('Clear all items from purchase?')) {
+                if (confirm(i18n.clearAllItemsFromPurchase)) {
                     purchaseItems = [];
                     $itemsTableBody.empty();
                     calculateTotals();

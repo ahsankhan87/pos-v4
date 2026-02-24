@@ -4,13 +4,13 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Purchase Records</h1>
-            <p class="mt-1 text-sm text-gray-500">Track and manage all supplier purchases</p>
+            <h1 class="text-2xl font-bold text-gray-900"><?= lang('Purchases.records_title') ?></h1>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Purchases.records_subtitle') ?></p>
         </div>
 
         <?php if (can('purchases.create')): ?>
             <a href="<?= base_url('purchases/create') ?>" class="btn btn-primary">
-                <i class="fas fa-plus-circle"></i> New Purchase
+                <i class="fas fa-plus-circle"></i> <?= lang('Purchases.new_purchase') ?>
             </a>
         <?php endif; ?>
     </div>
@@ -30,15 +30,15 @@
 
         <!-- Table Header: Payment Status Filter Tabs + Outstanding Summary -->
         <div class="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div class="flex items-center gap-2 border-b border-gray-200" role="tablist" aria-label="Payment Status">
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 is-active" data-status="" role="tab" aria-selected="true">All</button>
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="paid" role="tab" aria-selected="false">Paid</button>
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="partial" role="tab" aria-selected="false">Partial</button>
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="pending" role="tab" aria-selected="false">Due</button>
+            <div class="flex items-center gap-2 border-b border-gray-200" role="tablist" aria-label="<?= lang('Purchases.payment_status') ?>">
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 is-active" data-status="" role="tab" aria-selected="true"><?= lang('Purchases.all') ?></button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="paid" role="tab" aria-selected="false"><?= lang('Purchases.paid') ?></button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="partial" role="tab" aria-selected="false"><?= lang('Purchases.partial') ?></button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="pending" role="tab" aria-selected="false"><?= lang('Purchases.due') ?></button>
             </div>
             <?php if (isset($outstandingDue)): ?>
                 <span class="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded font-semibold whitespace-nowrap">
-                    Total Outstanding (Due): <?= (session()->get('currency_symbol') ?? '$') . number_format($outstandingDue ?? 0, 2) ?>
+                    <?= lang('Purchases.outstanding_due') ?> <?= (session()->get('currency_symbol') ?? '$') . number_format($outstandingDue ?? 0, 2) ?>
                 </span>
             <?php endif; ?>
         </div>
@@ -47,14 +47,14 @@
             <table id="purchaseTable" class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">Reference</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Supplier</th>
-                        <th scope="col">Supplier Inv #</th>
-                        <th scope="col" class="text-right">Total</th>
-                        <th scope="col">Payment Status</th>
-                        <th scope="col">Status</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Purchases.reference') ?></th>
+                        <th scope="col"><?= lang('Purchases.date') ?></th>
+                        <th scope="col"><?= lang('Purchases.supplier') ?></th>
+                        <th scope="col"><?= lang('Purchases.supplier_invoice') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Purchases.total') ?></th>
+                        <th scope="col"><?= lang('Purchases.payment_status') ?></th>
+                        <th scope="col"><?= lang('Purchases.status') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Purchases.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -72,6 +72,15 @@
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jszip.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
+<style>
+    #purchaseTable .actions-menu {
+        min-width: 14rem;
+    }
+
+    #purchaseTable .actions-menu .actions-link {
+        text-align: start;
+    }
+</style>
 <script>
     $(document).ready(function() {
         const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
@@ -89,6 +98,37 @@
             edit: <?= json_encode(site_url('purchases/edit')) ?>,
             return: <?= json_encode(site_url('purchases/return')) ?>,
             delete: <?= json_encode(site_url('purchases/delete')) ?>
+        };
+
+        const i18n = {
+            paid: <?= json_encode(lang('Purchases.paid')) ?>,
+            partial: <?= json_encode(lang('Purchases.partial')) ?>,
+            due: <?= json_encode(lang('Purchases.due')) ?>,
+            pending: <?= json_encode(lang('Purchases.pending')) ?>,
+            received: <?= json_encode(lang('Purchases.received')) ?>,
+            ordered: <?= json_encode(lang('Purchases.ordered')) ?>,
+            canceled: <?= json_encode(lang('Purchases.canceled')) ?>,
+            na: <?= json_encode(lang('Purchases.na')) ?>,
+            actionReturn: <?= json_encode(lang('Purchases.return')) ?>,
+            actionPrint: <?= json_encode(lang('Purchases.print')) ?>,
+            actionView: <?= json_encode(lang('Purchases.view')) ?>,
+            actionEdit: <?= json_encode(lang('Purchases.edit')) ?>,
+            actionDelete: <?= json_encode(lang('Purchases.delete')) ?>,
+            actions: <?= json_encode(lang('Purchases.actions')) ?>,
+            noActions: <?= json_encode(lang('Purchases.no_actions')) ?>,
+            confirmDelete: <?= json_encode(lang('Purchases.confirm_delete')) ?>,
+            searchPlaceholder: <?= json_encode(lang('Purchases.search_placeholder')) ?>,
+            showEntries: <?= json_encode(lang('Purchases.show_entries')) ?>,
+            showingEntries: <?= json_encode(lang('Purchases.showing_entries')) ?>,
+            showingEmpty: <?= json_encode(lang('Purchases.showing_empty')) ?>,
+            filteredEntries: <?= json_encode(lang('Purchases.filtered_entries')) ?>,
+            zeroRecords: <?= json_encode(lang('Purchases.zero_records')) ?>,
+            loading: <?= json_encode(lang('Purchases.loading')) ?>,
+            first: <?= json_encode(lang('Purchases.first')) ?>,
+            last: <?= json_encode(lang('Purchases.last')) ?>,
+            excel: <?= json_encode(lang('Purchases.excel')) ?>,
+            pdf: <?= json_encode(lang('Purchases.pdf')) ?>,
+            print: <?= json_encode(lang('Purchases.print')) ?>,
         };
 
         // Payment status filter
@@ -113,17 +153,17 @@
             dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
             buttons: [{
                     extend: 'excel',
-                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    text: '<i class="fas fa-file-excel"></i> ' + i18n.excel,
                     className: 'btn btn-outline btn-sm'
                 },
                 {
                     extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    text: '<i class="fas fa-file-pdf"></i> ' + i18n.pdf,
                     className: 'btn btn-outline btn-sm'
                 },
                 {
                     extend: 'print',
-                    text: '<i class="fas fa-print"></i> Print',
+                    text: '<i class="fas fa-print"></i> ' + i18n.print,
                     className: 'btn btn-outline btn-sm'
                 }
             ],
@@ -155,12 +195,12 @@
                     name: 'supplier_name',
                     render: function(data, type, row) {
                         if (!permissions.view) {
-                            return escapeHtml(data || 'N/A');
+                            return escapeHtml(data || i18n.na);
                         }
 
                         const ledgerUrl = `${routes.ledgerBase}/${row.supplier_id}`;
                         return `<a href="${ledgerUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">
-                        ${escapeHtml(data || 'N/A')}
+                        ${escapeHtml(data || i18n.na)}
                         <i class="fas fa-book text-xs"></i></a>`;
                     }
                 },
@@ -168,7 +208,7 @@
                     data: 'supplier_invoice_no',
                     name: 'supplier_invoice_no',
                     render: function(data) {
-                        return escapeHtml(data || 'N/A');
+                        return escapeHtml(data || i18n.na);
                     }
                 },
                 {
@@ -210,16 +250,16 @@
             },
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search purchases...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching purchases found",
-                processing: "Loading purchases...",
+                searchPlaceholder: i18n.searchPlaceholder,
+                lengthMenu: i18n.showEntries,
+                info: i18n.showingEntries,
+                infoEmpty: i18n.showingEmpty,
+                infoFiltered: i18n.filteredEntries,
+                zeroRecords: i18n.zeroRecords,
+                processing: i18n.loading,
                 paginate: {
-                    first: "First",
-                    last: "Last",
+                    first: i18n.first,
+                    last: i18n.last,
                     next: "<i class='fas fa-chevron-right'></i>",
                     previous: "<i class='fas fa-chevron-left'></i>"
                 }
@@ -268,15 +308,15 @@
             const map = {
                 paid: {
                     variant: 'success',
-                    label: 'Paid'
+                    label: i18n.paid
                 },
                 partial: {
                     variant: 'warning',
-                    label: 'Partial'
+                    label: i18n.partial
                 },
                 pending: {
                     variant: 'danger',
-                    label: 'Pending'
+                    label: i18n.pending
                 }
             };
             const meta = map[normalized] || {
@@ -295,24 +335,24 @@
             const map = {
                 pending: {
                     variant: 'warning',
-                    label: 'Pending'
+                    label: i18n.pending
                 },
                 received: {
                     variant: 'success',
-                    label: 'Received'
+                    label: i18n.received
                 },
                 ordered: {
                     variant: 'info',
-                    label: 'Ordered'
+                    label: i18n.ordered
                 },
                 canceled: {
                     variant: 'danger',
-                    label: 'Canceled'
+                    label: i18n.canceled
                 }
             };
 
             if (!map[normalized]) {
-                const label = status ? escapeHtml(status) : 'N/A';
+                const label = status ? escapeHtml(status) : i18n.na;
                 return `
                     <span class="badge badge--info">
                         ${label}
@@ -335,7 +375,7 @@
                 menuItems += `
                     <a href="${routes.return}/${row.id}" class="actions-link actions-link--warning">
                         <i class="fas fa-undo"></i>
-                        <span>Return</span>
+                        <span>${i18n.actionReturn}</span>
                     </a>
                 `;
             }
@@ -344,11 +384,11 @@
                 menuItems += `
                     <a href="${routes.print}/${row.id}" target="_blank" class="actions-link actions-link--info">
                         <i class="fas fa-print"></i>
-                        <span>Print</span>
+                        <span>${i18n.actionPrint}</span>
                     </a>
                     <a href="${routes.view}/${row.id}" class="actions-link actions-link--info">
                         <i class="fas fa-eye"></i>
-                        <span>View</span>
+                        <span>${i18n.actionView}</span>
                     </a>
                 `;
             }
@@ -357,7 +397,7 @@
                 menuItems += `
                     <a href="${routes.edit}/${row.id}" class="actions-link actions-link--primary">
                         <i class="fas fa-edit"></i>
-                        <span>Edit</span>
+                        <span>${i18n.actionEdit}</span>
                     </a>
                 `;
             }
@@ -370,47 +410,101 @@
                         <input type="hidden" name="id" value="${row.id}">
                         <button type="submit" class="actions-link actions-link--danger">
                             <i class="fas fa-trash-alt"></i>
-                            <span>Delete</span>
+                            <span>${i18n.actionDelete}</span>
                         </button>
                     </form>
                 `;
             }
 
             if (!menuItems) {
-                return '<span class="text-gray-400 text-sm">No actions</span>';
+                return '<span class="text-gray-400 text-sm">' + i18n.noActions + '</span>';
             }
 
             return `
                 <div class="actions-wrapper relative">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm" aria-haspopup="true">
-                        <span>Actions</span>
+                        <span>${i18n.actions}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="actions-menu hidden absolute right-0 mt-1 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
+                    <div class="actions-menu hidden bg-white border border-gray-200 rounded-lg shadow-lg p-1">
                         ${menuItems}
                     </div>
                 </div>
             `;
         }
 
+        function positionActionsMenu($menu, $toggle) {
+            const toggleRect = $toggle[0].getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const margin = 8;
+            const verticalGap = 6;
+            const minVisibleHeight = 140;
+
+            const menuWidth = $menu.outerWidth() || 224;
+            const menuHeight = $menu.outerHeight() || 200;
+
+            const isRtl = (document.documentElement.getAttribute('dir') || '').toLowerCase() === 'rtl';
+
+            let left = isRtl ? (toggleRect.right - menuWidth) : toggleRect.left;
+            left = Math.max(margin, Math.min(left, viewportWidth - menuWidth - margin));
+
+            let top = toggleRect.bottom + verticalGap;
+            const availableBelow = Math.max(minVisibleHeight, viewportHeight - top - margin);
+
+            if ((top + minVisibleHeight) > (viewportHeight - margin)) {
+                top = Math.max(margin, viewportHeight - minVisibleHeight - margin);
+            }
+
+            $menu.css({
+                position: 'fixed',
+                top: `${top}px`,
+                left: `${left}px`,
+                right: 'auto',
+                maxHeight: `${availableBelow}px`,
+                overflowY: 'auto',
+                zIndex: 10050
+            });
+        }
+
+        function hideAllActionMenus() {
+            $('.actions-menu').addClass('hidden').css({
+                position: '',
+                top: '',
+                left: '',
+                right: '',
+                maxHeight: '',
+                overflowY: '',
+                zIndex: ''
+            });
+        }
+
         $(document).on('click', '.actions-toggle', function(e) {
             e.preventDefault();
-            const $menu = $(this).closest('.actions-wrapper').find('.actions-menu');
+            const $toggle = $(this);
+            const $menu = $toggle.closest('.actions-wrapper').find('.actions-menu');
             const isOpen = !$menu.hasClass('hidden');
-            $('.actions-menu').addClass('hidden');
+
+            hideAllActionMenus();
+
             if (!isOpen) {
                 $menu.removeClass('hidden');
+                positionActionsMenu($menu, $toggle);
             }
         });
 
         $(document).on('click', function(e) {
             if (!$(e.target).closest('.actions-wrapper').length) {
-                $('.actions-menu').addClass('hidden');
+                hideAllActionMenus();
             }
         });
 
+        $(window).on('resize scroll', function() {
+            hideAllActionMenus();
+        });
+
         $(document).on('submit', '.delete-purchase-form', function(e) {
-            if (!confirm('Are you sure you want to delete this purchase?')) {
+            if (!confirm(i18n.confirmDelete)) {
                 e.preventDefault();
             }
         });

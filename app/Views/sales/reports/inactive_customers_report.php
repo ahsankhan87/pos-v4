@@ -87,17 +87,17 @@ function money_fmt($v)
 <div class="max-w-7xl mx-auto p-6 bg-white shadow rounded-lg print-root">
     <div class="flex justify-between items-center mb-6 no-print">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Inactive Customers Report</h2>
+            <h2 class="text-2xl font-bold text-gray-800"><?= lang('Reports.inactive_customers_report') ?></h2>
             <p class="text-gray-600 mt-2">
-                Customers not purchased in last <?= htmlspecialchars($days) ?> days
+                <?= lang('Reports.customers_not_purchased_last') ?> <?= htmlspecialchars($days) ?> <?= lang('Reports.days') ?>
             </p>
         </div>
         <div class="flex gap-3">
             <?php $areaParam = ($area !== '') ? ('&area=' . urlencode($area)) : ''; ?>
-            <a href="<?= site_url('sales/inactive-customers-report/print') ?>?days=<?= htmlspecialchars($days) ?><?= $areaParam ?>" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Print</a>
-            <a href="<?= site_url('sales/inactive-customers-report/export_excel') ?>?days=<?= htmlspecialchars($days) ?><?= $areaParam ?>" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Export Excel</a>
-            <a href="<?= site_url('sales/inactive-customers-report/export_pdf') ?>?days=<?= htmlspecialchars($days) ?><?= $areaParam ?>" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Export PDF</a>
-            <a href="<?= site_url('sales/report') ?>" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Back</a>
+            <a href="<?= site_url('sales/inactive-customers-report/print') ?>?days=<?= htmlspecialchars($days) ?><?= $areaParam ?>" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"><?= lang('Reports.print') ?></a>
+            <a href="<?= site_url('sales/inactive-customers-report/export_excel') ?>?days=<?= htmlspecialchars($days) ?><?= $areaParam ?>" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"><?= lang('Reports.export_excel') ?></a>
+            <a href="<?= site_url('sales/inactive-customers-report/export_pdf') ?>?days=<?= htmlspecialchars($days) ?><?= $areaParam ?>" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"><?= lang('Reports.export_pdf') ?></a>
+            <a href="<?= site_url('sales/report') ?>" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"><?= lang('Reports.back') ?></a>
 
         </div>
     </div>
@@ -105,34 +105,34 @@ function money_fmt($v)
     <div class="mb-4 no-print">
         <form method="GET" class="flex gap-4 items-end flex-wrap">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Days Inactive:</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Reports.days_inactive') ?>:</label>
                 <input type="number" name="days" value="<?= htmlspecialchars($days) ?>" min="1" class="px-3 py-2 border border-gray-300 rounded-md">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Area:</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Reports.area') ?>:</label>
                 <select name="area" class="px-3 py-2 border border-gray-300 rounded-md min-w-[220px]">
-                    <option value="">All Areas</option>
+                    <option value=""><?= lang('Reports.all_areas') ?></option>
                     <?php foreach ($areas as $a): ?>
                         <option value="<?= htmlspecialchars($a) ?>" <?= ((string)$area === (string)$a) ? 'selected' : '' ?>><?= htmlspecialchars($a) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Filter</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"><?= lang('Reports.filter') ?></button>
         </form>
     </div>
 
     <div class="stats-summary mb-6 no-print">
         <div class="grid grid-cols-3 gap-4">
             <div class="bg-blue-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">Total Inactive Customers</h3>
+                <h3 class="text-sm font-medium text-gray-600"><?= lang('Reports.total_inactive_customers') ?></h3>
                 <p class="text-2xl font-bold text-gray-800 mt-2"><?= htmlspecialchars($totalCustomers) ?></p>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">Cutoff Date</h3>
+                <h3 class="text-sm font-medium text-gray-600"><?= lang('Reports.cutoff_date') ?></h3>
                 <p class="text-2xl font-bold text-gray-800 mt-2"><?= htmlspecialchars($cutoffDate) ?></p>
             </div>
             <div class="bg-orange-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">Report Date</h3>
+                <h3 class="text-sm font-medium text-gray-600"><?= lang('Reports.report_date') ?></h3>
                 <p class="text-2xl font-bold text-gray-800 mt-2"><?= date('Y-m-d') ?></p>
             </div>
         </div>
@@ -142,18 +142,18 @@ function money_fmt($v)
         <table class="w-full border-collapse border border-gray-300">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="border border-gray-300 px-4 py-2 text-left">Customer Name</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left">Email</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left">Phone</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left">Last Purchase</th>
-                    <th class="border border-gray-300 px-4 py-2 text-right">Days Inactive</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left"><?= lang('Reports.customer_name') ?></th>
+                    <th class="border border-gray-300 px-4 py-2 text-left"><?= lang('Reports.email') ?></th>
+                    <th class="border border-gray-300 px-4 py-2 text-left"><?= lang('Reports.phone') ?></th>
+                    <th class="border border-gray-300 px-4 py-2 text-left"><?= lang('Reports.last_purchase') ?></th>
+                    <th class="border border-gray-300 px-4 py-2 text-right"><?= lang('Reports.days_inactive') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($customers)): ?>
                     <tr>
                         <td colspan="5" class="border border-gray-300 px-4 py-4 text-center text-gray-500">
-                            No inactive customers found for the last <?= htmlspecialchars($days) ?> days
+                            <?= lang('Reports.no_inactive_customers') ?>
                         </td>
                     </tr>
                 <?php else: ?>
@@ -165,7 +165,7 @@ function money_fmt($v)
                             <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($customer['last_purchase']) ?></td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 <?php if (is_numeric($customer['days_inactive'])): ?>
-                                    <?= htmlspecialchars($customer['days_inactive']) ?> days
+                                    <?= htmlspecialchars($customer['days_inactive']) ?> <?= lang('Reports.days') ?>
                                 <?php else: ?>
                                     <?= htmlspecialchars($customer['days_inactive']) ?>
                                 <?php endif; ?>
@@ -179,7 +179,7 @@ function money_fmt($v)
 
     <div class="mt-6 pt-4 border-t border-gray-200 no-print">
         <p class="text-sm text-gray-600">
-            Report generated on <?= date('Y-m-d H:i:s') ?>
+            <?= lang('Reports.report_generated_on') ?> <?= date('Y-m-d H:i:s') ?>
         </p>
     </div>
 </div>

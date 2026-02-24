@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inactive Customers Report</title>
+    <title><?= esc(lang('Reports.inactive_customers_report')) ?></title>
     <style>
         :root {
             --border: #d7dbe0;
@@ -231,35 +231,35 @@
     <div class="page">
         <div class="header">
             <div>
-                <h2>Inactive Customers Report</h2>
-                <div class="sub">Customers not purchased in last: <span class="nowrap"><?= htmlspecialchars((string)$days) ?></span> days</div>
+                <h2><?= lang('Reports.inactive_customers_report') ?></h2>
+                <div class="sub"><?= lang('Reports.customers_not_purchased_last') ?>: <span class="nowrap"><?= htmlspecialchars((string)$days) ?></span> <?= lang('Reports.days') ?></div>
                 <?php if (!empty($area)): ?>
-                    <div class="sub">Area: <span class="nowrap"><?= htmlspecialchars((string)$area) ?></span></div>
+                    <div class="sub"><?= lang('Reports.area') ?>: <span class="nowrap"><?= htmlspecialchars((string)$area) ?></span></div>
                 <?php endif; ?>
                 <?php if (!empty($cutoffDate)): ?>
-                    <div class="sub">Cutoff Date: <span class="nowrap"><?= htmlspecialchars((string)$cutoffDate) ?></span></div>
+                    <div class="sub"><?= lang('Reports.cutoff_date') ?>: <span class="nowrap"><?= htmlspecialchars((string)$cutoffDate) ?></span></div>
                 <?php endif; ?>
             </div>
             <div class="sub" style="text-align:right;">
-                Report Date: <span class="nowrap"><?= date('Y-m-d H:i:s') ?></span>
+                <?= lang('Reports.report_date') ?>: <span class="nowrap"><?= date('Y-m-d H:i:s') ?></span>
             </div>
         </div>
 
         <div class="summary">
             <div class="card">
-                <div class="label">Total Inactive Customers</div>
+                <div class="label"><?= lang('Reports.total_inactive_customers') ?></div>
                 <div class="value"><?= (int)$totalCustomers ?></div>
             </div>
             <div class="card">
-                <div class="label">Days Threshold</div>
-                <div class="value"><?= (int)$days ?> days</div>
+                <div class="label"><?= lang('Reports.days_threshold') ?></div>
+                <div class="value"><?= (int)$days ?> <?= lang('Reports.days') ?></div>
             </div>
             <div class="card">
-                <div class="label">Cutoff Date</div>
+                <div class="label"><?= lang('Reports.cutoff_date') ?></div>
                 <div class="value"><?= htmlspecialchars($cutoffDate !== '' ? (string)$cutoffDate : '-') ?></div>
             </div>
             <div class="card">
-                <div class="label">Generated</div>
+                <div class="label"><?= lang('Reports.generated') ?></div>
                 <div class="value"><?= date('Y-m-d') ?></div>
             </div>
         </div>
@@ -268,17 +268,17 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Customer Name</th>
-                        <th style="width: 180px;">Email</th>
-                        <th style="width: 140px;">Phone</th>
-                        <th style="width: 130px;">Last Purchase</th>
-                        <th class="num" style="width: 120px;">Days Inactive</th>
+                        <th><?= lang('Reports.customer_name') ?></th>
+                        <th style="width: 180px;"><?= lang('Reports.email') ?></th>
+                        <th style="width: 140px;"><?= lang('Reports.phone') ?></th>
+                        <th style="width: 130px;"><?= lang('Reports.last_purchase') ?></th>
+                        <th class="num" style="width: 120px;"><?= lang('Reports.days_inactive') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($customers)): ?>
                         <tr>
-                            <td colspan="5" style="text-align:center;color:#6b7280;padding:14px;">No inactive customers found.</td>
+                            <td colspan="5" style="text-align:center;color:#6b7280;padding:14px;"><?= lang('Reports.no_inactive_customers') ?></td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($customers as $customer): ?>
@@ -291,7 +291,7 @@
                                     <?php
                                     $di = $customer['days_inactive'] ?? '';
                                     if (is_numeric($di)) {
-                                        echo htmlspecialchars((string)$di) . ' days';
+                                        echo htmlspecialchars((string)$di) . ' ' . lang('Reports.days');
                                     } else {
                                         echo htmlspecialchars((string)$di);
                                     }
@@ -305,8 +305,8 @@
         </div>
 
         <div class="actions no-print">
-            <button class="btn" onclick="window.print()">Print</button>
-            <button class="btn secondary" onclick="window.history.go(-1)">Back</button>
+            <button class="btn" onclick="window.print()"><?= lang('Reports.print') ?></button>
+            <button class="btn secondary" onclick="window.history.go(-1)"><?= lang('Reports.back') ?></button>
         </div>
     </div>
 

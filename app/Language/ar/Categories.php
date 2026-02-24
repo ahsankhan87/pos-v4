@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'productCategories' => 'فئات المنتجات',
+    'subtitle' => 'قم بإدارة وتنظيم الفئات المتاحة في الكتالوج.',
+    'newCategory' => 'فئة جديدة',
+    'allCategories' => 'كل الفئات',
+    'total' => 'الإجمالي',
+    'id' => 'المعرّف',
+    'name' => 'الاسم',
+    'categoryName' => 'اسم الفئة',
+    'description' => 'الوصف',
+    'actions' => 'الإجراءات',
+    'edit' => 'تعديل',
+    'delete' => 'حذف',
+    'cancel' => 'إلغاء',
+    'addCategory' => 'إضافة فئة',
+    'updateCategory' => 'تحديث الفئة',
+    'addNewCategory' => 'إضافة فئة جديدة',
+    'addSubtitle' => 'أدخل تفاصيل فئة المنتج الجديدة.',
+    'editCategory' => 'تعديل الفئة',
+    'editSubtitle' => 'حدّث تفاصيل فئة المنتج.',
+    'confirmDelete' => 'هل أنت متأكد أنك تريد حذف هذه الفئة؟',
+    'notAvailable' => 'غير متوفر',
+    'noActionsAvailable' => 'لا توجد إجراءات متاحة',
+    'noCategoriesFound' => 'لم يتم العثور على فئات.',
+];

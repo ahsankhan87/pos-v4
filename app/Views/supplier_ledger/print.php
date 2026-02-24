@@ -124,22 +124,22 @@
 
 <body>
     <div class="header">
-        <h2>SUPPLIER LEDGER</h2>
-        <p style="margin: 5px 0;">Period: <?= date('d M Y', strtotime($from)) ?> to <?= date('d M Y', strtotime($to)) ?></p>
+        <h2><?= strtoupper(lang('SupplierLedger.supplier_ledger')) ?></h2>
+        <p style="margin: 5px 0;"><?= lang('SupplierLedger.period') ?> <?= date('d M Y', strtotime($from)) ?> <?= lang('SupplierLedger.to') ?> <?= date('d M Y', strtotime($to)) ?></p>
     </div>
 
     <div class="supplier-info">
         <table>
             <tr>
-                <td style="width: 50%;"><strong>Supplier Name:</strong> <?= esc($supplier['name']) ?></td>
-                <td style="width: 50%;"><strong>Phone:</strong> <?= esc($supplier['phone']) ?></td>
+                <td style="width: 50%;"><strong><?= lang('SupplierLedger.supplier_name') ?>:</strong> <?= esc($supplier['name']) ?></td>
+                <td style="width: 50%;"><strong><?= lang('SupplierLedger.phone') ?>:</strong> <?= esc($supplier['phone']) ?></td>
             </tr>
             <tr>
-                <td><strong>Email:</strong> <?= esc($supplier['email']) ?></td>
-                <td><strong>Date:</strong> <?= date('d M Y') ?></td>
+                <td><strong><?= lang('SupplierLedger.email') ?>:</strong> <?= esc($supplier['email']) ?></td>
+                <td><strong><?= lang('SupplierLedger.date_label') ?></strong> <?= date('d M Y') ?></td>
             </tr>
             <tr>
-                <td colspan="2"><strong>Address:</strong> <?= esc($supplier['address']) ?></td>
+                <td colspan="2"><strong><?= lang('SupplierLedger.address') ?></strong> <?= esc($supplier['address']) ?></td>
             </tr>
         </table>
     </div>
@@ -147,19 +147,19 @@
     <table class="ledger">
         <thead>
             <tr>
-                <th style="width: 10%;">Date</th>
-                <th style="width: 40%;">Description</th>
-                <th style="width: 10%;">Ref</th>
-                <th style="width: 13%;" class="text-end">Debit (Dr)</th>
-                <th style="width: 13%;" class="text-end">Credit (Cr)</th>
-                <th style="width: 14%;" class="text-end">Balance</th>
+                <th style="width: 10%;"><?= lang('SupplierLedger.date') ?></th>
+                <th style="width: 40%;"><?= lang('SupplierLedger.description') ?></th>
+                <th style="width: 10%;"><?= lang('SupplierLedger.ref') ?></th>
+                <th style="width: 13%;" class="text-end"><?= lang('SupplierLedger.debit_dr') ?></th>
+                <th style="width: 13%;" class="text-end"><?= lang('SupplierLedger.credit_cr') ?></th>
+                <th style="width: 14%;" class="text-end"><?= lang('SupplierLedger.balance') ?></th>
             </tr>
         </thead>
         <tbody>
             <?php if ($openingBalance != 0): ?>
                 <tr class="opening-row">
                     <td><?= date('d M Y', strtotime($from)) ?></td>
-                    <td>Opening Balance</td>
+                    <td><?= lang('SupplierLedger.opening_balance') ?></td>
                     <td class="text-center">-</td>
                     <td class="text-end">-</td>
                     <td class="text-end">-</td>
@@ -188,14 +188,14 @@
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" class="text-center">No transactions found for the selected period</td>
+                    <td colspan="6" class="text-center"><?= lang('SupplierLedger.no_transactions_for_period') ?></td>
                 </tr>
             <?php endif; ?>
         </tbody>
         <?php if (!empty($transactions)): ?>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                    <td colspan="3" class="text-end"><strong><?= lang('SupplierLedger.total') ?></strong></td>
                     <td class="text-end"><strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></td>
                     <td class="text-end"><strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></td>
                     <td class="text-end"><strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></td>
@@ -206,24 +206,24 @@
 
     <?php if (!empty($transactions)): ?>
         <div class="summary">
-            <h4 style="margin-top: 0;">Summary</h4>
-            <p>Opening Balance: <strong><?= number_to_currency($openingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Total Purchases (Debit): <strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Total Payments (Credit): <strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Closing Balance: <strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
+            <h4 style="margin-top: 0;"><?= lang('SupplierLedger.summary') ?></h4>
+            <p><?= lang('SupplierLedger.opening_balance') ?>: <strong><?= number_to_currency($openingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p><?= lang('SupplierLedger.total_purchases_cr') ?> <strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p><?= lang('SupplierLedger.total_payments_dr') ?> <strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p><?= lang('SupplierLedger.closing_balance') ?> <strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
             <?php if ($closingBalance > 0): ?>
-                <p style="color: red;"><em>Amount Payable to Supplier</em></p>
+                <p style="color: red;"><em><?= lang('SupplierLedger.amount_payable_to_supplier') ?></em></p>
             <?php elseif ($closingBalance < 0): ?>
-                <p style="color: green;"><em>Amount Receivable from Supplier</em></p>
+                <p style="color: green;"><em><?= lang('SupplierLedger.amount_receivable_from_supplier') ?></em></p>
             <?php else: ?>
-                <p style="color: blue;"><em>Account Settled</em></p>
+                <p style="color: blue;"><em><?= lang('SupplierLedger.account_settled') ?></em></p>
             <?php endif; ?>
         </div>
     <?php endif; ?>
 
     <div class="no-print" style="margin-top: 15px; text-align: center;">
-        <button onclick="window.print()" style="padding: 8px 16px; font-size: 12px;">Print</button>
-        <button onclick="window.close()" style="padding: 8px 16px; font-size: 12px;">Close</button>
+        <button onclick="window.print()" style="padding: 8px 16px; font-size: 12px;"><?= lang('SupplierLedger.print') ?></button>
+        <button onclick="window.close()" style="padding: 8px 16px; font-size: 12px;"><?= lang('SupplierLedger.close') ?></button>
     </div>
 
     <script>

@@ -14,16 +14,16 @@ function money_fmt($v)
 function formatQuantity($pieces, $cartonSize)
 {
     if (!$cartonSize || $cartonSize <= 1) {
-        return number_format($pieces, 2) . ' pcs';
+        return number_format($pieces, 2) . ' ' . lang('Reports.pieces_short');
     }
 
     $cartons = floor($pieces / $cartonSize);
     $remaining = $pieces - ($cartons * $cartonSize);
 
     if ($remaining > 0) {
-        return number_format($cartons) . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+        return number_format($cartons) . ' ' . lang('Reports.cartons_short') . ' + ' . number_format($remaining, 2) . ' ' . lang('Reports.pieces_short');
     }
-    return number_format($cartons) . ' ctns';
+    return number_format($cartons) . ' ' . lang('Reports.cartons_short');
 }
 
 $employeeName = '';
@@ -175,11 +175,11 @@ if (!empty($employee_id) && !empty($employees)) {
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="text-white">
                     <h1 class="text-3xl font-bold mb-2">
-                        <i class="fas fa-chart-line mr-3"></i>Profit & Loss Report
+                        <i class="fas fa-chart-line mr-3"></i><?= esc(lang('Reports.profit_loss_report')) ?>
                     </h1>
                     <p class="text-blue-100 text-sm">
                         <i class="far fa-calendar-alt mr-2"></i>
-                        Period: <span class="font-semibold"><?= esc($from) ?></span> to <span class="font-semibold"><?= esc($to) ?></span><?php if ($employeeName): ?> · Employee: <span class="font-semibold"><?= esc($employeeName) ?></span><?php endif; ?>
+                        <?= esc(lang('Reports.period')) ?>: <span class="font-semibold"><?= esc($from) ?></span> <?= esc(lang('Reports.to')) ?> <span class="font-semibold"><?= esc($to) ?></span><?php if ($employeeName): ?> · <?= esc(lang('Reports.employee')) ?>: <span class="font-semibold"><?= esc($employeeName) ?></span><?php endif; ?>
                     </p>
                 </div>
 
@@ -187,19 +187,19 @@ if (!empty($employee_id) && !empty($employees)) {
                 <form method="get" class="no-print bg-white/10 backdrop-blur-sm rounded-lg p-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-blue-100 mb-1">From Date</label>
+                            <label class="block text-xs font-medium text-blue-100 mb-1"><?= esc(lang('Reports.from_date')) ?></label>
                             <input type="date" name="from" value="<?= esc($from) ?>"
                                 class="w-full border-white/20 bg-white/10 text-white placeholder-blue-200 rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-blue-100 mb-1">To Date</label>
+                            <label class="block text-xs font-medium text-blue-100 mb-1"><?= esc(lang('Reports.to_date')) ?></label>
                             <input type="date" name="to" value="<?= esc($to) ?>"
                                 class="w-full border-white/20 bg-white/10 text-white placeholder-blue-200 rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-blue-100 mb-1">Employee</label>
+                            <label class="block text-xs font-medium text-blue-100 mb-1"><?= esc(lang('Reports.employee')) ?></label>
                             <select name="employee_id" class="w-full border-white/20 bg-white/10 text-white rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
-                                <option value="" class="text-gray-800">All Employees</option>
+                                <option value="" class="text-gray-800"><?= esc(lang('Reports.all_employees')) ?></option>
                                 <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                         <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?> class="text-gray-800"><?= esc($emp['name']) ?></option>
                                 <?php endforeach;
@@ -208,13 +208,13 @@ if (!empty($employee_id) && !empty($employees)) {
                         </div>
                         <div class="flex items-end">
                             <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 rounded-md bg-white text-blue-700 hover:bg-blue-50 font-semibold shadow-md transition-all">
-                                <i class="fas fa-filter mr-2"></i> Apply
+                                <i class="fas fa-filter mr-2"></i> <?= esc(lang('Reports.apply')) ?>
                             </button>
                         </div>
                         <div class="flex items-end gap-2">
                             <?php if (can('reports.profit_loss')): ?>
                                 <a href="<?= site_url('sales/profit-loss-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-900 shadow-md">
-                                    <i class="fas fa-print mr-2"></i> Print
+                                    <i class="fas fa-print mr-2"></i> <?= esc(lang('Reports.print')) ?>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -222,11 +222,11 @@ if (!empty($employee_id) && !empty($employees)) {
 
                     <!-- Quick Date Filters -->
                     <div class="flex flex-wrap gap-2 mt-3">
-                        <button type="button" data-range="today" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">Today</button>
-                        <button type="button" data-range="yesterday" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">Yesterday</button>
-                        <button type="button" data-range="last7" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">Last 7 Days</button>
-                        <button type="button" data-range="month" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">This Month</button>
-                        <button type="button" data-range="last_month" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">Last Month</button>
+                        <button type="button" data-range="today" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"><?= esc(lang('Reports.today')) ?></button>
+                        <button type="button" data-range="yesterday" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"><?= esc(lang('Reports.yesterday')) ?></button>
+                        <button type="button" data-range="last7" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"><?= esc(lang('Reports.last_7_days')) ?></button>
+                        <button type="button" data-range="month" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"><?= esc(lang('Reports.this_month')) ?></button>
+                        <button type="button" data-range="last_month" class="px-3 py-1 text-xs rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"><?= esc(lang('Reports.last_month')) ?></button>
                     </div>
                 </form>
             </div>
@@ -238,50 +238,50 @@ if (!empty($employee_id) && !empty($employees)) {
         <!-- Total Revenue (Net) -->
         <div class="metric-card bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-5">
             <div class="flex items-center justify-between mb-2">
-                <div class="text-blue-100 text-xs font-medium uppercase tracking-wide">Total Revenue</div>
+                <div class="text-blue-100 text-xs font-medium uppercase tracking-wide"><?= esc(lang('Reports.total_revenue')) ?></div>
                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <i class="fas fa-dollar-sign text-xl"></i>
                 </div>
             </div>
             <div class="text-2xl font-bold"><?= esc($currency) ?> <?= money_fmt($totalRevenue) ?></div>
-            <div class="text-xs text-blue-100 mt-1"><?= $salesCount ?> transactions</div>
+            <div class="text-xs text-blue-100 mt-1"><?= $salesCount ?> <?= esc(lang('Reports.transactions')) ?></div>
         </div>
 
         <!-- Total Cost -->
         <div class="metric-card bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg p-5">
             <div class="flex items-center justify-between mb-2">
-                <div class="text-orange-100 text-xs font-medium uppercase tracking-wide">Total Cost</div>
+                <div class="text-orange-100 text-xs font-medium uppercase tracking-wide"><?= esc(lang('Reports.total_cost')) ?></div>
                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <i class="fas fa-shopping-cart text-xl"></i>
                 </div>
             </div>
             <div class="text-2xl font-bold"><?= esc($currency) ?> <?= money_fmt($totalCost) ?></div>
-            <div class="text-xs text-orange-100 mt-1">Cost of goods sold</div>
+            <div class="text-xs text-orange-100 mt-1"><?= esc(lang('Reports.cost_of_goods_sold')) ?></div>
         </div>
 
         <!-- Gross Profit -->
         <div class="metric-card bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-5">
             <div class="flex items-center justify-between mb-2">
-                <div class="text-green-100 text-xs font-medium uppercase tracking-wide">Gross Profit</div>
+                <div class="text-green-100 text-xs font-medium uppercase tracking-wide"><?= esc(lang('Reports.gross_profit')) ?></div>
                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <i class="fas fa-chart-line text-xl"></i>
                 </div>
             </div>
             <div class="text-2xl font-bold"><?= esc($currency) ?> <?= money_fmt($totalGrossProfit) ?></div>
-            <div class="text-xs text-green-100 mt-1">Before expenses</div>
+            <div class="text-xs text-green-100 mt-1"><?= esc(lang('Reports.before_expenses')) ?></div>
         </div>
 
         <!-- Net Profit -->
         <div class="metric-card bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-5">
             <div class="flex items-center justify-between mb-2">
-                <div class="text-purple-100 text-xs font-medium uppercase tracking-wide">Net Profit</div>
+                <div class="text-purple-100 text-xs font-medium uppercase tracking-wide"><?= esc(lang('Reports.net_profit')) ?></div>
                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <i class="fas fa-trophy text-xl"></i>
                 </div>
             </div>
             <div class="text-2xl font-bold"><?= esc($currency) ?> <?= money_fmt($netProfit) ?></div>
             <div class="text-xs text-purple-100 mt-1">
-                <?= money_fmt($profitMargin) ?>% margin
+                <?= money_fmt($profitMargin) ?>% <?= esc(lang('Reports.margin')) ?>
             </div>
         </div>
     </div>
@@ -292,66 +292,66 @@ if (!empty($employee_id) && !empty($employees)) {
         <div class="lg:col-span-2 bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">
-                    <i class="fas fa-calculator mr-2 text-blue-600"></i>Income Statement
+                    <i class="fas fa-calculator mr-2 text-blue-600"></i><?= esc(lang('Reports.income_statement')) ?>
                 </h3>
             </div>
             <div class="p-6">
                 <table class="w-full">
                     <tbody>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm font-medium text-gray-700">Gross Revenue — Products</td>
+                            <td class="py-3 text-sm font-medium text-gray-700"><?= esc(lang('Reports.gross_revenue_products')) ?></td>
                             <td class="py-3 text-sm text-right font-semibold text-gray-900"><?= esc($currency) ?> <?= money_fmt($grossRevenueProduct ?? 0) ?></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm font-medium text-gray-700">Gross Revenue — Services</td>
+                            <td class="py-3 text-sm font-medium text-gray-700"><?= esc(lang('Reports.gross_revenue_services')) ?></td>
                             <td class="py-3 text-sm text-right font-semibold text-gray-900"><?= esc($currency) ?> <?= money_fmt($grossRevenueService ?? (($grossRevenue ?? 0) - ($grossRevenueProduct ?? 0))) ?></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Sales Returns — Products</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4"><?= esc(lang('Reports.less_sales_returns_products')) ?></td>
                             <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($productReturnAmount ?? 0) ?>)</td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Sales Returns — Services</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4"><?= esc(lang('Reports.less_sales_returns_services')) ?></td>
                             <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($serviceReturnAmount ?? (($totalReturns ?? 0) - ($productReturnAmount ?? 0))) ?>)</td>
                         </tr>
                         <tr class="border-b border-gray-200 bg-blue-50">
-                            <td class="py-3 text-sm font-semibold text-gray-900">Net Revenue</td>
+                            <td class="py-3 text-sm font-semibold text-gray-900"><?= esc(lang('Reports.net_revenue')) ?></td>
                             <td class="py-3 text-sm text-right font-bold text-gray-900"><?= esc($currency) ?> <?= money_fmt($totalRevenue) ?></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Less: Cost of Goods Sold (Products only)</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4"><?= esc(lang('Reports.less_cogs_products')) ?></td>
                             <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalCost) ?>)</td>
                         </tr>
                         <tr class="border-b-2 border-gray-300 bg-green-50">
-                            <td class="py-3 text-sm font-bold text-gray-900">Gross Profit</td>
+                            <td class="py-3 text-sm font-bold text-gray-900"><?= esc(lang('Reports.gross_profit')) ?></td>
                             <td class="py-3 text-sm text-right font-bold text-green-700"><?= esc($currency) ?> <?= money_fmt($totalGrossProfit) ?></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm font-medium text-gray-700 pt-4">Operating Expenses</td>
+                            <td class="py-3 text-sm font-medium text-gray-700 pt-4"><?= esc(lang('Reports.operating_expenses')) ?></td>
                             <td class="py-3 text-sm text-right"></td>
                         </tr>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Line Discounts (informational)</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4"><?= esc(lang('Reports.line_discounts_info')) ?></td>
                             <td class="py-3 text-sm text-right text-gray-500"><?= esc($currency) ?> <?= money_fmt($grossDiscount ?? 0) ?></td>
                         </tr>
                         <?php if (!empty($expenseBreakdown)): ?>
                             <?php foreach ($expenseBreakdown as $exp): ?>
                                 <tr class="border-b border-gray-100">
-                                    <td class="py-2 text-xs text-gray-600 pl-8">Expense: <?= esc($exp['category_name'] ?? 'Uncategorized') ?></td>
+                                    <td class="py-2 text-xs text-gray-600 pl-8"><?= esc(lang('Reports.expense')) ?>: <?= esc($exp['category_name'] ?? lang('Reports.uncategorized')) ?></td>
                                     <td class="py-2 text-xs text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt(($exp['total'] ?? (($exp['sum_amount'] ?? 0) + ($exp['sum_tax'] ?? 0)))) ?>)</td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                         <tr class="border-b border-gray-200">
-                            <td class="py-3 text-sm text-gray-600 pl-4">Other Expenses</td>
+                            <td class="py-3 text-sm text-gray-600 pl-4"><?= esc(lang('Reports.other_expenses')) ?></td>
                             <td class="py-3 text-sm text-right text-red-600">(<?= esc($currency) ?> <?= money_fmt($totalExpenses ?? 0) ?>)</td>
                         </tr>
                         <tr class="border-b border-gray-200 bg-orange-50">
-                            <td class="py-3 text-sm font-semibold text-gray-900">Total Operating Expenses</td>
+                            <td class="py-3 text-sm font-semibold text-gray-900"><?= esc(lang('Reports.total_operating_expenses')) ?></td>
                             <td class="py-3 text-sm text-right font-bold text-red-700">(<?= esc($currency) ?> <?= money_fmt($totalOperatingExpenses ?? 0) ?>)</td>
                         </tr>
                         <tr class="border-b-2 border-gray-300 bg-purple-50">
-                            <td class="py-3 text-base font-bold text-gray-900">Net Profit</td>
+                            <td class="py-3 text-base font-bold text-gray-900"><?= esc(lang('Reports.net_profit')) ?></td>
                             <td class="py-3 text-base text-right font-bold <?= $netProfit >= 0 ? 'text-purple-700' : 'text-red-700' ?>">
                                 <?= esc($currency) ?> <?= money_fmt($netProfit) ?>
                             </td>
@@ -365,31 +365,31 @@ if (!empty($employee_id) && !empty($employees)) {
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">
-                    <i class="fas fa-percent mr-2 text-blue-600"></i>Key Metrics
+                    <i class="fas fa-percent mr-2 text-blue-600"></i><?= esc(lang('Reports.key_metrics')) ?>
                 </h3>
             </div>
             <div class="p-6 space-y-4">
                 <div class="bg-blue-50 rounded-lg p-4">
-                    <div class="text-xs text-blue-600 font-medium mb-1">Profit Margin</div>
+                    <div class="text-xs text-blue-600 font-medium mb-1"><?= esc(lang('Reports.profit_margin')) ?></div>
                     <div class="text-2xl font-bold text-blue-700"><?= money_fmt($profitMargin) ?>%</div>
                 </div>
 
                 <div class="bg-green-50 rounded-lg p-4">
-                    <div class="text-xs text-green-600 font-medium mb-1">Avg Revenue/Sale</div>
+                    <div class="text-xs text-green-600 font-medium mb-1"><?= esc(lang('Reports.avg_revenue_sale')) ?></div>
                     <div class="text-2xl font-bold text-green-700">
                         <?= esc($currency) ?> <?= $salesCount > 0 ? money_fmt($totalRevenue / $salesCount) : '0.00' ?>
                     </div>
                 </div>
 
                 <div class="bg-purple-50 rounded-lg p-4">
-                    <div class="text-xs text-purple-600 font-medium mb-1">Avg Profit/Sale</div>
+                    <div class="text-xs text-purple-600 font-medium mb-1"><?= esc(lang('Reports.avg_profit_sale')) ?></div>
                     <div class="text-2xl font-bold text-purple-700">
                         <?= esc($currency) ?> <?= $salesCount > 0 ? money_fmt($netProfit / $salesCount) : '0.00' ?>
                     </div>
                 </div>
 
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="text-xs text-gray-600 font-medium mb-1">Total Products Sold</div>
+                    <div class="text-xs text-gray-600 font-medium mb-1"><?= esc(lang('Reports.total_products_sold')) ?></div>
                     <div class="text-2xl font-bold text-gray-700"><?= count($products) ?></div>
                 </div>
             </div>
@@ -401,24 +401,24 @@ if (!empty($employee_id) && !empty($employees)) {
         <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">
-                    <i class="fas fa-boxes mr-2 text-blue-600"></i>Product-wise Profit Analysis
+                    <i class="fas fa-boxes mr-2 text-blue-600"></i><?= esc(lang('Reports.product_wise_profit_analysis')) ?>
                 </h3>
-                <div class="text-sm text-gray-500">Total: <?= count($products) ?> products</div>
+                <div class="text-sm text-gray-500"><?= esc(lang('Reports.total')) ?>: <?= count($products) ?> <?= esc(lang('Reports.products')) ?></div>
             </div>
         </div>
         <div class="overflow-x-auto">
             <table id="profitAnalysisTable" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inv #</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Sold (Gross)</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Returns</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Sold (Net)</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue (Net)</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost (Net)</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Profit (Net)</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Margin %</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.invoice_short')) ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.product')) ?></th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.sold_gross')) ?></th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.returns')) ?></th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.sold_net')) ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.revenue_net')) ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.cost_net')) ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.gross_profit_net')) ?></th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"><?= esc(lang('Reports.margin_percent')) ?></th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -455,7 +455,7 @@ if (!empty($employee_id) && !empty($employees)) {
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <?php if ($hasReturns): ?>
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800" title="Gross Quantity Sold">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800" title="<?= esc(lang('Reports.gross_quantity_sold')) ?>">
                                         <?= formatQuantity($product['total_qty_sold'], $product['carton_size']) ?>
                                     </span>
                                 <?php else: ?>
@@ -464,7 +464,7 @@ if (!empty($employee_id) && !empty($employees)) {
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <?php if (($product['returns_qty'] ?? 0) > 0): ?>
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700" title="Returned Quantity">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700" title="<?= esc(lang('Reports.returned_quantity')) ?>">
                                         -<?= formatQuantity($product['returns_qty'], $product['carton_size']) ?>
                                     </span>
                                 <?php else: ?>
@@ -472,33 +472,33 @@ if (!empty($employee_id) && !empty($employees)) {
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700" title="Net Quantity Sold">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700" title="<?= esc(lang('Reports.net_quantity_sold')) ?>">
                                     <?= formatQuantity($product['net_qty_sold'], $product['carton_size']) ?>
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <?php if ($hasReturns): ?>
-                                    <div class="text-xs text-gray-500 line-through" title="Gross Revenue"><?= esc($currency) ?> <?= money_fmt($product['total_revenue']) ?></div>
+                                    <div class="text-xs text-gray-500 line-through" title="<?= esc(lang('Reports.gross_revenue')) ?>"><?= esc($currency) ?> <?= money_fmt($product['total_revenue']) ?></div>
                                 <?php endif; ?>
-                                <div class="text-sm font-semibold text-gray-900" title="<?= $hasReturns ? 'Net Revenue' : 'Revenue' ?>"><?= esc($currency) ?> <?= money_fmt($product['net_revenue'] ?? $product['total_revenue']) ?></div>
+                                <div class="text-sm font-semibold text-gray-900" title="<?= esc($hasReturns ? lang('Reports.net_revenue') : lang('Reports.revenue')) ?>"><?= esc($currency) ?> <?= money_fmt($product['net_revenue'] ?? $product['total_revenue']) ?></div>
                                 <?php if (($product['returns_revenue'] ?? 0) > 0): ?>
-                                    <div class="text-[10px] text-red-600" title="Returned Revenue">-<?= esc($currency) ?> <?= money_fmt($product['returns_revenue']) ?></div>
+                                    <div class="text-[10px] text-red-600" title="<?= esc(lang('Reports.returned_revenue')) ?>">-<?= esc($currency) ?> <?= money_fmt($product['returns_revenue']) ?></div>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <?php if ($hasReturns): ?>
-                                    <div class="text-xs text-red-400 line-through" title="Gross Cost"><?= esc($currency) ?> <?= money_fmt($product['total_cost']) ?></div>
+                                    <div class="text-xs text-red-400 line-through" title="<?= esc(lang('Reports.gross_cost')) ?>"><?= esc($currency) ?> <?= money_fmt($product['total_cost']) ?></div>
                                 <?php endif; ?>
-                                <div class="text-sm text-red-600" title="<?= $hasReturns ? 'Net Cost' : 'Cost' ?>"><?= esc($currency) ?> <?= money_fmt($product['net_cost'] ?? $product['total_cost']) ?></div>
+                                <div class="text-sm text-red-600" title="<?= esc($hasReturns ? lang('Reports.net_cost') : lang('Reports.cost')) ?>"><?= esc($currency) ?> <?= money_fmt($product['net_cost'] ?? $product['total_cost']) ?></div>
                                 <?php if (($product['returns_cost'] ?? 0) > 0): ?>
-                                    <div class="text-[10px] text-emerald-600" title="Cost Credited Back">-<?= esc($currency) ?> <?= money_fmt($product['returns_cost']) ?></div>
+                                    <div class="text-[10px] text-emerald-600" title="<?= esc(lang('Reports.cost_credited_back')) ?>">-<?= esc($currency) ?> <?= money_fmt($product['returns_cost']) ?></div>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <?php if ($hasReturns): ?>
-                                    <div class="text-xs line-through <?= ($product['gross_profit'] ?? 0) >= 0 ? 'text-green-300' : 'text-red-300' ?>" title="Gross Profit"><?= esc($currency) ?> <?= money_fmt($product['gross_profit']) ?></div>
+                                    <div class="text-xs line-through <?= ($product['gross_profit'] ?? 0) >= 0 ? 'text-green-300' : 'text-red-300' ?>" title="<?= esc(lang('Reports.gross_profit')) ?>"><?= esc($currency) ?> <?= money_fmt($product['gross_profit']) ?></div>
                                 <?php endif; ?>
-                                <div class="text-sm font-bold <?= ($product['net_gross_profit'] ?? $product['gross_profit'] ?? 0) >= 0 ? 'text-green-700' : 'text-red-700' ?>" title="<?= $hasReturns ? 'Net Gross Profit' : 'Gross Profit' ?>"><?= esc($currency) ?> <?= money_fmt($product['net_gross_profit'] ?? $product['gross_profit']) ?></div>
+                                <div class="text-sm font-bold <?= ($product['net_gross_profit'] ?? $product['gross_profit'] ?? 0) >= 0 ? 'text-green-700' : 'text-red-700' ?>" title="<?= esc($hasReturns ? lang('Reports.net_gross_profit') : lang('Reports.gross_profit')) ?>"><?= esc($currency) ?> <?= money_fmt($product['net_gross_profit'] ?? $product['gross_profit']) ?></div>
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <?= $marginClass ?>">
@@ -514,28 +514,28 @@ if (!empty($employee_id) && !empty($employees)) {
                 ?>
                 <tfoot class="bg-gradient-to-r from-gray-50 to-gray-100 border-t-2 border-gray-300">
                     <tr class="border-b border-gray-200">
-                        <td class="px-6 py-3 text-xs font-bold text-gray-900">TOTALS</td>
+                        <td class="px-6 py-3 text-xs font-bold text-gray-900"><?= esc(lang('Reports.totals')) ?></td>
                         <td class="px-6 py-3 text-xs text-gray-500"></td>
-                        <td class="px-6 py-3 text-center text-xs font-semibold text-gray-900" title="Gross Quantity">
-                            <?= number_format($grossQtyTotal, 2) ?> pcs
+                        <td class="px-6 py-3 text-center text-xs font-semibold text-gray-900" title="<?= esc(lang('Reports.gross_quantity')) ?>">
+                            <?= number_format($grossQtyTotal, 2) ?> <?= esc(lang('Reports.pieces_short')) ?>
                         </td>
-                        <td class="px-6 py-3 text-center text-xs font-semibold text-red-600" title="Returned Quantity">
-                            -<?= number_format($returnsQtyTotal, 2) ?> pcs
+                        <td class="px-6 py-3 text-center text-xs font-semibold text-red-600" title="<?= esc(lang('Reports.returned_quantity')) ?>">
+                            -<?= number_format($returnsQtyTotal, 2) ?> <?= esc(lang('Reports.pieces_short')) ?>
                         </td>
-                        <td class="px-6 py-3 text-center text-xs font-semibold text-green-700" title="Net Quantity">
-                            <?= number_format($netQtyTotal, 2) ?> pcs
+                        <td class="px-6 py-3 text-center text-xs font-semibold text-green-700" title="<?= esc(lang('Reports.net_quantity')) ?>">
+                            <?= number_format($netQtyTotal, 2) ?> <?= esc(lang('Reports.pieces_short')) ?>
                         </td>
-                        <td class="px-6 py-3 text-right text-xs font-bold text-gray-900" title="Net Revenue">
+                        <td class="px-6 py-3 text-right text-xs font-bold text-gray-900" title="<?= esc(lang('Reports.net_revenue')) ?>">
                             <?= esc($currency) ?> <?= money_fmt($totalRevenue) ?>
                         </td>
-                        <td class="px-6 py-3 text-right text-xs font-bold text-red-600" title="Net Cost">
+                        <td class="px-6 py-3 text-right text-xs font-bold text-red-600" title="<?= esc(lang('Reports.net_cost')) ?>">
                             <?= esc($currency) ?> <?= money_fmt($totalCost) ?>
                         </td>
-                        <td class="px-6 py-3 text-right text-xs font-bold <?= $totalGrossProfit >= 0 ? 'text-green-700' : 'text-red-700' ?>" title="Net Gross Profit">
+                        <td class="px-6 py-3 text-right text-xs font-bold <?= $totalGrossProfit >= 0 ? 'text-green-700' : 'text-red-700' ?>" title="<?= esc(lang('Reports.net_gross_profit')) ?>">
                             <?= esc($currency) ?> <?= money_fmt($totalGrossProfit) ?>
                         </td>
                         <td class="px-6 py-3 text-center">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800" title="Net Margin">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800" title="<?= esc(lang('Reports.net_margin')) ?>">
                                 <?= money_fmt($netMarginFooter) ?>%
                             </span>
                         </td>
@@ -548,7 +548,7 @@ if (!empty($employee_id) && !empty($employees)) {
     <!-- Footer Note -->
     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
         <i class="fas fa-info-circle mr-2"></i>
-        <strong>Note:</strong> Line discounts are already reflected in net revenue and not subtracted again as expenses. Sales returns reduce revenue and credit back cost. Gross Profit = Net Revenue - Net COGS. Net Profit = Gross Profit - Operating Expenses. Taxes are included in revenue totals. Quantities shown in cartons/pieces where applicable.
+        <strong><?= esc(lang('Reports.note')) ?>:</strong> <?= esc(lang('Reports.profit_loss_note')) ?>
     </div>
 </div>
 <!-- DataTables JS -->
@@ -557,6 +557,18 @@ if (!empty($employee_id) && !empty($employees)) {
 
 <script>
     $(document).ready(function() {
+        const i18n = {
+            searchProducts: <?= json_encode(lang('Reports.search_products_placeholder'), JSON_UNESCAPED_UNICODE) ?>,
+            showProducts: <?= json_encode(lang('Reports.show_products'), JSON_UNESCAPED_UNICODE) ?>,
+            showingProducts: <?= json_encode(lang('Reports.showing_products'), JSON_UNESCAPED_UNICODE) ?>,
+            noProducts: <?= json_encode(lang('Reports.no_products_to_show'), JSON_UNESCAPED_UNICODE) ?>,
+            filteredProducts: <?= json_encode(lang('Reports.filtered_from_total_products'), JSON_UNESCAPED_UNICODE) ?>,
+            first: <?= json_encode(lang('Reports.first'), JSON_UNESCAPED_UNICODE) ?>,
+            last: <?= json_encode(lang('Reports.last'), JSON_UNESCAPED_UNICODE) ?>,
+            next: <?= json_encode(lang('Reports.next'), JSON_UNESCAPED_UNICODE) ?>,
+            previous: <?= json_encode(lang('Reports.previous'), JSON_UNESCAPED_UNICODE) ?>
+        };
+
         // Initialize DataTables for product profit analysis
         $('#profitAnalysisTable').DataTable({
             pageLength: 25,
@@ -567,16 +579,16 @@ if (!empty($employee_id) && !empty($employees)) {
             dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4 gap-3"<"flex items-center"l><"flex items-center"f>>rtip',
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search products...",
-                lengthMenu: "Show _MENU_ products",
-                info: "Showing _START_ to _END_ of _TOTAL_ products",
-                infoEmpty: "No products to show",
-                infoFiltered: "(filtered from _MAX_ total products)",
+                searchPlaceholder: i18n.searchProducts,
+                lengthMenu: i18n.showProducts,
+                info: i18n.showingProducts,
+                infoEmpty: i18n.noProducts,
+                infoFiltered: i18n.filteredProducts,
                 paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
+                    first: i18n.first,
+                    last: i18n.last,
+                    next: i18n.next,
+                    previous: i18n.previous
                 }
             },
             columnDefs: [{

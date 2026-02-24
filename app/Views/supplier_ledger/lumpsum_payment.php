@@ -15,13 +15,13 @@ $purchases = $purchases ?? [];
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
                         <i class="fas fa-money-bill-wave text-green-600"></i>
-                        Lumpsum Payment
+                        <?= lang('SupplierLedger.lumpsum_payment') ?>
                     </h1>
-                    <p class="text-gray-600 mt-1">Process payment for multiple purchases</p>
+                    <p class="text-gray-600 mt-1"><?= lang('SupplierLedger.process_payment_multiple_purchases') ?></p>
                 </div>
                 <a href="<?= base_url('supplier-ledger/view/' . ($supplier['id'] ?? 0)) ?>" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 flex items-center gap-2">
                     <i class="fas fa-arrow-left"></i>
-                    Back to Ledger
+                    <?= lang('SupplierLedger.back_to_ledger') ?>
                 </a>
             </div>
 
@@ -30,7 +30,7 @@ $purchases = $purchases ?? [];
                 <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-2xl font-bold mb-1"><?= esc($supplier['name'] ?? 'Unknown Supplier') ?></h2>
+                            <h2 class="text-2xl font-bold mb-1"><?= esc($supplier['name'] ?? lang('SupplierLedger.unknown_supplier')) ?></h2>
                             <div class="flex items-center gap-4 text-green-100">
                                 <?php if (!empty($supplier['phone'])): ?>
                                     <span class="flex items-center gap-1">
@@ -47,7 +47,7 @@ $purchases = $purchases ?? [];
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-green-100 text-sm">Current Balance</p>
+                            <p class="text-green-100 text-sm"><?= lang('SupplierLedger.current_balance') ?></p>
                             <p class="text-2xl font-bold">
                                 <?php
                                 $ledgerModel = new \App\Models\SupplierLedgerModel();
@@ -67,7 +67,7 @@ $purchases = $purchases ?? [];
                 <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <i class="fas fa-calculator text-green-600"></i>
-                        Payment Details
+                        <?= lang('SupplierLedger.payment_details') ?>
                     </h3>
 
                     <form id="lumpsumPaymentForm">
@@ -76,7 +76,7 @@ $purchases = $purchases ?? [];
                         <!-- Payment Amount -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Payment Amount <span class="text-red-500">*</span>
+                                <?= lang('SupplierLedger.payment_amount') ?> <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold"><?= esc($currencySymbol) ?></span>
@@ -90,27 +90,27 @@ $purchases = $purchases ?? [];
                                     required
                                     autofocus>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Enter total amount to distribute</p>
+                            <p class="text-xs text-gray-500 mt-1"><?= lang('SupplierLedger.enter_total_amount_distribute') ?></p>
                         </div>
 
                         <!-- Distribution Mode -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Distribution Mode
+                                <?= lang('SupplierLedger.distribution_mode') ?>
                             </label>
                             <div class="space-y-2">
                                 <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 transition-colors duration-200">
                                     <input type="radio" name="distribution_mode" value="auto" checked class="mr-3 text-green-600 focus:ring-green-500">
                                     <div>
-                                        <div class="font-semibold text-gray-800">Automatic (FIFO)</div>
-                                        <div class="text-xs text-gray-500">Pay oldest purchases first</div>
+                                        <div class="font-semibold text-gray-800"><?= lang('SupplierLedger.automatic_fifo') ?></div>
+                                        <div class="text-xs text-gray-500"><?= lang('SupplierLedger.pay_oldest_first') ?></div>
                                     </div>
                                 </label>
                                 <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 transition-colors duration-200">
                                     <input type="radio" name="distribution_mode" value="manual" class="mr-3 text-green-600 focus:ring-green-500">
                                     <div>
-                                        <div class="font-semibold text-gray-800">Manual</div>
-                                        <div class="text-xs text-gray-500">Select amounts manually</div>
+                                        <div class="font-semibold text-gray-800"><?= lang('SupplierLedger.manual') ?></div>
+                                        <div class="text-xs text-gray-500"><?= lang('SupplierLedger.select_amounts_manually') ?></div>
                                     </div>
                                 </label>
                             </div>
@@ -119,7 +119,7 @@ $purchases = $purchases ?? [];
                         <!-- Payment Date -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Payment Date
+                                <?= lang('SupplierLedger.payment_date') ?>
                             </label>
                             <input type="date"
                                 name="payment_date"
@@ -131,57 +131,57 @@ $purchases = $purchases ?? [];
                         <!-- Payment Method -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Payment Method
+                                <?= lang('SupplierLedger.payment_method') ?>
                             </label>
                             <select name="payment_method" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="other">Other</option>
+                                <option value="cash"><?= lang('SupplierLedger.cash') ?></option>
+                                <option value="card"><?= lang('SupplierLedger.card') ?></option>
+                                <option value="bank_transfer"><?= lang('SupplierLedger.bank_transfer') ?></option>
+                                <option value="cheque"><?= lang('SupplierLedger.cheque') ?></option>
+                                <option value="other"><?= lang('SupplierLedger.other') ?></option>
                             </select>
                         </div>
 
                         <!-- Reference Number -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Reference Number
+                                <?= lang('SupplierLedger.reference_number') ?>
                             </label>
                             <input type="text"
                                 name="reference_no"
                                 class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Cheque/Transaction No.">
+                                placeholder="<?= esc(lang('SupplierLedger.cheque_transaction_no')) ?>">
                         </div>
 
                         <!-- Notes -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Notes (Optional)
+                                <?= lang('SupplierLedger.notes_optional') ?>
                             </label>
                             <textarea name="notes"
                                 rows="3"
                                 class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Add any notes or remarks..."></textarea>
+                                placeholder="<?= esc(lang('SupplierLedger.add_notes_remarks')) ?>"></textarea>
                         </div>
 
                         <!-- Summary Box -->
                         <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 mb-4">
-                            <h4 class="font-bold text-gray-800 mb-3">Payment Summary</h4>
+                            <h4 class="font-bold text-gray-800 mb-3"><?= lang('SupplierLedger.payment_summary') ?></h4>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Payment Amount:</span>
+                                    <span class="text-gray-600"><?= lang('SupplierLedger.payment_amount') ?>:</span>
                                     <span class="font-bold text-gray-800" id="summaryPaymentAmount"><?= esc($currencySymbol) ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Applied Amount:</span>
+                                    <span class="text-gray-600"><?= lang('SupplierLedger.applied_amount') ?></span>
                                     <span class="font-bold text-green-600" id="summaryAppliedAmount"><?= esc($currencySymbol) ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between pt-2 border-t border-gray-300">
-                                    <span class="text-gray-600">Remaining:</span>
+                                    <span class="text-gray-600"><?= lang('SupplierLedger.remaining') ?></span>
                                     <span class="font-bold text-orange-600" id="summaryRemainingAmount"><?= esc($currencySymbol) ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Purchases Selected:</span>
+                                    <span class="text-gray-600"><?= lang('SupplierLedger.purchases_selected') ?></span>
                                     <span class="font-bold text-green-600" id="summaryPurchaseCount">0</span>
                                 </div>
                             </div>
@@ -190,7 +190,7 @@ $purchases = $purchases ?? [];
                         <!-- Submit Button -->
                         <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg">
                             <i class="fas fa-check-circle mr-2"></i>
-                            Process Payment
+                            <?= lang('SupplierLedger.process_payment') ?>
                         </button>
                     </form>
                 </div>
@@ -202,14 +202,14 @@ $purchases = $purchases ?? [];
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                             <i class="fas fa-file-invoice text-green-600"></i>
-                            Outstanding Purchases
+                            <?= lang('SupplierLedger.outstanding_purchases') ?>
                         </h3>
                         <div class="flex items-center gap-2">
                             <button type="button" id="selectAllPurchases" class="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors duration-200">
-                                Select All
+                                <?= lang('SupplierLedger.select_all') ?>
                             </button>
                             <button type="button" id="clearAllPurchases" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200">
-                                Clear All
+                                <?= lang('SupplierLedger.clear_all') ?>
                             </button>
                         </div>
                     </div>
@@ -217,14 +217,14 @@ $purchases = $purchases ?? [];
                     <?php if (empty($purchases)): ?>
                         <div class="text-center py-12">
                             <i class="fas fa-check-circle text-green-500 text-5xl mb-3"></i>
-                            <p class="text-gray-500 text-lg">No outstanding purchases found</p>
-                            <p class="text-gray-400 text-sm">This supplier has no pending payments</p>
+                            <p class="text-gray-500 text-lg"><?= lang('SupplierLedger.no_outstanding_purchases_found') ?></p>
+                            <p class="text-gray-400 text-sm"><?= lang('SupplierLedger.no_pending_payments') ?></p>
                         </div>
                     <?php else: ?>
                         <!-- Total Outstanding -->
                         <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 mb-4">
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-700 font-semibold">Total Outstanding:</span>
+                                <span class="text-gray-700 font-semibold"><?= lang('SupplierLedger.total_outstanding') ?>:</span>
                                 <span class="text-2xl font-bold text-red-600" id="totalDue">
                                     <?= esc($currencySymbol) ?><?= number_format(array_sum(array_column($purchases, 'remaining')), 2) ?>
                                 </span>
@@ -239,12 +239,12 @@ $purchases = $purchases ?? [];
                                         <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase">
                                             <input type="checkbox" id="selectAllCheckbox" class="rounded">
                                         </th>
-                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase">Purchase</th>
-                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase">Date</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Age</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Original Amount</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Due Amount</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Apply Amount</th>
+                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase"><?= lang('SupplierLedger.purchase') ?></th>
+                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase"><?= lang('SupplierLedger.date') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('SupplierLedger.age') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('SupplierLedger.original_amount') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('SupplierLedger.due_amount') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('SupplierLedger.apply_amount') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="purchasesTableBody">
@@ -282,7 +282,7 @@ $purchases = $purchases ?? [];
                                                 <?= date('M d, Y', strtotime($purchase['date'])) ?>
                                             </td>
                                             <td class="py-3 px-3 text-right text-sm <?= $ageClass ?>">
-                                                <?= $age ?> days
+                                                <?= lang('SupplierLedger.days_count', ['days' => $age]) ?>
                                             </td>
                                             <td class="py-3 px-3 text-right text-gray-600">
                                                 <?= esc($currencySymbol) ?><?= number_format($originalAmount, 2) ?>
@@ -319,6 +319,13 @@ $purchases = $purchases ?? [];
 
 <script>
     const currencySymbol = <?= json_encode($currencySymbol) ?>;
+    const slText = {
+        invalidPaymentAmount: <?= json_encode(lang('SupplierLedger.please_enter_valid_payment_amount'), JSON_UNESCAPED_UNICODE) ?>,
+        selectAtLeastOnePurchase: <?= json_encode(lang('SupplierLedger.please_select_at_least_one_purchase'), JSON_UNESCAPED_UNICODE) ?>,
+        paymentProcessedSuccessfully: <?= json_encode(lang('SupplierLedger.payment_processed_successfully'), JSON_UNESCAPED_UNICODE) ?>,
+        failedToProcessPayment: <?= json_encode(lang('SupplierLedger.failed_to_process_payment'), JSON_UNESCAPED_UNICODE) ?>,
+        genericErrorTryAgain: <?= json_encode(lang('SupplierLedger.generic_error_try_again'), JSON_UNESCAPED_UNICODE) ?>
+    };
 
     $(document).ready(function() {
         // Auto-distribute when payment amount changes
@@ -446,7 +453,7 @@ $purchases = $purchases ?? [];
 
             const paymentAmount = parseFloat($('#paymentAmount').val()) || 0;
             if (paymentAmount <= 0) {
-                alert('Please enter a valid payment amount');
+                alert(slText.invalidPaymentAmount);
                 return false;
             }
 
@@ -463,7 +470,7 @@ $purchases = $purchases ?? [];
             });
 
             if (purchasePayments.length === 0) {
-                alert('Please select at least one purchase to apply payment');
+                alert(slText.selectAtLeastOnePurchase);
                 return false;
             }
 
@@ -488,14 +495,14 @@ $purchases = $purchases ?? [];
                 },
                 success: function(response) {
                     if (response.success) {
-                        alert(response.message || 'Payment processed successfully!');
+                        alert(response.message || slText.paymentProcessedSuccessfully);
                         window.location.href = '<?= base_url('supplier-ledger/view/' . ($supplier['id'] ?? 0)) ?>';
                     } else {
-                        alert(response.message || 'Failed to process payment');
+                        alert(response.message || slText.failedToProcessPayment);
                     }
                 },
                 error: function() {
-                    alert('An error occurred. Please try again.');
+                    alert(slText.genericErrorTryAgain);
                 }
             });
         });

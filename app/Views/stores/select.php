@@ -1,7 +1,7 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <div class="container mx-auto p-4 max-w-md">
-    <h1 class="text-2xl font-bold mb-6 text-center">Select Store</h1>
+    <h1 class="text-2xl font-bold mb-6 text-center"><?= lang('Stores.select_store') ?></h1>
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="p-6">
@@ -17,7 +17,7 @@
                 </div>
             <?php else: ?>
                 <div class="text-center py-8 text-gray-500">
-                    No stores available for your account
+                    <?= lang('Stores.no_stores_for_account') ?>
                 </div>
             <?php endif; ?>
         </div>

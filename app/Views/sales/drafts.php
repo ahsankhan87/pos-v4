@@ -4,13 +4,13 @@
 <div class="max-w-6xl mx-auto px-4 py-6">
     <div class="flex items-center justify-between mb-4">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Draft Sales</h1>
-            <p class="text-xs text-gray-500">View and complete in-progress sales.</p>
+            <h1 class="text-xl font-bold text-gray-900"><?= lang('Sales.draft_sales') ?></h1>
+            <p class="text-xs text-gray-500"><?= lang('Sales.draft_sales_subtitle') ?></p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="<?= site_url('sales/new') ?>" accesskey="n" title="New Sale (Ctrl+Alt+N)" class="btn btn-muted btn-sm"><i class="fas fa-plus mr-1"></i>New Sale</a>
-            <a href="<?= site_url('sales') ?>" accesskey="l" title="Sales List (Ctrl+Alt+L)" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i>Sales</a>
-            <button type="button" accesskey="r" title="Refresh (Ctrl+Alt+R)" onclick="location.reload()" class="btn btn-primary btn-sm"><i class="fas fa-rotate-right mr-1"></i>Refresh</button>
+            <a href="<?= site_url('sales/new') ?>" accesskey="n" title="<?= esc(lang('Sales.new_sale_shortcut')) ?>" class="btn btn-muted btn-sm"><i class="fas fa-plus mr-1"></i><?= lang('Sales.new_sale') ?></a>
+            <a href="<?= site_url('sales') ?>" accesskey="l" title="<?= esc(lang('Sales.sales_list_shortcut')) ?>" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i><?= lang('Sales.sales_list') ?></a>
+            <button type="button" accesskey="r" title="<?= esc(lang('Sales.refresh_shortcut')) ?>" onclick="location.reload()" class="btn btn-primary btn-sm"><i class="fas fa-rotate-right mr-1"></i><?= lang('Sales.refresh') ?></button>
         </div>
     </div>
 
@@ -18,13 +18,13 @@
     <div class="mb-4 bg-blue-50 border border-blue-200 text-blue-900 px-3 py-2 rounded text-xs flex items-center">
         <i class="fas fa-keyboard mr-2"></i>
         <div>
-            <span class="font-semibold">Shortcuts:</span>
+            <span class="font-semibold"><?= lang('Sales.shortcuts') ?>:</span>
             <span class="ml-1">
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+N</kbd> New Sale
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+N</kbd> <?= lang('Sales.new_sale') ?>
                 <span class="mx-1">·</span>
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+L</kbd> Sales List
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+L</kbd> <?= lang('Sales.sales_list') ?>
                 <span class="mx-1">·</span>
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+R</kbd> Refresh
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+R</kbd> <?= lang('Sales.refresh') ?>
             </span>
         </div>
     </div>
@@ -35,14 +35,14 @@
                 <table id="draftsTable" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice No</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Discount</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tax</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.invoice_no') ?></th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.customer') ?></th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.subtotal') ?></th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.discount') ?></th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.tax') ?></th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.total') ?></th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.created_at') ?></th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.actions') ?></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
@@ -55,7 +55,7 @@
                             $subtotal = isset($draft['subtotal']) ? (float)$draft['subtotal'] : ($total + $discount - $tax);
                             $customerLabel = $draft['customer_name'] ?? ($draft['customer_id'] ?? '');
                             if ($customerLabel === '' || $customerLabel === null || $customerLabel === '0') {
-                                $customerLabel = 'Walk-in';
+                                $customerLabel = lang('Sales.walk_in');
                             }
                             ?>
                             <tr class="hover:bg-gray-50">
@@ -67,9 +67,9 @@
                                 <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-gray-900"><?= esc($currency) ?><?= number_format($total, 2) ?></td>
                                 <td class="px-4 py-3 whitespace-nowrap text-gray-600"><?= esc(date('d M Y h:i A', strtotime($draft['created_at'] ?? date('Y-m-d H:i:s')))) ?></td>
                                 <td class="px-4 py-3 whitespace-nowrap">
-                                    <a href="<?= site_url('sales/resume-draft/' . ($draft['id'] ?? 0)) ?>" class="btn btn-secondary btn-xs"><i class="fas fa-edit mr-1"></i>Resume</a>
-                                    <a href="<?= site_url('sales/complete-draft/' . ($draft['id'] ?? 0)) ?>" class="btn btn-primary btn-xs ml-2"><i class="fas fa-check mr-1"></i>Complete</a>
-                                    <a href="<?= site_url('sales/receipt/' . ($draft['id'] ?? 0)) ?>" class="btn btn-muted btn-xs ml-2"><i class="fas fa-eye mr-1"></i>View</a>
+                                    <a href="<?= site_url('sales/resume-draft/' . ($draft['id'] ?? 0)) ?>" class="btn btn-secondary btn-xs"><i class="fas fa-edit mr-1"></i><?= lang('Sales.resume') ?></a>
+                                    <a href="<?= site_url('sales/complete-draft/' . ($draft['id'] ?? 0)) ?>" class="btn btn-primary btn-xs ml-2"><i class="fas fa-check mr-1"></i><?= lang('Sales.complete') ?></a>
+                                    <a href="<?= site_url('sales/receipt/' . ($draft['id'] ?? 0)) ?>" class="btn btn-muted btn-xs ml-2"><i class="fas fa-eye mr-1"></i><?= lang('Sales.view') ?></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -77,7 +77,7 @@
                 </table>
             </div>
         <?php else: ?>
-            <div class="p-6 text-center text-gray-500">No draft sales found.</div>
+            <div class="p-6 text-center text-gray-500"><?= lang('Sales.no_draft_sales_found') ?></div>
         <?php endif; ?>
     </div>
 </div>
@@ -125,15 +125,15 @@
                 }],
                 language: {
                     search: "_INPUT_",
-                    searchPlaceholder: "Search drafts...",
-                    lengthMenu: "Show _MENU_ entries",
-                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                    infoEmpty: "Showing 0 to 0 of 0 entries",
-                    infoFiltered: "(filtered from _MAX_ total entries)",
-                    zeroRecords: "No matching drafts found",
+                    searchPlaceholder: <?= json_encode(lang('Sales.search_drafts')) ?>,
+                    lengthMenu: <?= json_encode(lang('Sales.show_entries')) ?>,
+                    info: <?= json_encode(lang('Sales.showing_entries')) ?>,
+                    infoEmpty: <?= json_encode(lang('Sales.showing_empty')) ?>,
+                    infoFiltered: <?= json_encode(lang('Sales.filtered_entries')) ?>,
+                    zeroRecords: <?= json_encode(lang('Sales.no_matching_drafts_found')) ?>,
                     paginate: {
-                        first: "First",
-                        last: "Last",
+                        first: <?= json_encode(lang('Sales.first')) ?>,
+                        last: <?= json_encode(lang('Sales.last')) ?>,
                         next: "<i class='fas fa-chevron-right'></i>",
                         previous: "<i class='fas fa-chevron-left'></i>"
                     }

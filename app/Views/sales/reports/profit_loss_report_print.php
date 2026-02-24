@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Profit & Loss Report - Print') ?></title>
+    <title><?= esc($title ?? (lang('Reports.profit_loss_report') . ' - ' . lang('Reports.print'))) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -74,38 +74,38 @@
         }
     }
     ?>
-    <h2>Profit &amp; Loss Report</h2>
-    <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
-    <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <h2><?= lang('Reports.profit_loss_report') ?></h2>
+    <p><?= lang('Reports.employee') ?>: <?= esc($employeeName ?? lang('Reports.employee_all')) ?></p>
+    <p><?= lang('Reports.period') ?>: <?= esc($from) ?> <?= lang('Reports.to') ?> <?= esc($to) ?></p>
 
     <table style="margin-bottom:8px;">
         <tbody>
             <tr>
-                <td>Gross Revenue — Products</td>
+                <td><?= lang('Reports.gross_revenue_products') ?></td>
                 <td class="text-right"><?= esc($currency) . ' ' . money_fmt($grossRevenueProduct ?? 0) ?></td>
             </tr>
             <tr>
-                <td>Gross Revenue — Services</td>
+                <td><?= lang('Reports.gross_revenue_services') ?></td>
                 <td class="text-right"><?= esc($currency) . ' ' . money_fmt($grossRevenueService ?? (($grossRevenue ?? 0) - ($grossRevenueProduct ?? 0))) ?></td>
             </tr>
             <tr>
-                <td>Less: Sales Returns — Products</td>
+                <td><?= lang('Reports.less_sales_returns_products') ?></td>
                 <td class="text-right">(<?= esc($currency) . ' ' . money_fmt($productReturnAmount ?? 0) ?>)</td>
             </tr>
             <tr>
-                <td>Less: Sales Returns — Services</td>
+                <td><?= lang('Reports.less_sales_returns_services') ?></td>
                 <td class="text-right">(<?= esc($currency) . ' ' . money_fmt($serviceReturnAmount ?? (($totalReturns ?? 0) - ($productReturnAmount ?? 0))) ?>)</td>
             </tr>
             <tr>
-                <td><strong>Net Revenue</strong></td>
+                <td><strong><?= lang('Reports.net_revenue') ?></strong></td>
                 <td class="text-right"><strong><?= esc($currency) . ' ' . money_fmt($totalRevenue ?? 0) ?></strong></td>
             </tr>
             <tr>
-                <td>Less: Cost of Goods Sold (Products only)</td>
+                <td><?= lang('Reports.less_cogs_products') ?></td>
                 <td class="text-right">(<?= esc($currency) . ' ' . money_fmt($totalCost ?? 0) ?>)</td>
             </tr>
             <tr>
-                <td><strong>Gross Profit</strong></td>
+                <td><strong><?= lang('Reports.gross_profit') ?></strong></td>
                 <td class="text-right"><strong><?= esc($currency) . ' ' . money_fmt(($totalGrossProfit ?? 0)) ?></strong></td>
             </tr>
         </tbody>
@@ -113,16 +113,16 @@
     <table>
         <thead>
             <tr>
-                <th>Product</th>
-                <th class="text-right">Qty Sold</th>
-                <th class="text-right">Revenue</th>
-                <th class="text-right">Cost</th>
-                <th class="text-right">Gross Profit</th>
-                <th class="text-right">Returns (Qty)</th>
-                <th class="text-right">Returns (Amt)</th>
-                <th class="text-right">Net Revenue</th>
-                <th class="text-right">Net Cost</th>
-                <th class="text-right">Net Gross Profit</th>
+                <th><?= lang('Reports.product') ?></th>
+                <th class="text-right"><?= lang('Reports.qty_sold') ?></th>
+                <th class="text-right"><?= lang('Reports.revenue') ?></th>
+                <th class="text-right"><?= lang('Reports.cost') ?></th>
+                <th class="text-right"><?= lang('Reports.gross_profit') ?></th>
+                <th class="text-right"><?= lang('Reports.returns_qty') ?></th>
+                <th class="text-right"><?= lang('Reports.returns_amt') ?></th>
+                <th class="text-right"><?= lang('Reports.net_revenue') ?></th>
+                <th class="text-right"><?= lang('Reports.net_cost') ?></th>
+                <th class="text-right"><?= lang('Reports.net_gross_profit') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -143,7 +143,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <th>Totals</th>
+                <th><?= lang('Reports.totals') ?></th>
                 <th></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalRevenue ?? 0) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalCost ?? 0) ?></th>
@@ -158,16 +158,16 @@
     </table>
     <div style="margin-top:10px;">
         <p>
-            <strong>Sales Count:</strong> <?= (int)($salesCount ?? 0) ?>,
-            <strong>Total Discounts:</strong> <?= esc($currency) . ' ' . money_fmt($totalDiscounts ?? 0) ?>,
-            <strong>Total Expenses:</strong> <?= esc($currency) . ' ' . money_fmt($totalExpenses ?? 0) ?>,
-            <strong>Total Taxes:</strong> <?= esc($currency) . ' ' . money_fmt($totalTaxes ?? 0) ?>,
-            <strong>Profit Margin:</strong> <?= number_format((float)($profitMargin ?? 0), 2) ?>%
+            <strong><?= lang('Reports.sales_count_label') ?>:</strong> <?= (int)($salesCount ?? 0) ?>,
+            <strong><?= lang('Reports.total_discounts') ?>:</strong> <?= esc($currency) . ' ' . money_fmt($totalDiscounts ?? 0) ?>,
+            <strong><?= lang('Reports.total_expenses') ?>:</strong> <?= esc($currency) . ' ' . money_fmt($totalExpenses ?? 0) ?>,
+            <strong><?= lang('Reports.total_taxes') ?>:</strong> <?= esc($currency) . ' ' . money_fmt($totalTaxes ?? 0) ?>,
+            <strong><?= lang('Reports.profit_margin') ?>:</strong> <?= number_format((float)($profitMargin ?? 0), 2) ?>%
         </p>
     </div>
     <div class="no-print">
-        <button onclick="window.print()">Print</button>
-        <button onclick="window.close()">Close</button>
+        <button onclick="window.print()"><?= lang('Reports.print') ?></button>
+        <button onclick="window.close()"><?= lang('Reports.close') ?></button>
     </div>
 </body>
 

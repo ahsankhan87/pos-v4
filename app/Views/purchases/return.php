@@ -1,16 +1,16 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg mt-8 p-8">
-    <h2 class="text-2xl font-bold mb-6 text-blue-700">Purchase Return for Invoice #<?= esc($purchase['invoice_no']) ?></h2>
+    <h2 class="text-2xl font-bold mb-6 text-blue-700"><?= lang('Purchases.purchase_return_for_invoice') ?> #<?= esc($purchase['invoice_no']) ?></h2>
     <form method="post" action="<?= site_url('purchases/processReturn/' . $purchase['id']) ?>">
         <?= csrf_field() ?>
         <table class="min-w-full mb-4">
             <thead>
                 <tr>
-                    <th>Product</th>
-                    <th>Bought Qty</th>
-                    <th>Returned</th>
-                    <th>Return Qty</th>
+                    <th><?= lang('Purchases.product') ?></th>
+                    <th><?= lang('Purchases.bought_qty') ?></th>
+                    <th><?= lang('Purchases.returned') ?></th>
+                    <th><?= lang('Purchases.return_qty') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -32,11 +32,11 @@
             </tbody>
         </table>
         <div class="mb-4">
-            <label class="block font-semibold mb-1">Reason for Return</label>
+            <label class="block font-semibold mb-1"><?= lang('Purchases.reason_for_return') ?></label>
             <input type="text" name="reason" class="w-full border rounded px-3 py-2">
         </div>
         <div class="flex justify-end">
-            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-bold">Process Return</button>
+            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-bold"><?= lang('Purchases.process_return') ?></button>
         </div>
     </form>
 </div>

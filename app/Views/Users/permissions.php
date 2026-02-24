@@ -4,20 +4,20 @@
 <?php
 // Group permissions by module prefix (before the first dot), e.g., 'sales.view' => 'sales'
 $groupLabels = [
-    'sales' => 'Sales',
-    'customers' => 'Customers',
-    'products' => 'Products',
-    'purchases' => 'Purchases',
-    'categories' => 'Categories',
-    'suppliers' => 'Suppliers',
-    'employees' => 'Employees',
-    'inventory' => 'Inventory',
-    'stores' => 'Stores',
-    'settings' => 'Settings',
-    'users' => 'Users',
-    'analytics' => 'Analytics',
-    'receipts' => 'Receipts',
-    'manage_users' => 'Role & Permission Management',
+    'sales' => lang('Users.sales'),
+    'customers' => lang('Users.customers'),
+    'products' => lang('Users.products'),
+    'purchases' => lang('Users.purchases'),
+    'categories' => lang('Users.categories'),
+    'suppliers' => lang('Users.suppliers'),
+    'employees' => lang('Users.employees'),
+    'inventory' => lang('Users.inventory'),
+    'stores' => lang('Users.stores'),
+    'settings' => lang('Users.settings'),
+    'users' => lang('Users.users'),
+    'analytics' => lang('Users.analytics'),
+    'receipts' => lang('Users.receipts'),
+    'manage_users' => lang('Users.role_permission_management'),
 ];
 $grouped = [];
 foreach ($allPermissions as $permId => $permName) {
@@ -37,18 +37,18 @@ ksort($grouped);
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h2 class="text-2xl font-bold text-gray-900">Role Permissions</h2>
-            <p class="text-sm text-gray-500">Assign fine-grained access by role. Use Select All to quickly apply changes.</p>
+            <h2 class="text-2xl font-bold text-gray-900"><?= lang('Users.role_permissions') ?></h2>
+            <p class="text-sm text-gray-500"><?= lang('Users.assign_permissions_subtitle') ?></p>
         </div>
         <a href="<?= site_url('users') ?>" class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50">
-            <i class="fas fa-arrow-left mr-2"></i> Back to Users
+            <i class="fas fa-arrow-left mr-2"></i> <?= lang('Users.back_to_users') ?>
         </a>
     </div>
 
     <div class="bg-white rounded-xl shadow">
         <div class="p-4 border-b border-gray-200 flex items-center justify-between">
             <div class="relative w-full max-w-md">
-                <input id="permSearch" type="text" class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 pl-10" placeholder="Search permissions or modules..." />
+                <input id="permSearch" type="text" class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 pl-10" placeholder="<?= esc(lang('Users.search_permissions')) ?>" />
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <i class="fas fa-search"></i>
                 </span>
@@ -67,12 +67,12 @@ ksort($grouped);
                             </span>
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900"><?= esc($role['name']) ?></h3>
-                                <p class="text-xs text-gray-500">Check the permissions this role should have.</p>
+                                <p class="text-xs text-gray-500"><?= lang('Users.role_permissions_help') ?></p>
                             </div>
                         </div>
                         <label class="inline-flex items-center space-x-2 text-sm cursor-pointer">
                             <input type="checkbox" class="role-toggle rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-role-id="<?= $role['id'] ?>" />
-                            <span class="text-gray-700">Select all for this role</span>
+                            <span class="text-gray-700"><?= lang('Users.select_all_role') ?></span>
                         </label>
                     </div>
 
@@ -86,7 +86,7 @@ ksort($grouped);
                                         </div>
                                         <label class="inline-flex items-center space-x-2 text-xs cursor-pointer">
                                             <input type="checkbox" class="module-toggle rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-role-id="<?= $role['id'] ?>" data-group="<?= esc($groupKey) ?>" />
-                                            <span class="text-gray-600">Select all</span>
+                                            <span class="text-gray-600"><?= lang('Users.select_all') ?></span>
                                         </label>
                                     </div>
                                     <div class="p-3 space-y-2">
@@ -114,10 +114,10 @@ ksort($grouped);
 
             <div class="px-6 py-4 bg-gray-50 flex items-center justify-end space-x-3">
                 <a href="<?= site_url('users') ?>" class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50">
-                    Cancel
+                    <?= lang('Users.cancel') ?>
                 </a>
                 <button type="submit" class="inline-flex items-center px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700">
-                    <i class="fas fa-save mr-2"></i> Save Permissions
+                    <i class="fas fa-save mr-2"></i> <?= lang('Users.save_permissions') ?>
                 </button>
             </div>
         </form>

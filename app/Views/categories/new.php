@@ -4,8 +4,8 @@
 <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Page Header -->
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Add New Category</h1>
-        <p class="mt-1 text-sm text-gray-500">Enter the details for the new product category.</p>
+        <h1 class="text-2xl font-bold text-gray-900"><?= lang('Categories.addNewCategory') ?></h1>
+        <p class="mt-1 text-sm text-gray-500"><?= lang('Categories.addSubtitle') ?></p>
     </div>
 
     <!-- Flash Messages -->
@@ -48,22 +48,22 @@
     <form action="<?= site_url('categories/create') ?>" method="POST">
         <?= csrf_field() ?>
         <div class="mb-4">
-            <label for="name" class="block text-sm font-medium text-gray-700">Category Name</label>
+            <label for="name" class="block text-sm font-medium text-gray-700"><?= lang('Categories.categoryName') ?></label>
             <input type="text" name="name" id="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= old('name') ?>">
             <?php if (session('validation.name')): ?>
                 <p class="mt-2 text-sm text-red-600"><?= session('validation.name') ?></p>
             <?php endif; ?>
         </div>
         <div class="mb-4">
-            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <label for="description" class="block text-sm font-medium text-gray-700"><?= lang('Categories.description') ?></label>
             <textarea name="description" id="description" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><?= old('description') ?></textarea>
             <?php if (session('validation.description')): ?>
                 <p class="mt-2 text-sm text-red-600"><?= session('validation.description') ?></p>
             <?php endif; ?>
         </div>
         <div class="flex justify-end">
-            <a href="<?= site_url('categories') ?>" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2">Cancel</a>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Category</button>
+            <a href="<?= site_url('categories') ?>" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2"><?= lang('Categories.cancel') ?></a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><?= lang('Categories.addCategory') ?></button>
         </div>
     </form>
 </div>

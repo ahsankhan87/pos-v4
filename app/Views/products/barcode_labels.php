@@ -4,12 +4,12 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Print Barcode Labels</h1>
-            <p class="mt-1 text-sm text-gray-500">Adjust the number of copies for each product, then print the labels directly.</p>
+            <h1 class="text-2xl font-bold text-gray-900"><?= lang('Products.print_barcode_labels_page_title') ?></h1>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Products.print_barcode_labels_page_subtitle') ?></p>
         </div>
         <div class="flex gap-3 no-print">
             <button type="button" id="resetCopies" class="btn btn-secondary btn-sm">
-                <span>Reset Copies</span>
+                <span><?= lang('Products.reset_copies') ?></span>
             </button>
             <!-- <button type="button" id="printLabels" class="btn btn-primary">
                 <i class="fas fa-print"></i>
@@ -17,14 +17,14 @@
             </button> -->
             <button type="button" id="openExactPrint" class="btn btn-primary btn-sm">
                 <i class="fas fa-external-link-alt"></i>
-                <span>Exact 60×25 Print</span>
+                <span><?= lang('Products.exact_60x25_print') ?></span>
             </button>
             <label class="flex items-center gap-2 text-sm text-slate-600">
                 <input type="checkbox" id="showPriceExact" class="border-slate-300" checked>
-                Show price on exact print
+                <?= lang('Products.show_price_on_exact_print') ?>
             </label>
             <label class="flex items-center gap-2 text-sm text-slate-600">
-                <span>Pad (mm)</span>
+                <span><?= lang('Products.pad_mm') ?></span>
                 <input type="number" id="padExact" class="w-20 rounded border border-slate-300 px-2 py-1 text-sm" min="0" max="5" step="0.1" value="0">
             </label>
         </div>
@@ -32,8 +32,8 @@
 
     <div class="table-card mt-6 no-print">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Label Copies</h2>
-            <span class="text-sm text-gray-500">Total labels: <span id="totalLabels">0</span></span>
+            <h2 class="text-lg font-semibold text-gray-900"><?= lang('Products.label_copies') ?></h2>
+            <span class="text-sm text-gray-500"><?= lang('Products.total_labels') ?>: <span id="totalLabels">0</span></span>
         </div>
         <div class="p-6 space-y-6">
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -43,10 +43,10 @@
                         <?php if (!empty($product['code'])): ?>
                             <div class="text-xs text-slate-500 mt-1"><?= esc($product['code']) ?></div>
                         <?php else: ?>
-                            <div class="text-xs text-slate-400 mt-1">No code</div>
+                            <div class="text-xs text-slate-400 mt-1"><?= lang('Products.no_code') ?></div>
                         <?php endif; ?>
                         <label class="mt-4 block text-xs font-medium text-slate-500 uppercase tracking-wide" for="copies-<?= (int) $product['id'] ?>">
-                            Copies
+                            <?= lang('Products.copies') ?>
                         </label>
                         <input
                             type="number"
@@ -61,10 +61,10 @@
             </div>
 
             <div class="pt-6 mt-4 border-t border-gray-100">
-                <h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Label sizing</h3>
+                <h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wide"><?= lang('Products.label_sizing') ?></h3>
                 <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <label class="flex flex-col">
-                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Width (mm)</span>
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide"><?= lang('Products.width_mm') ?></span>
                         <input
                             type="number"
                             id="labelWidth"
@@ -75,7 +75,7 @@
                             value="60">
                     </label>
                     <label class="flex flex-col">
-                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Height (mm)</span>
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide"><?= lang('Products.height_mm') ?></span>
                         <input
                             type="number"
                             id="labelHeight"
@@ -86,7 +86,7 @@
                             value="25">
                     </label>
                     <label class="flex flex-col">
-                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Gap (mm)</span>
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide"><?= lang('Products.gap_mm') ?></span>
                         <input
                             type="number"
                             id="labelGap"
@@ -97,7 +97,7 @@
                             value="2">
                     </label>
                     <label class="flex flex-col">
-                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Padding (mm)</span>
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide"><?= lang('Products.padding_mm') ?></span>
                         <input
                             type="number"
                             id="labelPadding"
@@ -108,7 +108,7 @@
                             value="2">
                     </label>
                     <label class="flex flex-col">
-                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Barcode height (mm)</span>
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide"><?= lang('Products.barcode_height_mm') ?></span>
                         <input
                             type="number"
                             id="barcodeHeight"
@@ -120,9 +120,9 @@
                     </label>
                 </div>
                 <div class="mt-4 flex flex-wrap items-center gap-3">
-                    <button type="button" id="resetLabelSize" class="btn btn-secondary btn-sm">Reset sizing</button>
-                    <button type="button" id="lp1300Preset" class="btn btn-primary btn-sm">LP-1300 60×25 Preset</button>
-                    <span class="text-xs text-slate-500">For Black Copper LP-1300: Paper 60×25 mm, Margins None, Scale 100%.</span>
+                    <button type="button" id="resetLabelSize" class="btn btn-secondary btn-sm"><?= lang('Products.reset_sizing') ?></button>
+                    <button type="button" id="lp1300Preset" class="btn btn-primary btn-sm"><?= lang('Products.lp1300_preset') ?></button>
+                    <span class="text-xs text-slate-500"><?= lang('Products.lp1300_hint') ?></span>
                 </div>
             </div>
         </div>
@@ -249,6 +249,11 @@
 <script>
     (() => {
         const currencySymbol = <?= json_encode($currencySymbol ?? '') ?>;
+        const productTexts = {
+            barcodeFor: <?= json_encode(lang('Products.barcode_for')) ?>,
+            noLabelsToDisplay: <?= json_encode(lang('Products.no_labels_to_display')) ?>,
+            noLabelsSelected: <?= json_encode(lang('Products.no_labels_selected')) ?>,
+        };
 
         const productsData = <?= json_encode(array_map(static function ($product) {
                                     $price = $product['price'] ?? null;
@@ -364,7 +369,7 @@
 
             const imgEl = document.createElement('img');
             imgEl.src = product.image;
-            imgEl.alt = 'Barcode for ' + product.name;
+            imgEl.alt = productTexts.barcodeFor + ' ' + product.name;
             card.appendChild(imgEl);
 
             if (product.barcode) {
@@ -412,7 +417,7 @@
             if (total === 0) {
                 const emptyState = document.createElement('div');
                 emptyState.className = 'text-sm text-slate-400 text-center';
-                emptyState.textContent = 'No labels to display. Increase the copy count to add labels.';
+                emptyState.textContent = productTexts.noLabelsToDisplay;
                 emptyState.style.gridColumn = '1 / -1';
                 labelsGrid.appendChild(emptyState);
             }
@@ -497,7 +502,7 @@
             exactPrintBtn.addEventListener('click', () => {
                 const q = buildLabelsQuery();
                 if (!q) {
-                    alert('No labels selected.');
+                    alert(productTexts.noLabelsSelected);
                     return;
                 }
                 const showPriceCheckbox = document.getElementById('showPriceExact');

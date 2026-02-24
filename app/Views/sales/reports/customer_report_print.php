@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Customer-wise Sales Report - Print') ?></title>
+    <title><?= esc($title ?? (lang('Reports.customer_wise_sales_report') . ' - ' . lang('Reports.print'))) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -84,20 +84,20 @@
         }
     }
     ?>
-    <h2>Customer-wise Sales Report</h2>
-    <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
-    <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <h2><?= lang('Reports.customer_wise_sales_report') ?></h2>
+    <p><?= lang('Reports.employee') ?>: <?= esc($employeeName ?? lang('Reports.employee_all')) ?></p>
+    <p><?= lang('Reports.period') ?>: <?= esc($from) ?> <?= lang('Reports.to') ?> <?= esc($to) ?></p>
     <?php if ($q !== ''): ?>
-        <p>Search: <?= esc($q) ?></p>
+        <p><?= lang('Reports.search') ?>: <?= esc($q) ?></p>
     <?php endif; ?>
 
     <table>
         <thead>
             <tr>
-                <th>Customer</th>
-                <th class="text-right">Sales Count</th>
-                <th class="text-right">Total Sales</th>
-                <th class="text-right">Total Discount</th>
+                <th><?= lang('Reports.customer') ?></th>
+                <th class="text-right"><?= lang('Reports.sales_count_col') ?></th>
+                <th class="text-right"><?= lang('Reports.total_sales') ?></th>
+                <th class="text-right"><?= lang('Reports.total_discount') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -112,13 +112,13 @@
 
             <?php if (empty($salesFiltered)): ?>
                 <tr>
-                    <td colspan="4" style="text-align:center; padding: 10px; color: #666;">No matching customers.</td>
+                    <td colspan="4" style="text-align:center; padding: 10px; color: #666;"><?= lang('Reports.no_matching_customers') ?></td>
                 </tr>
             <?php endif; ?>
         </tbody>
         <tfoot>
             <tr>
-                <th>Totals</th>
+                <th><?= lang('Reports.totals') ?></th>
                 <th class="text-right"><?= number_format($saleCount) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></th>
@@ -127,8 +127,8 @@
     </table>
 
     <div class="no-print">
-        <button onclick="window.print()">Print</button>
-        <button onclick="window.close()">Close</button>
+        <button onclick="window.print()"><?= lang('Reports.print') ?></button>
+        <button onclick="window.close()"><?= lang('Reports.close') ?></button>
     </div>
 </body>
 

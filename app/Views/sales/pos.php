@@ -1,13 +1,13 @@
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Point of Sale</h1>
+    <h1 class="text-2xl font-bold mb-6"><?= lang('Sales.pos_title') ?></h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Product Selection -->
         <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold">Products</h2>
+                <h2 class="text-lg font-semibold"><?= lang('Sales.products') ?></h2>
                 <div class="relative">
-                    <input type="text" id="productSearch" placeholder="Search products..."
+                    <input type="text" id="productSearch" placeholder="<?= esc(lang('Sales.search_products')) ?>"
                         class="pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <svg class="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -24,7 +24,7 @@
                         <div class="font-medium truncate"><?= $product['name'] ?></div>
                         <div class="text-sm text-gray-500"><?= $product['code'] ?></div>
                         <div class="mt-2 font-bold">$<?= number_format($product['price'], 2) ?></div>
-                        <div class="text-xs text-gray-500 mt-1">Stock: <?= $product['quantity'] ?></div>
+                        <div class="text-xs text-gray-500 mt-1"><?= lang('Sales.stock_label') ?>: <?= $product['quantity'] ?></div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -32,13 +32,13 @@
 
         <!-- Cart Summary -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Current Sale</h2>
+            <h2 class="text-lg font-semibold mb-4"><?= lang('Sales.current_sale') ?></h2>
 
             <!-- Customer Selection -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= lang('Sales.customer') ?></label>
                 <select id="customerSelect" class="w-full border rounded p-2">
-                    <option value="">Walk-in Customer</option>
+                    <option value=""><?= lang('Sales.walk_in_customer') ?></option>
                     <?php foreach ($customers as $customer): ?>
                         <option value="<?= $customer['id'] ?>">
                             <?= $customer['name'] ?> (<?= $customer['phone'] ?>)
@@ -52,9 +52,9 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.item') ?></th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.qty') ?></th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><?= lang('Sales.total') ?></th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"></th>
                         </tr>
                     </thead>
@@ -87,9 +87,9 @@
 
             <!-- Discounts -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Discount</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= lang('Sales.discount') ?></label>
                 <select id="discountSelect" class="w-full border rounded p-2">
-                    <option value="">No Discount</option>
+                    <option value=""><?= lang('Sales.no_discount') ?></option>
                     <?php foreach ($discounts as $discount): ?>
                         <option value="<?= $discount['id'] ?>"
                             data-type="<?= $discount['type'] ?>"
@@ -103,15 +103,15 @@
             <!-- Totals -->
             <div class="space-y-2 mb-4">
                 <div class="flex justify-between">
-                    <span>Subtotal:</span>
+                    <span><?= lang('Sales.subtotal') ?>:</span>
                     <span id="subtotal">$0.00</span>
                 </div>
                 <div class="flex justify-between">
-                    <span>Discount:</span>
+                    <span><?= lang('Sales.discount') ?>:</span>
                     <span id="discountAmount">$0.00</span>
                 </div>
                 <div class="flex justify-between border-t pt-2 font-bold">
-                    <span>Total:</span>
+                    <span><?= lang('Sales.total') ?>:</span>
                     <span id="totalAmount">$0.00</span>
                 </div>
             </div>
@@ -119,10 +119,10 @@
             <!-- Payment Buttons -->
             <div class="grid grid-cols-2 gap-2">
                 <button id="holdCart" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                    Hold
+                    <?= lang('Sales.hold') ?>
                 </button>
                 <button id="completeSale" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Complete Sale
+                    <?= lang('Sales.complete_sale') ?>
                 </button>
             </div>
         </div>
@@ -130,6 +130,12 @@
 </div>
 
 <script>
+    const salesPosI18n = {
+        preselectCustomerFailed: <?= json_encode(lang('Sales.preselect_customer_failed')) ?>,
+        errorAddingToCart: <?= json_encode(lang('Sales.error_adding_to_cart')) ?>,
+        errorCompletingSale: <?= json_encode(lang('Sales.error_completing_sale')) ?>,
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         // Preselect customer from query string if provided
         try {
@@ -142,7 +148,7 @@
                 }
             }
         } catch (e) {
-            console.warn('Preselect customer failed:', e);
+            console.warn(salesPosI18n.preselectCustomerFailed + ':', e);
         }
 
         // Product search functionality
@@ -217,7 +223,7 @@
                 if (data.success) {
                     updateCartDisplay(data.cart);
                 } else {
-                    alert(data.message || 'Error adding to cart');
+                    alert(data.message || salesPosI18n.errorAddingToCart);
                 }
             })
             .catch(error => {
@@ -344,7 +350,7 @@
                 if (data.success) {
                     window.location.href = '<?= base_url('sales/receipt1') ?>/' + data.sale_id;
                 } else {
-                    alert(data.message || 'Error completing sale');
+                    alert(data.message || salesPosI18n.errorCompletingSale);
                 }
             });
     }

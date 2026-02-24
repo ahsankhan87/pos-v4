@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Category-wise Expense Report</title>
+    <title><?= esc(lang('Reports.category_wise_expense_report')) ?></title>
     <style>
         :root {
             --border: #d7dbe0;
@@ -220,30 +220,30 @@
     <div class="page">
         <div class="header">
             <div>
-                <h2>Category-wise Expense Report</h2>
-                <div class="sub">Period: <span class="nowrap"><?= htmlspecialchars($from) ?></span> to <span class="nowrap"><?= htmlspecialchars($to) ?></span></div>
-                <div class="sub">Categories: <?= (int)$categoryCount ?></div>
+                <h2><?= lang('Reports.category_wise_expense_report') ?></h2>
+                <div class="sub"><?= lang('Reports.period') ?>: <span class="nowrap"><?= htmlspecialchars($from) ?></span> <?= lang('Reports.to') ?> <span class="nowrap"><?= htmlspecialchars($to) ?></span></div>
+                <div class="sub"><?= lang('Reports.categories') ?>: <?= (int)$categoryCount ?></div>
             </div>
             <div class="sub" style="text-align:right;">
-                Report Date: <span class="nowrap"><?= date('Y-m-d H:i:s') ?></span>
+                <?= lang('Reports.report_date') ?>: <span class="nowrap"><?= date('Y-m-d H:i:s') ?></span>
             </div>
         </div>
 
         <div class="summary">
             <div class="card">
-                <div class="label">Total Expenses</div>
+                <div class="label"><?= lang('Reports.total_expenses') ?></div>
                 <div class="value"><?= (int)($grandCount ?? 0) ?></div>
             </div>
             <div class="card">
-                <div class="label">Total Amount</div>
+                <div class="label"><?= lang('Reports.total_amount') ?></div>
                 <div class="value"><?= htmlspecialchars($currency) ?> <?= money_fmt($grandAmount ?? 0) ?></div>
             </div>
             <div class="card">
-                <div class="label">Total Tax</div>
+                <div class="label"><?= lang('Reports.total_taxes') ?></div>
                 <div class="value"><?= htmlspecialchars($currency) ?> <?= money_fmt($grandTax ?? 0) ?></div>
             </div>
             <div class="card">
-                <div class="label">Grand Total</div>
+                <div class="label"><?= lang('Reports.grand_total') ?></div>
                 <div class="value"><?= htmlspecialchars($currency) ?> <?= money_fmt((float)($grandAmount ?? 0) + (float)($grandTax ?? 0)) ?></div>
             </div>
         </div>
@@ -252,17 +252,17 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Category</th>
-                        <th class="num" style="width: 120px;">Expense Count</th>
-                        <th class="num" style="width: 120px;">Amount</th>
-                        <th class="num" style="width: 110px;">Tax</th>
-                        <th class="num" style="width: 130px;">Total</th>
+                        <th><?= lang('Reports.category') ?></th>
+                        <th class="num" style="width: 120px;"><?= lang('Reports.expense_count') ?></th>
+                        <th class="num" style="width: 120px;"><?= lang('Reports.amount') ?></th>
+                        <th class="num" style="width: 110px;"><?= lang('Reports.tax') ?></th>
+                        <th class="num" style="width: 130px;"><?= lang('Reports.total') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($rows)): ?>
                         <tr>
-                            <td colspan="5" style="text-align:center;color:#6b7280;padding:14px;">No expenses found for the selected period.</td>
+                            <td colspan="5" style="text-align:center;color:#6b7280;padding:14px;"><?= lang('Reports.no_expenses_period') ?></td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($rows as $r): ?>
@@ -272,7 +272,7 @@
                             $total = $amt + $tax;
                             ?>
                             <tr>
-                                <td><?= htmlspecialchars($r['category_name'] ?? 'Uncategorized') ?></td>
+                                <td><?= htmlspecialchars($r['category_name'] ?? lang('Reports.uncategorized')) ?></td>
                                 <td class="num"><?= (int)($r['expense_count'] ?? 0) ?></td>
                                 <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($amt) ?></td>
                                 <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($tax) ?></td>
@@ -284,7 +284,7 @@
                 <?php if (!empty($rows)): ?>
                     <tfoot>
                         <tr>
-                            <td class="num">TOTALS</td>
+                            <td class="num"><?= strtoupper(lang('Reports.totals')) ?></td>
                             <td class="num"><?= (int)($grandCount ?? 0) ?></td>
                             <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($grandAmount ?? 0) ?></td>
                             <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($grandTax ?? 0) ?></td>
@@ -296,8 +296,8 @@
         </div>
 
         <div class="actions no-print">
-            <button class="btn" onclick="window.print()">Print</button>
-            <button class="btn secondary" onclick="window.history.go(-1)">Back</button>
+            <button class="btn" onclick="window.print()"><?= lang('Reports.print') ?></button>
+            <button class="btn secondary" onclick="window.history.go(-1)"><?= lang('Reports.back') ?></button>
         </div>
     </div>
 </body>

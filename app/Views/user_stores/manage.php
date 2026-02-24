@@ -1,14 +1,14 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Manage Stores for <?= $user['username'] ?></h1>
+    <h1 class="text-2xl font-bold mb-6"><?= lang('UserStores.manage_stores_for', ['username' => $user['username']]) ?></h1>
 
     <form action="<?= base_url("user-stores/update/{$user['id']}") ?>" method="post">
         <?= csrf_field() ?>
         <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
 
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Select Stores:</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('UserStores.select_stores') ?></label>
         </div>
 
         <?php if (session()->getFlashdata('error')): ?>
@@ -19,7 +19,7 @@
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="p-6">
                 <?php if (empty($stores)): ?>
-                    <p class="text-gray-500">No stores available</p>
+                    <p class="text-gray-500"><?= lang('UserStores.no_stores_available') ?></p>
                 <?php else: ?>
                     <div class="space-y-3">
                         <?php foreach ($stores as $store): ?>
@@ -38,10 +38,10 @@
             </div>
             <div class="px-6 py-4 bg-gray-50 flex justify-end">
                 <a href="<?= base_url('users') ?>" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 mr-3">
-                    Cancel
+                    <?= lang('UserStores.cancel') ?>
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    Save Changes
+                    <?= lang('UserStores.save_changes') ?>
                 </button>
             </div>
         </div>

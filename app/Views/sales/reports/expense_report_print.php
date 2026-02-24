@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Report</title>
+    <title><?= esc(lang('Reports.expense_report')) ?></title>
 
     <style>
         :root {
@@ -224,7 +224,7 @@
     </style>
 </head>
 
-<body onload="window.print()">
+<body onload="window.print()" dir="<?= esc(locale_direction()) ?>">
     <?php
     $currency = session()->get('currency_symbol') ?? '$';
     $from = isset($from) ? $from : date('Y-m-01');
@@ -239,29 +239,29 @@
     <div class="page print-container">
         <div class="header">
             <div>
-                <h2>Expense Report</h2>
-                <div class="sub">Period: <span class="nowrap"><?= htmlspecialchars($from) ?></span> to <span class="nowrap"><?= htmlspecialchars($to) ?></span></div>
+                <h2><?= lang('Reports.expense_report') ?></h2>
+                <div class="sub"><?= lang('Reports.period') ?>: <span class="nowrap"><?= htmlspecialchars($from) ?></span> <?= lang('Reports.to') ?> <span class="nowrap"><?= htmlspecialchars($to) ?></span></div>
             </div>
             <div class="sub" style="text-align:right;">
-                Report Date: <span class="nowrap"><?= date('Y-m-d H:i:s') ?></span>
+                <?= lang('Reports.report_date') ?>: <span class="nowrap"><?= date('Y-m-d H:i:s') ?></span>
             </div>
         </div>
 
         <div class="summary">
             <div class="card">
-                <div class="label">Total Expenses</div>
+                <div class="label"><?= lang('Reports.total_expenses') ?></div>
                 <div class="value"><?= htmlspecialchars((string)$totalExpenses) ?></div>
             </div>
             <div class="card">
-                <div class="label">Total Amount</div>
+                <div class="label"><?= lang('Reports.total_amount') ?></div>
                 <div class="value"><?= htmlspecialchars($currency) ?> <?= money_fmt($totalAmount ?? 0) ?></div>
             </div>
             <div class="card">
-                <div class="label">Total Tax</div>
+                <div class="label"><?= lang('Reports.total_taxes') ?></div>
                 <div class="value"><?= htmlspecialchars($currency) ?> <?= money_fmt($totalTax ?? 0) ?></div>
             </div>
             <div class="card">
-                <div class="label">Grand Total</div>
+                <div class="label"><?= lang('Reports.grand_total') ?></div>
                 <div class="value"><?= htmlspecialchars($currency) ?> <?= money_fmt(((float)($totalAmount ?? 0)) + ((float)($totalTax ?? 0))) ?></div>
             </div>
         </div>
@@ -270,27 +270,27 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 90px;">Date</th>
-                        <th style="width: 120px;">Category</th>
-                        <th style="width: 120px;">Vendor</th>
-                        <th>Description</th>
-                        <th class="num" style="width: 90px;">Amount</th>
-                        <th class="num" style="width: 80px;">Tax</th>
-                        <th class="num" style="width: 95px;">Total</th>
-                        <th style="width: 160px;">Notes</th>
+                        <th style="width: 90px;"><?= lang('Reports.date') ?></th>
+                        <th style="width: 120px;"><?= lang('Reports.category') ?></th>
+                        <th style="width: 120px;"><?= lang('Reports.vendor') ?></th>
+                        <th><?= lang('Reports.description') ?></th>
+                        <th class="num" style="width: 90px;"><?= lang('Reports.amount') ?></th>
+                        <th class="num" style="width: 80px;"><?= lang('Reports.tax') ?></th>
+                        <th class="num" style="width: 95px;"><?= lang('Reports.total') ?></th>
+                        <th style="width: 160px;"><?= lang('Reports.notes') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($expenses)): ?>
                         <tr>
-                            <td colspan="8" style="text-align:center;color:#6b7280;padding:14px;">No expenses found for the selected period.</td>
+                            <td colspan="8" style="text-align:center;color:#6b7280;padding:14px;"><?= lang('Reports.no_expenses_period') ?></td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($expenses as $expense): ?>
                             <?php $total = ((float)($expense['amount'] ?? 0)) + ((float)($expense['tax'] ?? 0)); ?>
                             <tr>
                                 <td class="nowrap"><?= htmlspecialchars($expense['date'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($expense['category_name'] ?? 'Uncategorized') ?></td>
+                                <td><?= htmlspecialchars($expense['category_name'] ?? lang('Reports.uncategorized')) ?></td>
                                 <td><?= htmlspecialchars($expense['vendor'] ?? '') ?></td>
                                 <td><?= htmlspecialchars($expense['description'] ?? '') ?></td>
                                 <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($expense['amount'] ?? 0) ?></td>
@@ -304,7 +304,7 @@
                 <?php if (!empty($expenses)): ?>
                     <tfoot>
                         <tr>
-                            <td colspan="4" class="num">TOTALS</td>
+                            <td colspan="4" class="num"><?= strtoupper(lang('Reports.totals')) ?></td>
                             <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($totalAmount ?? 0) ?></td>
                             <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt($totalTax ?? 0) ?></td>
                             <td class="num"><?= htmlspecialchars($currency) ?> <?= money_fmt(((float)($totalAmount ?? 0)) + ((float)($totalTax ?? 0))) ?></td>
@@ -316,8 +316,8 @@
         </div>
 
         <div class="actions no-print">
-            <button class="btn" onclick="window.print()">Print</button>
-            <button class="btn secondary" onclick="window.history.go(-1)">Back</button>
+            <button class="btn" onclick="window.print()"><?= lang('Reports.print') ?></button>
+            <button class="btn secondary" onclick="window.history.go(-1)"><?= lang('Reports.back') ?></button>
         </div>
     </div>
 </body>

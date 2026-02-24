@@ -7,76 +7,76 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 ?>
 <div class="max-w-full mx-auto px-4 py-4">
     <div class="flex items-center justify-between mb-4">
-        <h1 class="text-xl font-bold">Purchases Reports</h1>
+        <h1 class="text-xl font-bold"><?= esc(lang('Reports.purchases_reports_title')) ?></h1>
         <form id="filterForm" class="flex gap-2 items-end">
             <div>
-                <label class="text-xs text-gray-600">Start</label>
+                <label class="text-xs text-gray-600"><?= esc(lang('Reports.start')) ?></label>
                 <input type="date" name="start_date" value="<?= $start ?>" class="border rounded px-2 py-1" />
             </div>
             <div>
-                <label class="text-xs text-gray-600">End</label>
+                <label class="text-xs text-gray-600"><?= esc(lang('Reports.end')) ?></label>
                 <input type="date" name="end_date" value="<?= $end ?>" class="border rounded px-2 py-1" />
             </div>
-            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded">Apply</button>
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded"><?= esc(lang('Reports.apply')) ?></button>
         </form>
     </div>
 
     <div id="kpiCards" class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Total Spend</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.total_spend')) ?></div>
             <div id="kpiSpend" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Transactions</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.transactions_count')) ?></div>
             <div id="kpiTx" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Avg Bill</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.avg_bill')) ?></div>
             <div id="kpiAvg" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Discount / Tax</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.discount_tax')) ?></div>
             <div class="text-sm"><span id="kpiDisc">-</span> / <span id="kpiTax">-</span></div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Paid / Due</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.paid_due')) ?></div>
             <div class="text-sm"><span id="kpiPaid">-</span> / <span id="kpiDue">-</span></div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="bg-white rounded shadow p-3 col-span-2">
-            <h3 class="font-semibold mb-2">Spend trend</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.spend_trend')) ?></h3>
             <canvas id="spendTrend" height="120"></canvas>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Payment mix</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.payment_mix')) ?></h3>
             <canvas id="paymentMix" height="120"></canvas>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Top suppliers</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.top_suppliers')) ?></h3>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Supplier</th>
-                        <th class="py-1 text-right">Tx</th>
-                        <th class="py-1 text-right">Spend</th>
+                        <th class="py-1"><?= esc(lang('Reports.supplier')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.tx')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.spend')) ?></th>
                     </tr>
                 </thead>
                 <tbody id="topSuppliersBody"></tbody>
             </table>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Top items purchased</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.top_items_purchased')) ?></h3>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Product</th>
-                        <th class="py-1 text-right">Qty</th>
-                        <th class="py-1 text-right">Spend</th>
+                        <th class="py-1"><?= esc(lang('Reports.product')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.qty')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.spend')) ?></th>
                     </tr>
                 </thead>
                 <tbody id="topItemsBody"></tbody>
@@ -85,18 +85,18 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
     </div>
 
     <div class="bg-white rounded shadow p-3 mt-4">
-        <h3 class="font-semibold mb-2">Returns</h3>
+        <h3 class="font-semibold mb-2"><?= esc(lang('Reports.returns')) ?></h3>
         <div class="grid grid-cols-3 gap-3">
             <div>
-                <div class="text-xs text-gray-500">Total Returned</div>
+                <div class="text-xs text-gray-500"><?= esc(lang('Reports.total_returned')) ?></div>
                 <div id="rTotal" class="text-lg font-bold">-</div>
             </div>
             <div>
-                <div class="text-xs text-gray-500">Qty</div>
+                <div class="text-xs text-gray-500"><?= esc(lang('Reports.qty')) ?></div>
                 <div id="rQty" class="text-lg font-bold">-</div>
             </div>
             <div>
-                <div class="text-xs text-gray-500">Count</div>
+                <div class="text-xs text-gray-500"><?= esc(lang('Reports.count')) ?></div>
                 <div id="rCount" class="text-lg font-bold">-</div>
             </div>
         </div>
@@ -108,12 +108,18 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 <script>
     (function() {
         const currency = <?= json_encode($currency) ?>;
+        const texts = {
+            networkError: <?= json_encode(lang('Reports.network_error'), JSON_UNESCAPED_UNICODE) ?>,
+            spend: <?= json_encode(lang('Reports.spend'), JSON_UNESCAPED_UNICODE) ?>,
+            na: <?= json_encode(lang('Reports.na'), JSON_UNESCAPED_UNICODE) ?>,
+            unknown: <?= json_encode(lang('Reports.unknown'), JSON_UNESCAPED_UNICODE) ?>
+        };
         const form = document.getElementById('filterForm');
         const qs = () => new URLSearchParams(new FormData(form)).toString();
 
         async function fetchJSON(url) {
             const res = await fetch(url + '?' + qs());
-            if (!res.ok) throw new Error('Network');
+            if (!res.ok) throw new Error(texts.networkError);
             return res.json();
         }
 
@@ -126,7 +132,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
                     data: {
                         labels: [],
                         datasets: [{
-                            label: 'Spend',
+                            label: texts.spend,
                             data: [],
                             borderColor: '#2563eb',
                             fill: false
@@ -177,7 +183,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
         async function loadPaymentMix() {
             ensureCharts();
             const data = await fetchJSON('<?= site_url('reports/purchases/payment-mix') ?>');
-            mixChart.data.labels = data.map(r => r.payment_method || 'N/A');
+            mixChart.data.labels = data.map(r => r.payment_method || texts.na);
             mixChart.data.datasets[0].data = data.map(r => Number(r.total));
             mixChart.update();
         }
@@ -197,7 +203,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
             const data = await fetchJSON('<?= site_url('reports/purchases/top-suppliers') ?>');
             const body = document.getElementById('topSuppliersBody');
             body.innerHTML = '';
-            data.forEach(r => body.appendChild(row([r.name || 'Unknown', Number(r.transactions).toFixed(0), currency + Number(r.total).toFixed(2)])));
+            data.forEach(r => body.appendChild(row([r.name || texts.unknown, Number(r.transactions).toFixed(0), currency + Number(r.total).toFixed(2)])));
         }
         async function loadTopItems() {
             const data = await fetchJSON('<?= site_url('reports/purchases/top-items') ?>');

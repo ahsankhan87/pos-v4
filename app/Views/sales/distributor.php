@@ -14,14 +14,14 @@ $canEditLineDiscount = can('sales.edit_discount');
         <div class="max-w-[1920px] mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <h1 class="text-xl font-bold text-gray-800">Create Sales Invoice</h1>
-                    <span class="text-sm text-gray-500">Invoice: <strong class="text-gray-900"><?= $invoiceNo ?></strong></span>
+                    <h1 class="text-xl font-bold text-gray-800"><?= lang('Sales.create_sales_invoice') ?></h1>
+                    <span class="text-sm text-gray-500"><?= lang('Sales.invoice') ?>: <strong class="text-gray-900"><?= $invoiceNo ?></strong></span>
                 </div>
                 <div class="flex items-center space-x-3">
                     <button type="button" id="showHelpModal" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                        <i class="fas fa-keyboard mr-1"></i>Shortcuts
+                        <i class="fas fa-keyboard mr-1"></i><?= lang('Sales.shortcuts') ?>
                     </button>
-                    <span class="text-sm text-gray-600"><?= session()->get('username') ?? 'User' ?></span>
+                    <span class="text-sm text-gray-600"><?= session()->get('username') ?? lang('Sales.cashier') ?></span>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@ $canEditLineDiscount = can('sales.edit_discount');
     <div id="helpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
-                <h2 class="text-lg font-bold text-white"><i class="fas fa-keyboard mr-2"></i>Keyboard Shortcuts</h2>
+                <h2 class="text-lg font-bold text-white"><i class="fas fa-keyboard mr-2"></i><?= lang('Sales.keyboard_shortcuts') ?></h2>
                 <button type="button" id="closeHelpModal" class="text-white hover:bg-white/20 rounded p-2">
                     <i class="fas fa-times"></i>
                 </button>
@@ -51,28 +51,28 @@ $canEditLineDiscount = can('sales.edit_discount');
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <h3 class="font-bold text-gray-900 mb-3 flex items-center">
-                            <i class="fas fa-search text-blue-600 mr-2"></i>Navigation
+                            <i class="fas fa-search text-blue-600 mr-2"></i><?= lang('Sales.navigation') ?>
                         </h3>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between"><span>Customer</span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F3</kbd></div>
-                            <div class="flex justify-between"><span>Payment Method</span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F4</kbd></div>
+                            <div class="flex justify-between"><span><?= lang('Sales.customer') ?></span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F3</kbd></div>
+                            <div class="flex justify-between"><span><?= lang('Sales.payment_method') ?></span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F4</kbd></div>
                         </div>
                     </div>
                     <div>
                         <h3 class="font-bold text-gray-900 mb-3 flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-2"></i>Actions
+                            <i class="fas fa-check-circle text-green-600 mr-2"></i><?= lang('Sales.actions') ?>
                         </h3>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between"><span>Complete Sale</span><kbd class="px-2 py-1 bg-green-600 text-white rounded">F9</kbd></div>
-                            <div class="flex justify-between"><span>Save Draft</span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F5</kbd></div>
-                            <div class="flex justify-between"><span>Clear Cart</span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F12</kbd></div>
+                            <div class="flex justify-between"><span><?= lang('Sales.complete_sale') ?></span><kbd class="px-2 py-1 bg-green-600 text-white rounded">F9</kbd></div>
+                            <div class="flex justify-between"><span><?= lang('Sales.save_as_draft') ?></span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F5</kbd></div>
+                            <div class="flex justify-between"><span><?= lang('Sales.clear') ?> <?= lang('Sales.cart') ?></span><kbd class="px-2 py-1 bg-gray-700 text-white rounded">F12</kbd></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="bg-gray-50 px-6 py-3 flex justify-end border-t">
                 <button type="button" id="closeHelpModalBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Got it!
+                    <?= lang('Sales.got_it') ?>
                 </button>
             </div>
         </div>
@@ -93,14 +93,14 @@ $canEditLineDiscount = can('sales.edit_discount');
                     <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">
-                                <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>Cart Items (<span id="cart-count">0</span>)
+                                <i class="fas fa-shopping-cart mr-2 text-blue-600"></i><?= lang('Sales.cart_items') ?> (<span id="cart-count">0</span>)
                             </h3>
                             <div class="flex items-center gap-2">
                                 <button type="button" id="addNewLineBtn" class="px-3 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-all">
-                                    <i class="fas fa-plus mr-1"></i>Add Line
+                                    <i class="fas fa-plus mr-1"></i><?= lang('Sales.add_line') ?>
                                 </button>
                                 <button type="button" onclick="clearCart()" class="text-xs text-red-600 hover:text-red-800 font-medium">
-                                    <i class="fas fa-trash mr-1"></i>Clear All
+                                    <i class="fas fa-trash mr-1"></i><?= lang('Sales.clear_all') ?>
                                 </button>
                             </div>
                         </div>
@@ -110,12 +110,12 @@ $canEditLineDiscount = can('sales.edit_discount');
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase" style="min-width: 250px;">Product</th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-32">Quantity</th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-32">Price</th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-32">Discount</th>
-                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase w-32">Subtotal</th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-16">Action</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase" style="min-width: 250px;"><?= lang('Sales.product') ?></th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-32"><?= lang('Sales.qty') ?></th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-32"><?= lang('Sales.price') ?></th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-32"><?= lang('Sales.discount') ?></th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase w-32"><?= lang('Sales.subtotal') ?></th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-16"><?= lang('Sales.actions') ?></th>
                                 </tr>
                             </thead>
                             <tbody id="cart-items" class="bg-white divide-y divide-gray-200"></tbody>
@@ -127,8 +127,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                         <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
                             <i class="fas fa-shopping-cart text-gray-400 text-2xl"></i>
                         </div>
-                        <h3 class="text-base font-medium text-gray-900 mb-1">Cart is empty</h3>
-                        <p class="text-sm text-gray-500">Click "Add Line" to start adding products</p>
+                        <h3 class="text-base font-medium text-gray-900 mb-1"><?= lang('Sales.cart_empty') ?></h3>
+                        <p class="text-sm text-gray-500"><?= lang('Sales.click_add_line_to_start') ?></p>
                     </div>
                 </div>
             </div>
@@ -138,21 +138,21 @@ $canEditLineDiscount = can('sales.edit_discount');
                 <!-- Customer Details -->
                 <div class="bg-white rounded-lg shadow-sm border p-4">
                     <h3 class="text-sm font-bold text-gray-900 mb-3">
-                        <i class="fas fa-user mr-1 text-green-600"></i>Customer & Payment
+                        <i class="fas fa-user mr-1 text-green-600"></i><?= lang('Sales.customer_payment') ?>
                     </h3>
 
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Date</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1"><?= lang('Sales.date') ?></label>
                             <input type="datetime-local" name="sale_date" value="<?= date('Y-m-d\TH:i:s') ?>" class="w-full text-sm rounded border-gray-300">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">
-                                Customer <kbd class="ml-1 px-1 py-0.5 bg-gray-700 text-white rounded text-[10px]">F3</kbd>
+                                <?= lang('Sales.customer') ?> <kbd class="ml-1 px-1 py-0.5 bg-gray-700 text-white rounded text-[10px]">F3</kbd>
                             </label>
                             <select id="customer-select" name="customer_id" class="w-full text-sm rounded border-gray-300 select2-customer">
-                                <option value="">Walk-in Customer</option>
+                                <option value=""><?= lang('Sales.walk_in_customer') ?></option>
                                 <?php foreach ($customers as $customer): ?>
                                     <option value="<?= $customer['id'] ?>"><?= esc($customer['name']) ?></option>
                                 <?php endforeach; ?>
@@ -160,9 +160,9 @@ $canEditLineDiscount = can('sales.edit_discount');
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Employee</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1"><?= lang('Sales.employee') ?></label>
                             <select id="employee-select" name="employee_id" class="w-full text-sm rounded border-gray-300 select2-employee">
-                                <option value="">None</option>
+                                <option value=""><?= lang('Sales.none') ?></option>
                                 <?php foreach ($employees as $employee): ?>
                                     <option value="<?= $employee['id'] ?>"><?= esc($employee['name']) ?></option>
                                 <?php endforeach; ?>
@@ -170,36 +170,36 @@ $canEditLineDiscount = can('sales.edit_discount');
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1"><?= lang('Sales.description') ?></label>
                             <textarea name="description" id="sale_description" rows="2"
                                 class="w-full text-sm rounded border-gray-300"
-                                placeholder="Optional invoice notes..."><?= esc(old('description', '')) ?></textarea>
+                                placeholder="<?= esc(lang('Sales.optional_invoice_notes')) ?>"><?= esc(old('description', '')) ?></textarea>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Pay Type</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.pay_type') ?></label>
                                 <select name="payment_type" id="payment_type" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <option value="cash">Cash</option>
-                                    <option value="credit">Credit</option>
+                                    <option value="cash"><?= lang('Sales.cash') ?></option>
+                                    <option value="credit"><?= lang('Sales.credit') ?></option>
                                 </select>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">
-                                    Payment Method
+                                    <?= lang('Sales.payment_method') ?>
                                 </label>
                                 <select name="payment_method" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <option value="cash">Cash</option>
-                                    <option value="credit_card">Credit Card</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="check">Check</option>
-                                    <option value="credit">Credit</option>
+                                    <option value="cash"><?= lang('Sales.cash') ?></option>
+                                    <option value="credit_card"><?= lang('Sales.credit_card') ?></option>
+                                    <option value="bank_transfer"><?= lang('Sales.bank_transfer') ?></option>
+                                    <option value="check"><?= lang('Sales.check') ?></option>
+                                    <option value="credit"><?= lang('Sales.credit') ?></option>
                                 </select>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Disc <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F8</kbd></label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.disc') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F8</kbd></label>
                                 <div class="flex items-center gap-0.5">
                                     <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" disabled title="Use item-wise discounts"
                                         class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-gray-100 cursor-not-allowed">
@@ -212,7 +212,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Tax(%) <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F7</kbd></label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.tax_percent') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F7</kbd></label>
                                 <input type="number" id="taxRate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.01"
                                     class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
                                 <input type="hidden" id="total_tax" name="total_tax" value="">
@@ -227,7 +227,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                 <div class="bg-white rounded-lg shadow-lg border-2 border-blue-200 overflow-hidden sticky top-20">
                     <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-2 border-b border-blue-200">
                         <h3 class="text-sm font-bold text-blue-900">
-                            <i class="fas fa-calculator mr-1"></i>Order Summary
+                            <i class="fas fa-calculator mr-1"></i><?= lang('Sales.order_summary') ?>
                         </h3>
                     </div>
 
@@ -236,34 +236,34 @@ $canEditLineDiscount = can('sales.edit_discount');
                         <input type="hidden" name="grand_total" id="grand_total" value="0">
 
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Subtotal:</span>
+                            <span class="text-gray-600"><?= lang('Sales.subtotal') ?>:</span>
                             <span id="subtotalDisplay" class="font-semibold"><?= session()->get('currency_symbol') ?>0.00</span>
                         </div>
                         <div class="flex justify-between text-red-600">
-                            <span>Discount:</span>
+                            <span><?= lang('Sales.discount') ?>:</span>
                             <span id="discountAmount">-<?= session()->get('currency_symbol') ?>0.00</span>
                         </div>
                         <div class="flex justify-between text-blue-600">
-                            <span>Tax:</span>
+                            <span><?= lang('Sales.tax') ?>:</span>
                             <span id="taxAmount"><?= session()->get('currency_symbol') ?>0.00</span>
                         </div>
                         <div class="border-t border-gray-300 pt-2 flex justify-between items-center">
-                            <span class="text-base font-bold text-gray-900">Grand Total:</span>
+                            <span class="text-base font-bold text-gray-900"><?= lang('Sales.grand_total') ?>:</span>
                             <span id="cart-total" class="text-xl font-bold text-blue-600"><?= session()->get('currency_symbol') ?>0.00</span>
                         </div>
 
                         <div class="mt-3 pt-3 border-t">
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Tendered Amount</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1"><?= lang('Sales.tendered_amount') ?></label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-1.5 flex items-center text-gray-500 text-xs"><?= session()->get('currency_symbol') ?></span>
                                 <input type="number" id="tenderedAmountInput" name="tendered_display" min="0" step="0.01" class="w-full pl-5 pr-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500" placeholder="0.00">
                             </div>
                             <div class="mt-2 flex justify-between">
-                                <span class="text-gray-600">Change:</span>
+                                <span class="text-gray-600"><?= lang('Sales.change') ?>:</span>
                                 <span id="changeAmount" class="font-bold text-green-600"><?= session()->get('currency_symbol') ?>0.00</span>
                             </div>
                             <div class="mt-1 flex justify-between">
-                                <span class="text-gray-600">Due:</span>
+                                <span class="text-gray-600"><?= lang('Sales.due') ?>:</span>
                                 <span id="dueAmount" class="font-bold text-red-600 hidden"><?= session()->get('currency_symbol') ?>0.00</span>
                             </div>
                         </div>
@@ -273,15 +273,15 @@ $canEditLineDiscount = can('sales.edit_discount');
                     <div class="bg-gray-50 px-4 py-3 space-y-2 border-t">
                         <div class="grid grid-cols-2 gap-2">
                             <button type="button" id="saveDraftBtn" class="px-3 py-2 bg-yellow-500 text-white text-sm font-medium rounded hover:bg-yellow-600">
-                                <i class="fas fa-save mr-1"></i>Draft (F8)
+                                <i class="fas fa-save mr-1"></i><?= lang('Sales.draft') ?> (F8)
                             </button>
                             <button type="button" onclick="clearCart()" class="px-3 py-2 bg-red-500 text-white text-sm font-medium rounded hover:bg-red-600">
-                                <i class="fas fa-trash mr-1"></i>Clear
+                                <i class="fas fa-trash mr-1"></i><?= lang('Sales.clear') ?>
                             </button>
                         </div>
                         <input type="hidden" name="draft" id="draft-flag" value="0">
                         <button type="submit" class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 shadow-lg">
-                            <i class="fas fa-check-circle mr-2"></i>Complete Sale (F9)
+                            <i class="fas fa-check-circle mr-2"></i><?= lang('Sales.complete_sale') ?> (F9)
                         </button>
                     </div>
                 </div>
@@ -426,7 +426,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             // Add a placeholder item to cart with empty/default values
             const emptyItem = {
                 id: 'new_' + Date.now(), // temporary unique ID
-                name: '-- Select Product --',
+                name: <?= json_encode(lang('Sales.select_product_placeholder')) ?>,
                 code: '',
                 price: 0,
                 cost_price: 0,
@@ -457,7 +457,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                 if (existingItem.quantity < existingItem.stock) {
                     existingItem.quantity += 1;
                 } else {
-                    showFormErrors([`Only ${existingItem.stock} units available in stock`]);
+                    showFormErrors([<?= json_encode(lang('Sales.only_units_available')) ?>.replace('{stock}', existingItem.stock)]);
                     return;
                 }
             } else {
@@ -520,7 +520,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                         <select class="product-dropdown w-full" data-idx="${idx}" data-field="product" data-row="${idx}">
                             <option value="${item.id}" selected>${escapeHtml(item.name)}</option>
                         </select>
-                        <div class="text-xs text-gray-500 mt-1">Code: ${escapeHtml(item.code || 'N/A')} • Stock: ${stockDisplay}</div>
+                        <div class="text-xs text-gray-500 mt-1"><?= lang('Sales.code') ?>: ${escapeHtml(item.code || <?= json_encode(lang('Sales.na')) ?>)} • <?= lang('Sales.stock_label') ?>: ${stockDisplay}</div>
                     </td>
                     <td class="px-3 py-3 text-center">
                         <input type="number" value="${item.quantity}" min="0.01" step="0.01" 
@@ -568,7 +568,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                     const idx = parseInt($select.data('idx'));
 
                     $select.select2({
-                        placeholder: 'Type product name or code...',
+                        placeholder: <?= json_encode(lang('Sales.type_product_name_or_code')) ?>,
                         allowClear: false,
                         minimumInputLength: 0,
                         width: '100%',
@@ -769,7 +769,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             qty = parseFloat(qty);
             if (qty < 0.01) qty = 0.01;
             if (qty > cart[idx].stock) {
-                showFormErrors([`Only ${cart[idx].stock} units available in stock`]);
+                showFormErrors([<?= json_encode(lang('Sales.only_units_available')) ?>.replace('{stock}', cart[idx].stock)]);
                 qty = cart[idx].stock;
             }
             cart[idx].quantity = qty;
@@ -804,15 +804,15 @@ $canEditLineDiscount = can('sales.edit_discount');
 
         window.removeItem = function(idx) {
             const removedItem = cart.splice(idx, 1)[0];
-            showSuccessMessage(`${removedItem.name} removed from cart`);
+            showSuccessMessage(`${removedItem.name} ` + <?= json_encode(lang('Sales.removed_from_cart')) ?>);
             renderCart();
         };
 
         window.clearCart = function() {
-            if (cart.length > 0 && confirm('Are you sure you want to clear all items from the cart?')) {
+            if (cart.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_clear_cart')) ?>)) {
                 cart = [];
                 renderCart();
-                showSuccessMessage('Cart cleared successfully');
+                showSuccessMessage(<?= json_encode(lang('Sales.cart_cleared_successfully')) ?>);
             }
         };
 
@@ -833,7 +833,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             const validItems = getValidCartItems();
             if (validItems.length === 0) {
                 e.preventDefault();
-                showFormErrors(['Cart is empty. Please add products to continue.']);
+                showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
                 return false;
             }
             if (!SHOW_DISCOUNT_TYPE) {
@@ -848,10 +848,10 @@ $canEditLineDiscount = can('sales.edit_discount');
         $('#saveDraftBtn').on('click', function() {
             const validItems = getValidCartItems();
             if (validItems.length === 0) {
-                showFormErrors(['Cannot save empty cart as draft.']);
+                showFormErrors([<?= json_encode(lang('Sales.cannot_save_empty_cart')) ?>]);
                 return;
             }
-            if (confirm('Save this sale as a draft?')) {
+            if (confirm(<?= json_encode(lang('Sales.confirm_save_draft')) ?>)) {
                 $('#draft-flag').val('1');
                 if (!SHOW_DISCOUNT_TYPE) {
                     validItems.forEach(it => {
@@ -899,7 +899,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
                 const validItems = getValidCartItems();
-                if (validItems.length > 0 && confirm('Complete this sale?')) {
+                if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
                     $('#cart-data').val(JSON.stringify(validItems));
                     $('form')[0].submit();
                 }
@@ -1015,7 +1015,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
                 const validItems = getValidCartItems();
-                if (validItems.length > 0 && confirm('Complete this sale?')) {
+                if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
                     $('#cart-data').val(JSON.stringify(validItems));
                     $('form')[0].submit();
                 }

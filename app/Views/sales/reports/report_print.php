@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Sales Report - Print') ?></title>
+    <title><?= esc($title ?? (lang('Reports.sales_report') . ' - ' . lang('Reports.print'))) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,20 +75,20 @@
         }
     }
     ?>
-    <h2>Sales Report</h2>
-    <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
-    <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <h2><?= lang('Reports.sales_report') ?></h2>
+    <p><?= lang('Reports.employee') ?>: <?= esc($employeeName ?? lang('Reports.all')) ?></p>
+    <p><?= lang('Reports.period') ?>: <?= esc($from) ?> <?= lang('Reports.to') ?> <?= esc($to) ?></p>
     <table>
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Customer</th>
-                <th>Payment</th>
-                <th>Date</th>
-                <th class="text-right">Gross</th>
-                <th class="text-right">Discount</th>
-                <th class="text-right">Returned</th>
-                <th class="text-right">Net</th>
+                <th><?= lang('Reports.customer') ?></th>
+                <th><?= lang('Reports.payment') ?></th>
+                <th><?= lang('Reports.date') ?></th>
+                <th class="text-right"><?= lang('Reports.gross') ?></th>
+                <th class="text-right"><?= lang('Reports.discount') ?></th>
+                <th class="text-right"><?= lang('Reports.returned') ?></th>
+                <th class="text-right"><?= lang('Reports.net') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -107,7 +107,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="4" class="text-right">Totals</th>
+                <th colspan="4" class="text-right"><?= lang('Reports.totals') ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></th>
@@ -116,8 +116,8 @@
         </tfoot>
     </table>
     <div class="no-print">
-        <button onclick="window.print()">Print</button>
-        <button onclick="window.close()">Close</button>
+        <button onclick="window.print()"><?= lang('Reports.print') ?></button>
+        <button onclick="window.close()"><?= lang('Reports.close') ?></button>
     </div>
 </body>
 

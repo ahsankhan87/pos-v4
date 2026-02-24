@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'permissions' => 'Permissions',
+    'subtitle' => 'Control access to features by managing system permissions.',
+    'newPermission' => 'New Permission',
+    'editPermission' => 'Edit Permission',
+    'registry' => 'Permission Registry',
+    'total' => 'Total',
+    'id' => 'ID',
+    'name' => 'Name',
+    'description' => 'Description',
+    'actions' => 'Actions',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'save' => 'Save',
+    'create' => 'Create',
+    'confirmDelete' => 'Delete this permission?',
+    'namePlaceholder' => 'e.g. customer.create',
+    'nameHint' => 'Hint: Use a dot notation to represent the module and action (e.g. customer.create).',
+    'descriptionPlaceholder' => 'Short description',
+    'notAvailable' => 'N/A',
+    'noActionsAvailable' => 'No actions available',
+    'noPermissionsConfigured' => 'No permissions configured.',
+];

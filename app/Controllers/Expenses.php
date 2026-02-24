@@ -219,7 +219,12 @@ class Expenses extends BaseController
         $model->forStore()->delete($id);
         // audit log
         logaction('expense_deleted', 'Deleted expense ID ' . $id);
-        return $this->response->setJSON(['success' => true]);
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => true]);
+        }
+
+        return redirect()->to(site_url('expenses'))->with('success', lang('Expenses.deletedSuccess'));
     }
 
     public function show($id)

@@ -9,6 +9,23 @@ class Sales extends BaseController
 {
     protected $reports;
 
+    private function isArabicLocale(): bool
+    {
+        return service('request')->getLocale() === 'ar';
+    }
+
+    private function configurePdfLocale(\TCPDF $pdf): void
+    {
+        if ($this->isArabicLocale()) {
+            $pdf->setRTL(true);
+            $pdf->SetFont('dejavusans', '', 10);
+            return;
+        }
+
+        $pdf->setRTL(false);
+        $pdf->SetFont('helvetica', '', 10);
+    }
+
     protected function buildProductReportItems(string $from, string $to, $storeId, $employeeId = null, string $q = '', bool $includeProfit = false): array
     {
         $saleItemsModel = new \App\Models\M_sale_items();
@@ -1554,10 +1571,10 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
-        $html = '<h2>Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
-            '<th>ID</th><th>Customer</th><th>Total</th><th>Discount</th><th>Payment</th><th>Date</th></tr>';
+        $html = '<h2>' . lang('Reports.pdf_title_sales') . ' - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
+            '<th>' . lang('Reports.id') . '</th><th>' . lang('Reports.customer') . '</th><th>' . lang('Reports.total_sales') . '</th><th>' . lang('Reports.discount') . '</th><th>' . lang('Reports.payment') . '</th><th>' . lang('Reports.date') . '</th></tr>';
         foreach ($sales as $sale) {
             $customer = $customerModel->find($sale['customer_id']);
             $html .= '<tr><td>' . $sale['id'] . '</td><td>' .
@@ -1623,10 +1640,10 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
-        $html = '<h2>Product-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
-            '<th>Product</th><th>Total Quantity</th><th>Total Sales</th></tr>';
+        $html = '<h2>' . lang('Reports.pdf_title_product') . ' - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
+            '<th>' . lang('Reports.product') . '</th><th>' . lang('Reports.total_quantity') . '</th><th>' . lang('Reports.total_sales') . '</th></tr>';
         foreach ($items as $item) {
             $html .= '<tr><td>' . ($item['product_name'] ?? 'Unknown') . '</td><td>' .
                 ($item['total_qty'] ?? 0) . '</td><td>' .
@@ -1689,10 +1706,10 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
-        $html = '<h2>Customer-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
-            '<th>Customer</th><th>Sales Count</th><th>Total Sales</th><th>Total Discount</th></tr>';
+        $html = '<h2>' . lang('Reports.pdf_title_customer') . ' - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
+            '<th>' . lang('Reports.customer') . '</th><th>' . lang('Reports.sales_count_col') . '</th><th>' . lang('Reports.total_sales') . '</th><th>' . lang('Reports.total_discount') . '</th></tr>';
         foreach ($sales as $sale) {
             $html .= '<tr><td>' . ($sale['customer_name'] ?? 'Unknown') . '</td><td>' .
                 ($sale['sale_count'] ?? 0) . '</td><td>' .
@@ -1751,7 +1768,7 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
         $html = '<h2>Category-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr><th>Category</th><th>Sales Count</th><th>Total Quantity</th><th>Total Sales</th></tr>';
         foreach ($rows as $r) {
@@ -1810,7 +1827,7 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
         $html = '<h2>Unit-wise Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr><th>Unit</th><th>Sales Count</th><th>Total Quantity</th><th>Total Sales</th></tr>';
         foreach ($rows as $r) {
@@ -1977,7 +1994,7 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = $startDate . ' to ' . $endDate;
         $html = '<h2>Employee Sales Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
             '<th>Sale ID</th><th>Date</th><th>Employee</th><th>Customer</th><th>Total Amount</th><th>Commission Amount</th></tr>';
@@ -2057,7 +2074,7 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = $startDate . ' to ' . $endDate;
         $html = '<h2>Employee Commission Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
             '<th>Sale ID</th><th>Date</th><th>Employee</th><th>Customer</th><th>Total Amount</th><th>Commission Amount</th></tr>';
@@ -2230,7 +2247,7 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $title = 'Inactive Customers Report (Last ' . $days . ' Days)';
         if (!empty($data['area'])) {
             $title .= ' - Area: ' . $data['area'];
@@ -2548,7 +2565,7 @@ class Sales extends BaseController
         require_once APPPATH . 'Libraries/tcpdf/tcpdf.php';
         $pdf = new \TCPDF();
         $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 10);
+        $this->configurePdfLocale($pdf);
         $rangeTitle = ($from === $to) ? $from : ($from . ' to ' . $to);
         $html = '<h2>Expense Report - ' . $rangeTitle . '</h2><table border="1" cellpadding="4"><tr>' .
             '<th>Date</th><th>Category</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Tax</th><th>Total</th><th>Notes</th></tr>';

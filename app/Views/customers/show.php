@@ -9,11 +9,11 @@
                     <div class="w-8 h-8 rounded bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shadow">
                         <i class="fas fa-user"></i>
                     </div>
-                    <h1 class="text-lg font-bold text-gray-900">Customer Details</h1>
+                    <h1 class="text-lg font-bold text-gray-900"><?= lang('Customers.customer_details') ?></h1>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="<?= site_url('customers/edit/' . $customer['id']) ?>" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit</a>
-                    <a href="<?= site_url('customers') ?>" class="btn btn-muted btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+                    <a href="<?= site_url('customers/edit/' . $customer['id']) ?>" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> <?= lang('Customers.edit') ?></a>
+                    <a href="<?= site_url('customers') ?>" class="btn btn-muted btn-sm"><i class="fas fa-arrow-left"></i> <?= lang('Customers.back') ?></a>
                 </div>
             </div>
         </div>
@@ -23,44 +23,44 @@
         <div class="lg:col-span-2 space-y-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-blue-600"></i> Customer Info</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-blue-600"></i> <?= lang('Customers.customer_info') ?></h3>
                 </div>
                 <div class="p-4 text-sm text-gray-800">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <div class="text-xs text-gray-500">Name</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.name') ?></div>
                             <div class="font-semibold"><?= esc($customer['name']) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Email</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.email') ?></div>
                             <div class="font-semibold"><?= esc($customer['email']) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Phone</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.phone') ?></div>
                             <div class="font-semibold"><?= esc($customer['phone']) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Area</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.area') ?></div>
                             <div class="font-semibold">
                                 <?php if (!empty($customer['area'])): ?>
                                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
                                         <i class="fas fa-map-marker-alt mr-1"></i><?= esc($customer['area']) ?>
                                     </span>
                                 <?php else: ?>
-                                    <span class="text-gray-400">Not set</span>
+                                    <span class="text-gray-400"><?= lang('Customers.not_set') ?></span>
                                 <?php endif; ?>
                             </div>
                         </div>
                         <div class="md:col-span-2">
-                            <div class="text-xs text-gray-500">Address</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.address') ?></div>
                             <div class="font-semibold"><?= esc($customer['address']) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Opening Balance</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.opening_balance') ?></div>
                             <div class="font-semibold text-green-600"><?= number_format($customer['opening_balance'] ?? 0, 2) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Credit Limit</div>
+                            <div class="text-xs text-gray-500"><?= lang('Customers.credit_limit') ?></div>
                             <div class="font-semibold text-blue-600"><?= number_format($customer['credit_limit'] ?? 0, 2) ?></div>
                         </div>
                     </div>
@@ -69,19 +69,19 @@
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-star text-amber-600"></i> Loyalty & Meta</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-star text-amber-600"></i> <?= lang('Customers.loyalty_meta') ?></h3>
                 </div>
                 <div class="p-4 text-sm text-gray-800 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <div class="text-xs text-gray-500">Customer ID</div>
+                        <div class="text-xs text-gray-500"><?= lang('Customers.customer_id') ?></div>
                         <div class="font-semibold">#<?= (int) $customer['id'] ?></div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500">Loyalty Points</div>
+                        <div class="text-xs text-gray-500"><?= lang('Customers.loyalty_points') ?></div>
                         <div class="font-semibold"><?= number_format((float) ($customer['points'] ?? 0)) ?></div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500">Created</div>
+                        <div class="text-xs text-gray-500"><?= lang('Customers.created') ?></div>
                         <div class="font-semibold"><?= esc($customer['created_at']) ?></div>
                     </div>
                 </div>
@@ -91,19 +91,19 @@
         <div class="space-y-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-ellipsis-h text-slate-600"></i> Actions</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-ellipsis-h text-slate-600"></i> <?= lang('Customers.actions') ?></h3>
                 </div>
                 <div class="p-4 space-y-2">
                     <?php if (can('sales.create')): ?>
                         <a href="<?= site_url('sales/new?customer_id=' . (int) $customer['id']) ?>" class="btn btn-success w-full">
-                            <i class="fas fa-shopping-bag"></i> New Sale
+                            <i class="fas fa-shopping-bag"></i> <?= lang('Customers.new_sale_btn') ?>
                         </a>
                         <!-- <a href="<?= site_url('sales/pos?customer_id=' . (int) $customer['id']) ?>" class="btn btn-info w-full">
                             <i class="fas fa-cash-register"></i> POS Sale
                         </a> -->
                     <?php endif; ?>
-                    <a href="<?= site_url('customers/edit/' . $customer['id']) ?>" class="btn btn-primary w-full"><i class="fas fa-edit"></i> Edit Customer</a>
-                    <a href="<?= site_url('customers') ?>" class="btn btn-muted w-full"><i class="fas fa-arrow-left"></i> Back to List</a>
+                    <a href="<?= site_url('customers/edit/' . $customer['id']) ?>" class="btn btn-primary w-full"><i class="fas fa-edit"></i> <?= lang('Customers.edit_customer_btn') ?></a>
+                    <a href="<?= site_url('customers') ?>" class="btn btn-muted w-full"><i class="fas fa-arrow-left"></i> <?= lang('Customers.back_to_list') ?></a>
                 </div>
             </div>
         </div>

@@ -24,7 +24,7 @@ function _sl_money($currencySymbol, $amount)
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Supplier Ledger</title>
+    <title><?= lang('SupplierLedger.supplier_ledger') ?></title>
     <style>
         /* POS80 compact print */
         @page {
@@ -123,25 +123,25 @@ function _sl_money($currencySymbol, $amount)
             <?php if ($logoExists): ?>
                 <img src="<?= base_url('uploads/logo.png') ?>" alt="Logo" style="height:16px;">
             <?php endif; ?>
-            <span>Supplier Ledger</span>
+            <span><?= lang('SupplierLedger.supplier_ledger') ?></span>
         </div>
 
         <?php if ($supplier): ?>
             <div class="center muted" style="margin-top:2px; margin-bottom:4px;">
-                <?= esc($supplier['name'] ?? 'Supplier') ?>
+                <?= esc($supplier['name'] ?? lang('SupplierLedger.supplier_name')) ?>
                 <?php if (!empty($supplier['phone'])): ?> • <?= esc($supplier['phone']) ?><?php endif; ?>
             </div>
         <?php endif; ?>
 
         <div class="center muted" style="margin-bottom:4px;">
-            <?= $from ? 'From: ' . $from . ' ' : '' ?><?= $to ? 'To: ' . $to : '' ?>
+            <?= $from ? lang('SupplierLedger.from_date') . ': ' . $from . ' ' : '' ?><?= $to ? lang('SupplierLedger.to_date') . ': ' . $to : '' ?>
         </div>
 
         <div class="line"></div>
 
         <table>
             <tr>
-                <th>Opening</th>
+                <th><?= lang('SupplierLedger.opening') ?></th>
                 <td class="num bold"><?= _sl_money($currencySymbol, $openingBalance ?? 0) ?></td>
             </tr>
         </table>
@@ -151,10 +151,10 @@ function _sl_money($currencySymbol, $amount)
         <table>
             <thead>
                 <tr>
-                    <th style="width:28%">Date</th>
-                    <th style="width:18%">Ref</th>
-                    <th class="num" style="width:24%">Amt</th>
-                    <th class="num" style="width:30%">Bal</th>
+                    <th style="width:28%"><?= lang('SupplierLedger.date') ?></th>
+                    <th style="width:18%"><?= lang('SupplierLedger.ref') ?></th>
+                    <th class="num" style="width:24%"><?= lang('SupplierLedger.amt') ?></th>
+                    <th class="num" style="width:30%"><?= lang('SupplierLedger.bal') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -200,7 +200,7 @@ function _sl_money($currencySymbol, $amount)
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="4" class="center muted" style="padding:8px 0;">No transactions</td>
+                        <td colspan="4" class="center muted" style="padding:8px 0;"><?= lang('SupplierLedger.no_transactions') ?></td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -210,26 +210,26 @@ function _sl_money($currencySymbol, $amount)
 
         <table>
             <tr>
-                <th>Totals</th>
+                <th><?= lang('SupplierLedger.totals') ?></th>
                 <td class="num">
-                    <span class="muted">Dr</span> <span class="bold"><?= _sl_money($currencySymbol, $totalDebit ?? 0) ?></span>
-                    <span class="muted"> Cr</span> <span class="bold"><?= _sl_money($currencySymbol, $totalCredit ?? 0) ?></span>
+                    <span class="muted"><?= lang('SupplierLedger.debit_dr') ?></span> <span class="bold"><?= _sl_money($currencySymbol, $totalDebit ?? 0) ?></span>
+                    <span class="muted"> <?= lang('SupplierLedger.credit_cr') ?></span> <span class="bold"><?= _sl_money($currencySymbol, $totalCredit ?? 0) ?></span>
                 </td>
             </tr>
             <tr>
-                <th>Closing</th>
+                <th><?= lang('SupplierLedger.closing') ?></th>
                 <td class="num bold"><?= _sl_money($currencySymbol, $closingBalance ?? 0) ?></td>
             </tr>
         </table>
 
         <div class="line"></div>
-        <div class="center muted">Generated: <?= date('Y-m-d H:i') ?></div>
+        <div class="center muted"><?= lang('SupplierLedger.generated') ?> <?= date('Y-m-d H:i') ?></div>
 
         <div class="center no-print" style="margin-top:6px;">
             <?php if ($supplier): ?>
-                <a href="<?= site_url('supplier-ledger/view/' . ($supplier['id'] ?? 0) . '?from=' . $from . '&to=' . $to) ?>" class="btn">Back</a>
+                <a href="<?= site_url('supplier-ledger/view/' . ($supplier['id'] ?? 0) . '?from=' . $from . '&to=' . $to) ?>" class="btn"><?= lang('SupplierLedger.back') ?></a>
             <?php endif; ?>
-            <button type="button" onclick="window.print()" class="btn btn-primary">Print</button>
+            <button type="button" onclick="window.print()" class="btn btn-primary"><?= lang('SupplierLedger.print') ?></button>
         </div>
     </div>
 

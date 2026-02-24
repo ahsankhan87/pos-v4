@@ -4,16 +4,16 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Roles</h1>
-            <p class="mt-1 text-sm text-gray-500">Organize user access by defining role responsibilities.</p>
+            <h1 class="text-2xl font-bold text-gray-900"><?= lang('Roles.roles') ?></h1>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Roles.subtitle') ?></p>
         </div>
         <div class="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
             <?php if (can('manage_users')): ?>
                 <a href="<?= site_url('roles/new') ?>" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> New Role
+                    <i class="fas fa-plus-circle"></i> <?= lang('Roles.newRole') ?>
                 </a>
                 <a href="<?= site_url('permissions') ?>" class="btn btn-secondary">
-                    <i class="fas fa-lock"></i> Manage Permissions
+                    <i class="fas fa-lock"></i> <?= lang('Roles.managePermissions') ?>
                 </a>
             <?php endif; ?>
         </div>
@@ -39,17 +39,17 @@
 
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Role Directory</h2>
-            <span class="text-sm text-gray-500">Total: <?= $totalRoles ?></span>
+            <h2 class="text-lg font-semibold text-gray-900"><?= lang('Roles.roleDirectory') ?></h2>
+            <span class="text-sm text-gray-500"><?= lang('Roles.total') ?>: <?= $totalRoles ?></span>
         </div>
         <div class="overflow-x-auto">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Description</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Roles.id') ?></th>
+                        <th scope="col"><?= lang('Roles.name') ?></th>
+                        <th scope="col"><?= lang('Roles.description') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Roles.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,39 +61,39 @@
                                     <?= esc($role['name']) ?>
                                 </td>
                                 <td class="text-sm text-slate-500 whitespace-normal">
-                                    <?= esc($role['description'] ?? 'N/A') ?>
+                                    <?= esc($role['description'] ?? lang('Roles.notAvailable')) ?>
                                 </td>
                                 <td class="text-sm text-right">
                                     <?php if (can('manage_users')): ?>
                                         <div class="actions-wrapper">
                                             <button type="button" class="actions-toggle btn btn-muted btn-sm">
-                                                <span>Actions</span>
+                                                <span><?= lang('Roles.actions') ?></span>
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                             <div class="actions-menu hidden">
                                                 <a href="<?= site_url('roles/edit/' . $role['id']) ?>" class="actions-link actions-link--primary">
                                                     <i class="fas fa-edit"></i>
-                                                    <span>Edit</span>
+                                                    <span><?= lang('Roles.edit') ?></span>
                                                 </a>
-                                                <form action="<?= site_url('roles/delete/' . $role['id']) ?>" method="post" onsubmit="return confirm('Delete this role?');">
+                                                <form action="<?= site_url('roles/delete/' . $role['id']) ?>" method="post" onsubmit="return confirm(<?= json_encode(lang('Roles.confirmDelete')) ?>);">
                                                     <?= csrf_field() ?>
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     <button type="submit" class="actions-link actions-link--danger">
                                                         <i class="fas fa-trash-alt"></i>
-                                                        <span>Delete</span>
+                                                        <span><?= lang('Roles.delete') ?></span>
                                                     </button>
                                                 </form>
                                             </div>
                                         </div>
                                     <?php else: ?>
-                                        <span class="text-xs text-slate-400">No actions available</span>
+                                        <span class="text-xs text-slate-400"><?= lang('Roles.noActionsAvailable') ?></span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="4" class="text-center text-sm text-slate-500 py-6">No roles defined.</td>
+                            <td colspan="4" class="text-center text-sm text-slate-500 py-6"><?= lang('Roles.noRolesDefined') ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

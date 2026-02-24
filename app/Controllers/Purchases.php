@@ -940,7 +940,7 @@ class Purchases extends BaseController
         $netTotalAmount = max(0, $totalAmount - $totalReturnAmount);
 
         $data = [
-            'title' => 'Purchase Report',
+            'title' => lang('Purchases.purchase_report'),
             'products' => $products,
             'totalQuantity' => $totalQuantity,
             'totalCost' => $totalCost,

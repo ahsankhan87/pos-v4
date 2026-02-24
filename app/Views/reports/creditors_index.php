@@ -8,38 +8,38 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><?= esc($title) ?></h1>
-            <p class="mt-1 text-sm text-gray-500">Suppliers outstanding balances with print and export.</p>
+            <p class="mt-1 text-sm text-gray-500"><?= esc(lang('Reports.suppliers_outstanding_balances_with_print_and_export')) ?></p>
         </div>
         <div class="flex items-center gap-3">
             <label class="inline-flex items-center gap-2 text-sm">
                 <input type="checkbox" id="onlyOutstanding" class="rounded" checked>
-                <span>Only outstanding</span>
+                <span><?= esc(lang('Reports.only_outstanding')) ?></span>
             </label>
         </div>
     </div>
 
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Creditors Summary</h2>
+            <h2 class="text-lg font-semibold text-gray-900"><?= esc(lang('Reports.creditors_summary')) ?></h2>
         </div>
         <div class="overflow-x-auto">
             <table id="creditorsTable" class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th class="text-right">Opening</th>
-                        <th class="text-right">Debits</th>
-                        <th class="text-right">Credits</th>
-                        <th class="text-right">Balance</th>
-                        <th class="text-right">Actions</th>
+                        <th><?= esc(lang('Reports.id')) ?></th>
+                        <th><?= esc(lang('Reports.name')) ?></th>
+                        <th><?= esc(lang('Reports.phone')) ?></th>
+                        <th class="text-right"><?= esc(lang('Reports.opening')) ?></th>
+                        <th class="text-right"><?= esc(lang('Reports.debits')) ?></th>
+                        <th class="text-right"><?= esc(lang('Reports.credits')) ?></th>
+                        <th class="text-right"><?= esc(lang('Reports.balance')) ?></th>
+                        <th class="text-right"><?= esc(lang('Reports.actions')) ?></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
                 <tfoot>
                     <tr class="font-semibold bg-gray-100">
-                        <td colspan="3">TOTALS</td>
+                        <td colspan="3"><?= esc(lang('Reports.totals_upper')) ?></td>
                         <td class="text-right"></td>
                         <td class="text-right"></td>
                         <td class="text-right"></td>
@@ -65,6 +65,17 @@
         };
 
         const currency = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
+        const dtTexts = {
+            print: <?= json_encode(lang('Reports.print'), JSON_UNESCAPED_UNICODE) ?>,
+            csv: <?= json_encode(lang('Reports.csv'), JSON_UNESCAPED_UNICODE) ?>,
+            excel: <?= json_encode(lang('Reports.excel'), JSON_UNESCAPED_UNICODE) ?>,
+            totalsUpper: <?= json_encode(lang('Reports.totals_upper'), JSON_UNESCAPED_UNICODE) ?>,
+            creditorsSuppliersBalances: <?= json_encode(lang('Reports.creditors_suppliers_balances'), JSON_UNESCAPED_UNICODE) ?>,
+            creditorsExportTitle: <?= json_encode(lang('Reports.creditors_export_title'), JSON_UNESCAPED_UNICODE) ?>,
+            searchSuppliers: <?= json_encode(lang('Reports.search_suppliers_placeholder'), JSON_UNESCAPED_UNICODE) ?>,
+            showEntries: <?= json_encode(lang('Reports.show_entries')) ?>,
+            ledger: <?= json_encode(lang('Reports.ledger'), JSON_UNESCAPED_UNICODE) ?>
+        };
 
         const table = $('#creditorsTable').DataTable({
             processing: true,
@@ -86,7 +97,7 @@
             ],
             buttons: [{
                     extend: 'print',
-                    text: '<i class="fas fa-print mr-1"></i> Print',
+                    text: '<i class="fas fa-print mr-1"></i> ' + dtTexts.print,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5, 6],
@@ -94,7 +105,7 @@
                             page: 'all'
                         }
                     },
-                    title: 'Creditors (Suppliers Balances)',
+                    title: dtTexts.creditorsSuppliersBalances,
                     customize: function(win) {
                         var $body = $(win.document.body);
                         var $table = $body.find('table');
@@ -162,7 +173,7 @@
                             $tfoot.find('tr').remove();
                         }
                         var $footerRow = $('<tr></tr>').appendTo($tfoot);
-                        $footerRow.html('<td colspan="3" style="font-weight:bold;">TOTALS</td><td style="text-align:right;font-weight:bold;">' + currency + openingTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + debitsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + creditsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + balanceTotal.toFixed(2) + '</td><td></td>');
+                        $footerRow.html('<td colspan="3" style="font-weight:bold;">' + dtTexts.totalsUpper + '</td><td style="text-align:right;font-weight:bold;">' + currency + openingTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + debitsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + creditsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + balanceTotal.toFixed(2) + '</td><td></td>');
 
                         $body.css({
                             'font-size': '11px',
@@ -201,7 +212,7 @@
                 },
                 {
                     extend: 'csvHtml5',
-                    text: '<i class="fas fa-file-csv mr-1"></i> CSV',
+                    text: '<i class="fas fa-file-csv mr-1"></i> ' + dtTexts.csv,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5, 6],
@@ -209,7 +220,7 @@
                             page: 'all'
                         }
                     },
-                    title: 'creditors',
+                    title: dtTexts.creditorsExportTitle,
                     customize: function(csv) {
                         var api = table.api();
                         var openingTotal = 0,
@@ -234,7 +245,7 @@
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '<i class="fas fa-file-excel mr-1"></i> Excel',
+                    text: '<i class="fas fa-file-excel mr-1"></i> ' + dtTexts.excel,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5, 6],
@@ -242,7 +253,7 @@
                             page: 'all'
                         }
                     },
-                    title: 'creditors',
+                    title: dtTexts.creditorsExportTitle,
                     customize: function(xlsx) {
                         var api = table.api();
                         var openingTotal = 0,
@@ -264,7 +275,7 @@
 
                         var sheet = xlsx.xl.worksheets['sheet1.xml'];
                         var rowCount = $('row', sheet).length + 1;
-                        var footerRow = '<row r="' + rowCount + '"><c r="A' + rowCount + '" t="str"><v>TOTALS</v></c>' +
+                        var footerRow = '<row r="' + rowCount + '"><c r="A' + rowCount + '" t="str"><v>' + dtTexts.totalsUpper + '</v></c>' +
                             '<c r="D' + rowCount + '" t="n"><v>' + openingTotal.toFixed(2) + '</v></c>' +
                             '<c r="E' + rowCount + '" t="n"><v>' + debitsTotal.toFixed(2) + '</v></c>' +
                             '<c r="F' + rowCount + '" t="n"><v>' + creditsTotal.toFixed(2) + '</v></c>' +
@@ -310,13 +321,13 @@
                     orderable: false,
                     searchable: false,
                     className: 'text-right',
-                    render: row => `<a href="${routes.ledger}/${row.id}" class="btn btn-muted btn-sm">Ledger</a>`
+                    render: row => `<a href="${routes.ledger}/${row.id}" class="btn btn-muted btn-sm">${dtTexts.ledger}</a>`
                 }
             ],
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search suppliers...",
-                lengthMenu: "Show _MENU_ entries"
+                searchPlaceholder: dtTexts.searchSuppliers,
+                lengthMenu: dtTexts.showEntries
             },
             footerCallback: function(row, data, start, end, display) {
                 var api = this.api();

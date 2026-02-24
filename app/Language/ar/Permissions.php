@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'permissions' => 'الصلاحيات',
+    'subtitle' => 'تحكم في الوصول إلى الميزات عبر إدارة صلاحيات النظام.',
+    'newPermission' => 'صلاحية جديدة',
+    'editPermission' => 'تعديل الصلاحية',
+    'registry' => 'سجل الصلاحيات',
+    'total' => 'الإجمالي',
+    'id' => 'المعرّف',
+    'name' => 'الاسم',
+    'description' => 'الوصف',
+    'actions' => 'الإجراءات',
+    'edit' => 'تعديل',
+    'delete' => 'حذف',
+    'save' => 'حفظ',
+    'create' => 'إنشاء',
+    'confirmDelete' => 'هل تريد حذف هذه الصلاحية؟',
+    'namePlaceholder' => 'مثال: customer.create',
+    'nameHint' => 'ملاحظة: استخدم صيغة النقطة لتمثيل الوحدة والإجراء (مثل customer.create).',
+    'descriptionPlaceholder' => 'وصف مختصر',
+    'notAvailable' => 'غير متوفر',
+    'noActionsAvailable' => 'لا توجد إجراءات متاحة',
+    'noPermissionsConfigured' => 'لا توجد صلاحيات مُعدّة.',
+];

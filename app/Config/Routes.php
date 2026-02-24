@@ -152,6 +152,7 @@ $routes->post('register', 'Auth::register');
 $routes->get('forgot-password', 'Auth::forgotPassword');
 $routes->post('forgot-password', 'Auth::forgotPassword');
 $routes->get('logout', 'Auth::logout');
+$routes->get('language/(:segment)', 'Auth::setLanguage/$1');
 
 
 $routes->group('stores', ['filter' => 'auth'], function ($routes) {

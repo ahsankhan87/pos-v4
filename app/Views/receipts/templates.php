@@ -4,9 +4,9 @@
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Receipt Templates</h2>
+            <h2 class="text-2xl font-bold text-gray-800"><?= lang('Receipts.receiptTemplates') ?></h2>
             <a href="<?= site_url('receipts/templates/create') ?>" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                <i class="fas fa-plus mr-2"></i>Create New Template
+                <i class="fas fa-plus mr-2"></i><?= lang('Receipts.createNewTemplate') ?>
             </a>
         </div>
 
@@ -26,10 +26,10 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Receipts.name') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Receipts.status') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Receipts.created') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Receipts.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -42,11 +42,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <?php if ($template['is_default']): ?>
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Default
+                                            <?= lang('Receipts.default') ?>
                                         </span>
                                     <?php else: ?>
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            Inactive
+                                            <?= lang('Receipts.inactive') ?>
                                         </span>
                                     <?php endif; ?>
                                 </td>
@@ -55,18 +55,18 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="<?= site_url('receipts/templates/edit/' . $template['id']) ?>" class="text-blue-600 hover:text-blue-900 mr-3">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit"></i> <?= lang('Receipts.edit') ?>
                                     </a>
                                     <?php if (!$template['is_default']): ?>
                                         <a href="<?= site_url('receipts/templates/set-default/' . $template['id']) ?>"
                                             class="text-green-600 hover:text-green-900 mr-3"
-                                            onclick="return confirm('Set this as default template?')">
-                                            <i class="fas fa-check-circle"></i> Set Default
+                                            onclick="return confirm(<?= json_encode(lang('Receipts.confirmSetDefault'), JSON_UNESCAPED_UNICODE) ?>)">
+                                            <i class="fas fa-check-circle"></i> <?= lang('Receipts.setDefault') ?>
                                         </a>
                                         <a href="<?= site_url('receipts/templates/delete/' . $template['id']) ?>"
                                             class="text-red-600 hover:text-red-900"
-                                            onclick="return confirm('Are you sure you want to delete this template?')">
-                                            <i class="fas fa-trash"></i> Delete
+                                            onclick="return confirm(<?= json_encode(lang('Receipts.confirmDeleteTemplate'), JSON_UNESCAPED_UNICODE) ?>)">
+                                            <i class="fas fa-trash"></i> <?= lang('Receipts.delete') ?>
                                         </a>
                                     <?php endif; ?>
                                 </td>
@@ -75,7 +75,7 @@
                     <?php else: ?>
                         <tr>
                             <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                                No templates found. Create your first template.
+                                <?= lang('Receipts.noTemplatesFound') ?>
                             </td>
                         </tr>
                     <?php endif; ?>

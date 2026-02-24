@@ -14,11 +14,11 @@
                 <div class="flex gap-2">
                     <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
                         class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to Ledger
+                        <i class="fas fa-arrow-left mr-2"></i> <?= lang('SupplierLedger.back_to_ledger') ?>
                     </a>
                     <a href="<?= base_url('supplier-ledger/lumpsum-payment/' . $supplier['id']) ?>"
                         class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-lg transition-colors shadow-md">
-                        <i class="fas fa-money-bill-wave mr-2"></i> Make Payment
+                        <i class="fas fa-money-bill-wave mr-2"></i> <?= lang('SupplierLedger.make_payment') ?>
                     </a>
                 </div>
             </div>
@@ -32,12 +32,12 @@
                 <div>
                     <h2 class="text-lg font-bold text-gray-900 mb-2"><?= esc($supplier['name']) ?></h2>
                     <div class="flex gap-6 text-sm">
-                        <p class="text-gray-600"><span class="font-semibold text-gray-700">Phone:</span> <?= esc($supplier['phone']) ?></p>
-                        <p class="text-gray-600"><span class="font-semibold text-gray-700">Email:</span> <?= esc($supplier['email']) ?></p>
+                        <p class="text-gray-600"><span class="font-semibold text-gray-700"><?= lang('SupplierLedger.phone') ?>:</span> <?= esc($supplier['phone']) ?></p>
+                        <p class="text-gray-600"><span class="font-semibold text-gray-700"><?= lang('SupplierLedger.email') ?>:</span> <?= esc($supplier['email']) ?></p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <div class="text-sm font-semibold text-gray-500 mb-1">Total Outstanding</div>
+                    <div class="text-sm font-semibold text-gray-500 mb-1"><?= lang('SupplierLedger.total_outstanding') ?></div>
                     <div class="text-3xl font-bold text-red-600"><?= number_to_currency($totalOutstanding, 'PKR', 'en_PK', 2) ?></div>
                 </div>
             </div>
@@ -46,17 +46,17 @@
         <!-- Outstanding Invoices Table -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100">
-                <h3 class="text-lg font-semibold text-gray-900">Outstanding Purchases</h3>
+                <h3 class="text-lg font-semibold text-gray-900"><?= lang('SupplierLedger.outstanding_purchases') ?></h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Amount</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Outstanding</th>
-                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.date') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.description') ?></th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.original_amount') ?></th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.outstanding') ?></th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.actions') ?></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -82,7 +82,7 @@
                                             <a href="<?= base_url('purchases/view/' . $invoice['purchase_id']) ?>"
                                                 class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors"
                                                 target="_blank">
-                                                <i class="fas fa-eye mr-1"></i> View
+                                                <i class="fas fa-eye mr-1"></i> <?= lang('SupplierLedger.view') ?>
                                             </a>
                                         <?php else: ?>
                                             <span class="text-gray-400 text-xs">-</span>
@@ -91,7 +91,7 @@
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="bg-gray-50 font-semibold">
-                                <td colspan="3" class="px-6 py-4 text-sm text-gray-900 text-right">Total Outstanding:</td>
+                                <td colspan="3" class="px-6 py-4 text-sm text-gray-900 text-right"><?= lang('SupplierLedger.total_outstanding') ?>:</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-red-700">
                                     <?= number_to_currency($totalOutstanding, 'PKR', 'en_PK', 2) ?>
                                 </td>
@@ -102,8 +102,8 @@
                                 <td colspan="5" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-check-circle text-4xl text-green-300 mb-3"></i>
-                                        <p class="text-gray-500 text-sm font-medium">No outstanding purchases</p>
-                                        <p class="text-gray-400 text-xs mt-1">All purchases have been paid</p>
+                                        <p class="text-gray-500 text-sm font-medium"><?= lang('SupplierLedger.no_outstanding_purchases_found') ?></p>
+                                        <p class="text-gray-400 text-xs mt-1"><?= lang('SupplierLedger.all_purchases_paid') ?></p>
                                     </div>
                                 </td>
                             </tr>
@@ -117,7 +117,7 @@
             <div class="mt-6 flex justify-end">
                 <a href="<?= base_url('supplier-ledger/lumpsum-payment/' . $supplier['id']) ?>"
                     class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
-                    <i class="fas fa-money-bill-wave mr-2"></i> Make Payment for Outstanding Purchases
+                    <i class="fas fa-money-bill-wave mr-2"></i> <?= lang('SupplierLedger.make_payment_for_outstanding') ?>
                 </a>
             </div>
         <?php endif; ?>

@@ -26,10 +26,10 @@
     <?php endif; ?>
 
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Dashboard</h1>
+        <h1 class="text-2xl font-bold"><?= lang('Dashboard.title') ?></h1>
         <div class="flex items-center">
             <div class="ml-2 mr-2">
-                <a href="<?= base_url('dashboard/clear-caches') ?>" class="bg-blue-500 text-white px-1 py-1 text-xs rounded">Clear Caches</a>
+                <a href="<?= base_url('dashboard/clear-caches') ?>" class="bg-blue-500 text-white px-1 py-1 text-xs rounded"><?= lang('Dashboard.clear_caches') ?></a>
             </div>
             <?= date('l, F j, Y') ?>
         </div>
@@ -139,7 +139,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Today's Sales</p>
+                    <p class="text-sm font-medium text-gray-500"><?= lang('Dashboard.today_sales') ?></p>
                     <p class="text-2xl font-semibold"><?= session()->get('currency_symbol') . number_format($todaySales, 2) ?></p>
                 </div>
             </div>
@@ -154,7 +154,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-500">This Month's Sales</p>
+                    <p class="text-sm font-medium text-gray-500"><?= lang('Dashboard.month_sales') ?></p>
                     <p class="text-2xl font-semibold"><?= session()->get('currency_symbol') . number_format($monthlySales, 2) ?></p>
                 </div>
             </div>
@@ -169,7 +169,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Low Stock Items</p>
+                    <p class="text-sm font-medium text-gray-500"><?= lang('Dashboard.low_stock_items') ?></p>
                     <p class="text-2xl font-semibold <?= $lowStockItems > 0 ? 'text-red-600' : 'text-green-600' ?>">
                         <?= $lowStockItems ?>
                     </p>
@@ -186,7 +186,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Inventory Value</p>
+                    <p class="text-sm font-medium text-gray-500"><?= lang('Dashboard.inventory_value') ?></p>
                     <p class="text-2xl font-semibold"><?= session()->get('currency_symbol') . number_format($inventoryValue, 2) ?></p>
                 </div>
             </div>
@@ -198,18 +198,18 @@
         <!-- Recent Sales -->
         <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold">Recent Sales</h2>
-                <a href="<?= base_url('sales') ?>" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+                <h2 class="text-lg font-semibold"><?= lang('Dashboard.recent_sales') ?></h2>
+                <a href="<?= base_url('sales') ?>" class="text-sm text-blue-600 hover:text-blue-800"><?= lang('Dashboard.view_all') ?></a>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt #</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Dashboard.receipt_no') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Dashboard.date') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Dashboard.amount') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Dashboard.status') ?></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -228,7 +228,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Completed
+                                        <?= lang('Dashboard.completed') ?>
                                     </span>
                                 </td>
                             </tr>
@@ -241,8 +241,8 @@
         <!-- Top Products -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold">Top Selling Products</h2>
-                <a href="<?= base_url('products') ?>" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+                <h2 class="text-lg font-semibold"><?= lang('Dashboard.top_selling_products') ?></h2>
+                <a href="<?= base_url('products') ?>" class="text-sm text-blue-600 hover:text-blue-800"><?= lang('Dashboard.view_all') ?></a>
             </div>
 
             <div class="space-y-4">
@@ -258,7 +258,7 @@
                         <div class="ml-4 flex-1">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm font-medium text-gray-900"><?= $product['name'] ?></p>
-                                <p class="text-sm text-gray-500"><?= $product['total_sold'] ?> sold</p>
+                                <p class="text-sm text-gray-500"><?= $product['total_sold'] ?> <?= lang('Dashboard.sold') ?></p>
                             </div>
                             <div class="mt-1">
                                 <div class="h-2 w-full bg-gray-200 rounded-full">
@@ -274,7 +274,7 @@
 
     <!-- Recent Activity -->
     <div class="mt-6 bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold mb-4">Recent Activity</h2>
+        <h2 class="text-lg font-semibold mb-4"><?= lang('Dashboard.recent_activity') ?></h2>
 
         <div class="space-y-4">
             <?php foreach ($userActivity as $activity): ?>
@@ -284,7 +284,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-900"><?= $activity['username'] ?></p>
-                        <p class="text-sm text-gray-500">Logged in at <?= date('M j, h:i A', strtotime($activity['last_login'])) ?></p>
+                        <p class="text-sm text-gray-500"><?= lang('Dashboard.logged_in_at') ?> <?= date('M j, h:i A', strtotime($activity['last_login'])) ?></p>
                     </div>
                 </div>
             <?php endforeach; ?>

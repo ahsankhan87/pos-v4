@@ -174,10 +174,10 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Product-wise Sales Report</h2>
+                <h2 class="text-2xl font-bold text-gray-900"><?= lang('Reports.product_wise_sales_report') ?></h2>
                 <p class="text-sm text-gray-500 mt-1">
-                    Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span>
-                    <?php if ($employeeName): ?> · Employee: <span class="font-medium text-gray-700"><?= esc($employeeName) ?></span><?php endif; ?>
+                    <?= lang('Reports.range') ?>: <span class="font-medium text-gray-700"><?= esc($from) ?></span> <?= lang('Reports.to') ?> <span class="font-medium text-gray-700"><?= esc($to) ?></span>
+                    <?php if ($employeeName): ?> · <?= lang('Reports.employee') ?>: <span class="font-medium text-gray-700"><?= esc($employeeName) ?></span><?php endif; ?>
                 </p>
             </div>
 
@@ -185,19 +185,19 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 w-full lg:w-auto">
                 <input type="hidden" name="q" value="<?= esc($q) ?>">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">To</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
                     <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Employee</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
                     <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
-                        <option value="">All Employees</option>
+                        <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                 <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
                         <?php endforeach;
@@ -207,13 +207,13 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
                 <div class="flex items-end gap-2">
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
-                        <i class="fas fa-filter mr-2"></i> Apply
+                        <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
 
                     <?php if (can('reports.product_sales')): ?>
                         <!-- changed: use compact /print layout and include current search query -->
                         <button type="button" id="btnPrintCompact" data-print-url="<?= esc($printUrl) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
-                            <i class="fas fa-print mr-2"></i> Print
+                            <i class="fas fa-print mr-2"></i> <?= lang('Reports.print') ?>
                         </button>
 
                     <?php endif; ?>
@@ -221,10 +221,10 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
                 <div class="sm:col-span-2 md:col-span-4">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
-                        <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
-                        <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Yesterday</button>
-                        <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Last 7 days</button>
-                        <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">This Month</button>
+                        <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.today') ?></button>
+                        <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.yesterday') ?></button>
+                        <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.last_7_days') ?></button>
+                        <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.this_month') ?></button>
                     </div>
                 </div>
             </form>
@@ -232,20 +232,20 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
         <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 <?= $canProfit ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                <div class="text-xs text-blue-700">Total Sales</div>
+                <div class="text-xs text-blue-700"><?= lang('Reports.total_sales') ?></div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><span id="totalSalesCard"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></span></div>
             </div>
             <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                <div class="text-xs text-emerald-700">Total Quantity</div>
+                <div class="text-xs text-emerald-700"><?= lang('Reports.total_quantity') ?></div>
                 <div class="mt-1 text-xl font-semibold text-emerald-900"><span id="totalQtyCard"><?= number_format($totalQty) ?></span></div>
             </div>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div class="text-xs text-gray-600">Products</div>
+                <div class="text-xs text-gray-600"><?= lang('Reports.products') ?></div>
                 <div class="mt-1 text-xl font-semibold text-gray-900"><span id="totalProductsCard"><?= number_format($productCount) ?></span></div>
             </div>
             <?php if ($canProfit): ?>
                 <div class="bg-purple-50 border border-purple-100 rounded-lg p-4">
-                    <div class="text-xs text-purple-700">Profit</div>
+                    <div class="text-xs text-purple-700"><?= lang('Reports.profit') ?></div>
                     <div class="mt-1 text-xl font-semibold text-purple-900"><span id="totalProfitCard"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></span></div>
                 </div>
             <?php endif; ?>
@@ -254,17 +254,17 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
     <div class="bg-white shadow rounded-lg print-container">
         <div class="px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <h3 class="text-lg font-semibold text-gray-900">Top Products</h3>
+            <h3 class="text-lg font-semibold text-gray-900"><?= lang('Reports.top_products') ?></h3>
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                 <!-- added: Search above the table -->
                 <div class="no-print w-full sm:w-72">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Search Product</label>
-                    <input type="text" id="productSearch" value="<?= esc($q) ?>" placeholder="Type name or code..." class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.search_product') ?></label>
+                    <input type="text" id="productSearch" value="<?= esc($q) ?>" placeholder="<?= esc(lang('Reports.type_name_or_code')) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
                 </div>
 
                 <div class="text-sm text-gray-500">
-                    Showing <span id="recordCount"><?= number_format($productCount) ?></span> records
+                    <?= lang('Reports.showing') ?> <span id="recordCount"><?= number_format($productCount) ?></span> <?= lang('Reports.records') ?>
                 </div>
             </div>
         </div>
@@ -273,12 +273,12 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.product') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_quantity') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_sales') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.avg') ?></th>
                         <?php if ($canProfit): ?>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.profit') ?></th>
                         <?php endif; ?>
                     </tr>
                 </thead>
@@ -309,13 +309,13 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
                     <!-- added: "no matches" row -->
                     <tr id="noMatchesRow" style="display:none;">
-                        <td colspan="<?= $canProfit ? '5' : '4' ?>" class="px-6 py-6 text-sm text-gray-500 text-center">No matching products.</td>
+                        <td colspan="<?= $canProfit ? '5' : '4' ?>" class="px-6 py-6 text-sm text-gray-500 text-center"><?= lang('Reports.no_matching_products') ?></td>
                     </tr>
                 </tbody>
 
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Totals</td>
+                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
                         <td id="totalQtyCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty) ?></td>
                         <td id="totalSalesCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
                         <td id="totalAvgCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></td>

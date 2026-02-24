@@ -13,7 +13,7 @@ $logoExists = is_file(FCPATH . 'uploads/logo.png');
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customer Ledger</title>
+    <title><?= lang('Customers.customer_ledger') ?></title>
     <style>
         /* POS80 compact print - no template header/footer */
         @page {
@@ -108,23 +108,23 @@ $logoExists = is_file(FCPATH . 'uploads/logo.png');
             <?php if ($logoExists): ?>
                 <img src="<?= base_url('uploads/logo.png') ?>" alt="Logo" style="height:16px;">
             <?php endif; ?>
-            <span>Customer Ledger</span>
+            <span><?= lang('Customers.customer_ledger') ?></span>
         </div>
         <?php if ($customer): ?>
             <div class="center muted" style="margin-bottom:4px;">
-                <?= esc($customer['name'] ?? 'Customer') ?>
+                <?= esc($customer['name'] ?? lang('Customers.customer')) ?>
                 <?php if (!empty($customer['phone'])): ?> • <?= esc($customer['phone']) ?><?php endif; ?>
                     <?php if (!empty($customer['email'])): ?> • <?= esc($customer['email']) ?><?php endif; ?>
             </div>
         <?php endif; ?>
         <div class="center muted" style="margin-bottom:6px;">
-            <?= $from ? 'From: ' . esc($from) . ' ' : '' ?><?= $to ? 'To: ' . esc($to) . ' ' : '' ?><?= $type ? 'Type: ' . esc($type) . ' ' : '' ?>
+            <?= $from ? lang('Customers.from') . ': ' . esc($from) . ' ' : '' ?><?= $to ? lang('Customers.to') . ': ' . esc($to) . ' ' : '' ?><?= $type ? lang('Customers.type') . ': ' . esc($type) . ' ' : '' ?>
         </div>
 
         <div class="line"></div>
         <table>
             <tr>
-                <th>Opening</th>
+                <th><?= lang('Customers.opening') ?></th>
                 <td class="num bold"><?= $currencySymbol . number_format((float)($openingBalance ?? 0), 2) ?></td>
             </tr>
         </table>
@@ -132,12 +132,12 @@ $logoExists = is_file(FCPATH . 'uploads/logo.png');
             <div class="line"></div>
             <table>
                 <tr>
-                    <th>Outstanding</th>
+                    <th><?= lang('Customers.total_outstanding') ?></th>
                     <td class="num bold"><?= $currencySymbol . number_format((float)($outstanding ?? 0), 2) ?></td>
                 </tr>
                 <?php if (isset($creditLimit) && $creditLimit !== null): ?>
                     <tr>
-                        <th>Limit / Avail</th>
+                        <th><?= lang('Customers.limit_avail') ?></th>
                         <td class="num bold"><?= $currencySymbol . number_format((float)$creditLimit, 2) ?> / <?= isset($creditAvailable) ? ($currencySymbol . number_format((float)$creditAvailable, 2)) : '—' ?></td>
                     </tr>
                 <?php endif; ?>
@@ -148,17 +148,17 @@ $logoExists = is_file(FCPATH . 'uploads/logo.png');
         <table>
             <thead>
                 <tr>
-                    <th style="width:28%">Date</th>
-                    <th style="width:22%">Ref</th>
-                    <th style="width:25%">Type</th>
-                    <th class="num" style="width:25%">Balance</th>
+                    <th style="width:28%"><?= lang('Customers.date') ?></th>
+                    <th style="width:22%"><?= lang('Customers.ref') ?></th>
+                    <th style="width:25%"><?= lang('Customers.type') ?></th>
+                    <th class="num" style="width:25%"><?= lang('Customers.balance') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><?= esc($from ?: ($ledger[0]['date'] ?? '')) ?></td>
                     <td>—</td>
-                    <td>Opening</td>
+                    <td><?= lang('Customers.opening') ?></td>
                     <td class="num bold"><?= $currencySymbol . number_format((float)($openingBalance ?? 0), 2) ?></td>
                 </tr>
                 <?php foreach (($ledger ?? []) as $entry): ?>
@@ -171,7 +171,7 @@ $logoExists = is_file(FCPATH . 'uploads/logo.png');
                 <?php endforeach; ?>
                 <?php if (empty($ledger)): ?>
                     <tr>
-                        <td colspan="4" class="center muted" style="padding:8px 0;">No transactions</td>
+                        <td colspan="4" class="center muted" style="padding:8px 0;"><?= lang('Customers.no_transactions') ?></td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -179,15 +179,15 @@ $logoExists = is_file(FCPATH . 'uploads/logo.png');
         <div class="line"></div>
         <table>
             <tr>
-                <th>Closing</th>
+                <th><?= lang('Customers.closing') ?></th>
                 <td class="num bold"><?= $currencySymbol . number_format((float)($closingBalance ?? 0), 2) ?></td>
             </tr>
         </table>
         <div class="line"></div>
-        <div class="center muted">Generated: <?= date('Y-m-d H:i') ?></div>
+        <div class="center muted"><?= lang('Customers.generated') ?>: <?= date('Y-m-d H:i') ?></div>
         <div class="center no-print" style="margin-top:6px;">
-            <a href="<?= site_url('customers/ledger/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>" class="btn">Back</a>
-            <button type="button" onclick="window.print()" class="btn btn-primary">Print</button>
+            <a href="<?= site_url('customers/ledger/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>" class="btn"><?= lang('Customers.back') ?></a>
+            <button type="button" onclick="window.print()" class="btn btn-primary"><?= lang('Customers.print') ?></button>
         </div>
     </div>
     <script>

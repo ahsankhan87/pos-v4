@@ -2,8 +2,8 @@
 <?= $this->section('content') ?>
 <div class="max-w-5xl mx-auto px-4 py-6">
     <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-bold">Subscription</h1>
-        <a class="px-3 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700" href="<?= site_url('billing/plans') ?>">Browse Plans</a>
+        <h1 class="text-2xl font-bold"><?= lang('Billing.subscription') ?></h1>
+        <a class="px-3 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700" href="<?= site_url('billing/plans') ?>"><?= lang('Billing.browsePlans') ?></a>
     </div>
     <?php if (session()->getFlashdata('error')): ?>
         <div class="mb-3 p-3 bg-red-100 text-red-700 rounded"><?= esc(session()->getFlashdata('error')) ?></div>
@@ -19,7 +19,7 @@
             $info = subscription_info();
             $planModel = new \App\Models\PlanModel();
             $plan = $planModel->find($subscription['plan_id']);
-            $planName = $plan['name'] ?? 'Unknown Plan';
+            $planName = $plan['name'] ?? lang('Billing.unknownPlan');
             $now = time();
             $target = null;
             if ($subscription['status'] === 'trialing' && !empty($subscription['trial_ends_at'])) {
@@ -66,13 +66,13 @@
             $dateHintLabel = '-';
             $dateHintValue = null;
             if ($subscription['status'] === 'trialing' && !empty($subscription['trial_ends_at'])) {
-                $dateHintLabel = 'Trial ends';
+                $dateHintLabel = lang('Billing.trialEnds');
                 $dateHintValue = $subscription['trial_ends_at'];
             } elseif (!empty($subscription['renews_at'])) {
-                $dateHintLabel = 'Renews at';
+                $dateHintLabel = lang('Billing.renewsAt');
                 $dateHintValue = $subscription['renews_at'];
             } elseif (!empty($subscription['ends_at'])) {
-                $dateHintLabel = 'Ends at';
+                $dateHintLabel = lang('Billing.endsAt');
                 $dateHintValue = $subscription['ends_at'];
             }
             $daysTitle = $dateHintValue ? ($dateHintLabel . ': ' . $dateHintValue) : '';
@@ -82,25 +82,25 @@
                 <div class="lg:col-span-2 space-y-4">
                     <div class="border rounded-md p-4">
                         <div class="flex items-center justify-between">
-                            <div class="text-lg font-semibold">Current Plan: <?= esc($planName) ?></div>
+                            <div class="text-lg font-semibold"><?= lang('Billing.currentPlan') ?>: <?= esc($planName) ?></div>
                             <span class="px-2 py-1 text-xs rounded <?= $statusBadge ?>"><?= esc(ucfirst($subscription['status'])) ?></span>
                         </div>
                         <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                             <div class="bg-gray-50 rounded p-3">
-                                <div class="text-gray-500">Renews At</div>
+                                <div class="text-gray-500"><?= lang('Billing.renewsAt') ?></div>
                                 <div class="font-medium"><?= esc($subscription['renews_at'] ?? '-') ?></div>
                             </div>
                             <div class="bg-gray-50 rounded p-3">
-                                <div class="text-gray-500">Trial Ends</div>
+                                <div class="text-gray-500"><?= lang('Billing.trialEnds') ?></div>
                                 <div class="font-medium"><?= esc($subscription['trial_ends_at'] ?? '-') ?></div>
                             </div>
                             <div class="bg-gray-50 rounded p-3">
-                                <div class="text-gray-500">Days Left</div>
+                                <div class="text-gray-500"><?= lang('Billing.daysLeft') ?></div>
                                 <div class="font-medium">
                                     <?php if ($daysLeft !== null): ?>
                                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold <?= $daysBadge ?>" title="<?= esc($daysTitle) ?>">
                                             <span class="inline-block w-2 h-2 rounded-full mr-2 <?= $dotBadge ?>"></span>
-                                            <?= $daysLeft === 0 ? 'Expired' : esc($daysLeft) . ' day' . ($daysLeft == 1 ? '' : 's') . ' left' ?>
+                                            <?= $daysLeft === 0 ? lang('Billing.expired') : esc($daysLeft) . ' ' . lang('Billing.days') . lang('Billing.left') ?>
                                         </span>
                                     <?php else: ?>
                                         -
@@ -111,7 +111,7 @@
                     </div>
 
                     <div class="border rounded-md p-4">
-                        <div class="text-lg font-semibold mb-2">Included Features</div>
+                        <div class="text-lg font-semibold mb-2"><?= lang('Billing.includedFeatures') ?></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                             <?php foreach (($features ?? []) as $k => $v): ?>
                                 <div class="flex items-center gap-2">
@@ -120,48 +120,48 @@
                                 </div>
                             <?php endforeach; ?>
                             <?php if (empty($features)): ?>
-                                <div class="text-gray-500">No feature data for this plan.</div>
+                                <div class="text-gray-500"><?= lang('Billing.noFeatureData') ?></div>
                             <?php endif; ?>
                         </div>
                     </div>
 
                     <div class="border rounded-md p-4">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="text-lg font-semibold">Scheduled Change</div>
+                            <div class="text-lg font-semibold"><?= lang('Billing.scheduledChange') ?></div>
                         </div>
                         <?php if (!empty($subscription['next_plan_id'])): ?>
                             <?php $next = $planModel->find($subscription['next_plan_id']); ?>
                             <div class="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded p-3">
                                 <div>
-                                    Move to <strong><?= esc($next['name'] ?? 'Next Plan') ?></strong> on <?= esc($subscription['renews_at'] ?? 'renewal') ?>
+                                    <?= lang('Billing.moveTo') ?> <strong><?= esc($next['name'] ?? lang('Billing.nextPlan')) ?></strong> <?= lang('Billing.on') ?> <?= esc($subscription['renews_at'] ?? lang('Billing.renewal')) ?>
                                 </div>
                                 <form method="post" action="<?= site_url('billing/cancel-scheduled') ?>">
                                     <?= csrf_field() ?>
-                                    <button type="submit" class="px-3 py-1 bg-white hover:bg-yellow-100 border border-yellow-300 text-yellow-900 rounded">Cancel change</button>
+                                    <button type="submit" class="px-3 py-1 bg-white hover:bg-yellow-100 border border-yellow-300 text-yellow-900 rounded"><?= lang('Billing.cancelChange') ?></button>
                                 </form>
                             </div>
                         <?php else: ?>
-                            <div class="text-sm text-gray-500">No plan change is scheduled.</div>
+                            <div class="text-sm text-gray-500"><?= lang('Billing.noPlanChangeScheduled') ?></div>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     <div class="border rounded-md p-4">
-                        <div class="text-lg font-semibold mb-2">Actions</div>
+                        <div class="text-lg font-semibold mb-2"><?= lang('Billing.actions') ?></div>
                         <a class="w-full inline-flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700" href="<?= site_url('billing/plans') ?>">
-                            <i class="fas fa-sync mr-2"></i> Change Plan
+                            <i class="fas fa-sync mr-2"></i> <?= lang('Billing.changePlan') ?>
                         </a>
                     </div>
 
                     <div class="border rounded-md p-4">
-                        <div class="text-lg font-semibold mb-2">Activate License</div>
+                        <div class="text-lg font-semibold mb-2"><?= lang('Billing.activateLicense') ?></div>
                         <form method="post" action="<?= site_url('billing/activate') ?>">
                             <?= csrf_field() ?>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">License Code</label>
-                            <input type="text" name="code" class="w-full border rounded px-3 py-2" placeholder="Enter code (e.g., KAS.xxxxx)" required>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= lang('Billing.licenseCode') ?></label>
+                            <input type="text" name="code" class="w-full border rounded px-3 py-2" placeholder="<?= lang('Billing.enterCodeExample') ?>" required>
                             <button class="mt-3 w-full px-3 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700" type="submit">
-                                <i class="fas fa-key mr-2"></i> Activate
+                                <i class="fas fa-key mr-2"></i> <?= lang('Billing.activate') ?>
                             </button>
                         </form>
                     </div>
@@ -169,35 +169,35 @@
                     <?php //$billingCfg = config('Billingcfg'); 
                     ?>
                     <div class="border rounded-md p-4 <?= ($daysLeft !== null && $daysLeft <= 7) ? 'bg-yellow-50 border-yellow-200' : '' ?>">
-                        <div class="text-lg font-semibold mb-1">Need Help Renewing?</div>
+                        <div class="text-lg font-semibold mb-1"><?= lang('Billing.needHelpRenewing') ?></div>
                         <?php if ($daysLeft !== null && $daysLeft <= 7): ?>
                             <div class="text-sm text-yellow-800 mb-2">
-                                Your subscription <?= ($daysLeft === 0 ? 'has expired' : 'is nearing expiry') ?>.
+                                <?= lang('Billing.yourSubscription') ?> <?= ($daysLeft === 0 ? lang('Billing.hasExpired') : lang('Billing.isNearingExpiry')) ?>.
                             </div>
                         <?php endif; ?>
                         <a target="_blank" rel="noopener" href="<?= esc("https://khybersoft.com") ?>" class="w-full inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700">
-                            <i class="fas fa-globe mr-2"></i> Visit <?= parse_url("https://khybersoft.com", PHP_URL_HOST) ?: 'Website' ?>
+                            <i class="fas fa-globe mr-2"></i> <?= lang('Billing.visit') ?> <?= parse_url("https://khybersoft.com", PHP_URL_HOST) ?: lang('Billing.website') ?>
                         </a>
                         <div class="mt-2 text-sm"><i class="fas fa-envelope mr-2"></i><?= esc("sales@khybersoft.com") ?></div>
                         <?php //if (!empty($billingCfg->supportPhone)): 
                         ?>
                         <div class="mt-2 grid grid-cols-2 gap-2">
                             <a href="tel:<?= preg_replace('/[^0-9+]/', '', '+92 345 9079213') ?>" class="inline-flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-800">
-                                <i class="fas fa-phone mr-2"></i> Call
+                                <i class="fas fa-phone mr-2"></i> <?= lang('Billing.call') ?>
                             </a>
                             <a target="_blank" rel="noopener" href="https://wa.me/<?= preg_replace('/[^0-9]/', '', '+92 345 9079213') ?>" class="inline-flex items-center justify-center px-3 py-2 bg-green-500 hover:bg-green-600 rounded text-white">
                                 <i class="fab fa-whatsapp mr-2"></i> WhatsApp
                             </a>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">Phone: <?= esc('+92 345 9079213') ?></div>
+                        <div class="text-xs text-gray-500 mt-1"><?= lang('Billing.phone') ?>: <?= esc('+92 345 9079213') ?></div>
                         <?php //endif; 
                         ?>
                     </div>
                 </div>
             </div>
         <?php else: ?>
-            <p>No active subscription. Choose a plan to get started.</p>
-            <a class="px-3 py-2 bg-blue-600 text-white rounded" href="<?= site_url('billing/plans') ?>">View Plans</a>
+            <p><?= lang('Billing.noActiveSubscription') ?></p>
+            <a class="px-3 py-2 bg-blue-600 text-white rounded" href="<?= site_url('billing/plans') ?>"><?= lang('Billing.viewPlans') ?></a>
         <?php endif; ?>
     </div>
 </div>

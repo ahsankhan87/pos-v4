@@ -71,6 +71,8 @@ class Users extends BaseController
     public function create()
     {
         $validation = \Config\Services::validation();
+        $supportedLocales = config('App')->supportedLocales ?? ['en'];
+        $localeRule = 'required|in_list[' . implode(',', $supportedLocales) . ']';
         if (!$this->validate([
             'name' => [
                 'rules' => 'required|min_length[3]|max_length[255]',
@@ -111,6 +113,13 @@ class Users extends BaseController
                     'integer' => 'Invalid role selected.'
                 ]
             ],
+            'preferred_locale' => [
+                'rules' => $localeRule,
+                'errors' => [
+                    'required' => 'Preferred locale is required.',
+                    'in_list' => 'Invalid preferred locale selected.'
+                ]
+            ],
         ])) {
 
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
@@ -123,6 +132,7 @@ class Users extends BaseController
             'password' => $this->request->getPost('password'),
             'phone' => $this->request->getPost('phone'),
             'role_id' => $this->request->getPost('role_id'),
+            'preferred_locale' => $this->request->getPost('preferred_locale') ?: (config('App')->defaultLocale ?? 'en'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
         ]);
 
@@ -153,6 +163,9 @@ class Users extends BaseController
         if (!$user) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Cannot find the user: ' . $id);
         }
+
+        $supportedLocales = config('App')->supportedLocales ?? ['en'];
+        $localeRule = 'required|in_list[' . implode(',', $supportedLocales) . ']';
 
         $rules = [
             'name' => [
@@ -187,6 +200,13 @@ class Users extends BaseController
                     'integer' => 'Invalid role selected.'
                 ]
             ],
+            'preferred_locale' => [
+                'rules' => $localeRule,
+                'errors' => [
+                    'required' => 'Preferred locale is required.',
+                    'in_list' => 'Invalid preferred locale selected.'
+                ]
+            ],
         ];
 
         // Only validate password if it's provided (i.e., user wants to change it)
@@ -209,6 +229,7 @@ class Users extends BaseController
             'email' => $this->request->getPost('email'),
             'phone' => $this->request->getPost('phone'),
             'role_id' => $this->request->getPost('role_id'),
+            'preferred_locale' => $this->request->getPost('preferred_locale') ?: (config('App')->defaultLocale ?? 'en'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
         ];
 

@@ -322,7 +322,7 @@
 </head>
 
 <body>
-    <button class="print-button no-print" onclick="window.print()">🖨️ Print Invoice</button>
+    <button class="print-button no-print" onclick="window.print()">🖨️ <?= lang('Purchases.print_invoice') ?></button>
 
     <div class="invoice-container">
         <!-- Header -->
@@ -334,16 +334,16 @@
                 <div class="company-name"><?= esc($company['name']) ?></div>
                 <div class="company-details">
                     <?= nl2br(esc($company['address'])) ?><br>
-                    Phone: <?= esc($company['phone']) ?><br>
-                    Email: <?= esc($company['email']) ?>
+                    <?= lang('Purchases.phone') ?>: <?= esc($company['phone']) ?><br>
+                    <?= lang('Purchases.email') ?>: <?= esc($company['email']) ?>
                 </div>
             </div>
             <div class="invoice-title">
-                <h1>PURCHASE INVOICE</h1>
+                <h1><?= lang('Purchases.purchase_invoice') ?></h1>
                 <div class="invoice-meta">
-                    <strong>Invoice #<?= esc($purchase['invoice_no']) ?></strong><br>
-                    Date: <?= date('d M Y', strtotime($purchase['date'])) ?><br>
-                    Time: <?= date('H:i', strtotime($purchase['date'])) ?>
+                    <strong><?= lang('Purchases.invoice') ?> #<?= esc($purchase['invoice_no']) ?></strong><br>
+                    <?= lang('Purchases.date') ?>: <?= date('d M Y', strtotime($purchase['date'])) ?><br>
+                    <?= lang('Purchases.time') ?>: <?= date('H:i', strtotime($purchase['date'])) ?>
                 </div>
             </div>
         </div>
@@ -351,64 +351,64 @@
         <!-- Purchase Details -->
         <div class="invoice-details">
             <div class="bill-to">
-                <div class="section-title">Supplier Information</div>
+                <div class="section-title"><?= lang('Purchases.supplier_information') ?></div>
                 <div class="detail-item">
-                    <span class="detail-label">Company:</span>
-                    <span class="detail-value"><?= esc($purchase['supplier']['name'] ?? 'N/A') ?></span>
+                    <span class="detail-label"><?= lang('Purchases.company') ?>:</span>
+                    <span class="detail-value"><?= esc($purchase['supplier']['name'] ?? lang('Purchases.na')) ?></span>
                 </div>
                 <?php if (!empty($purchase['supplier']['email'])): ?>
                     <div class="detail-item">
-                        <span class="detail-label">Email:</span>
+                        <span class="detail-label"><?= lang('Purchases.email') ?>:</span>
                         <span class="detail-value"><?= esc($purchase['supplier']['email']) ?></span>
                     </div>
                 <?php endif; ?>
                 <?php if (!empty($purchase['supplier']['phone'])): ?>
                     <div class="detail-item">
-                        <span class="detail-label">Phone:</span>
+                        <span class="detail-label"><?= lang('Purchases.phone') ?>:</span>
                         <span class="detail-value"><?= esc($purchase['supplier']['phone']) ?></span>
                     </div>
                 <?php endif; ?>
                 <?php if (!empty($purchase['supplier']['address'])): ?>
                     <div class="detail-item">
-                        <span class="detail-label">Address:</span>
+                        <span class="detail-label"><?= lang('Purchases.address') ?>:</span>
                         <span class="detail-value"><?= nl2br(esc($purchase['supplier']['address'])) ?></span>
                     </div>
                 <?php endif; ?>
                 <div class="detail-item">
-                    <span class="detail-label">Supplier Inv #:</span>
-                    <span class="detail-value"><?= esc($purchase['supplier_invoice_no'] ?? 'N/A') ?></span>
+                    <span class="detail-label"><?= lang('Purchases.supplier_invoice') ?>:</span>
+                    <span class="detail-value"><?= esc($purchase['supplier_invoice_no'] ?? lang('Purchases.na')) ?></span>
                 </div>
             </div>
 
             <div class="invoice-info">
-                <div class="section-title">Purchase Details</div>
+                <div class="section-title"><?= lang('Purchases.purchase_details') ?></div>
                 <!-- <div class="detail-item">
                     <span class="detail-label">Store:</span>
-                    <span class="detail-value"><?= esc($purchase['store']['name'] ?? 'N/A') ?></span>
+                    <span class="detail-value"><?= esc($purchase['store']['name'] ?? lang('Purchases.na')) ?></span>
                 </div> -->
                 <div class="detail-item">
-                    <span class="detail-label">Status:</span>
+                    <span class="detail-label"><?= lang('Purchases.status') ?>:</span>
                     <span class="detail-value">
                         <span class="status-badge <?= $purchase['status'] === 'received' ? 'status-received' : ($purchase['status'] === 'pending' ? 'status-pending' : 'status-ordered') ?>">
-                            <?= ucfirst($purchase['status']) ?>
+                            <?= lang('Purchases.' . strtolower($purchase['status'])) ?>
                         </span>
                     </span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Payment:</span>
+                    <span class="detail-label"><?= lang('Purchases.payment') ?>:</span>
                     <span class="detail-value">
                         <span class="status-badge <?= $purchase['payment_status'] === 'paid' ? 'payment-paid' : ($purchase['payment_status'] === 'partial' ? 'payment-partial' : 'payment-unpaid') ?>">
-                            <?= ucfirst($purchase['payment_status']) ?>
+                            <?= lang('Purchases.' . strtolower($purchase['payment_status'])) ?>
                         </span>
                     </span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Method:</span>
-                    <span class="detail-value"><?= ucfirst(str_replace('_', ' ', $purchase['payment_method'])) ?></span>
+                    <span class="detail-label"><?= lang('Purchases.method') ?>:</span>
+                    <span class="detail-value"><?= lang('Purchases.' . strtolower($purchase['payment_method'])) ?></span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Created By:</span>
-                    <span class="detail-value"><?= esc($purchase['creator']['username'] ?? 'System') ?></span>
+                    <span class="detail-label"><?= lang('Purchases.created_by') ?>:</span>
+                    <span class="detail-value"><?= esc($purchase['creator']['username'] ?? lang('Purchases.system')) ?></span>
                 </div>
             </div>
         </div>
@@ -418,11 +418,11 @@
             <thead>
                 <tr>
                     <th style="width: 5%">#</th>
-                    <th style="width: 35%">Product</th>
-                    <th style="width: 10%" class="text-center">Qty</th>
-                    <th style="width: 12%" class="text-right">Cost Price</th>
+                    <th style="width: 35%"><?= lang('Purchases.product') ?></th>
+                    <th style="width: 10%" class="text-center"><?= lang('Purchases.qty') ?></th>
+                    <th style="width: 12%" class="text-right"><?= lang('Purchases.cost_price') ?></th>
 
-                    <th style="width: 18%" class="text-right">Subtotal</th>
+                    <th style="width: 18%" class="text-right"><?= lang('Purchases.subtotal') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -450,9 +450,9 @@
                             $remaining = $pieces - ($cartons * $cartonSize);
 
                             if ($remaining > 0) {
-                                $displayQuantity = $cartons . ' ctns + ' . number_format($remaining, 2) . ' pcs';
+                                $displayQuantity = $cartons . ' ' . lang('Purchases.ctns') . ' + ' . number_format($remaining, 2) . ' ' . lang('Purchases.pcs');
                             } else {
-                                $displayQuantity = $cartons . ' ctns';
+                                $displayQuantity = $cartons . ' ' . lang('Purchases.ctns');
                             }
                         }
                         ?>
@@ -480,29 +480,29 @@
         <div class="totals-section">
             <table class="totals-table">
                 <tr>
-                    <td>Subtotal:</td>
+                    <td><?= lang('Purchases.subtotal') ?>:</td>
                     <td class="text-right"><?= number_to_currency($__subtotal, session()->get('currency_symbol'), 'en_US', 2) ?></td>
                 </tr>
                 <?php if ($__discount > 0.0001): ?>
                     <tr>
-                        <td>Discount:</td>
+                        <td><?= lang('Purchases.discount') ?>:</td>
                         <td class="text-right">-<?= number_to_currency($__discount, session()->get('currency_symbol'), 'en_US', 2) ?></td>
                     </tr>
                 <?php endif; ?>
                 <?php if ($__tax > 0.0001): ?>
                     <tr>
-                        <td>Tax:</td>
+                        <td><?= lang('Purchases.tax') ?>:</td>
                         <td class="text-right"><?= number_to_currency($__tax, session()->get('currency_symbol'), 'en_US', 2) ?></td>
                     </tr>
                 <?php endif; ?>
                 <?php if ($__shipping > 0.0001): ?>
                     <tr>
-                        <td>Shipping:</td>
+                        <td><?= lang('Purchases.shipping_cost') ?>:</td>
                         <td class="text-right"><?= number_to_currency($__shipping, session()->get('currency_symbol'), 'en_US', 2) ?></td>
                     </tr>
                 <?php endif; ?>
                 <tr>
-                    <td><strong>Grand Total:</strong></td>
+                    <td><strong><?= lang('Purchases.grand_total') ?>:</strong></td>
                     <td class="text-right"><strong><?= number_to_currency($purchase['grand_total'], session()->get('currency_symbol'), 'en_US', 2) ?></strong></td>
                 </tr>
             </table>
@@ -511,17 +511,17 @@
         <!-- Payment Summary -->
         <div class="invoice-details">
             <div class="bill-to">
-                <div class="section-title">Payment Summary</div>
+                <div class="section-title"><?= lang('Purchases.payment_summary') ?></div>
                 <div class="detail-item">
-                    <span class="detail-label">Grand Total:</span>
+                    <span class="detail-label"><?= lang('Purchases.grand_total') ?>:</span>
                     <span class="detail-value font-bold"><?= number_to_currency($purchase['grand_total'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Amount Paid:</span>
+                    <span class="detail-label"><?= lang('Purchases.amount_paid') ?>:</span>
                     <span class="detail-value"><?= number_to_currency($purchase['paid_amount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Due Amount:</span>
+                    <span class="detail-label"><?= lang('Purchases.due_amount') ?>:</span>
                     <span class="detail-value font-bold" style="color: <?= $purchase['due_amount'] > 0 ? '#dc2626' : '#059669' ?>"><?= number_to_currency($purchase['due_amount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                 </div>
             </div>
@@ -529,11 +529,11 @@
             <!-- Payment History -->
             <?php if (!empty($purchase['payments'])): ?>
                 <div class="invoice-info payments-section">
-                    <div class="section-title">Payment History</div>
+                    <div class="section-title"><?= lang('Purchases.payment_history') ?></div>
                     <?php foreach ($purchase['payments'] as $payment): ?>
                         <div class="payment-row">
                             <span class="payment-date"><?= date('d M Y', strtotime($payment['payment_date'])) ?></span>
-                            <span class="payment-method"><?= ucfirst(str_replace('_', ' ', $payment['payment_method'])) ?><?= !empty($payment['reference']) ? ' - ' . esc($payment['reference']) : '' ?></span>
+                            <span class="payment-method"><?= lang('Purchases.' . strtolower($payment['payment_method'])) ?><?= !empty($payment['reference']) ? ' - ' . esc($payment['reference']) : '' ?></span>
                             <span class="payment-amount"><?= number_to_currency($payment['amount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                     <?php endforeach; ?>
@@ -544,15 +544,15 @@
         <!-- Notes -->
         <?php if (!empty($purchase['note'])): ?>
             <div class="notes-section">
-                <div class="section-title">Notes</div>
+                <div class="section-title"><?= lang('Purchases.notes') ?></div>
                 <div><?= nl2br(esc($purchase['note'])) ?></div>
             </div>
         <?php endif; ?>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Thank you for your business!</p>
-            <p>This is a computer-generated invoice. Generated on <?= date('d M Y H:i') ?></p>
+            <p><?= lang('Purchases.thank_you_business') ?></p>
+            <p><?= lang('Purchases.computer_generated_invoice') ?> <?= lang('Purchases.generated_on') ?> <?= date('d M Y H:i') ?></p>
         </div>
     </div>
 

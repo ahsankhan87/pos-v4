@@ -17,7 +17,8 @@ class UserModel extends Model
         'reset_expires',
         'is_active',
         'role_id',
-        'store_id'
+        'store_id',
+        'preferred_locale'
     ];
     protected $useTimestamps = true;
     protected $beforeInsert = ['hashPassword'];

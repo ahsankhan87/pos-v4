@@ -55,7 +55,7 @@ class RequireSubscription implements FilterInterface
                     'is_trial' => 0,
                     'ends_at' => $now,
                 ]);
-                $support = config('Billing')->supportWebsite;
+                $support = "https://khybersoft.com";
 
                 return redirect()->to('/billing/manage')->with('error', 'Your subscription has expired. Please renew or activate a license. Visit: ' . $support);
             }

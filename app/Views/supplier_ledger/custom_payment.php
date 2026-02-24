@@ -17,7 +17,7 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                 <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
                     class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200 border border-gray-300">
                     <i class="fas fa-arrow-left mr-2"></i>
-                    <span>Back to Ledger</span>
+                    <span><?= lang('SupplierLedger.back_to_ledger') ?></span>
                 </a>
             </div>
         </div>
@@ -34,7 +34,7 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                     </p>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm text-gray-600">Current Balance</p>
+                    <p class="text-sm text-gray-600"><?= lang('SupplierLedger.current_balance') ?></p>
                     <p class="text-2xl font-bold text-gray-900">
                         <?php
                         $ledgerModel = new \App\Models\SupplierLedgerModel();
@@ -53,7 +53,7 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
 
                 <!-- Transaction Type -->
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-3">Transaction Type</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3"><?= lang('SupplierLedger.transaction_type') ?></label>
                     <div class="grid grid-cols-2 gap-4">
                         <label class="relative flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
                             <input type="radio" name="transaction_type" value="payment" class="peer sr-only" checked>
@@ -64,8 +64,8 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="font-semibold">Payment</p>
-                                    <p class="text-xs text-gray-500">Pay supplier (Debit / reduces payable)</p>
+                                    <p class="font-semibold"><?= lang('SupplierLedger.payment') ?></p>
+                                    <p class="text-xs text-gray-500"><?= lang('SupplierLedger.payment_type_help') ?></p>
                                 </div>
                             </div>
                             <div class="absolute inset-0 border-2 border-blue-500 rounded-lg opacity-0 peer-checked:opacity-100 pointer-events-none"></div>
@@ -80,8 +80,8 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="font-semibold">Receipt</p>
-                                    <p class="text-xs text-gray-500">Money received from supplier (Credit / refund/settlement)</p>
+                                    <p class="font-semibold"><?= lang('SupplierLedger.receipt') ?></p>
+                                    <p class="text-xs text-gray-500"><?= lang('SupplierLedger.receipt_type_help') ?></p>
                                 </div>
                             </div>
                             <div class="absolute inset-0 border-2 border-green-500 rounded-lg opacity-0 peer-checked:opacity-100 pointer-events-none"></div>
@@ -92,11 +92,11 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                 <!-- Amount -->
                 <div class="mb-6">
                     <label for="amount" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Amount <span class="text-red-500">*</span>
+                        <?= lang('SupplierLedger.amount') ?> <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 sm:text-sm">PKR</span>
+                            <span class="text-gray-500 sm:text-sm"><?= lang('SupplierLedger.pkr') ?></span>
                         </div>
                         <input type="number"
                             id="amount"
@@ -113,7 +113,7 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                 <!-- Payment Date -->
                 <div class="mb-6">
                     <label for="payment_date" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Payment Date <span class="text-red-500">*</span>
+                        <?= lang('SupplierLedger.payment_date') ?> <span class="text-red-500">*</span>
                     </label>
                     <input type="date"
                         id="payment_date"
@@ -126,30 +126,30 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                 <!-- Payment Method -->
                 <div class="mb-6">
                     <label for="payment_method" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Payment Method <span class="text-red-500">*</span>
+                        <?= lang('SupplierLedger.payment_method') ?> <span class="text-red-500">*</span>
                     </label>
                     <select id="payment_method"
                         name="payment_method"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required>
-                        <option value="cash">Cash</option>
-                        <option value="bank">Bank Transfer</option>
-                        <option value="cheque">Cheque</option>
-                        <option value="card">Card</option>
-                        <option value="mobile">Mobile Payment</option>
+                        <option value="cash"><?= lang('SupplierLedger.cash') ?></option>
+                        <option value="bank"><?= lang('SupplierLedger.bank_transfer') ?></option>
+                        <option value="cheque"><?= lang('SupplierLedger.cheque') ?></option>
+                        <option value="card"><?= lang('SupplierLedger.card') ?></option>
+                        <option value="mobile"><?= lang('SupplierLedger.other') ?></option>
                     </select>
                 </div>
 
                 <!-- Description -->
                 <div class="mb-6">
                     <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Description/Notes <span class="text-red-500">*</span>
+                        <?= lang('SupplierLedger.description_notes') ?> <span class="text-red-500">*</span>
                     </label>
                     <textarea id="description"
                         name="description"
                         rows="3"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter payment details or notes..."
+                        placeholder="<?= esc(lang('SupplierLedger.enter_payment_details_or_notes')) ?>"
                         required></textarea>
                 </div>
 
@@ -158,11 +158,11 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                     <button type="submit"
                         class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-check-circle mr-2"></i>
-                        Record Transaction
+                        <?= lang('SupplierLedger.record_transaction') ?>
                     </button>
                     <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
                         class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200 border border-gray-300">
-                        Cancel
+                        <?= lang('SupplierLedger.cancel') ?>
                     </a>
                 </div>
             </form>
@@ -173,10 +173,10 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
             <div class="flex items-start">
                 <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
                 <div class="text-sm text-gray-700">
-                    <p class="font-semibold mb-1">Transaction Types:</p>
+                    <p class="font-semibold mb-1"><?= lang('SupplierLedger.transaction_types') ?></p>
                     <ul class="list-disc list-inside space-y-1 ml-2">
-                        <li><strong>Payment:</strong> Pay supplier (Debit)</li>
-                        <li><strong>Receipt:</strong> Receive money from supplier (Credit)</li>
+                        <li><strong><?= lang('SupplierLedger.payment') ?>:</strong> <?= lang('SupplierLedger.payment_type_help') ?></li>
+                        <li><strong><?= lang('SupplierLedger.receipt') ?>:</strong> <?= lang('SupplierLedger.receipt_type_help') ?></li>
                     </ul>
                 </div>
             </div>
@@ -193,7 +193,7 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
             const originalText = submitBtn.html();
 
             // Disable button and show loading
-            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i><?= esc(lang('SupplierLedger.processing')) ?>');
 
             $.ajax({
                 url: '<?= base_url('supplier-ledger/process-custom-payment') ?>',
@@ -205,12 +205,12 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
                         alert(response.message);
                         window.location.href = '<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>';
                     } else {
-                        alert('Error: ' + response.message);
+                        alert('<?= esc(lang('SupplierLedger.error_prefix')) ?>' + response.message);
                         submitBtn.prop('disabled', false).html(originalText);
                     }
                 },
                 error: function(xhr) {
-                    alert('An error occurred while processing the payment');
+                    alert('<?= esc(lang('SupplierLedger.error_processing_payment')) ?>');
                     submitBtn.prop('disabled', false).html(originalText);
                 }
             });
@@ -220,9 +220,9 @@ $currencySymbol = session()->get('currency_symbol') ?: '$';
         $('input[type="radio"][name="transaction_type"]').on('change', function() {
             const selected = $(this).val();
             if (selected === 'receipt' || selected === 'payout') {
-                $('#description').attr('placeholder', 'Enter receipt details...');
+                $('#description').attr('placeholder', '<?= esc(lang('SupplierLedger.enter_receipt_details')) ?>');
             } else {
-                $('#description').attr('placeholder', 'Enter payment details or notes...');
+                $('#description').attr('placeholder', '<?= esc(lang('SupplierLedger.enter_payment_details_or_notes')) ?>');
             }
         });
     });

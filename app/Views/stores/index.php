@@ -8,12 +8,12 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><?= esc($title) ?></h1>
-            <p class="mt-1 text-sm text-gray-500">Manage branch availability and defaults for accurate inventory routing.</p>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Stores.subtitle') ?></p>
         </div>
         <?php if (can('stores.create')): ?>
             <a href="<?= site_url('stores/new') ?>" class="btn btn-primary mt-4 sm:mt-0">
                 <i class="fas fa-store"></i>
-                <span>Add Store</span>
+                <span><?= lang('Stores.add_store') ?></span>
             </a>
         <?php endif; ?>
     </div>
@@ -38,22 +38,22 @@
 
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Stores & Branches</h2>
-            <span class="text-sm text-gray-500">Total: <?= esc($totalStores ?? 0) ?></span>
+            <h2 class="text-lg font-semibold text-gray-900"><?= lang('Stores.stores_branches') ?></h2>
+            <span class="text-sm text-gray-500"><?= lang('Stores.total') ?>: <?= esc($totalStores ?? 0) ?></span>
         </div>
 
         <div class="overflow-x-auto">
             <table id="storesTable" class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">Phone</th>
-                        <th scope="col">Currency</th>
-                        <th scope="col">Active</th>
-                        <th scope="col">Default</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Stores.id') ?></th>
+                        <th scope="col"><?= lang('Stores.name') ?></th>
+                        <th scope="col"><?= lang('Stores.address') ?></th>
+                        <th scope="col"><?= lang('Stores.phone') ?></th>
+                        <th scope="col"><?= lang('Stores.currency') ?></th>
+                        <th scope="col"><?= lang('Stores.active') ?></th>
+                        <th scope="col"><?= lang('Stores.default') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Stores.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -65,6 +65,31 @@
 <!-- DataTables JS -->
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
 <script>
+    const storeTexts = {
+        notSet: <?= json_encode(lang('Stores.not_set'), JSON_UNESCAPED_UNICODE) ?>,
+        active: <?= json_encode(lang('Stores.active'), JSON_UNESCAPED_UNICODE) ?>,
+        inactive: <?= json_encode(lang('Stores.inactive'), JSON_UNESCAPED_UNICODE) ?>,
+        default: <?= json_encode(lang('Stores.default'), JSON_UNESCAPED_UNICODE) ?>,
+        no: <?= json_encode(lang('Stores.no'), JSON_UNESCAPED_UNICODE) ?>,
+        searchStores: <?= json_encode(lang('Stores.search_stores'), JSON_UNESCAPED_UNICODE) ?>,
+        showEntries: <?= json_encode(lang('Stores.show_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        showingEntries: <?= json_encode(lang('Stores.showing_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        showingNoEntries: <?= json_encode(lang('Stores.showing_no_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        filteredEntries: <?= json_encode(lang('Stores.filtered_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        noMatchingStores: <?= json_encode(lang('Stores.no_matching_stores'), JSON_UNESCAPED_UNICODE) ?>,
+        loadingStores: <?= json_encode(lang('Stores.loading_stores'), JSON_UNESCAPED_UNICODE) ?>,
+        first: <?= json_encode(lang('Stores.first'), JSON_UNESCAPED_UNICODE) ?>,
+        last: <?= json_encode(lang('Stores.last'), JSON_UNESCAPED_UNICODE) ?>,
+        noActionsAvailable: <?= json_encode(lang('Stores.no_actions_available'), JSON_UNESCAPED_UNICODE) ?>,
+        view: <?= json_encode(lang('Stores.view'), JSON_UNESCAPED_UNICODE) ?>,
+        makeDefault: <?= json_encode(lang('Stores.make_default'), JSON_UNESCAPED_UNICODE) ?>,
+        edit: <?= json_encode(lang('Stores.edit'), JSON_UNESCAPED_UNICODE) ?>,
+        delete: <?= json_encode(lang('Stores.delete'), JSON_UNESCAPED_UNICODE) ?>,
+        setDefaultConfirm: <?= json_encode(lang('Stores.set_default_confirm'), JSON_UNESCAPED_UNICODE) ?>,
+        deleteStoreConfirm: <?= json_encode(lang('Stores.delete_store_confirm'), JSON_UNESCAPED_UNICODE) ?>,
+        actions: <?= json_encode(lang('Stores.actions'), JSON_UNESCAPED_UNICODE) ?>
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         const permissions = {
             view: <?= can('stores.view') ? 'true' : 'false' ?>,
@@ -122,7 +147,7 @@
                     data: null,
                     render: function(row) {
                         if (!row.currency_code) {
-                            return '<span class="text-slate-400 text-xs">Not set</span>';
+                            return '<span class="text-slate-400 text-xs">' + storeTexts.notSet + '</span>';
                         }
                         const symbol = row.currency_symbol ? escapeHtml(row.currency_symbol) + ' ' : '';
                         return symbol + escapeHtml(row.currency_code);
@@ -133,8 +158,8 @@
                     render: function(val) {
                         const enabled = Number(val) === 1;
                         return enabled ?
-                            '<span class="badge badge--success">Active</span>' :
-                            '<span class="badge badge--danger">Inactive</span>';
+                            '<span class="badge badge--success">' + storeTexts.active + '</span>' :
+                            '<span class="badge badge--danger">' + storeTexts.inactive + '</span>';
                     },
                     width: '110px'
                 },
@@ -143,8 +168,8 @@
                     render: function(val) {
                         const enabled = Number(val) === 1;
                         return enabled ?
-                            '<span class="badge badge--info">Default</span>' :
-                            '<span class="badge badge--warning">No</span>';
+                            '<span class="badge badge--info">' + storeTexts.default+'</span>' :
+                            '<span class="badge badge--warning">' + storeTexts.no + '</span>';
                     },
                     width: '100px'
                 },
@@ -160,16 +185,16 @@
             ],
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search stores...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching stores found",
-                processing: "Loading stores...",
+                searchPlaceholder: storeTexts.searchStores,
+                lengthMenu: storeTexts.showEntries,
+                info: storeTexts.showingEntries,
+                infoEmpty: storeTexts.showingNoEntries,
+                infoFiltered: storeTexts.filteredEntries,
+                zeroRecords: storeTexts.noMatchingStores,
+                processing: storeTexts.loadingStores,
                 paginate: {
-                    first: "First",
-                    last: "Last",
+                    first: storeTexts.first,
+                    last: storeTexts.last,
                     next: "<i class='fas fa-chevron-right'></i>",
                     previous: "<i class='fas fa-chevron-left'></i>"
                 }
@@ -187,7 +212,7 @@
 
         function buildActions(row) {
             if (!permissions.view && !permissions.update && !permissions.delete) {
-                return '<span class="text-xs text-slate-400">No actions available</span>';
+                return '<span class="text-xs text-slate-400">' + storeTexts.noActionsAvailable + '</span>';
             }
 
             let menuItems = '';
@@ -196,7 +221,7 @@
                 menuItems += `
                     <a href="${routes.view}/${row.id}" class="actions-link actions-link--info">
                         <i class="fas fa-eye"></i>
-                        <span>View</span>
+                        <span>${storeTexts.view}</span>
                     </a>
                 `;
             }
@@ -204,11 +229,11 @@
             if (permissions.update) {
                 if (Number(row.is_default) !== 1) {
                     menuItems += `
-                        <form action="${routes.makeDefault}/${row.id}" method="post" onsubmit="return confirm('Set this store as default?');">
+                        <form action="${routes.makeDefault}/${row.id}" method="post" onsubmit="return confirm('${storeTexts.setDefaultConfirm}');">
                             <?= csrf_field() ?>
                             <button type="submit" class="actions-link actions-link--secondary">
                                 <i class="fas fa-star"></i>
-                                <span>Make Default</span>
+                                <span>${storeTexts.makeDefault}</span>
                             </button>
                         </form>
                     `;
@@ -217,32 +242,32 @@
                 menuItems += `
                     <a href="${routes.edit}/${row.id}" class="actions-link actions-link--primary">
                         <i class="fas fa-edit"></i>
-                        <span>Edit</span>
+                        <span>${storeTexts.edit}</span>
                     </a>
                 `;
             }
 
             if (permissions.delete && Number(row.is_default) !== 1) {
                 menuItems += `
-                    <form action="${routes.delete}/${row.id}" method="post" onsubmit="return confirm('Delete this store?');">
+                    <form action="${routes.delete}/${row.id}" method="post" onsubmit="return confirm('${storeTexts.deleteStoreConfirm}');">
                         <?= csrf_field() ?>
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="actions-link actions-link--danger">
                             <i class="fas fa-trash-alt"></i>
-                            <span>Delete</span>
+                            <span>${storeTexts.delete}</span>
                         </button>
                     </form>
                 `;
             }
 
             if (menuItems === '') {
-                return '<span class="text-xs text-slate-400">No actions available</span>';
+                return '<span class="text-xs text-slate-400">' + storeTexts.noActionsAvailable + '</span>';
             }
 
             return `
                 <div class="actions-wrapper">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm">
-                        <span>Actions</span>
+                        <span>${storeTexts.actions}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="actions-menu hidden">

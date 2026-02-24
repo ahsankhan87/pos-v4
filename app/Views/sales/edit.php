@@ -51,7 +51,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             <i class="fas fa-cash-register text-white text-xs"></i>
                         </div>
                         <div>
-                            <h1 class="text-sm font-bold text-gray-900 leading-tight">POS Edit</h1>
+                            <h1 class="text-sm font-bold text-gray-900 leading-tight"><?= lang('Sales.pos_edit') ?></h1>
                             <p class="text-xs text-gray-500 leading-tight">#<?= esc($sale['invoice_no'] ?? '') ?></p>
                         </div>
                     </div>
@@ -60,7 +60,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 <!-- Center - Time & Help -->
                 <div class="flex items-center space-x-3">
                     <button type="button" id="showHelpModal" class="inline-flex items-center px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-all">
-                        <i class="fas fa-keyboard mr-1 text-xs"></i>Help <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">?</kbd>
+                        <i class="fas fa-keyboard mr-1 text-xs"></i><?= lang('Sales.help') ?> <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">?</kbd>
                     </button>
                     <div class="text-center hidden sm:block">
                         <p class="text-xs text-gray-500 leading-tight" id="current-time"><?= date('h:i A') ?></p>
@@ -70,7 +70,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 <!-- Right Side - User Info -->
                 <div class="flex items-center space-x-2">
                     <div class="text-right hidden sm:block">
-                        <p class="text-xs font-medium text-gray-900 leading-tight"><?= session()->get('username') ?? 'Cashier' ?></p>
+                        <p class="text-xs font-medium text-gray-900 leading-tight"><?= session()->get('username') ?? lang('Sales.cashier') ?></p>
                     </div>
                     <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-gray-600 text-xs"></i>
@@ -98,7 +98,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center">
                     <i class="fas fa-keyboard text-white text-2xl mr-3"></i>
-                    <h2 class="text-xl font-bold text-white">Keyboard Shortcuts</h2>
+                    <h2 class="text-xl font-bold text-white"><?= lang('Sales.keyboard_shortcuts') ?></h2>
                 </div>
                 <button type="button" id="closeHelpModal" class="text-white hover:bg-white/20 rounded-lg p-2 transition-all">
                     <i class="fas fa-times text-xl"></i>
@@ -109,31 +109,31 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     <!-- Navigation & Search -->
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                            <i class="fas fa-search text-blue-600 mr-2"></i>Navigation & Search
+                            <i class="fas fa-search text-blue-600 mr-2"></i><?= lang('Sales.navigation_search') ?>
                         </h3>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Focus Barcode Input</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.focus_barcode_input') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F1</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Product Search</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.product_search') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F2</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Select Customer</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.select_customer') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F3</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Select Employee</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.select_employee') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F4</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Select Discount</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.select_discount') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F8</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Close Dropdowns</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.close_dropdowns') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Esc</kbd>
                             </div>
                         </div>
@@ -142,23 +142,23 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     <!-- Cart Operations -->
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                            <i class="fas fa-shopping-cart text-green-600 mr-2"></i>Cart Operations
+                            <i class="fas fa-shopping-cart text-green-600 mr-2"></i><?= lang('Sales.cart_operations') ?>
                         </h3>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Increase Last Item Qty</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.increase_last_item_qty') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">+ or =</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Decrease Last Item Qty</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.decrease_last_item_qty') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">-</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Remove Last Item</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.remove_last_item') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Del</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Clear Entire Cart</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.clear_entire_cart') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F12</kbd>
                             </div>
                         </div>
@@ -167,15 +167,15 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     <!-- Payment & Checkout -->
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                            <i class="fas fa-money-bill-wave text-emerald-600 mr-2"></i>Payment & Checkout
+                            <i class="fas fa-money-bill-wave text-emerald-600 mr-2"></i><?= lang('Sales.payment_checkout') ?>
                         </h3>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Enter Tendered Amount</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.enter_tendered_amount') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F6</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Tax Rate Input</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.tax_rate_input') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">F7</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
@@ -193,15 +193,15 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     <!-- Help & Other -->
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                            <i class="fas fa-question-circle text-purple-600 mr-2"></i>Help & Other
+                            <i class="fas fa-question-circle text-purple-600 mr-2"></i><?= lang('Sales.help_other') ?>
                         </h3>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Toggle This Help</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.toggle_this_help') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">? or F1</kbd>
                             </div>
                             <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span class="text-sm text-gray-700">Quick Total Calculation</span>
+                                <span class="text-sm text-gray-700"><?= lang('Sales.quick_total_calculation') ?></span>
                                 <kbd class="px-3 py-1 bg-gray-700 text-white rounded font-mono text-sm">Ctrl+T</kbd>
                             </div>
                         </div>
@@ -211,20 +211,20 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 <!-- Tips Section -->
                 <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <h4 class="font-bold text-blue-900 mb-2 flex items-center">
-                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Pro Tips
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i><?= lang('Sales.pro_tips') ?>
                     </h4>
                     <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                        <li>Use barcode scanner or F1 input for fastest product entry</li>
-                        <li>Press Enter in barcode field to search and add product instantly</li>
-                        <li>Use +/- keys to quickly adjust quantity of the last added item</li>
-                        <li>F9 for instant checkout when ready (with confirmation)</li>
-                        <li>All dropdowns support keyboard typing for quick selection</li>
+                        <li><?= lang('Sales.tip_fast_entry') ?></li>
+                        <li><?= lang('Sales.tip_enter_add_product') ?></li>
+                        <li><?= lang('Sales.tip_quick_qty_adjust') ?></li>
+                        <li><?= lang('Sales.tip_f9_checkout') ?></li>
+                        <li><?= lang('Sales.tip_dropdown_typing') ?></li>
                     </ul>
                 </div>
             </div>
             <div class="bg-gray-50 px-6 py-3 flex justify-end border-t border-gray-200">
                 <button type="button" id="closeHelpModalBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium">
-                    Got it!
+                    <?= lang('Sales.got_it') ?>
                 </button>
             </div>
         </div>
@@ -244,12 +244,12 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <!-- Barcode Scanner -->
                         <div>
                             <label class="block text-[10px] font-semibold text-gray-700 mb-0.5">
-                                <i class="fas fa-barcode mr-1"></i>Barcode <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd>
+                                <i class="fas fa-barcode mr-1"></i><?= lang('Sales.barcode') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F1</kbd>
                             </label>
                             <div class="relative">
                                 <input type="text" id="barcode-input"
                                     class="w-full pl-7 pr-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Scan barcode" autofocus>
+                                    placeholder="<?= esc(lang('Sales.scan_barcode')) ?>" autofocus>
                                 <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                     <i class="fas fa-barcode text-gray-400 text-xs"></i>
                                 </div>
@@ -259,7 +259,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <!-- Product Search -->
                         <div>
                             <label class="block text-[10px] font-semibold text-gray-700 mb-0.5">
-                                <i class="fas fa-search mr-1"></i>Search <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F2</kbd>
+                                <i class="fas fa-search mr-1"></i><?= lang('Sales.search') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F2</kbd>
                             </label>
                             <select id="product-search" class="w-full select2-search">
                                 <option></option>
@@ -292,11 +292,11 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <div class="flex items-center justify-between">
                             <h3 class="text-sm font-bold text-gray-900 flex items-center">
                                 <i class="fas fa-shopping-cart mr-1.5 text-blue-600 text-xs"></i>
-                                Cart
+                                <?= lang('Sales.cart') ?>
                                 <span id="cart-count" class="ml-1.5 bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
                             </h3>
                             <button type="button" onclick="clearCart()" class="text-red-600 hover:text-red-800 text-xs font-medium flex items-center">
-                                <i class="fas fa-trash mr-0.5"></i>Clear
+                                <i class="fas fa-trash mr-0.5"></i><?= lang('Sales.clear') ?>
                             </button>
                         </div>
                     </div>
@@ -306,12 +306,12 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <table id="cart-table" class="min-w-full">
                             <thead class="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th class="px-2 py-1 text-left text-xs font-bold text-gray-600 uppercase">Product</th>
-                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Price</th>
-                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Qty</th>
-                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Disc</th>
-                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Total</th>
-                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase">Act</th>
+                                    <th class="px-2 py-1 text-left text-xs font-bold text-gray-600 uppercase"><?= lang('Sales.product') ?></th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase"><?= lang('Sales.price') ?></th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase"><?= lang('Sales.qty') ?></th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase"><?= lang('Sales.discount') ?></th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase"><?= lang('Sales.total') ?></th>
+                                    <th class="px-2 py-1 text-center text-xs font-bold text-gray-600 uppercase"><?= lang('Sales.actions') ?></th>
                                 </tr>
                             </thead>
                             <tbody id="cart-items" class="bg-white divide-y divide-gray-200">
@@ -325,8 +325,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-2">
                             <i class="fas fa-shopping-cart text-gray-400 text-lg"></i>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-900 mb-0.5">Cart is empty</h3>
-                        <p class="text-xs text-gray-500">Press F1 to scan or F2 to search</p>
+                        <h3 class="text-sm font-medium text-gray-900 mb-0.5"><?= lang('Sales.cart_empty') ?></h3>
+                        <p class="text-xs text-gray-500"><?= lang('Sales.press_f1_to_scan') ?></p>
                     </div>
                 </div>
             </div>
@@ -337,13 +337,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 <!-- Customer & Payment Combined -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2">
                     <h3 class="text-xs font-bold text-gray-900 mb-1.5 flex items-center">
-                        <i class="fas fa-user mr-1 text-green-600 text-xs"></i>Details
+                        <i class="fas fa-user mr-1 text-green-600 text-xs"></i><?= lang('Sales.details') ?>
                     </h3>
 
                     <div class="space-y-1.5">
                         <!-- Date -->
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Date</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.date') ?></label>
                             <?php
                             $existingDate = $sale['created_at'] ?? date('Y-m-d H:i:s');
                             $dtVal = old('sale_date');
@@ -356,9 +356,9 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         </div>
                         <div>
                             <?php $selectedCustomer = (string) old('customer_id', $sale['customer_id'] ?? ''); ?>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Customer <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F3</kbd></label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.customer') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F3</kbd></label>
                             <select name="customer_id" id="customer-select" class="w-full select2-customer text-xs">
-                                <option value="" <?= $selectedCustomer === '' ? 'selected' : '' ?>>Walk-in</option>
+                                <option value="" <?= $selectedCustomer === '' ? 'selected' : '' ?>><?= lang('Sales.walk_in') ?></option>
                                 <?php foreach ($customers as $customer): ?>
                                     <?php $customerId = (string) $customer['id']; ?>
                                     <option value="<?= $customerId ?>" <?= $customerId === $selectedCustomer ? 'selected' : '' ?>><?= esc($customer['name']) ?></option>
@@ -368,9 +368,9 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
                         <div>
                             <?php $selectedEmployee = (string) old('employee_id', $sale['employee_id'] ?? ''); ?>
-                            <label class="block text-xs font-semibold text-gray-700 mb-0.5">Employee <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F4</kbd></label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.employee') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F4</kbd></label>
                             <select name="employee_id" id="employee-select" class="w-full select2-employee text-xs">
-                                <option value="" <?= $selectedEmployee === '' ? 'selected' : '' ?>>None</option>
+                                <option value="" <?= $selectedEmployee === '' ? 'selected' : '' ?>><?= lang('Sales.none') ?></option>
                                 <?php foreach ($employees as $employee): ?>
                                     <?php $employeeId = (string) $employee['id']; ?>
                                     <option value="<?= $employeeId ?>" <?= $employeeId === $selectedEmployee ? 'selected' : '' ?>><?= esc($employee['name']) ?></option>
@@ -380,29 +380,29 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Pay Type</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.pay_type') ?></label>
                                 <?php $selectedPaymentType = old('payment_type', $sale['payment_type'] ?? 'cash'); ?>
                                 <select name="payment_type" id="payment_type" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <option value="cash" <?= $selectedPaymentType === 'cash' ? 'selected' : '' ?>>Cash</option>
-                                    <option value="credit" <?= $selectedPaymentType === 'credit' ? 'selected' : '' ?>>Credit</option>
+                                    <option value="cash" <?= $selectedPaymentType === 'cash' ? 'selected' : '' ?>><?= lang('Sales.cash') ?></option>
+                                    <option value="credit" <?= $selectedPaymentType === 'credit' ? 'selected' : '' ?>><?= lang('Sales.credit') ?></option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Method</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.method') ?></label>
                                 <?php $selectedPaymentMethod = old('payment_method', $sale['payment_method'] ?? 'cash'); ?>
                                 <select name="payment_method" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <option value="cash" <?= $selectedPaymentMethod === 'cash' ? 'selected' : '' ?>>Cash</option>
-                                    <option value="card" <?= $selectedPaymentMethod === 'card' ? 'selected' : '' ?>>Card</option>
-                                    <option value="upi" <?= $selectedPaymentMethod === 'upi' ? 'selected' : '' ?>>UPI</option>
-                                    <option value="wallet" <?= $selectedPaymentMethod === 'wallet' ? 'selected' : '' ?>>Wallet</option>
+                                    <option value="cash" <?= $selectedPaymentMethod === 'cash' ? 'selected' : '' ?>><?= lang('Sales.cash') ?></option>
+                                    <option value="card" <?= $selectedPaymentMethod === 'card' ? 'selected' : '' ?>><?= lang('Sales.card') ?></option>
+                                    <option value="upi" <?= $selectedPaymentMethod === 'upi' ? 'selected' : '' ?>><?= lang('Sales.upi') ?></option>
+                                    <option value="wallet" <?= $selectedPaymentMethod === 'wallet' ? 'selected' : '' ?>><?= lang('Sales.wallet') ?></option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Disc <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F8</kbd></label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.disc') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F8</kbd></label>
                                 <div class="flex items-center gap-0.5">
                                     <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" disabled title="Use item-wise discounts"
                                         class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-gray-100 cursor-not-allowed">
@@ -415,7 +415,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-0.5">Tax(%) <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F7</kbd></label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.tax_percent') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F7</kbd></label>
                                 <input type="number" id="taxRate" name="tax_rate" value="<?= esc(old('tax_rate', $sale['tax_rate'] ?? 0)) ?>" min="0" max="100" step="0.01"
                                     class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
                                 <input type="hidden" id="total_tax" name="total_tax" value="<?= esc(old('total_tax', $sale['total_tax'] ?? 0)) ?>">
@@ -428,33 +428,33 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 <div class="bg-white rounded-lg shadow-lg border-2 border-blue-200 overflow-hidden sticky top-1">
                     <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 border-b border-blue-200">
                         <h3 class="text-xs font-bold text-blue-900 flex items-center">
-                            <i class="fas fa-calculator mr-1 text-xs"></i>Total
+                            <i class="fas fa-calculator mr-1 text-xs"></i><?= lang('Sales.total') ?>
                         </h3>
                     </div>
 
                     <div class="p-2 space-y-1">
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600 font-medium">Subtotal:</span>
+                            <span class="text-xs text-gray-600 font-medium"><?= lang('Sales.subtotal') ?>:</span>
                             <span id="subtotal" class="text-xs font-bold text-gray-900"><?= $currencySymbol ?><?= number_format($initialSubtotal, 2) ?></span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600 font-medium">Discount:</span>
+                            <span class="text-xs text-gray-600 font-medium"><?= lang('Sales.discount') ?>:</span>
                             <span id="discountAmount" class="text-xs font-bold text-orange-600">-<?= $currencySymbol ?><?= number_format($initialDiscountAmount, 2) ?></span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600 font-medium">Tax:</span>
+                            <span class="text-xs text-gray-600 font-medium"><?= lang('Sales.tax') ?>:</span>
                             <span id="taxAmount" class="text-xs font-bold text-green-600"><?= $currencySymbol ?><?= number_format($initialTaxAmount, 2) ?></span>
                         </div>
                         <div class="border-t border-gray-300 pt-1">
                             <div class="flex justify-between items-center">
-                                <span class="text-sm font-bold text-gray-900">TOTAL:</span>
+                                <span class="text-sm font-bold text-gray-900"><?= strtoupper(lang('Sales.total')) ?>:</span>
                                 <span id="cart-total" class="text-lg font-bold text-blue-700"><?= $currencySymbol ?><?= number_format($initialTotal, 2) ?></span>
                             </div>
                         </div>
                         <!-- Tendered & Change/Due -->
                         <div class="mt-1">
                             <label for="tenderedAmountInput" class="block text-xs font-semibold text-gray-700 mb-0.5">
-                                Tendered <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F6</kbd>
+                                <?= lang('Sales.tendered') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[10px] ml-0.5">F6</kbd>
                             </label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-1.5 flex items-center text-gray-500 text-xs"><?= session()->get('currency_symbol') ?></span>
@@ -462,11 +462,11 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             </div>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600 font-medium">Change:</span>
+                            <span class="text-xs text-gray-600 font-medium"><?= lang('Sales.change') ?>:</span>
                             <span id="changeAmount" class="text-xs font-bold text-green-600"><?= $currencySymbol ?><?= number_format($initialChange, 2) ?></span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600 font-medium">Due:</span>
+                            <span class="text-xs text-gray-600 font-medium"><?= lang('Sales.due') ?>:</span>
                             <span id="dueAmount" class="text-xs font-bold text-red-600 <?= $initialDue > 0 ? '' : 'hidden' ?>"><?= $currencySymbol ?><?= number_format($initialDue, 2) ?></span>
                         </div>
                     </div>
@@ -476,12 +476,12 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         <div class="grid grid-cols-1 gap-1.5">
                             <button type="button" onclick="clearCart()"
                                 class="flex items-center justify-center px-2 py-1.5 bg-gray-200 text-gray-800 text-xs font-medium rounded hover:bg-gray-300 transition-all">
-                                <i class="fas fa-undo mr-1 text-xs"></i>Reset Cart
+                                <i class="fas fa-undo mr-1 text-xs"></i><?= lang('Sales.reset_cart') ?>
                             </button>
                         </div>
                         <button type="submit"
                             class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xl font-bold rounded hover:from-blue-700 hover:to-blue-800 transition-all shadow-md">
-                            <i class="fas fa-save mr-1.5"></i>UPDATE SALE <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
+                            <i class="fas fa-save mr-1.5"></i><?= lang('Sales.update_sale') ?> <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
                         </button>
                     </div>
                 </div>
@@ -783,14 +783,14 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         });
 
         $('.select2-employee').select2({
-            placeholder: 'None',
+            placeholder: <?= json_encode(lang('Sales.none')) ?>,
             allowClear: true,
             width: '100%',
             dropdownParent: $('.select2-employee').parent()
         });
 
         $('.select2-search').select2({
-            placeholder: 'Type to search products...',
+            placeholder: <?= json_encode(lang('Sales.search_products')) ?>,
             allowClear: true,
             minimumInputLength: 2, // Require at least 2 characters for better performance
             width: '100%',
@@ -814,7 +814,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     return {
                         results: products.map(product => ({
                             id: product.id,
-                            text: `${product.name || 'Unknown'} - ${product.code || 'N/A'}`,
+                            text: `${product.name || <?= json_encode(lang('Sales.unknown')) ?>} - ${product.code || <?= json_encode(lang('Sales.na')) ?>}`,
                             name: product.name,
                             code: product.code,
                             price: product.price,
@@ -836,7 +836,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 <div class="flex items-center justify-between p-1 hover:bg-gray-50">
                     <div class="flex-1">
                         <div class="font-medium text-gray-900 text-xs">${product.name}</div>
-                        <div class="text-xs text-gray-500">Code: ${product.code || 'N/A'} • Stock: ${parseFloat(product.quantity).toFixed(2) || 0}</div>
+                        <div class="text-xs text-gray-500"><?= lang('Sales.code') ?>: ${product.code || <?= json_encode(lang('Sales.na')) ?>} • <?= lang('Sales.stock_label') ?>: ${parseFloat(product.quantity).toFixed(2) || 0}</div>
                     </div>
                     <div class="text-right ml-2">
                         <div class="font-bold text-blue-600 text-xs"><?= session()->get('currency_symbol') ?>${parseFloat(product.price || 0).toFixed(2)}</div>
@@ -849,13 +849,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             },
             language: {
                 noResults: function() {
-                    return "No products found";
+                    return <?= json_encode(lang('Sales.no_products_found')) ?>;
                 },
                 searching: function() {
-                    return "Searching...";
+                    return <?= json_encode(lang('Sales.searching')) ?>;
                 },
                 inputTooShort: function() {
-                    return "Type at least 2 characters to search";
+                    return <?= json_encode(lang('Sales.type_at_least_two_chars')) ?>;
                 }
             }
         });
@@ -969,7 +969,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
                 if (barcode) {
                     // Show loading state
-                    $(this).prop('disabled', true).val('Searching...');
+                    $(this).prop('disabled', true).val(<?= json_encode(lang('Sales.searching')) ?>);
 
                     $.get('<?= site_url('api/products/barcode') ?>', {
                             barcode: barcode
@@ -980,11 +980,11 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                                 //showSuccessMessage(`${product.name} added to cart`);
 
                             } else {
-                                showFormErrors([`Product with barcode "${barcode}" not found`]);
+                                showFormErrors([<?= json_encode(lang('Sales.product_with_barcode_not_found')) ?>.replace('{barcode}', barcode)]);
                             }
                         })
                         .fail(function() {
-                            showFormErrors(['Error searching for product. Please try again.']);
+                            showFormErrors([<?= json_encode(lang('Sales.error_searching_product')) ?>]);
                         })
                         .always(function() {
                             $('#barcode-input').prop('disabled', false).val('').focus();
@@ -1501,15 +1501,15 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
         window.removeItem = function(idx) {
             skipRefocus = true; // Prevent barcode refocus
             const removedItem = cart.splice(idx, 1)[0];
-            showSuccessMessage(`${removedItem.name} removed from cart`);
+            showSuccessMessage(`${removedItem.name} ${<?= json_encode(lang('Sales.removed_from_cart')) ?>}`);
             renderCart();
         };
 
         window.clearCart = function() {
-            if (cart.length > 0 && confirm('Are you sure you want to clear all items from the cart?')) {
+            if (cart.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_clear_cart')) ?>)) {
                 cart = [];
                 renderCart();
-                showSuccessMessage('Cart cleared successfully');
+                showSuccessMessage(<?= json_encode(lang('Sales.cart_cleared_successfully')) ?>);
             }
         };
 
@@ -1613,7 +1613,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
                 if (cart.length === 0) {
-                    showFormErrors(['Cart is empty. Please add products to continue.']);
+                    showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
                     return false;
                 }
 
@@ -1625,7 +1625,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 }
 
                 // Confirm and submit
-                if (confirm('Update this sale?')) {
+                if (confirm(<?= json_encode(lang('Sales.confirm_update_sale')) ?>)) {
                     // Update cart data before submit
                     $('#cart-data').val(JSON.stringify(cart));
                     syncHiddenFormData();
@@ -1664,7 +1664,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             else if (e.ctrlKey && e.key === 't') {
                 e.preventDefault();
                 const total = $('#cart-total').text();
-                showSuccessMessage(`Current Total: ${total}`);
+                showSuccessMessage(<?= json_encode(lang('Sales.current_total')) ?>.replace('{total}', total));
                 return false;
             }
         });

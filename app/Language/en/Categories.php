@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'productCategories' => 'Product Categories',
+    'subtitle' => 'Manage and organize the categories available in your catalog.',
+    'newCategory' => 'New Category',
+    'allCategories' => 'All Categories',
+    'total' => 'Total',
+    'id' => 'ID',
+    'name' => 'Name',
+    'categoryName' => 'Category Name',
+    'description' => 'Description',
+    'actions' => 'Actions',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'cancel' => 'Cancel',
+    'addCategory' => 'Add Category',
+    'updateCategory' => 'Update Category',
+    'addNewCategory' => 'Add New Category',
+    'addSubtitle' => 'Enter the details for the new product category.',
+    'editCategory' => 'Edit Category',
+    'editSubtitle' => 'Update the details for the product category.',
+    'confirmDelete' => 'Are you sure you want to delete this category?',
+    'notAvailable' => 'N/A',
+    'noActionsAvailable' => 'No actions available',
+    'noCategoriesFound' => 'No categories found.',
+];

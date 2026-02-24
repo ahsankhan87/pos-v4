@@ -118,32 +118,32 @@ function money_fmt($v)
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Sales Report</h2>
-                <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · Employee: <span class="font-medium text-gray-700">
+                <h2 class="text-2xl font-bold text-gray-900"><?= lang('Reports.sales_report') ?></h2>
+                <p class="text-sm text-gray-500 mt-1"><?= lang('Reports.range') ?>: <span class="font-medium text-gray-700"><?= esc($from) ?></span> <?= lang('Reports.to') ?> <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · <?= lang('Reports.employee') ?>: <span class="font-medium text-gray-700">
                             <?php
-                                                                                                                                                                                                    $selectedEmp = null;
-                                                                                                                                                                                                    foreach (($employees ?? []) as $e) {
-                                                                                                                                                                                                        if ((int)$e['id'] === (int)$employee_id) {
-                                                                                                                                                                                                            $selectedEmp = $e;
-                                                                                                                                                                                                            break;
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                    }
-                                                                                                                                                                                                    echo esc($selectedEmp['name'] ?? 'Unknown');
+                                                                                                                                                                                                                                                    $selectedEmp = null;
+                                                                                                                                                                                                                                                    foreach (($employees ?? []) as $e) {
+                                                                                                                                                                                                                                                        if ((int)$e['id'] === (int)$employee_id) {
+                                                                                                                                                                                                                                                            $selectedEmp = $e;
+                                                                                                                                                                                                                                                            break;
+                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                    echo esc($selectedEmp['name'] ?? lang('Reports.unknown'));
                             ?></span><?php endif; ?></p>
             </div>
             <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 w-full lg:w-auto">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">To</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
                     <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Employee</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
                     <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
-                        <option value="">All</option>
+                        <option value=""><?= lang('Reports.all') ?></option>
                         <?php foreach (($employees ?? []) as $emp): ?>
                             <option value="<?= (int)$emp['id'] ?>" <?= !empty($employee_id) && (int)$employee_id === (int)$emp['id'] ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
                         <?php endforeach; ?>
@@ -151,7 +151,7 @@ function money_fmt($v)
                 </div>
                 <div class="flex items-end gap-2 flex">
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
-                        <i class="fas fa-filter mr-2"></i> Apply
+                        <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
 
                     <?php if (canAny(['reports.daily_sales', 'reports.sale_items', 'reports.expense_report', 'reports.expense_category_report', 'reports.tax_report', 'reports.inactive_customers'])): ?>
@@ -159,7 +159,7 @@ function money_fmt($v)
                         <div class="relative inline-block" x-data="{ open: false }">
                             <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
                                 <i class="fas fa-chart-line"></i>
-                                <span>Reports</span>
+                                <span><?= lang('Reports.reports') ?></span>
                                 <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
                             </button>
 
@@ -178,28 +178,28 @@ function money_fmt($v)
                                 <?php if (can('reports.daily_sales')): ?>
                                     <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                         <i class="fas fa-print w-5 text-gray-700"></i>
-                                        <span class="font-medium">Print Sales Report</span>
+                                        <span class="font-medium"><?= lang('Reports.print_sales_report') ?></span>
                                     </a>
                                 <?php endif; ?>
 
                                 <?php if (can('reports.expense_report')): ?>
                                     <a href="<?= site_url('sales/expense-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                         <i class="fas fa-receipt w-5 text-blue-600"></i>
-                                        <span class="font-medium">Expense Report</span>
+                                        <span class="font-medium"><?= lang('Reports.expense_report') ?></span>
                                     </a>
                                 <?php endif; ?>
 
                                 <?php if (can('reports.expense_category_report')): ?>
                                     <a href="<?= site_url('sales/expense-category-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                         <i class="fas fa-layer-group w-5 text-indigo-600"></i>
-                                        <span class="font-medium">Expense (Category-wise)</span>
+                                        <span class="font-medium"><?= lang('Reports.expense_category_report') ?></span>
                                     </a>
                                 <?php endif; ?>
 
                                 <?php if (can('reports.tax_report')): ?>
                                     <a href="<?= site_url('sales/tax-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                         <i class="fas fa-percentage w-5 text-rose-600"></i>
-                                        <span class="font-medium">Tax Report</span>
+                                        <span class="font-medium"><?= lang('Reports.tax_report') ?></span>
                                     </a>
                                 <?php endif; ?>
 
@@ -208,7 +208,7 @@ function money_fmt($v)
                                 <?php if (can('reports.inactive_customers')): ?>
                                     <a href="<?= site_url('sales/inactive-customers-report?days=30') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                         <i class="fas fa-user-clock w-5 text-orange-600"></i>
-                                        <span class="font-medium">Inactive Customers (30 days)</span>
+                                        <span class="font-medium"><?= lang('Reports.inactive_customers_30') ?></span>
                                     </a>
                                 <?php endif; ?>
                             </div>
@@ -216,7 +216,7 @@ function money_fmt($v)
 
                         <?php if (can('reports.sale_items')): ?>
                             <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-soft">
-                                <i class="fas fa-list mr-2"></i> Items
+                                <i class="fas fa-list mr-2"></i> <?= lang('Reports.items') ?>
                             </a>
                         <?php endif; ?>
                     <?php endif; ?>
@@ -235,10 +235,10 @@ function money_fmt($v)
                 </div> -->
                 <div class="sm:col-span-2 md:col-span-5">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
-                        <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
-                        <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Yesterday</button>
-                        <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Last 7 days</button>
-                        <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">This Month</button>
+                        <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.today') ?></button>
+                        <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.yesterday') ?></button>
+                        <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.last_7_days') ?></button>
+                        <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.this_month') ?></button>
                     </div>
                 </div>
             </form>
@@ -246,23 +246,23 @@ function money_fmt($v)
         <!-- KPI Cards -->
         <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                <div class="text-xs text-blue-700">Gross Sales</div>
+                <div class="text-xs text-blue-700"><?= lang('Reports.gross_sales') ?></div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></div>
             </div>
             <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                <div class="text-xs text-emerald-700">Net Sales</div>
+                <div class="text-xs text-emerald-700"><?= lang('Reports.net_sales') ?></div>
                 <div class="mt-1 text-xl font-semibold text-emerald-900"><?= esc($currency) . ' ' . money_fmt($netTotal) ?></div>
             </div>
             <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                <div class="text-xs text-amber-700">Discounts</div>
+                <div class="text-xs text-amber-700"><?= lang('Reports.discounts') ?></div>
                 <div class="mt-1 text-xl font-semibold text-amber-900"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></div>
             </div>
             <div class="bg-rose-50 border border-rose-100 rounded-lg p-4">
-                <div class="text-xs text-rose-700">Returns</div>
+                <div class="text-xs text-rose-700"><?= lang('Reports.returns') ?></div>
                 <div class="mt-1 text-xl font-semibold text-rose-900"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></div>
             </div>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div class="text-xs text-gray-600">Sales Count</div>
+                <div class="text-xs text-gray-600"><?= lang('Reports.sales_count') ?></div>
                 <div class="mt-1 text-xl font-semibold text-gray-900"><?= number_format($count) ?></div>
             </div>
         </div>
@@ -278,14 +278,14 @@ function money_fmt($v)
             <table id="dailySalesTable" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gross</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Returned</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Net</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.id') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.customer') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.payment') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.date') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.gross') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.discount') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.returned') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.net') ?></th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -304,7 +304,7 @@ function money_fmt($v)
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="4" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Totals</td>
+                        <td colspan="4" class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></td>
@@ -360,7 +360,7 @@ function money_fmt($v)
                 dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
                 buttons: [{
                         extend: 'print',
-                        text: 'Print',
+                        text: <?= json_encode(lang('Reports.print')) ?>,
                         customize: function(win) {
                             const css = 'table{font-size:11px;} table th,table td{padding:4px 6px !important;}';
                             const style = win.document.createElement('style');
@@ -370,16 +370,16 @@ function money_fmt($v)
                     },
                     {
                         extend: 'csv',
-                        text: 'CSV'
+                        text: <?= json_encode(lang('Reports.csv')) ?>
                     },
                     {
                         extend: 'excel',
-                        text: 'Excel'
+                        text: <?= json_encode(lang('Reports.excel')) ?>
                     }
                 ],
                 language: {
-                    search: 'Search:',
-                    lengthMenu: 'Show _MENU_ entries'
+                    search: <?= json_encode(lang('Reports.search')) ?>,
+                    lengthMenu: <?= json_encode(lang('Reports.show_entries')) ?>
                 }
             });
         }

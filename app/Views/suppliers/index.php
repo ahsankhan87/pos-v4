@@ -9,11 +9,21 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><?= esc($title) ?></h1>
-            <p class="mt-1 text-sm text-gray-500">Maintain supplier records to streamline purchasing operations.</p>
+            <style>
+                #supplierTable .actions-menu {
+                    min-width: 14rem;
+                }
+
+                #supplierTable .actions-menu .actions-link {
+                    text-align: start;
+                }
+            </style>
+
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Suppliers.subtitle') ?></p>
         </div>
         <?php if (can('suppliers.create')): ?>
             <a href="<?= site_url('suppliers/new') ?>" class="btn btn-primary mt-4 sm:mt-0">
-                <i class="fas fa-user-tie"></i> Add Supplier
+                <i class="fas fa-user-tie"></i> <?= lang('Suppliers.add_supplier') ?>
             </a>
         <?php endif; ?>
     </div>
@@ -38,19 +48,19 @@
 
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Supplier Directory</h2>
-            <span class="text-sm text-gray-500">Total: <?= esc($totalSuppliers ?? 0) ?></span>
+            <h2 class="text-lg font-semibold text-gray-900"><?= lang('Suppliers.supplier_directory') ?></h2>
+            <span class="text-sm text-gray-500"><?= lang('Suppliers.total') ?>: <?= esc($totalSuppliers ?? 0) ?></span>
         </div>
         <div class="overflow-x-auto">
             <table id="suppliersTable" class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Phone</th>
-                        <th scope="col">Address</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Suppliers.id') ?></th>
+                        <th scope="col"><?= lang('Suppliers.name') ?></th>
+                        <th scope="col"><?= lang('Suppliers.email') ?></th>
+                        <th scope="col"><?= lang('Suppliers.phone') ?></th>
+                        <th scope="col"><?= lang('Suppliers.address') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Suppliers.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -66,6 +76,31 @@
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
 <script>
+    const supplierTexts = {
+        print: <?= json_encode(lang('Suppliers.print'), JSON_UNESCAPED_UNICODE) ?>,
+        csv: <?= json_encode(lang('Suppliers.csv'), JSON_UNESCAPED_UNICODE) ?>,
+        excel: <?= json_encode(lang('Suppliers.excel'), JSON_UNESCAPED_UNICODE) ?>,
+        exportTitle: <?= json_encode(lang('Suppliers.suppliers_export_title'), JSON_UNESCAPED_UNICODE) ?>,
+        exportSlug: <?= json_encode(lang('Suppliers.suppliers_export_slug'), JSON_UNESCAPED_UNICODE) ?>,
+        na: <?= json_encode(lang('Suppliers.na'), JSON_UNESCAPED_UNICODE) ?>,
+        searchSuppliers: <?= json_encode(lang('Suppliers.search_suppliers'), JSON_UNESCAPED_UNICODE) ?>,
+        showEntries: <?= json_encode(lang('Suppliers.show_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        showingEntries: <?= json_encode(lang('Suppliers.showing_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        showingNoEntries: <?= json_encode(lang('Suppliers.showing_no_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        filteredEntries: <?= json_encode(lang('Suppliers.filtered_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        noMatchingSuppliers: <?= json_encode(lang('Suppliers.no_matching_suppliers'), JSON_UNESCAPED_UNICODE) ?>,
+        loadingSuppliers: <?= json_encode(lang('Suppliers.loading_suppliers'), JSON_UNESCAPED_UNICODE) ?>,
+        first: <?= json_encode(lang('Suppliers.first'), JSON_UNESCAPED_UNICODE) ?>,
+        last: <?= json_encode(lang('Suppliers.last'), JSON_UNESCAPED_UNICODE) ?>,
+        noActionsAvailable: <?= json_encode(lang('Suppliers.no_actions_available'), JSON_UNESCAPED_UNICODE) ?>,
+        view: <?= json_encode(lang('Suppliers.view'), JSON_UNESCAPED_UNICODE) ?>,
+        viewLedger: <?= json_encode(lang('Suppliers.view_ledger'), JSON_UNESCAPED_UNICODE) ?>,
+        edit: <?= json_encode(lang('Suppliers.edit'), JSON_UNESCAPED_UNICODE) ?>,
+        delete: <?= json_encode(lang('Suppliers.delete'), JSON_UNESCAPED_UNICODE) ?>,
+        deleteConfirm: <?= json_encode(lang('Suppliers.delete_supplier_confirm'), JSON_UNESCAPED_UNICODE) ?>,
+        actions: <?= json_encode(lang('Suppliers.actions'), JSON_UNESCAPED_UNICODE) ?>
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         const permissions = {
             view: <?= can('suppliers.view') ? 'true' : 'false' ?>,
@@ -97,12 +132,12 @@
             ],
             buttons: [{
                     extend: 'print',
-                    text: '<i class="fas fa-print mr-1"></i> Print',
+                    text: '<i class="fas fa-print mr-1"></i> ' + supplierTexts.print,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4]
                     },
-                    title: 'Suppliers',
+                    title: supplierTexts.exportTitle,
                     customize: function(win) {
                         var $body = $(win.document.body);
                         var $table = $body.find('table');
@@ -139,21 +174,21 @@
                 },
                 {
                     extend: 'csvHtml5',
-                    text: '<i class="fas fa-file-csv mr-1"></i> CSV',
+                    text: '<i class="fas fa-file-csv mr-1"></i> ' + supplierTexts.csv,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4]
                     },
-                    title: 'suppliers'
+                    title: supplierTexts.exportSlug
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '<i class="fas fa-file-excel mr-1"></i> Excel',
+                    text: '<i class="fas fa-file-excel mr-1"></i> ' + supplierTexts.excel,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4]
                     },
-                    title: 'suppliers'
+                    title: supplierTexts.exportSlug
                 }
             ],
             columns: [{
@@ -175,14 +210,14 @@
                     data: 'email',
                     name: 'email',
                     render: function(data) {
-                        return escapeHtml(data || 'N/A');
+                        return escapeHtml(data || supplierTexts.na);
                     }
                 },
                 {
                     data: 'phone',
                     name: 'phone',
                     render: function(data) {
-                        return escapeHtml(data || 'N/A');
+                        return escapeHtml(data || supplierTexts.na);
                     }
                 },
                 {
@@ -204,16 +239,16 @@
             ],
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search suppliers...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching suppliers found",
-                processing: "Loading suppliers...",
+                searchPlaceholder: supplierTexts.searchSuppliers,
+                lengthMenu: supplierTexts.showEntries,
+                info: supplierTexts.showingEntries,
+                infoEmpty: supplierTexts.showingNoEntries,
+                infoFiltered: supplierTexts.filteredEntries,
+                zeroRecords: supplierTexts.noMatchingSuppliers,
+                processing: supplierTexts.loadingSuppliers,
                 paginate: {
-                    first: "First",
-                    last: "Last",
+                    first: supplierTexts.first,
+                    last: supplierTexts.last,
                     next: "<i class='fas fa-chevron-right'></i>",
                     previous: "<i class='fas fa-chevron-left'></i>"
                 }
@@ -229,7 +264,7 @@
 
         function buildActions(row) {
             if (!permissions.view && !permissions.update && !permissions.delete) {
-                return '<span class="text-xs text-slate-400">No actions available</span>';
+                return '<span class="text-xs text-slate-400">' + supplierTexts.noActionsAvailable + '</span>';
             }
 
             let menuItems = '';
@@ -238,7 +273,7 @@
                 menuItems += `
                     <a href="${routes.view}/${row.id}" class="actions-link actions-link--info">
                         <i class="fas fa-eye"></i>
-                        <span>View</span>
+                        <span>${supplierTexts.view}</span>
                     </a>
                 `;
             }
@@ -247,7 +282,7 @@
             menuItems += `
                 <a href="${routes.ledger}/${row.id}" class="actions-link actions-link--success">
                     <i class="fas fa-book"></i>
-                    <span>View Ledger</span>
+                    <span>${supplierTexts.viewLedger}</span>
                 </a>
             `;
 
@@ -255,19 +290,19 @@
                 menuItems += `
                     <a href="${routes.edit}/${row.id}" class="actions-link actions-link--primary">
                         <i class="fas fa-edit"></i>
-                        <span>Edit</span>
+                        <span>${supplierTexts.edit}</span>
                     </a>
                 `;
             }
 
             if (permissions.delete) {
                 menuItems += `
-                    <form action="${routes.delete}/${row.id}" method="post" onsubmit="return confirm('Delete this supplier?');">
+                    <form action="${routes.delete}/${row.id}" method="post" onsubmit="return confirm('${supplierTexts.deleteConfirm}');">
                         <?= csrf_field() ?>
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="actions-link actions-link--danger">
                             <i class="fas fa-trash-alt"></i>
-                            <span>Delete</span>
+                            <span>${supplierTexts.delete}</span>
                         </button>
                     </form>
                 `;
@@ -276,16 +311,60 @@
             return `
                 <div class="actions-wrapper">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm">
-                        <span>Actions</span>
+                        <span>${supplierTexts.actions}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="actions-menu hidden">
+                    <div class="actions-menu hidden bg-white border border-gray-200 rounded-lg shadow-lg p-1">
                         ${menuItems}
                     </div>
                 </div>
             `;
         }
     });
+
+    function positionActionsMenu(menu, toggle) {
+        const toggleRect = toggle.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const margin = 8;
+        const verticalGap = 6;
+        const minVisibleHeight = 140;
+        const menuRect = menu.getBoundingClientRect();
+        const menuWidth = menuRect.width || 224;
+        const menuHeight = menuRect.height || 200;
+        const isRtl = (document.documentElement.getAttribute('dir') || '').toLowerCase() === 'rtl';
+
+        let left = isRtl ? (toggleRect.right - menuWidth) : toggleRect.left;
+        left = Math.max(margin, Math.min(left, viewportWidth - menuWidth - margin));
+
+        let top = toggleRect.bottom + verticalGap;
+        const availableBelow = Math.max(minVisibleHeight, viewportHeight - top - margin);
+
+        if ((top + minVisibleHeight) > (viewportHeight - margin)) {
+            top = Math.max(margin, viewportHeight - minVisibleHeight - margin);
+        }
+
+        menu.style.position = 'fixed';
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.style.right = 'auto';
+        menu.style.maxHeight = availableBelow + 'px';
+        menu.style.overflowY = 'auto';
+        menu.style.zIndex = '10050';
+    }
+
+    function hideAllActionMenus() {
+        document.querySelectorAll('.actions-menu').forEach(function(el) {
+            el.classList.add('hidden');
+            el.style.position = '';
+            el.style.top = '';
+            el.style.left = '';
+            el.style.right = '';
+            el.style.maxHeight = '';
+            el.style.overflowY = '';
+            el.style.zIndex = '';
+        });
+    }
 
     document.addEventListener('click', function(event) {
         const toggle = event.target.closest('.actions-toggle');
@@ -294,20 +373,20 @@
             const wrapper = toggle.closest('.actions-wrapper');
             const menu = wrapper.querySelector('.actions-menu');
             const isOpen = !menu.classList.contains('hidden');
-            document.querySelectorAll('.actions-menu').forEach(function(el) {
-                el.classList.add('hidden');
-            });
+            hideAllActionMenus();
             if (!isOpen) {
                 menu.classList.remove('hidden');
+                positionActionsMenu(menu, toggle);
             }
             return;
         }
 
         if (!event.target.closest('.actions-wrapper')) {
-            document.querySelectorAll('.actions-menu').forEach(function(el) {
-                el.classList.add('hidden');
-            });
+            hideAllActionMenus();
         }
     });
+
+    window.addEventListener('resize', hideAllActionMenus);
+    window.addEventListener('scroll', hideAllActionMenus, true);
 </script>
 <?= $this->endSection() ?>

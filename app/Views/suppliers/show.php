@@ -9,11 +9,11 @@
                     <div class="w-8 h-8 rounded bg-gradient-to-br from-emerald-500 to-green-600 text-white flex items-center justify-center shadow">
                         <i class="fas fa-truck"></i>
                     </div>
-                    <h1 class="text-lg font-bold text-gray-900">Supplier Details</h1>
+                    <h1 class="text-lg font-bold text-gray-900"><?= lang('Suppliers.supplier_details') ?></h1>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="<?= site_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit</a>
-                    <a href="<?= site_url('suppliers') ?>" class="btn btn-muted btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+                    <a href="<?= site_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> <?= lang('Suppliers.edit') ?></a>
+                    <a href="<?= site_url('suppliers') ?>" class="btn btn-muted btn-sm"><i class="fas fa-arrow-left"></i> <?= lang('Suppliers.back') ?></a>
                 </div>
             </div>
         </div>
@@ -23,24 +23,24 @@
         <div class="lg:col-span-2 space-y-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-emerald-600"></i> Supplier Info</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-emerald-600"></i> <?= lang('Suppliers.supplier_info') ?></h3>
                 </div>
                 <div class="p-4 text-sm text-gray-800">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <div class="text-xs text-gray-500">Name</div>
+                            <div class="text-xs text-gray-500"><?= lang('Suppliers.name') ?></div>
                             <div class="font-semibold"><?= esc($supplier['name']) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Email</div>
+                            <div class="text-xs text-gray-500"><?= lang('Suppliers.email') ?></div>
                             <div class="font-semibold"><?= esc($supplier['email']) ?></div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Phone</div>
+                            <div class="text-xs text-gray-500"><?= lang('Suppliers.phone') ?></div>
                             <div class="font-semibold"><?= esc($supplier['phone']) ?></div>
                         </div>
                         <div class="md:col-span-2">
-                            <div class="text-xs text-gray-500">Address</div>
+                            <div class="text-xs text-gray-500"><?= lang('Suppliers.address') ?></div>
                             <div class="font-semibold"><?= esc($supplier['address']) ?></div>
                         </div>
                     </div>
@@ -49,15 +49,15 @@
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-slate-600"></i> Meta</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-slate-600"></i> <?= lang('Suppliers.meta') ?></h3>
                 </div>
                 <div class="p-4 text-sm text-gray-800 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <div class="text-xs text-gray-500">Supplier ID</div>
+                        <div class="text-xs text-gray-500"><?= lang('Suppliers.supplier_id') ?></div>
                         <div class="font-semibold">#<?= (int) $supplier['id'] ?></div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500">Created</div>
+                        <div class="text-xs text-gray-500"><?= lang('Suppliers.created') ?></div>
                         <div class="font-semibold"><?= esc($supplier['created_at']) ?></div>
                     </div>
                 </div>
@@ -67,11 +67,11 @@
         <div class="space-y-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-ellipsis-h text-slate-600"></i> Actions</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-ellipsis-h text-slate-600"></i> <?= lang('Suppliers.actions') ?></h3>
                 </div>
                 <div class="p-4 space-y-2">
-                    <a href="<?= site_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-primary w-full"><i class="fas fa-edit"></i> Edit Supplier</a>
-                    <a href="<?= site_url('suppliers') ?>" class="btn btn-muted w-full"><i class="fas fa-arrow-left"></i> Back to List</a>
+                    <a href="<?= site_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-primary w-full"><i class="fas fa-edit"></i> <?= lang('Suppliers.edit_supplier_btn') ?></a>
+                    <a href="<?= site_url('suppliers') ?>" class="btn btn-muted w-full"><i class="fas fa-arrow-left"></i> <?= lang('Suppliers.back_to_list') ?></a>
                 </div>
             </div>
         </div>

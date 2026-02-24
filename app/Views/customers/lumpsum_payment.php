@@ -16,13 +16,13 @@ $invoices = $invoices ?? [];
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
                         <i class="fas fa-money-bill-wave text-green-600"></i>
-                        Lumpsum Payment
+                        <?= lang('Customers.lumpsum_payment') ?>
                     </h1>
-                    <p class="text-gray-600 mt-1">Process payment for multiple invoices</p>
+                    <p class="text-gray-600 mt-1"><?= lang('Customers.process_payment_for_multiple_invoices') ?></p>
                 </div>
                 <a href="<?= site_url('customers/ledger/' . ($customer['id'] ?? 0)) ?>" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 flex items-center gap-2">
                     <i class="fas fa-arrow-left"></i>
-                    Back to Ledger
+                    <?= lang('Customers.back_to_ledger') ?>
                 </a>
             </div>
 
@@ -31,7 +31,7 @@ $invoices = $invoices ?? [];
                 <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-2xl font-bold mb-1"><?= esc($customer['name'] ?? 'Unknown Customer') ?></h2>
+                            <h2 class="text-2xl font-bold mb-1"><?= esc($customer['name'] ?? lang('Customers.unknown_customer')) ?></h2>
                             <div class="flex items-center gap-4 text-blue-100">
                                 <?php if (!empty($customer['phone'])): ?>
                                     <span class="flex items-center gap-1">
@@ -48,7 +48,7 @@ $invoices = $invoices ?? [];
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-blue-100 text-sm">Current Balance</p>
+                            <p class="text-blue-100 text-sm"><?= lang('Customers.current_balance') ?></p>
                             <p class="text-2xl font-bold">
                                 <?php
                                 $ledgerModel = new \App\Models\CustomerLedgerModel();
@@ -68,7 +68,7 @@ $invoices = $invoices ?? [];
                 <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <i class="fas fa-calculator text-blue-600"></i>
-                        Payment Details
+                        <?= lang('Customers.payment_details') ?>
                     </h3>
 
                     <form id="lumpsumPaymentForm">
@@ -77,7 +77,7 @@ $invoices = $invoices ?? [];
                         <!-- Payment Amount -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Payment Amount <span class="text-red-500">*</span>
+                                <?= lang('Customers.payment_amount') ?> <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold"><?= esc($currencySymbol) ?></span>
@@ -90,27 +90,27 @@ $invoices = $invoices ?? [];
                                     placeholder="0.00"
                                     required>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Enter total amount to distribute</p>
+                            <p class="text-xs text-gray-500 mt-1"><?= lang('Customers.enter_total_amount_to_distribute') ?></p>
                         </div>
 
                         <!-- Distribution Mode -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Distribution Mode
+                                <?= lang('Customers.distribution_mode') ?>
                             </label>
                             <div class="space-y-2">
                                 <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors duration-200">
                                     <input type="radio" name="distribution_mode" value="auto" checked class="mr-3 text-blue-600 focus:ring-blue-500">
                                     <div>
-                                        <div class="font-semibold text-gray-800">Automatic (FIFO)</div>
-                                        <div class="text-xs text-gray-500">Pay oldest invoices first</div>
+                                        <div class="font-semibold text-gray-800"><?= lang('Customers.automatic_fifo') ?></div>
+                                        <div class="text-xs text-gray-500"><?= lang('Customers.pay_oldest_invoices_first') ?></div>
                                     </div>
                                 </label>
                                 <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors duration-200">
                                     <input type="radio" name="distribution_mode" value="manual" class="mr-3 text-blue-600 focus:ring-blue-500">
                                     <div>
-                                        <div class="font-semibold text-gray-800">Manual</div>
-                                        <div class="text-xs text-gray-500">Select amounts manually</div>
+                                        <div class="font-semibold text-gray-800"><?= lang('Customers.manual') ?></div>
+                                        <div class="text-xs text-gray-500"><?= lang('Customers.select_amounts_manually') ?></div>
                                     </div>
                                 </label>
                             </div>
@@ -119,7 +119,7 @@ $invoices = $invoices ?? [];
                         <!-- Payment Date -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Payment Date
+                                <?= lang('Customers.payment_date') ?>
                             </label>
                             <input type="date"
                                 name="payment_date"
@@ -131,46 +131,46 @@ $invoices = $invoices ?? [];
                         <!-- Payment Method -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Payment Method
+                                <?= lang('Customers.payment_method') ?>
                             </label>
                             <select name="payment_method" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="other">Other</option>
+                                <option value="cash"><?= lang('Customers.cash') ?></option>
+                                <option value="card"><?= lang('Customers.credit_card') ?></option>
+                                <option value="bank_transfer"><?= lang('Customers.bank_transfer') ?></option>
+                                <option value="cheque"><?= lang('Customers.check') ?></option>
+                                <option value="other"><?= lang('Customers.other') ?></option>
                             </select>
                         </div>
 
                         <!-- Notes -->
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Notes (Optional)
+                                <?= lang('Customers.notes_optional') ?>
                             </label>
                             <textarea name="notes"
                                 rows="3"
                                 class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Add any notes or remarks..."></textarea>
+                                placeholder="<?= esc(lang('Customers.add_notes_remarks_placeholder')) ?>"></textarea>
                         </div>
 
                         <!-- Summary Box -->
                         <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4">
-                            <h4 class="font-bold text-gray-800 mb-3">Payment Summary</h4>
+                            <h4 class="font-bold text-gray-800 mb-3"><?= lang('Customers.payment_summary') ?></h4>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Payment Amount:</span>
+                                    <span class="text-gray-600"><?= lang('Customers.payment_amount') ?>:</span>
                                     <span class="font-bold text-gray-800" id="summaryPaymentAmount"><?= esc($currencySymbol) ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Applied Amount:</span>
+                                    <span class="text-gray-600"><?= lang('Customers.applied_amount') ?>:</span>
                                     <span class="font-bold text-green-600" id="summaryAppliedAmount"><?= esc($currencySymbol) ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between pt-2 border-t border-gray-300">
-                                    <span class="text-gray-600">Remaining:</span>
+                                    <span class="text-gray-600"><?= lang('Customers.remaining') ?>:</span>
                                     <span class="font-bold text-orange-600" id="summaryRemainingAmount"><?= esc($currencySymbol) ?>0.00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Invoices Selected:</span>
+                                    <span class="text-gray-600"><?= lang('Customers.invoices_selected_label') ?>:</span>
                                     <span class="font-bold text-blue-600" id="summaryInvoiceCount">0</span>
                                 </div>
                             </div>
@@ -179,7 +179,7 @@ $invoices = $invoices ?? [];
                         <!-- Submit Button -->
                         <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg">
                             <i class="fas fa-check-circle mr-2"></i>
-                            Process Payment
+                            <?= lang('Customers.process_payment') ?>
                         </button>
                     </form>
                 </div>
@@ -191,14 +191,14 @@ $invoices = $invoices ?? [];
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                             <i class="fas fa-file-invoice text-blue-600"></i>
-                            Outstanding Invoices
+                            <?= lang('Customers.outstanding_invoices') ?>
                         </h3>
                         <div class="flex items-center gap-2">
                             <button type="button" id="selectAllInvoices" class="text-sm px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200">
-                                Select All
+                                <?= lang('Customers.select_all') ?>
                             </button>
                             <button type="button" id="clearAllInvoices" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200">
-                                Clear All
+                                <?= lang('Customers.clear_all') ?>
                             </button>
                         </div>
                     </div>
@@ -206,14 +206,14 @@ $invoices = $invoices ?? [];
                     <?php if (empty($invoices)): ?>
                         <div class="text-center py-12">
                             <i class="fas fa-check-circle text-green-500 text-5xl mb-3"></i>
-                            <p class="text-gray-500 text-lg">No outstanding invoices found</p>
-                            <p class="text-gray-400 text-sm">This customer has no pending payments</p>
+                            <p class="text-gray-500 text-lg"><?= lang('Customers.no_outstanding_invoices_found') ?></p>
+                            <p class="text-gray-400 text-sm"><?= lang('Customers.customer_has_no_pending_payments') ?></p>
                         </div>
                     <?php else: ?>
                         <!-- Total Outstanding -->
                         <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 mb-4">
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-700 font-semibold">Total Outstanding:</span>
+                                <span class="text-gray-700 font-semibold"><?= lang('Customers.total_outstanding') ?>:</span>
                                 <span class="text-2xl font-bold text-red-600" id="totalDue">
                                     <?= esc($currencySymbol) ?><?= number_format(array_sum(array_column($invoices, 'due_amount')), 2) ?>
                                 </span>
@@ -228,11 +228,11 @@ $invoices = $invoices ?? [];
                                         <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase">
                                             <input type="checkbox" id="selectAllCheckbox" class="rounded">
                                         </th>
-                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase">Invoice</th>
-                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase">Date</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Age</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Due Amount</th>
-                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase">Apply Amount</th>
+                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase"><?= lang('Customers.invoice') ?></th>
+                                        <th class="py-3 px-3 text-left text-xs font-bold text-gray-700 uppercase"><?= lang('Customers.date') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('Customers.age') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('Customers.due_amount') ?></th>
+                                        <th class="py-3 px-3 text-right text-xs font-bold text-gray-700 uppercase"><?= lang('Customers.apply_amount') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="invoicesTableBody">
@@ -263,7 +263,7 @@ $invoices = $invoices ?? [];
                                                 <?= date('M d, Y', strtotime($invoice['created_at'])) ?>
                                             </td>
                                             <td class="py-3 px-3 text-right text-sm <?= $ageClass ?>">
-                                                <?= $age ?> days
+                                                <?= str_replace('{days}', (string)$age, lang('Customers.days_label')) ?>
                                             </td>
                                             <td class="py-3 px-3 text-right font-bold text-gray-800">
                                                 <?= esc($currencySymbol) ?><?= number_format($dueAmount, 2) ?>
@@ -296,6 +296,13 @@ $invoices = $invoices ?? [];
 
 <script>
     const currencySymbol = <?= json_encode($currencySymbol) ?>;
+    const lumpsumProcessing = <?= json_encode(lang('Customers.processing')) ?>;
+    const lumpsumEnterValidAmount = <?= json_encode(lang('Customers.enter_valid_payment_amount')) ?>;
+    const lumpsumSelectInvoices = <?= json_encode(lang('Customers.select_invoice_or_enter_amounts')) ?>;
+    const lumpsumPaymentSuccess = <?= json_encode(lang('Customers.payment_processed_successfully')) ?>;
+    const lumpsumError = <?= json_encode(lang('Customers.error')) ?>;
+    const lumpsumFailedProcess = <?= json_encode(lang('Customers.failed_to_process_payment')) ?>;
+    const lumpsumFailedProcessRetry = <?= json_encode(lang('Customers.failed_to_process_payment_retry')) ?>;
 
     $(document).ready(function() {
         // Auto-distribute when payment amount changes
@@ -377,7 +384,7 @@ $invoices = $invoices ?? [];
 
             const paymentAmount = parseFloat($('#paymentAmount').val()) || 0;
             if (paymentAmount <= 0) {
-                alert('Please enter a valid payment amount');
+                alert(lumpsumEnterValidAmount);
                 return;
             }
 
@@ -393,7 +400,7 @@ $invoices = $invoices ?? [];
             });
 
             if (invoices.length === 0) {
-                alert('Please select at least one invoice or enter amounts to apply');
+                alert(lumpsumSelectInvoices);
                 return;
             }
 
@@ -410,7 +417,7 @@ $invoices = $invoices ?? [];
             // Show loading
             const $submitBtn = $(this).find('button[type="submit"]');
             const originalText = $submitBtn.html();
-            $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
+            $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>' + lumpsumProcessing + '...');
 
             $.ajax({
                 url: '<?= site_url('sales/process-lumpsum-payment') ?>',
@@ -421,15 +428,15 @@ $invoices = $invoices ?? [];
                 },
                 success: function(response) {
                     if (response.success) {
-                        alert('Payment processed successfully!');
+                        alert(lumpsumPaymentSuccess);
                         window.location.href = '<?= site_url('customers/ledger/' . ($customer['id'] ?? 0)) ?>';
                     } else {
-                        alert('Error: ' + (response.message || 'Failed to process payment'));
+                        alert(lumpsumError + ': ' + (response.message || lumpsumFailedProcess));
                         $submitBtn.prop('disabled', false).html(originalText);
                     }
                 },
                 error: function() {
-                    alert('Failed to process payment. Please try again.');
+                    alert(lumpsumFailedProcessRetry);
                     $submitBtn.prop('disabled', false).html(originalText);
                 }
             });

@@ -35,10 +35,10 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
         <!-- Header -->
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">Customer Ledger</h1>
+                <h1 class="text-2xl font-bold text-gray-800"><?= lang('Customers.customer_ledger') ?></h1>
                 <?php if ($customer): ?>
                     <p class="text-gray-500 text-sm">
-                        <?= esc($customer['name'] ?? 'Unknown Customer') ?>
+                        <?= esc($customer['name'] ?? lang('Customers.unknown_customer')) ?>
                         <?php if (!empty($customer['phone'])): ?> • <?= esc($customer['phone']) ?><?php endif; ?>
                             <?php if (!empty($customer['email'])): ?> • <?= esc($customer['email']) ?><?php endif; ?>
                     </p>
@@ -47,7 +47,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             <div class="flex flex-wrap items-center gap-2">
                 <a href="<?= site_url('customers') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200 border border-gray-300">
                     <i class="fas fa-arrow-left"></i>
-                    <span class="hidden sm:inline">Back</span>
+                    <span class="hidden sm:inline"><?= lang('Customers.back') ?></span>
                 </a>
                 <!-- <a href="<?= site_url('customers/outstanding-invoices/' . ($customer['id'] ?? 0)) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
                     <i class="fas fa-file-invoice-dollar"></i>
@@ -57,7 +57,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                 <div class="relative inline-block" x-data="{ open: false }">
                     <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-money-bill-wave"></i>
-                        <span class="hidden md:inline">Receive Payment</span>
+                        <span class="hidden md:inline"><?= lang('Customers.receive_payment') ?></span>
                         <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
                     </button>
 
@@ -75,12 +75,12 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         <a href="<?= site_url('customers/lumpsum-payment/' . ($customer['id'] ?? 0)) ?>"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-coins w-5 text-green-600"></i>
-                            <span class="font-medium">Lump Sum Payment</span>
+                            <span class="font-medium"><?= lang('Customers.lump_sum_payment') ?></span>
                         </a>
 
                         <button type="button" onclick="openCustomPayment()" class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-wallet w-5 text-cyan-600"></i>
-                            <span class="font-medium">Custom Payment</span>
+                            <span class="font-medium"><?= lang('Customers.custom_payment') ?></span>
                         </button>
                     </div>
                 </div>
@@ -89,7 +89,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                 <div class="relative inline-block" x-data="{ open: false }">
                     <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-all duration-200 border-2 border-gray-300 hover:border-gray-400 shadow-sm">
                         <i class="fas fa-ellipsis-v"></i>
-                        <span class="hidden sm:inline">Actions</span>
+                        <span class="hidden sm:inline"><?= lang('Customers.actions') ?></span>
                         <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
                     </button>
 
@@ -105,60 +105,60 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         style="display: none;">
 
                         <div class="px-3 py-2 border-b border-gray-100">
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Reports</p>
+                            <p class="text-xs font-semibold text-gray-500 uppercase"><?= lang('Customers.reports') ?></p>
                         </div>
 
                         <a href="<?= site_url('customers/aging-analysis/' . ($customer['id'] ?? 0)) ?>"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-clock w-5 text-orange-600"></i>
-                            <span class="font-medium">Aging Analysis</span>
+                            <span class="font-medium"><?= lang('Customers.aging_analysis') ?></span>
                         </a>
 
                         <div class="border-t border-gray-100 my-1"></div>
 
                         <div class="px-3 py-2">
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Print Options</p>
+                            <p class="text-xs font-semibold text-gray-500 uppercase"><?= lang('Customers.print_options') ?></p>
                         </div>
 
                         <a href="<?= site_url('customers/ledger/print/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>"
                             target="_blank"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-print w-5 text-gray-500"></i>
-                            <span class="font-medium">Print Ledger</span>
+                            <span class="font-medium"><?= lang('Customers.print_ledger') ?></span>
                         </a>
 
                         <a href="<?= site_url('customers/ledger/print-compact/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>"
                             target="_blank"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-receipt w-5 text-gray-500"></i>
-                            <span class="font-medium">Print Compact</span>
+                            <span class="font-medium"><?= lang('Customers.print_compact') ?></span>
                         </a>
 
                         <div class="border-t border-gray-100 my-1"></div>
 
                         <div class="px-3 py-2">
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Export Options</p>
+                            <p class="text-xs font-semibold text-gray-500 uppercase"><?= lang('Customers.export_options') ?></p>
                         </div>
 
                         <a href="<?= site_url('customers/ledger/export/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>"
                             target="_blank"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-file-excel w-5 text-green-600"></i>
-                            <span class="font-medium">Export to Excel</span>
+                            <span class="font-medium"><?= lang('Customers.export_to_excel') ?></span>
                         </a>
 
                         <a href="<?= site_url('customers/ledger/export_pdf/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q . '&show_balance=' . ($showBalance ? '1' : '0')) ?>"
                             target="_blank"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-file-pdf w-5 text-red-600"></i>
-                            <span class="font-medium">Export to PDF</span>
+                            <span class="font-medium"><?= lang('Customers.export_to_pdf') ?></span>
                         </a>
 
                         <a href="<?= site_url('customers/ledger/export_pdf_compact/' . ($customer['id'] ?? 0) . '?from=' . $from . '&to=' . $to . '&type=' . $type . '&q=' . $q) ?>"
                             target="_blank"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                             <i class="fas fa-file-pdf w-5 text-red-600"></i>
-                            <span class="font-medium">Export PDF Compact</span>
+                            <span class="font-medium"><?= lang('Customers.export_pdf_compact') ?></span>
                         </a>
                     </div>
                 </div>
@@ -178,32 +178,32 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             <div class="px-4 py-3 bg-gradient-to-r from-slate-50 to-gray-50 border-b">
                 <h2 class="font-semibold text-gray-800 flex items-center gap-2">
                     <i class="fas fa-chart-line text-blue-600"></i>
-                    Account Summary
+                    <?= lang('Customers.account_summary') ?>
                 </h2>
             </div>
             <div class="p-4">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <!-- Opening Balance -->
                     <div class="text-center p-3 rounded-lg bg-blue-50 border border-blue-100">
-                        <div class="text-xs font-semibold text-blue-600 uppercase mb-1">Opening Balance</div>
+                        <div class="text-xs font-semibold text-blue-600 uppercase mb-1"><?= lang('Customers.opening_balance') ?></div>
                         <div class="text-xl font-bold text-blue-900"><?= $currencySymbol . number_format($openingBalance, 2) ?></div>
                     </div>
 
                     <!-- Total Debit (Outstanding) -->
                     <div class="text-center p-3 rounded-lg bg-rose-50 border border-rose-100">
-                        <div class="text-xs font-semibold text-rose-600 uppercase mb-1">Total Outstanding</div>
+                        <div class="text-xs font-semibold text-rose-600 uppercase mb-1"><?= lang('Customers.total_outstanding') ?></div>
                         <div class="text-xl font-bold text-rose-900"><?= $currencySymbol . number_format($totalDebit, 2) ?></div>
                     </div>
 
                     <!-- Total Credit (Received) -->
                     <div class="text-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                        <div class="text-xs font-semibold text-emerald-600 uppercase mb-1">Total Received</div>
+                        <div class="text-xs font-semibold text-emerald-600 uppercase mb-1"><?= lang('Customers.total_received') ?></div>
                         <div class="text-xl font-bold text-emerald-900"><?= $currencySymbol . number_format($totalCredit, 2) ?></div>
                     </div>
 
                     <!-- Closing Balance -->
                     <div class="text-center p-3 rounded-lg <?= $closingBalance >= 0 ? 'bg-purple-50 border-purple-100' : 'bg-red-50 border-red-100' ?> border">
-                        <div class="text-xs font-semibold <?= $closingBalance >= 0 ? 'text-purple-600' : 'text-red-600' ?> uppercase mb-1">Closing Balance</div>
+                        <div class="text-xs font-semibold <?= $closingBalance >= 0 ? 'text-purple-600' : 'text-red-600' ?> uppercase mb-1"><?= lang('Customers.closing_balance') ?></div>
                         <div class="text-xl font-bold <?= $closingBalance >= 0 ? 'text-purple-900' : 'text-red-900' ?>"><?= $currencySymbol . number_format($closingBalance, 2) ?></div>
                     </div>
                 </div>
@@ -214,66 +214,66 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
         <form method="get" class="bg-white border rounded-md p-4 shadow-sm mb-2">
             <div class="grid grid-cols-1 md:grid-cols-6 gap-2">
                 <div>
-                    <label class="text-xs text-gray-500">From</label>
+                    <label class="text-xs text-gray-500"><?= lang('Customers.from') ?></label>
                     <input type="date" name="from" value="<?= $from ?>" class="w-full border rounded px-3 py-2">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500">To</label>
+                    <label class="text-xs text-gray-500"><?= lang('Customers.to') ?></label>
                     <input type="date" name="to" value="<?= $to ?>" class="w-full border rounded px-3 py-2">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500">Type</label>
+                    <label class="text-xs text-gray-500"><?= lang('Customers.type') ?></label>
                     <select name="type" class="w-full border rounded px-3 py-2">
-                        <option value="">All</option>
-                        <option value="sale" <?= $type === 'sale' ? 'selected' : '' ?>>Sale</option>
-                        <option value="payment" <?= $type === 'payment' ? 'selected' : '' ?>>Payment</option>
-                        <option value="return" <?= $type === 'return' ? 'selected' : '' ?>>Return</option>
-                        <option value="adjustment" <?= $type === 'adjustment' ? 'selected' : '' ?>>Adjustment</option>
+                        <option value=""><?= lang('Customers.all') ?></option>
+                        <option value="sale" <?= $type === 'sale' ? 'selected' : '' ?>><?= lang('Customers.sale') ?></option>
+                        <option value="payment" <?= $type === 'payment' ? 'selected' : '' ?>><?= lang('Customers.payment') ?></option>
+                        <option value="return" <?= $type === 'return' ? 'selected' : '' ?>><?= lang('Customers.return') ?></option>
+                        <option value="adjustment" <?= $type === 'adjustment' ? 'selected' : '' ?>><?= lang('Customers.adjustment') ?></option>
                     </select>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="text-xs text-gray-500">Search</label>
-                    <input type="text" name="q" value="<?= $q ?>" placeholder="Description, Ref No..."
+                    <label class="text-xs text-gray-500"><?= lang('Customers.search') ?></label>
+                    <input type="text" name="q" value="<?= $q ?>" placeholder="<?= esc(lang('Customers.description_ref_placeholder')) ?>"
                         class="w-full border rounded px-3 py-2">
                 </div>
                 <div class="flex items-end">
                     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                         <input type="checkbox" name="show_balance" value="1" <?= $showBalance ? 'checked' : '' ?>>
-                        Show running balance
+                        <?= lang('Customers.show_running_balance') ?>
                     </label>
                 </div>
             </div>
             <div class="mt-3 flex items-center gap-2">
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search mr-1"></i> Search</button>
-                <a class="btn btn-muted" href="<?= site_url('customers/ledger/' . ($customer['id'] ?? 0)) ?>">Reset</a>
+                <button class="btn btn-primary" type="submit"><i class="fas fa-search mr-1"></i> <?= lang('Customers.search') ?></button>
+                <a class="btn btn-muted" href="<?= site_url('customers/ledger/' . ($customer['id'] ?? 0)) ?>"><?= lang('Customers.reset') ?></a>
             </div>
         </form>
 
         <!-- Ledger Table -->
         <div class="bg-white border rounded-lg shadow-sm overflow-hidden">
             <div class="px-4 py-3 border-b bg-gray-50">
-                <h2 class="font-semibold text-gray-700">Transactions</h2>
+                <h2 class="font-semibold text-gray-700"><?= lang('Customers.transactions') ?></h2>
             </div>
             <div class="overflow-x-auto">
                 <table id="ledgerTable" class="min-w-full">
                     <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                         <tr>
-                            <th class="px-4 py-3 text-left">Date</th>
-                            <th class="px-4 py-3 text-left">Ref</th>
-                            <th class="px-4 py-3 text-left">Description</th>
-                            <th class="px-4 py-3 text-left">Type</th>
-                            <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>>Debit (<?= esc($currencySymbol) ?>)</th>
-                            <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>>Credit (<?= esc($currencySymbol) ?>)</th>
+                            <th class="px-4 py-3 text-left"><?= lang('Customers.date') ?></th>
+                            <th class="px-4 py-3 text-left"><?= lang('Customers.ref') ?></th>
+                            <th class="px-4 py-3 text-left"><?= lang('Customers.description') ?></th>
+                            <th class="px-4 py-3 text-left"><?= lang('Customers.type') ?></th>
+                            <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>><?= lang('Customers.debit') ?> (<?= esc($currencySymbol) ?>)</th>
+                            <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>><?= lang('Customers.credit') ?> (<?= esc($currencySymbol) ?>)</th>
                             <?php if ($showBalanceInTable && $canViewAmounts): ?>
-                                <th class="px-4 py-3 text-right">Balance (<?= esc($currencySymbol) ?>)</th>
+                                <th class="px-4 py-3 text-right"><?= lang('Customers.balance') ?> (<?= esc($currencySymbol) ?>)</th>
                             <?php endif; ?>
-                            <th class="px-4 py-3 text-center">Actions</th>
+                            <th class="px-4 py-3 text-center"><?= lang('Customers.actions') ?></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y"></tbody>
                     <tfoot class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left" colspan="4">Totals</th>
+                            <th class="px-4 py-3 text-left" colspan="4"><?= lang('Customers.totals') ?></th>
                             <th class="px-4 py-3 text-right text-rose-700" <?= $hiddenAmountsStyle ?>><?= $currencySymbol . number_format($totalDebit, 2) ?></th>
                             <th class="px-4 py-3 text-right text-emerald-700" <?= $hiddenAmountsStyle ?>><?= $currencySymbol . number_format($totalCredit, 2) ?></th>
                             <?php if ($showBalanceInTable && $canViewAmounts): ?>
@@ -300,6 +300,15 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             var canDeleteLedger = <?= $canDeleteLedger ? 'true' : 'false' ?>;
             var canReverseLedger = <?= $canReverseLedger ? 'true' : 'false' ?>;
             var showBal = <?= $showBalance ? 'true' : 'false' ?>;
+            var statusUnknown = <?= json_encode(lang('Customers.na')) ?>;
+            var typeSale = <?= json_encode(lang('Customers.sale')) ?>;
+            var typePayment = <?= json_encode(lang('Customers.payment')) ?>;
+            var typePayout = <?= json_encode(lang('Customers.payout')) ?>;
+            var typeReturn = <?= json_encode(lang('Customers.return')) ?>;
+            var typeAdjustment = <?= json_encode(lang('Customers.adjustment')) ?>;
+            var typeReversal = <?= json_encode(lang('Customers.reversal')) ?>;
+            var actionReverse = <?= json_encode(lang('Customers.reverse')) ?>;
+            var actionDelete = <?= json_encode(lang('Customers.delete')) ?>;
 
             var columns = [{
                     data: 'date'
@@ -308,9 +317,9 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     data: 'ref_no',
                     render: function(data, type, row) {
                         if (row.ref_url && type === 'display') {
-                            return '<a href="' + row.ref_url + '" class="text-blue-600 hover:underline">' + (data || '-') + '</a>';
+                            return '<a href="' + row.ref_url + '" class="text-blue-600 hover:underline">' + (data || statusUnknown) + '</a>';
                         }
-                        return data || '-';
+                        return data || statusUnknown;
                     }
                 },
                 {
@@ -326,7 +335,14 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         else if (data === 'return') badge = 'bg-orange-100 text-orange-700';
                         else if (data === 'adjustment') badge = 'bg-purple-100 text-purple-700';
                         else if (data === 'reversal') badge = 'bg-red-100 text-red-700';
-                        return '<span class="inline-flex items-center text-xs px-2 py-1 rounded ' + badge + '">' + (data || '-') + '</span>';
+                        var typeLabel = statusUnknown;
+                        if (data === 'sale') typeLabel = typeSale;
+                        else if (data === 'payment') typeLabel = typePayment;
+                        else if (data === 'payout') typeLabel = typePayout;
+                        else if (data === 'return') typeLabel = typeReturn;
+                        else if (data === 'adjustment') typeLabel = typeAdjustment;
+                        else if (data === 'reversal') typeLabel = typeReversal;
+                        return '<span class="inline-flex items-center text-xs px-2 py-1 rounded ' + badge + '">' + typeLabel + '</span>';
                     }
                 },
                 {
@@ -366,14 +382,14 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     var actions = [];
 
                     if (canReverseLedger && isReversible && !isReversal) {
-                        var refNo = row.ref_no ? String(row.ref_no) : 'N/A';
+                        var refNo = row.ref_no ? String(row.ref_no) : statusUnknown;
                         var refArg = JSON.stringify(refNo);
                         var amount = credit > 0 ? credit : debit;
                         actions.push(
                             '<button onclick=\'openReverseModal(' + row.id + ', ' + refArg + ', ' + amount + ')\' ' +
                             'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors" ' +
-                            'title="Reverse this transaction">' +
-                            '<i class="fas fa-undo"></i> Reverse' +
+                            'title="' + actionReverse + '">' +
+                            '<i class="fas fa-undo"></i> ' + actionReverse +
                             '</button>'
                         );
                     }
@@ -383,13 +399,13 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                         actions.push(
                             '<button onclick=\'deleteLedgerEntry(' + row.id + ', ' + descArg + ')\' ' +
                             'class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors" ' +
-                            'title="Delete this entry">' +
-                            '<i class="fas fa-trash"></i> Delete' +
+                            'title="' + actionDelete + '">' +
+                            '<i class="fas fa-trash"></i> ' + actionDelete +
                             '</button>'
                         );
                     }
 
-                    return actions.length ? actions.join(' ') : '-';
+                    return actions.length ? actions.join(' ') : statusUnknown;
                 }
             });
 
@@ -412,9 +428,9 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                 },
                 columns: columns,
                 language: {
-                    search: 'Search in table:',
-                    lengthMenu: 'Show _MENU_',
-                    info: 'Showing _START_ to _END_ of _TOTAL_',
+                    search: <?= json_encode(lang('Customers.search_in_table')) ?>,
+                    lengthMenu: <?= json_encode(lang('Customers.show_menu')) ?>,
+                    info: <?= json_encode(lang('Customers.showing_start_end_total')) ?>,
                 }
             });
         }
@@ -431,7 +447,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
                         <i class="fas fa-undo"></i>
                     </div>
-                    <h3 class="text-lg font-semibold">Reverse Transaction</h3>
+                    <h3 class="text-lg font-semibold"><?= lang('Customers.reverse_transaction') ?></h3>
                 </div>
                 <button onclick="closeReverseModal()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center">
                     <i class="fas fa-times"></i>
@@ -445,27 +461,27 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                         <p class="text-sm text-red-800 mb-2">
                             <i class="fas fa-exclamation-triangle mr-1"></i>
-                            <strong>Warning:</strong> This action will create a reversal entry.
+                            <strong><?= lang('Customers.warning') ?>:</strong> <?= lang('Customers.reversal_warning_text') ?>
                         </p>
                         <div class="text-sm text-gray-700">
-                            <div><strong>Ref No:</strong> <span id="reverseRefNo"></span></div>
-                            <div><strong>Amount:</strong> <?= $currencySymbol ?><span id="reverseAmount"></span></div>
+                            <div><strong><?= lang('Customers.ref_no') ?>:</strong> <span id="reverseRefNo"></span></div>
+                            <div><strong><?= lang('Customers.amount') ?>:</strong> <?= $currencySymbol ?><span id="reverseAmount"></span></div>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Reversal <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.reason_for_reversal') ?> <span class="text-red-500">*</span></label>
                         <textarea name="reason" id="reverseReason" rows="3" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                            placeholder="Please provide a reason for reversing this payment..."></textarea>
+                            placeholder="<?= esc(lang('Customers.reversal_reason_placeholder')) ?>"></textarea>
                     </div>
                 </form>
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t flex justify-end gap-2">
-                <button type="button" onclick="closeReverseModal()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="closeReverseModal()" class="btn btn-secondary"><?= lang('Customers.cancel') ?></button>
                 <button type="button" onclick="submitReversePayment()" class="btn bg-red-600 hover:bg-red-700 text-white">
-                    <i class="fas fa-undo mr-1"></i> Reverse Payment
+                    <i class="fas fa-undo mr-1"></i> <?= lang('Customers.reverse_payment') ?>
                 </button>
             </div>
         </div>
@@ -482,7 +498,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     <div class="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center">
                         <i class="fas fa-wallet"></i>
                     </div>
-                    <h3 class="text-lg font-semibold">Custom Payment</h3>
+                    <h3 class="text-lg font-semibold"><?= lang('Customers.custom_payment') ?></h3>
                 </div>
                 <button onclick="closeCustomPayment()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center">
                     <i class="fas fa-times"></i>
@@ -494,32 +510,32 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
                     <input type="hidden" id="customCustomerId" value="<?= $customer['id'] ?? 0 ?>">
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.customer') ?></label>
                         <p class="text-lg font-semibold text-gray-900"><?= esc($customer['name'] ?? '') ?></p>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Type</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.transaction_type') ?></label>
                         <div class="flex gap-3">
                             <label class="flex-1 relative">
                                 <input type="radio" name="transaction_type" value="payment" checked class="peer sr-only">
                                 <div class="p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-green-600 peer-checked:bg-green-50 text-center">
                                     <i class="fas fa-arrow-down text-green-600 mb-1"></i>
-                                    <div class="font-semibold text-sm">Receive Payment</div>
+                                    <div class="font-semibold text-sm"><?= lang('Customers.receive_payment') ?></div>
                                 </div>
                             </label>
                             <label class="flex-1 relative">
                                 <input type="radio" name="transaction_type" value="payout" class="peer sr-only">
                                 <div class="p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-red-600 peer-checked:bg-red-50 text-center">
                                     <i class="fas fa-arrow-up text-red-600 mb-1"></i>
-                                    <div class="font-semibold text-sm">Payout (Give Money)</div>
+                                    <div class="font-semibold text-sm"><?= lang('Customers.payout_give_money') ?></div>
                                 </div>
                             </label>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Amount <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.amount') ?> <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><?= $currencySymbol ?></span>
                             <input type="number" id="customAmount" step="0.01" min="0.01" required autofocus=""
@@ -529,33 +545,33 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
 
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.date') ?></label>
                             <input type="date" name="payment_date" value="<?= date('Y-m-d') ?>"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Method</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.method') ?></label>
                             <select name="payment_method" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="cash">Cash</option>
-                                <option value="credit_card">Credit Card</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="check">Check</option>
+                                <option value="cash"><?= lang('Customers.cash') ?></option>
+                                <option value="credit_card"><?= lang('Customers.credit_card') ?></option>
+                                <option value="bank_transfer"><?= lang('Customers.bank_transfer') ?></option>
+                                <option value="check"><?= lang('Customers.check') ?></option>
                             </select>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Customers.description') ?></label>
                         <textarea name="description" rows="2" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Payment description..."></textarea>
+                            placeholder="<?= esc(lang('Customers.payment_description_placeholder')) ?>"></textarea>
                     </div>
                 </form>
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t flex justify-end gap-2">
-                <button type="button" onclick="closeCustomPayment()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="closeCustomPayment()" class="btn btn-secondary"><?= lang('Customers.cancel') ?></button>
                 <button type="button" onclick="submitCustomPayment()" class="btn btn-primary">
-                    <i class="fas fa-check mr-1"></i> Submit
+                    <i class="fas fa-check mr-1"></i> <?= lang('Customers.submit') ?>
                 </button>
             </div>
         </div>
@@ -563,6 +579,22 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
 </div>
 
 <script>
+    const ledgerMsgProvideReason = <?= json_encode(lang('Customers.provide_reversal_reason')) ?>;
+    const ledgerMsgConfirmReverse = <?= json_encode(lang('Customers.confirm_reverse_payment')) ?>;
+    const ledgerMsgReversedSuccess = <?= json_encode(lang('Customers.transaction_reversed_successfully')) ?>;
+    const ledgerMsgError = <?= json_encode(lang('Customers.error')) ?>;
+    const ledgerMsgReverseFailed = <?= json_encode(lang('Customers.failed_to_reverse_transaction')) ?>;
+    const ledgerMsgReverseFailedRetry = <?= json_encode(lang('Customers.failed_to_reverse_transaction_retry')) ?>;
+    const ledgerMsgValidAmount = <?= json_encode(lang('Customers.enter_valid_amount')) ?>;
+    const ledgerMsgEnterDescription = <?= json_encode(lang('Customers.enter_description')) ?>;
+    const ledgerMsgPaymentRecorded = <?= json_encode(lang('Customers.payment_recorded_successfully')) ?>;
+    const ledgerMsgFailedRecordPayment = <?= json_encode(lang('Customers.failed_to_record_payment')) ?>;
+    const ledgerMsgFailedRecordPaymentRetry = <?= json_encode(lang('Customers.failed_to_record_payment_retry')) ?>;
+    const ledgerMsgConfirmDeleteEntry = <?= json_encode(lang('Customers.confirm_delete_ledger_entry')) ?>;
+    const ledgerMsgDeleteEntrySuccess = <?= json_encode(lang('Customers.ledger_entry_deleted_successfully')) ?>;
+    const ledgerMsgDeleteEntryFailed = <?= json_encode(lang('Customers.failed_to_delete_ledger_entry')) ?>;
+    const ledgerMsgDeleteEntryFailedRetry = <?= json_encode(lang('Customers.failed_to_delete_ledger_entry_retry')) ?>;
+
     // Reverse Payment Functions
     function openReverseModal(ledgerId, refNo, amount) {
         $('#reverseLedgerId').val(ledgerId);
@@ -581,11 +613,11 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
     function submitReversePayment() {
         const reason = $('#reverseReason').val().trim();
         if (!reason) {
-            alert('Please provide a reason for reversal');
+            alert(ledgerMsgProvideReason);
             return;
         }
 
-        if (!confirm('Are you sure you want to reverse this payment? This action cannot be undone.')) {
+        if (!confirm(ledgerMsgConfirmReverse)) {
             return;
         }
 
@@ -601,14 +633,14 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             success: function(response) {
                 closeReverseModal();
                 if (response.success) {
-                    alert('Transaction reversed successfully!');
+                    alert(ledgerMsgReversedSuccess);
                     location.reload();
                 } else {
-                    alert('Error: ' + (response.message || 'Failed to reverse transaction'));
+                    alert(ledgerMsgError + ': ' + (response.message || ledgerMsgReverseFailed));
                 }
             },
             error: function() {
-                alert('Failed to reverse transaction. Please try again.');
+                alert(ledgerMsgReverseFailedRetry);
             }
         });
     }
@@ -627,7 +659,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
     function submitCustomPayment() {
         const amount = parseFloat($('#customAmount').val()) || 0;
         if (amount <= 0) {
-            alert('Please enter a valid amount');
+            alert(ledgerMsgValidAmount);
             return;
         }
 
@@ -641,7 +673,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
         };
 
         if (!formData.description) {
-            alert('Please enter a description');
+            alert(ledgerMsgEnterDescription);
             return;
         }
 
@@ -652,20 +684,20 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             success: function(response) {
                 closeCustomPayment();
                 if (response.success) {
-                    alert('Payment recorded successfully!');
+                    alert(ledgerMsgPaymentRecorded);
                     location.reload();
                 } else {
-                    alert('Error: ' + (response.message || 'Failed to record payment'));
+                    alert(ledgerMsgError + ': ' + (response.message || ledgerMsgFailedRecordPayment));
                 }
             },
             error: function() {
-                alert('Failed to record payment. Please try again.');
+                alert(ledgerMsgFailedRecordPaymentRetry);
             }
         });
     }
 
     function deleteLedgerEntry(ledgerId, description) {
-        if (!confirm('Delete this ledger entry?\n\n' + description + '\n\nThis will permanently remove the entry.')) {
+        if (!confirm(ledgerMsgConfirmDeleteEntry + '\n\n' + description + '\n\n' + <?= json_encode(lang('Customers.this_will_permanently_remove_entry')) ?>)) {
             return;
         }
 
@@ -677,14 +709,14 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             },
             success: function(response) {
                 if (response && response.success) {
-                    alert(response.message || 'Ledger entry deleted successfully!');
+                    alert(response.message || ledgerMsgDeleteEntrySuccess);
                     location.reload();
                 } else {
-                    alert('Error: ' + (response.message || 'Failed to delete ledger entry'));
+                    alert(ledgerMsgError + ': ' + (response.message || ledgerMsgDeleteEntryFailed));
                 }
             },
             error: function() {
-                alert('Failed to delete ledger entry. Please try again.');
+                alert(ledgerMsgDeleteEntryFailedRetry);
             }
         });
     }

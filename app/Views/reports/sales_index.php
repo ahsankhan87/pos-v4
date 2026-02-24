@@ -7,93 +7,93 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 ?>
 <div class="max-w-full mx-auto px-4 py-4">
     <div class="flex items-center justify-between mb-4">
-        <h1 class="text-xl font-bold">Sales Reports</h1>
+        <h1 class="text-xl font-bold"><?= esc(lang('Reports.sales_reports_title')) ?></h1>
         <form id="filterForm" class="flex gap-2 items-end">
             <div>
-                <label class="text-xs text-gray-600">Start</label>
+                <label class="text-xs text-gray-600"><?= esc(lang('Reports.start')) ?></label>
                 <input type="date" name="start_date" value="<?= $start ?>" class="border rounded px-2 py-1" />
             </div>
             <div>
-                <label class="text-xs text-gray-600">End</label>
+                <label class="text-xs text-gray-600"><?= esc(lang('Reports.end')) ?></label>
                 <input type="date" name="end_date" value="<?= $end ?>" class="border rounded px-2 py-1" />
             </div>
-            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded">Apply</button>
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded"><?= esc(lang('Reports.apply')) ?></button>
         </form>
     </div>
 
     <div id="kpiCards" class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Revenue</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.revenue')) ?></div>
             <div id="kpiRevenue" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Transactions</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.transactions')) ?></div>
             <div id="kpiTx" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Avg Order</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.avg_order')) ?></div>
             <div id="kpiAov" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Discount / Tax</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.discount_tax')) ?></div>
             <div class="text-sm"><span id="kpiDisc">-</span> / <span id="kpiTax">-</span></div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Growth (Sales)</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.growth_sales')) ?></div>
             <div id="kpiGrowthSales" class="text-lg font-bold">-</div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <div class="text-xs text-gray-500">Growth (Tx / AOV)</div>
+            <div class="text-xs text-gray-500"><?= esc(lang('Reports.growth_tx_aov')) ?></div>
             <div class="text-sm"><span id="kpiGrowthTx">-</span> / <span id="kpiGrowthAov">-</span></div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="bg-white rounded shadow p-3 col-span-2">
-            <h3 class="font-semibold mb-2">Sales trend</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.sales_trend')) ?></h3>
             <canvas id="salesTrend" height="120"></canvas>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Payment mix</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.payment_mix')) ?></h3>
             <canvas id="paymentMix" height="120"></canvas>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Top products</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.top_products')) ?></h3>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Product</th>
-                        <th class="py-1 text-right">Qty</th>
-                        <th class="py-1 text-right">Revenue</th>
+                        <th class="py-1"><?= esc(lang('Reports.product')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.qty')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.revenue')) ?></th>
                     </tr>
                 </thead>
                 <tbody id="topProductsBody"></tbody>
             </table>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">By employee</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.by_employee')) ?></h3>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Employee</th>
-                        <th class="py-1 text-right">Tx</th>
-                        <th class="py-1 text-right">Sales</th>
+                        <th class="py-1"><?= esc(lang('Reports.employee')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.tx')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.sales')) ?></th>
                     </tr>
                 </thead>
                 <tbody id="byEmployeeBody"></tbody>
             </table>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Top customers</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.top_customers')) ?></h3>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Customer</th>
-                        <th class="py-1 text-right">Tx</th>
-                        <th class="py-1 text-right">Sales</th>
+                        <th class="py-1"><?= esc(lang('Reports.customer')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.tx')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.sales')) ?></th>
                     </tr>
                 </thead>
                 <tbody id="topCustomersBody"></tbody>
@@ -103,54 +103,54 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Category mix</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.category_mix')) ?></h3>
             <canvas id="categoryMix" height="120"></canvas>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Hourly sales</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.hourly_sales')) ?></h3>
             <canvas id="hourlySales" height="120"></canvas>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Discounts trend</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.discounts_trend')) ?></h3>
             <canvas id="discountsTrend" height="120"></canvas>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Margin</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.margin')) ?></h3>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <div class="text-xs text-gray-500">Revenue</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.revenue')) ?></div>
                     <div id="mRevenue" class="text-lg font-bold">-</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-500">COGS</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.cogs')) ?></div>
                     <div id="mCogs" class="text-lg font-bold">-</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-500">Gross Profit</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.gross_profit')) ?></div>
                     <div id="mGross" class="text-lg font-bold">-</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-500">Margin %</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.margin_percent')) ?></div>
                     <div id="mRate" class="text-lg font-bold">-</div>
                 </div>
             </div>
         </div>
         <div class="bg-white rounded shadow p-3">
-            <h3 class="font-semibold mb-2">Returns</h3>
+            <h3 class="font-semibold mb-2"><?= esc(lang('Reports.returns')) ?></h3>
             <div class="grid grid-cols-3 gap-3">
                 <div>
-                    <div class="text-xs text-gray-500">Total Returned</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.total_returned')) ?></div>
                     <div id="rTotal" class="text-lg font-bold">-</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-500">Qty</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.qty')) ?></div>
                     <div id="rQty" class="text-lg font-bold">-</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-500">Count</div>
+                    <div class="text-xs text-gray-500"><?= esc(lang('Reports.count')) ?></div>
                     <div id="rCount" class="text-lg font-bold">-</div>
                 </div>
             </div>
@@ -161,13 +161,22 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 <script src="<?php echo base_url() ?>assets/js/chartjs/chart.js"></script>
 <script>
     (function() {
+        const reportsTexts = {
+            networkError: <?= json_encode(lang('Reports.network_error'), JSON_UNESCAPED_UNICODE) ?>,
+            sales: <?= json_encode(lang('Reports.sales'), JSON_UNESCAPED_UNICODE) ?>,
+            discounts: <?= json_encode(lang('Reports.discounts'), JSON_UNESCAPED_UNICODE) ?>,
+            na: <?= json_encode(lang('Reports.na'), JSON_UNESCAPED_UNICODE) ?>,
+            unknown: <?= json_encode(lang('Reports.unknown'), JSON_UNESCAPED_UNICODE) ?>,
+            unassigned: <?= json_encode(lang('Reports.unassigned'), JSON_UNESCAPED_UNICODE) ?>
+        };
+
         const currency = <?= json_encode($currency) ?>;
         const form = document.getElementById('filterForm');
         const qs = () => new URLSearchParams(new FormData(form)).toString();
 
         async function fetchJSON(url) {
             const res = await fetch(url + '?' + qs());
-            if (!res.ok) throw new Error('Network error');
+            if (!res.ok) throw new Error(reportsTexts.networkError);
             return res.json();
         }
 
@@ -191,7 +200,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
                     data: {
                         labels: [],
                         datasets: [{
-                            label: 'Sales',
+                            label: reportsTexts.sales,
                             data: [],
                             borderColor: '#2563eb',
                             fill: false
@@ -242,7 +251,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
         async function loadPaymentMix() {
             ensureCharts();
             const data = await fetchJSON('<?= site_url('reports/sales/payment-mix') ?>');
-            mixChart.data.labels = data.map(r => (r.payment_method || 'N/A'));
+            mixChart.data.labels = data.map(r => (r.payment_method || reportsTexts.na));
             mixChart.data.datasets[0].data = data.map(r => Number(r.total));
             mixChart.update();
         }
@@ -269,7 +278,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
                     data: {
                         labels: [],
                         datasets: [{
-                            label: 'Sales',
+                            label: reportsTexts.sales,
                             data: [],
                             backgroundColor: '#60a5fa'
                         }]
@@ -290,7 +299,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
                     data: {
                         labels: [],
                         datasets: [{
-                            label: 'Discounts',
+                            label: reportsTexts.discounts,
                             data: [],
                             borderColor: '#f59e0b',
                             fill: false
@@ -353,7 +362,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
             const data = await fetchJSON('<?= site_url('reports/sales/top-customers') ?>');
             const body = document.getElementById('topCustomersBody');
             body.innerHTML = '';
-            data.forEach(r => body.appendChild(row([r.name || 'Unknown', Number(r.transactions).toFixed(0), currency + Number(r.total).toFixed(2)])));
+            data.forEach(r => body.appendChild(row([r.name || reportsTexts.unknown, Number(r.transactions).toFixed(0), currency + Number(r.total).toFixed(2)])));
         }
 
         function row(cols) {
@@ -378,7 +387,7 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
             const data = await fetchJSON('<?= site_url('reports/sales/by-employee') ?>');
             const body = document.getElementById('byEmployeeBody');
             body.innerHTML = '';
-            data.forEach(r => body.appendChild(row([r.name || 'Unassigned', Number(r.transactions).toFixed(0), currency + Number(r.total).toFixed(2)])));
+            data.forEach(r => body.appendChild(row([r.name || reportsTexts.unassigned, Number(r.transactions).toFixed(0), currency + Number(r.total).toFixed(2)])));
         }
 
         async function refreshAll() {

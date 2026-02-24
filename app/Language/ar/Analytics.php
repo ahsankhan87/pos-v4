@@ -1,0 +1,41 @@
+<?php
+
+return [
+    'salesAnalytics' => 'تحليلات المبيعات',
+    'comparativeAnalysis' => 'التحليل المقارن',
+    'backToAnalytics' => 'العودة إلى التحليلات',
+    'last30Days' => 'آخر 30 يومًا',
+    'thisMonth' => 'هذا الشهر',
+    'lastMonth' => 'الشهر الماضي',
+    'last3Months' => 'آخر 3 أشهر',
+    'last6Months' => 'آخر 6 أشهر',
+    'thisYear' => 'هذا العام',
+    'lastYear' => 'العام الماضي',
+    'showingDataFrom' => 'عرض البيانات من',
+    'range' => 'النطاق',
+    'to' => 'إلى',
+
+    'dailySales' => 'المبيعات اليومية',
+    'monthlySales' => 'المبيعات الشهرية',
+    'topSellingProducts' => 'المنتجات الأكثر مبيعًا',
+    'salesByPaymentMethod' => 'المبيعات حسب طريقة الدفع',
+    'expensesByCategory' => 'المصروفات حسب الفئة',
+
+    'unitsSold' => 'الوحدات المباعة',
+    'revenue' => 'الإيرادات',
+    'totalExpense' => 'إجمالي المصروف',
+
+    'notAvailable' => 'غير متاح',
+    'netSales' => 'صافي المبيعات',
+    'transactions' => 'المعاملات',
+    'averageSale' => 'متوسط البيع',
+    'grossProfit' => 'إجمالي الربح',
+    'expenses' => 'المصروفات',
+    'netProfit' => 'صافي الربح',
+    'current' => 'الحالي',
+    'previous' => 'السابق',
+    'returnsDeducted' => 'بعد خصم المرتجعات',
+    'growth' => 'النمو',
+    'details' => 'التفاصيل',
+    'metric' => 'المؤشر',
+];

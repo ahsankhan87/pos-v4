@@ -9,11 +9,11 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><?= esc($title) ?></h1>
-            <p class="mt-1 text-sm text-gray-500">Keep customer information up to date for accurate sales tracking.</p>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Customers.subtitle') ?></p>
         </div>
         <?php if (can('customers.create')): ?>
             <a href="<?= site_url('customers/new') ?>" class="btn btn-primary mt-4 sm:mt-0">
-                <i class="fas fa-user-plus"></i> Add Customer
+                <i class="fas fa-user-plus"></i> <?= lang('Customers.add_customer') ?>
             </a>
         <?php endif; ?>
     </div>
@@ -39,12 +39,12 @@
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <h2 class="text-lg font-semibold text-gray-900">Customer Directory</h2>
+                <h2 class="text-lg font-semibold text-gray-900"><?= lang('Customers.customer_directory') ?></h2>
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2">
-                        <label for="areaFilter" class="text-sm font-medium text-gray-700">Area:</label>
+                        <label for="areaFilter" class="text-sm font-medium text-gray-700"><?= lang('Customers.area') ?>:</label>
                         <select id="areaFilter" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">All Areas</option>
+                            <option value=""><?= lang('Customers.all_areas') ?></option>
                             <?php if (!empty($areas)): ?>
                                 <?php foreach ($areas as $area): ?>
                                     <?php if (!empty($area['area'])): ?>
@@ -54,7 +54,7 @@
                             <?php endif; ?>
                         </select>
                     </div>
-                    <span class="text-sm text-gray-500">Total: <?= esc($totalCustomers ?? 0) ?></span>
+                    <span class="text-sm text-gray-500"><?= lang('Customers.total') ?>: <?= esc($totalCustomers ?? 0) ?></span>
                 </div>
             </div>
         </div>
@@ -62,14 +62,14 @@
             <table id="customersTable" class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Phone</th>
-                        <th scope="col">Area</th>
-                        <th scope="col">Address</th>
-                        <th scope="col" class="text-center">Sales</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Customers.id') ?></th>
+                        <th scope="col"><?= lang('Customers.name') ?></th>
+                        <th scope="col"><?= lang('Customers.email') ?></th>
+                        <th scope="col"><?= lang('Customers.phone') ?></th>
+                        <th scope="col"><?= lang('Customers.area') ?></th>
+                        <th scope="col"><?= lang('Customers.address') ?></th>
+                        <th scope="col" class="text-center"><?= lang('Customers.sales') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Customers.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -84,7 +84,43 @@
 <script src="<?= base_url() ?>assets/datatable-1.11.5/jszip.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
+<style>
+    #customersTable .actions-menu {
+        min-width: 14rem;
+    }
+
+    #customersTable .actions-menu .actions-link {
+        text-align: start;
+    }
+</style>
+
 <script>
+    const customerTexts = {
+        print: <?= json_encode(lang('Customers.print'), JSON_UNESCAPED_UNICODE) ?>,
+        excel: <?= json_encode(lang('Customers.excel'), JSON_UNESCAPED_UNICODE) ?>,
+        exportTitle: <?= json_encode(lang('Customers.customers_export_title'), JSON_UNESCAPED_UNICODE) ?>,
+        exportSlug: <?= json_encode(lang('Customers.customers_export_slug'), JSON_UNESCAPED_UNICODE) ?>,
+        na: <?= json_encode(lang('Customers.na'), JSON_UNESCAPED_UNICODE) ?>,
+        sale: <?= json_encode(lang('Customers.sale'), JSON_UNESCAPED_UNICODE) ?>,
+        newSale: <?= json_encode(lang('Customers.new_sale'), JSON_UNESCAPED_UNICODE) ?>,
+        noActionsAvailable: <?= json_encode(lang('Customers.no_actions_available'), JSON_UNESCAPED_UNICODE) ?>,
+        viewLedger: <?= json_encode(lang('Customers.view_ledger'), JSON_UNESCAPED_UNICODE) ?>,
+        view: <?= json_encode(lang('Customers.view'), JSON_UNESCAPED_UNICODE) ?>,
+        edit: <?= json_encode(lang('Customers.edit'), JSON_UNESCAPED_UNICODE) ?>,
+        delete: <?= json_encode(lang('Customers.delete'), JSON_UNESCAPED_UNICODE) ?>,
+        deleteCustomerConfirm: <?= json_encode(lang('Customers.delete_customer_confirm'), JSON_UNESCAPED_UNICODE) ?>,
+        actions: <?= json_encode(lang('Customers.actions'), JSON_UNESCAPED_UNICODE) ?>,
+        searchCustomers: <?= json_encode(lang('Customers.search_customers'), JSON_UNESCAPED_UNICODE) ?>,
+        showEntries: <?= json_encode(lang('Customers.show_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        showingEntries: <?= json_encode(lang('Customers.showing_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        showingNoEntries: <?= json_encode(lang('Customers.showing_no_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        filteredEntries: <?= json_encode(lang('Customers.filtered_entries'), JSON_UNESCAPED_UNICODE) ?>,
+        noMatchingCustomers: <?= json_encode(lang('Customers.no_matching_customers'), JSON_UNESCAPED_UNICODE) ?>,
+        loadingCustomers: <?= json_encode(lang('Customers.loading_customers'), JSON_UNESCAPED_UNICODE) ?>,
+        first: <?= json_encode(lang('Customers.first'), JSON_UNESCAPED_UNICODE) ?>,
+        last: <?= json_encode(lang('Customers.last'), JSON_UNESCAPED_UNICODE) ?>
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         const permissions = {
             view: <?= can('customers.view') ? 'true' : 'false' ?>,
@@ -121,12 +157,12 @@
             ],
             buttons: [{
                     extend: 'print',
-                    text: '<i class="fas fa-print mr-1"></i> Print',
+                    text: '<i class="fas fa-print mr-1"></i> ' + customerTexts.print,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5]
                     },
-                    title: 'Customers',
+                    title: customerTexts.exportTitle,
                     customize: function(win) {
                         var $body = $(win.document.body);
                         var $table = $body.find('table');
@@ -166,12 +202,12 @@
 
                 {
                     extend: 'excelHtml5',
-                    text: '<i class="fas fa-file-excel mr-1"></i> Excel',
+                    text: '<i class="fas fa-file-excel mr-1"></i> ' + customerTexts.excel,
                     className: 'btn btn-muted btn-sm',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5]
                     },
-                    title: 'customers'
+                    title: customerTexts.exportSlug
                 }
             ],
             columns: [{
@@ -193,14 +229,14 @@
                     data: 'email',
                     name: 'email',
                     render: function(data) {
-                        return escapeHtml(data || 'N/A');
+                        return escapeHtml(data || customerTexts.na);
                     }
                 },
                 {
                     data: 'phone',
                     name: 'phone',
                     render: function(data) {
-                        return escapeHtml(data || 'N/A');
+                        return escapeHtml(data || customerTexts.na);
                     }
                 },
                 {
@@ -225,8 +261,8 @@
                     render: function(row) {
                         <?php if (can('sales.create')): ?>
                             const url = routes.salesNew + '?customer_id=' + encodeURIComponent(row.id);
-                            return '<a href="' + url + '" target="_blank" class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="New Sale">\
-                                <i class="fas fa-shopping-bag mr-1"></i> Sale\
+                            return '<a href="' + url + '" target="_blank" class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="' + customerTexts.newSale + '">\
+                                <i class="fas fa-shopping-bag mr-1"></i> ' + customerTexts.sale + '\
                             </a>';
                         <?php else: ?>
                             return '<span class="text-gray-400 text-xs">—</span>';
@@ -245,16 +281,16 @@
             ],
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search customers...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching customers found",
-                processing: "Loading customers...",
+                searchPlaceholder: customerTexts.searchCustomers,
+                lengthMenu: customerTexts.showEntries,
+                info: customerTexts.showingEntries,
+                infoEmpty: customerTexts.showingNoEntries,
+                infoFiltered: customerTexts.filteredEntries,
+                zeroRecords: customerTexts.noMatchingCustomers,
+                processing: customerTexts.loadingCustomers,
                 paginate: {
-                    first: "First",
-                    last: "Last",
+                    first: customerTexts.first,
+                    last: customerTexts.last,
                     next: "<i class='fas fa-chevron-right'></i>",
                     previous: "<i class='fas fa-chevron-left'></i>"
                 }
@@ -270,7 +306,7 @@
 
         function buildActions(row) {
             if (!permissions.view && !permissions.update && !permissions.delete) {
-                return '<span class="text-xs text-slate-400">No actions available</span>';
+                return '<span class="text-xs text-slate-400">' + customerTexts.noActionsAvailable + '</span>';
             }
 
             let menuItems = '';
@@ -279,7 +315,7 @@
                 menuItems += `
                     <a href="${routes.viewLedger}/${row.id}" class="actions-link actions-link--secondary">
                         <i class="fas fa-book"></i>
-                        <span>View Ledger</span>
+                        <span>${customerTexts.viewLedger}</span>
                     </a>
                 `;
             }
@@ -288,7 +324,7 @@
                 menuItems += `
                     <a href="${routes.view}/${row.id}" class="actions-link actions-link--info">
                         <i class="fas fa-eye"></i>
-                        <span>View</span>
+                        <span>${customerTexts.view}</span>
                     </a>
                 `;
             }
@@ -297,19 +333,19 @@
                 menuItems += `
                     <a href="${routes.edit}/${row.id}" class="actions-link actions-link--primary">
                         <i class="fas fa-edit"></i>
-                        <span>Edit</span>
+                        <span>${customerTexts.edit}</span>
                     </a>
                 `;
             }
 
             if (permissions.delete) {
                 menuItems += `
-                    <form action="${routes.delete}/${row.id}" method="post" onsubmit="return confirm('Delete this customer?');">
+                    <form action="${routes.delete}/${row.id}" method="post" onsubmit="return confirm('${customerTexts.deleteCustomerConfirm}');">
                         <?= csrf_field() ?>
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="actions-link actions-link--danger">
                             <i class="fas fa-trash-alt"></i>
-                            <span>Delete</span>
+                            <span>${customerTexts.delete}</span>
                         </button>
                     </form>
                 `;
@@ -318,10 +354,10 @@
             return `
                 <div class="actions-wrapper">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm">
-                        <span>Actions</span>
+                        <span>${customerTexts.actions}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="actions-menu hidden">
+                    <div class="actions-menu hidden bg-white border border-gray-200 rounded-lg shadow-lg p-1">
                         ${menuItems}
                     </div>
                 </div>
@@ -334,6 +370,50 @@
         });
     });
 
+    function positionActionsMenu(menu, toggle) {
+        const toggleRect = toggle.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const margin = 8;
+        const verticalGap = 6;
+        const minVisibleHeight = 140;
+        const menuRect = menu.getBoundingClientRect();
+        const menuWidth = menuRect.width || 224;
+        const menuHeight = menuRect.height || 200;
+        const isRtl = (document.documentElement.getAttribute('dir') || '').toLowerCase() === 'rtl';
+
+        let left = isRtl ? (toggleRect.right - menuWidth) : toggleRect.left;
+        left = Math.max(margin, Math.min(left, viewportWidth - menuWidth - margin));
+
+        let top = toggleRect.bottom + verticalGap;
+        const availableBelow = Math.max(minVisibleHeight, viewportHeight - top - margin);
+
+        if ((top + minVisibleHeight) > (viewportHeight - margin)) {
+            top = Math.max(margin, viewportHeight - minVisibleHeight - margin);
+        }
+
+        menu.style.position = 'fixed';
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.style.right = 'auto';
+        menu.style.maxHeight = availableBelow + 'px';
+        menu.style.overflowY = 'auto';
+        menu.style.zIndex = '10050';
+    }
+
+    function hideAllActionMenus() {
+        document.querySelectorAll('.actions-menu').forEach(function(el) {
+            el.classList.add('hidden');
+            el.style.position = '';
+            el.style.top = '';
+            el.style.left = '';
+            el.style.right = '';
+            el.style.maxHeight = '';
+            el.style.overflowY = '';
+            el.style.zIndex = '';
+        });
+    }
+
     document.addEventListener('click', function(event) {
         const toggle = event.target.closest('.actions-toggle');
         if (toggle) {
@@ -341,20 +421,20 @@
             const wrapper = toggle.closest('.actions-wrapper');
             const menu = wrapper.querySelector('.actions-menu');
             const isOpen = !menu.classList.contains('hidden');
-            document.querySelectorAll('.actions-menu').forEach(function(el) {
-                el.classList.add('hidden');
-            });
+            hideAllActionMenus();
             if (!isOpen) {
                 menu.classList.remove('hidden');
+                positionActionsMenu(menu, toggle);
             }
             return;
         }
 
         if (!event.target.closest('.actions-wrapper')) {
-            document.querySelectorAll('.actions-menu').forEach(function(el) {
-                el.classList.add('hidden');
-            });
+            hideAllActionMenus();
         }
     });
+
+    window.addEventListener('resize', hideAllActionMenus);
+    window.addEventListener('scroll', hideAllActionMenus, true);
 </script>
 <?= $this->endSection() ?>

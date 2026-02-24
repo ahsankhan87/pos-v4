@@ -1,9 +1,10 @@
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction(current_locale())) ?>">
 
 <head>
+    <?php helper('locale'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expenses Report</title>
+    <title><?= lang('Expenses.expensesReport') ?></title>
     <style>
         @media print {
             .no-print {
@@ -33,20 +34,20 @@
 
 <body>
     <div style="text-align: center;" class="flex items-center justify-between no-print">
-        <a href="<?= site_url('expenses') ?>" class="btn btn-muted">Back</a>
-        <button onclick="window.print()" class="btn btn-primary">Print</button>
+        <a href="<?= site_url('expenses') ?>" class="btn btn-muted"><?= lang('Expenses.back') ?></a>
+        <button onclick="window.print()" class="btn btn-primary"><?= lang('Expenses.print') ?></button>
     </div>
     <?php $currencySymbol = session()->get('currency_symbol') ?: '$'; ?>
-    <h2>Expenses Report</h2>
+    <h2><?= lang('Expenses.expensesReport') ?></h2>
     <table border="1" cellpadding="5" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Vendor</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Tax</th>
+                <th><?= lang('Expenses.date') ?></th>
+                <th><?= lang('Expenses.category') ?></th>
+                <th><?= lang('Expenses.vendor') ?></th>
+                <th><?= lang('Expenses.description') ?></th>
+                <th><?= lang('Expenses.amount') ?></th>
+                <th><?= lang('Expenses.tax') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -69,7 +70,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="4" style="text-align:right;">Totals</th>
+                <th colspan="4" style="text-align:right;"><?= lang('Expenses.totals') ?></th>
                 <th style="text-align:right;"><?= $currencySymbol ?><?= number_format($totalAmount, 2) ?></th>
                 <th style="text-align:right;"><?= $currencySymbol ?><?= number_format($totalTax, 2) ?></th>
             </tr>

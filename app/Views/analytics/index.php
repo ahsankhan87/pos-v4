@@ -3,23 +3,23 @@
 <div class="container mx-auto p-4">
     <div class="flex flex-col gap-3 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="text-2xl font-bold">Sales Analytics</h1>
+            <h1 class="text-2xl font-bold"><?= lang('Analytics.salesAnalytics') ?></h1>
             <a class="px-3 py-1.5 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600 text-sm font-medium bg-white"
                 href="<?= site_url('analytics/comparative') ?>?range=<?= urlencode($range ?? 'last30_days') ?>">
-                Comparative Analysis
+                <?= lang('Analytics.comparativeAnalysis') ?>
             </a>
         </div>
 
         <?php
         $currentRange = $range ?? 'last30_days';
         $ranges = [
-            'last30_days' => 'Last 30 Days',
-            'this_month' => 'This Month',
-            'last_month' => 'Last Month',
-            'last3_months' => 'Last 3 Months',
-            'last6_months' => 'Last 6 Months',
-            'this_year' => 'This Year',
-            'last_year' => 'Last Year',
+            'last30_days' => lang('Analytics.last30Days'),
+            'this_month' => lang('Analytics.thisMonth'),
+            'last_month' => lang('Analytics.lastMonth'),
+            'last3_months' => lang('Analytics.last3Months'),
+            'last6_months' => lang('Analytics.last6Months'),
+            'this_year' => lang('Analytics.thisYear'),
+            'last_year' => lang('Analytics.lastYear'),
         ];
         ?>
 
@@ -38,7 +38,7 @@
         </div>
 
         <div class="text-sm text-gray-500">
-            Showing data from <span class="font-medium text-gray-700"><?= esc($expenseFrom ?? '') ?></span> to <span class="font-medium text-gray-700"><?= esc($expenseTo ?? '') ?></span>
+            <?= lang('Analytics.showingDataFrom') ?> <span class="font-medium text-gray-700"><?= esc($expenseFrom ?? '') ?></span> <?= lang('Analytics.to') ?> <span class="font-medium text-gray-700"><?= esc($expenseTo ?? '') ?></span>
         </div>
     </div>
 
@@ -66,13 +66,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Daily Sales Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Daily Sales</h2>
+            <h2 class="text-xl font-semibold mb-4"><?= lang('Analytics.dailySales') ?></h2>
             <canvas id="dailySalesChart" height="300"></canvas>
         </div>
 
         <!-- Monthly Sales Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Monthly Sales</h2>
+            <h2 class="text-xl font-semibold mb-4"><?= lang('Analytics.monthlySales') ?></h2>
             <canvas id="monthlySalesChart" height="300"></canvas>
         </div>
     </div>
@@ -80,13 +80,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Top Products Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Top Selling Products</h2>
+            <h2 class="text-xl font-semibold mb-4"><?= lang('Analytics.topSellingProducts') ?></h2>
             <canvas id="topProductsChart" height="300"></canvas>
         </div>
 
         <!-- Payment Methods Chart -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Sales by Payment Method</h2>
+            <h2 class="text-xl font-semibold mb-4"><?= lang('Analytics.salesByPaymentMethod') ?></h2>
             <canvas id="paymentMethodsChart" height="300"></canvas>
         </div>
     </div>
@@ -94,8 +94,8 @@
     <!-- Expense Category Report -->
     <div class="grid grid-cols-2 gap-6 mt-6">
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-1">Expenses by Category</h2>
-            <p class="text-sm text-gray-500 mb-4">Range: <?= esc($expenseFrom ?? '') ?> to <?= esc($expenseTo ?? '') ?></p>
+            <h2 class="text-xl font-semibold mb-1"><?= lang('Analytics.expensesByCategory') ?></h2>
+            <p class="text-sm text-gray-500 mb-4"><?= lang('Analytics.range') ?>: <?= esc($expenseFrom ?? '') ?> <?= lang('Analytics.to') ?> <?= esc($expenseTo ?? '') ?></p>
             <canvas id="expenseCategoryChart" height="220"></canvas>
         </div>
     </div>
@@ -106,6 +106,13 @@
 <script src="<?php echo base_url() ?>assets/js/chartjs/chart.js"></script>
 <script>
     const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
+    const analyticsTexts = {
+        dailySales: <?= json_encode(lang('Analytics.dailySales')) ?>,
+        monthlySales: <?= json_encode(lang('Analytics.monthlySales')) ?>,
+        unitsSold: <?= json_encode(lang('Analytics.unitsSold')) ?>,
+        revenue: <?= json_encode(lang('Analytics.revenue')) ?>,
+        totalExpense: <?= json_encode(lang('Analytics.totalExpense')) ?>,
+    };
 
     // Daily Sales Chart
     const dailyCtx = document.getElementById('dailySalesChart').getContext('2d');
@@ -114,7 +121,7 @@
         data: {
             labels: <?= json_encode(array_column($dailySales, 'date')) ?>,
             datasets: [{
-                label: 'Daily Sales',
+                label: analyticsTexts.dailySales,
                 data: <?= json_encode(array_column($dailySales, 'total')) ?>,
                 backgroundColor: 'rgba(59, 130, 246, 0.05)',
                 borderColor: 'rgba(59, 130, 246, 1)',
@@ -155,7 +162,7 @@
                         return date('M Y', strtotime($m . '-01'));
                     }, array_column($monthlySales, 'month'))) ?>,
             datasets: [{
-                label: 'Monthly Sales',
+                label: analyticsTexts.monthlySales,
                 data: <?= json_encode(array_column($monthlySales, 'total')) ?>,
                 backgroundColor: 'rgba(16, 185, 129, 0.6)',
                 borderColor: 'rgba(16, 185, 129, 1)',
@@ -192,14 +199,14 @@
         data: {
             labels: <?= json_encode(array_column($topProducts, 'name')) ?>,
             datasets: [{
-                label: 'Units Sold',
+                label: analyticsTexts.unitsSold,
                 data: <?= json_encode(array_column($topProducts, 'total_sold')) ?>,
                 backgroundColor: 'rgba(99, 102, 241, 0.6)',
                 borderColor: 'rgba(99, 102, 241, 1)',
                 borderWidth: 1,
                 yAxisID: 'y'
             }, {
-                label: 'Revenue',
+                label: analyticsTexts.revenue,
                 data: <?= json_encode(array_column($topProducts, 'total_revenue')) ?>,
                 backgroundColor: 'rgba(245, 158, 11, 0.6)',
                 borderColor: 'rgba(245, 158, 11, 1)',
@@ -216,7 +223,7 @@
                     position: 'left',
                     title: {
                         display: true,
-                        text: 'Units Sold'
+                        text: analyticsTexts.unitsSold
                     }
                 },
                 y1: {
@@ -225,7 +232,7 @@
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Revenue'
+                        text: analyticsTexts.revenue
                     },
                     grid: {
                         drawOnChartArea: false
@@ -324,7 +331,7 @@
             data: {
                 labels: expenseLabels,
                 datasets: [{
-                    label: 'Total Expense',
+                    label: analyticsTexts.totalExpense,
                     data: expenseTotals,
                     backgroundColor: bg,
                     borderColor: bd,

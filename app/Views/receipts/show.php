@@ -47,17 +47,17 @@
     </style>
     <div class="flex items-center justify-between mb-4">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Receipt</h1>
-            <p class="text-xs text-gray-500">Invoice #<?= esc($sale['invoice_no'] ?? '') ?> · <?= esc(date('d M Y h:i A', strtotime($sale['created_at'] ?? date('Y-m-d H:i:s')))) ?></p>
+            <h1 class="text-xl font-bold text-gray-900"><?= lang('Receipts.receipt') ?></h1>
+            <p class="text-xs text-gray-500"><?= lang('Receipts.invoice') ?> #<?= esc($sale['invoice_no'] ?? '') ?> · <?= esc(date('d M Y h:i A', strtotime($sale['created_at'] ?? date('Y-m-d H:i:s')))) ?></p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="<?= site_url('sales/new') ?>" accesskey="n" title="New Sale (Alt+Shift+N)" class="btn btn-muted btn-sm"><i class="fas fa-plus mr-1"></i>New Sale</a>
-            <a href="<?= site_url('sales/edit/' . ($sale['id'] ?? 0)) ?>" accesskey="e" title="Edit Sale (Alt+Shift+E)" class="btn btn-warning btn-sm"><i class="fas fa-edit mr-1"></i>Edit Sale</a>
-            <a href="<?= site_url('sales') ?>" accesskey="l" title="Sales List (Alt+Shift+L)" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i>Sales</a>
+            <a href="<?= site_url('sales/new') ?>" accesskey="n" title="<?= lang('Receipts.newSaleShortcut') ?>" class="btn btn-muted btn-sm"><i class="fas fa-plus mr-1"></i><?= lang('Receipts.newSale') ?></a>
+            <a href="<?= site_url('sales/edit/' . ($sale['id'] ?? 0)) ?>" accesskey="e" title="<?= lang('Receipts.editSaleShortcut') ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit mr-1"></i><?= lang('Receipts.editSale') ?></a>
+            <a href="<?= site_url('sales') ?>" accesskey="l" title="<?= lang('Receipts.salesListShortcut') ?>" class="btn btn-secondary btn-sm"><i class="fas fa-list mr-1"></i><?= lang('Receipts.sales') ?></a>
             <!-- <a href="<?= site_url('receipts/generate/' . ($sale['id'] ?? 0) . '?output=pdf') ?>" target="_blank" accesskey="d" title="Open PDF (Alt+Shift+D)" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf mr-1"></i>PDF</a> -->
-            <button type="button" accesskey="p" title="Print Receipt (Ctrl+P)" onclick="printReceiptOnly()" class="btn btn-primary btn-sm"><i class="fas fa-print mr-1"></i>Print</button>
+            <button type="button" accesskey="p" title="<?= lang('Receipts.printReceiptShortcut') ?>" onclick="printReceiptOnly()" class="btn btn-primary btn-sm"><i class="fas fa-print mr-1"></i><?= lang('Receipts.print') ?></button>
             <!-- <button type="button" title="Send to WhatsApp" onclick="sendReceiptWhatsApp()" class="btn btn-success btn-sm bg-green-600 hover:bg-green-700 text-white"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</button> -->
-            <a href="<?= site_url('receipts/templates') ?>" title="Receipt Templates" class="btn btn-muted btn-sm"><i class="fas fa-cogs mr-1"></i>Templates</a>
+            <a href="<?= site_url('receipts/templates') ?>" title="<?= lang('Receipts.receiptTemplates') ?>" class="btn btn-muted btn-sm"><i class="fas fa-cogs mr-1"></i><?= lang('Receipts.templates') ?></a>
 
         </div>
     </div>
@@ -66,36 +66,48 @@
     <div id="receipt-shortcuts-hint" class="mb-4 bg-blue-50 border border-blue-200 text-blue-900 px-3 py-2 rounded text-xs flex items-center">
         <i class="fas fa-keyboard mr-2"></i>
         <div>
-            <span class="font-semibold">Shortcuts:</span>
+            <span class="font-semibold"><?= lang('Receipts.shortcuts') ?>:</span>
             <span class="ml-1">
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+P</kbd> Print
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+P</kbd> <?= lang('Receipts.print') ?>
                 <span class="mx-1">·</span>
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Shift+P</kbd> Browser Print
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Shift+P</kbd> <?= lang('Receipts.browserPrint') ?>
                 <span class="mx-1">·</span>
                 <!-- <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+D</kbd> PDF
                 <span class="mx-1">·</span> -->
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+E</kbd> Edit Sale
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+E</kbd> <?= lang('Receipts.editSale') ?>
                 <span class="mx-1">·</span>
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+N</kbd> New Sale
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+N</kbd> <?= lang('Receipts.newSale') ?>
                 <span class="mx-1">·</span>
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+L</kbd> Sales List
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+L</kbd> <?= lang('Receipts.salesList') ?>
                 <span class="mx-1">·</span>
-                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+B</kbd> Back
+                <kbd class="px-1 py-0.5 bg-white border border-blue-200 rounded">Ctrl+Alt+B</kbd> <?= lang('Receipts.back') ?>
             </span>
         </div>
     </div>
 
     <div class="bg-white shadow rounded p-4 print:shadow-none print:p-0">
         <!-- Receipt preview in iframe to isolate CSS -->
-        <iframe id="preview" title="Receipt Preview" style="width: 100%; height: 600px; border: 1px solid #ddd; background: white; border-radius: 4px;"></iframe>
+        <iframe id="preview" title="<?= lang('Receipts.receiptPreview') ?>" style="width: 100%; height: 600px; border: 1px solid #ddd; background: white; border-radius: 4px;"></iframe>
     </div>
 
     <div class="mt-4 text-center">
-        <a id="back-pos-link" href="<?= site_url('sales/new') ?>" accesskey="b" title="Back (Ctrl+Alt+B)" class="text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-1"></i>Back to POS</a>
+        <a id="back-pos-link" href="<?= site_url('sales/new') ?>" accesskey="b" title="<?= lang('Receipts.backShortcut') ?>" class="text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-1"></i><?= lang('Receipts.backToPos') ?></a>
     </div>
 </div>
 
 <script>
+    const receiptsTexts = {
+        frameNotFound: <?= json_encode(lang('Receipts.receiptFrameNotFound'), JSON_UNESCAPED_UNICODE) ?>,
+        waitingForIframe: <?= json_encode(lang('Receipts.waitingForIframe'), JSON_UNESCAPED_UNICODE) ?>,
+        iframePrintFailed: <?= json_encode(lang('Receipts.iframePrintFailed'), JSON_UNESCAPED_UNICODE) ?>,
+        fallbackPrint: <?= json_encode(lang('Receipts.fallingBackPrint'), JSON_UNESCAPED_UNICODE) ?>,
+        enterWhatsAppNumber: <?= json_encode(lang('Receipts.enterWhatsAppNumber'), JSON_UNESCAPED_UNICODE) ?>,
+        sentWhatsAppSuccess: <?= json_encode(lang('Receipts.sentWhatsAppSuccess'), JSON_UNESCAPED_UNICODE) ?>,
+        whatsappSendFailed: <?= json_encode(lang('Receipts.whatsAppSendFailed'), JSON_UNESCAPED_UNICODE) ?>,
+        unknownError: <?= json_encode(lang('Receipts.unknownError'), JSON_UNESCAPED_UNICODE) ?>,
+        whatsappSendError: <?= json_encode(lang('Receipts.whatsAppSendError'), JSON_UNESCAPED_UNICODE) ?>,
+    };
+
     // Inject receipt HTML into iframe to isolate styles
     (function injectReceiptIntoFrame() {
         const frame = document.getElementById('preview');
@@ -236,14 +248,14 @@
     async function printReceiptOnly() {
         const frame = document.getElementById('preview');
         if (!frame) {
-            console.error('Receipt frame not found');
+            console.error(receiptsTexts.frameNotFound);
             window.print();
             return;
         }
 
         // Wait for iframe to be ready if needed
         if (!frame.dataset.ready) {
-            console.log('Waiting for iframe to load...');
+            console.log(receiptsTexts.waitingForIframe);
             setTimeout(printReceiptOnly, 100);
             return;
         }
@@ -257,11 +269,11 @@
                 }, 80);
                 return;
             } catch (err) {
-                console.error('Iframe print failed:', err);
+                console.error(receiptsTexts.iframePrintFailed, err);
             }
         }
         // Fallback to window print if iframe fails
-        console.warn('Falling back to window.print()');
+        console.warn(receiptsTexts.fallbackPrint);
         window.print();
     }
 
@@ -331,7 +343,7 @@
     async function sendReceiptWhatsApp() {
         try {
             const defaultPhone = <?= json_encode($sale['customer_phone'] ?? '') ?>;
-            const input = prompt('Enter WhatsApp number (E.164 or local):', defaultPhone || '');
+            const input = prompt(receiptsTexts.enterWhatsAppNumber, defaultPhone || '');
             if (!input) return;
             const url = '<?= site_url('receipts/send-whatsapp/' . ($sale['id'] ?? 0)) ?>' + '?to=' + encodeURIComponent(input);
             const res = await fetch(url, {
@@ -342,12 +354,12 @@
             });
             const data = await res.json();
             if (data && data.success) {
-                alert('Sent to WhatsApp successfully.');
+                alert(receiptsTexts.sentWhatsAppSuccess);
             } else {
-                alert('WhatsApp send failed: ' + (data && (data.error || data.status) ? (data.error || ('HTTP ' + data.status)) : 'Unknown error'));
+                alert(receiptsTexts.whatsappSendFailed + ': ' + (data && (data.error || data.status) ? (data.error || ('HTTP ' + data.status)) : receiptsTexts.unknownError));
             }
         } catch (err) {
-            alert('WhatsApp send error: ' + (err && err.message ? err.message : err));
+            alert(receiptsTexts.whatsappSendError + ': ' + (err && err.message ? err.message : err));
         }
     }
 </script>

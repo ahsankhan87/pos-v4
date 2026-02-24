@@ -39,12 +39,12 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Supplier Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Opening Balance</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Current Balance</th>
-                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.supplier_name') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.phone') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.email') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.opening_balance') ?></th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.current_balance') ?></th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.actions') ?></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -67,7 +67,7 @@
                                         <button class="ml-2 text-blue-600 hover:text-blue-800 transition-colors edit-opening-balance"
                                             data-supplier-id="<?= $supplier['id'] ?>"
                                             data-current-balance="<?= $supplier['opening_balance'] ?>"
-                                            title="Edit Opening Balance">
+                                            title="<?= esc(lang('SupplierLedger.edit_opening_balance')) ?>">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                     </td>
@@ -79,7 +79,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                         <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
                                             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
-                                            <i class="fas fa-eye mr-2"></i> View Ledger
+                                            <i class="fas fa-eye mr-2"></i> <?= lang('SupplierLedger.view_ledger') ?>
                                         </a>
                                     </td>
                                 </tr>
@@ -89,7 +89,7 @@
                                 <td colspan="6" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                                        <p class="text-gray-500 text-sm">No suppliers found</p>
+                                        <p class="text-gray-500 text-sm"><?= lang('SupplierLedger.no_suppliers_found') ?></p>
                                     </div>
                                 </td>
                             </tr>
@@ -105,7 +105,7 @@
 <div id="openingBalanceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-gray-900">Update Opening Balance</h3>
+            <h3 class="text-lg font-bold text-gray-900"><?= lang('SupplierLedger.update_opening_balance') ?></h3>
             <button type="button" class="text-gray-400 hover:text-gray-600 close-modal">
                 <i class="fas fa-times"></i>
             </button>
@@ -115,13 +115,13 @@
                 <input type="hidden" id="supplierId" name="supplier_id">
                 <div class="mb-4">
                     <label for="openingBalance" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Opening Balance
+                        <?= lang('SupplierLedger.opening_balance') ?>
                     </label>
                     <input type="number" step="0.01"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         id="openingBalance" name="opening_balance" required>
                     <p class="mt-2 text-xs text-gray-500">
-                        Positive value means you owe the supplier (payable).
+                        <?= lang('SupplierLedger.opening_balance_hint') ?>
                     </p>
                 </div>
             </form>
@@ -129,11 +129,11 @@
         <div class="flex gap-2 justify-end mt-4">
             <button type="button"
                 class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-semibold rounded-lg transition-colors close-modal">
-                Cancel
+                <?= lang('SupplierLedger.cancel') ?>
             </button>
             <button type="button" id="saveOpeningBalance"
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors">
-                Save
+                <?= lang('SupplierLedger.save') ?>
             </button>
         </div>
     </div>
@@ -195,12 +195,12 @@
                         alert(data.message);
                         location.reload();
                     } else {
-                        alert(data.message || 'Failed to update opening balance');
+                        alert(data.message || '<?= esc(lang('SupplierLedger.failed_update_opening_balance')) ?>');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while updating opening balance');
+                    alert('<?= esc(lang('SupplierLedger.error_updating_opening_balance')) ?>');
                 });
         });
     });

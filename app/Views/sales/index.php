@@ -5,18 +5,18 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Sales Records</h1>
-            <p class="mt-1 text-sm text-gray-500">View and manage all sales transactions</p>
+            <h1 class="text-2xl font-bold text-gray-900"><?= lang('Sales.records_title') ?></h1>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Sales.records_subtitle') ?></p>
         </div>
         <div class="mt-4 sm:mt-0">
             <?php if (can('sales.view')): ?>
                 <a href="<?= site_url('sales/drafts') ?> " class="btn btn-secondary mr-2">
-                    <i class="fas fa-file-alt"></i> Draft Sales
+                    <i class="fas fa-file-alt"></i> <?= lang('Sales.draft_sales') ?>
                 </a>
             <?php endif; ?>
             <?php if (can('sales.create')): ?>
                 <a href="<?= site_url('sales/new') ?>" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> New Sale
+                    <i class="fas fa-plus-circle"></i> <?= lang('Sales.new_sale') ?>
                 </a>
             <?php endif; ?>
         </div>
@@ -63,13 +63,13 @@
         <!-- Table Header: Tabs + Due Summary -->
         <div class="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div class="flex items-center gap-2 border-b border-gray-200 " role="tablist" aria-label="Payment Status">
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 is-active" data-status="" role="tab" aria-selected="true">All</button>
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="paid" role="tab" aria-selected="false">Paid</button>
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="partial" role="tab" aria-selected="false">Partial</button>
-                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="due" role="tab" aria-selected="false">Due</button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 is-active" data-status="" role="tab" aria-selected="true"><?= lang('Sales.all') ?></button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="paid" role="tab" aria-selected="false"><?= lang('Sales.paid') ?></button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="partial" role="tab" aria-selected="false"><?= lang('Sales.partial') ?></button>
+                <button type="button" class="status-tab filter-btn px-3 py-2 -mb-px border-b-2 border-transparent text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-status="due" role="tab" aria-selected="false"><?= lang('Sales.due') ?></button>
             </div>
             <span class="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded font-semibold whitespace-nowrap">
-                Total Outstanding (Due): <?= (session()->get('currency_symbol') ?? '$') . number_format($totalDue ?? 0, 2) ?>
+                <?= lang('Sales.outstanding_due') ?> <?= (session()->get('currency_symbol') ?? '$') . number_format($totalDue ?? 0, 2) ?>
             </span>
         </div>
 
@@ -77,24 +77,24 @@
             <table id="salesTable" class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Invoice #</th>
-                        <th scope="col">Customer</th>
-                        <th scope="col">Gross Total</th>
-                        <th scope="col">Returns</th>
-                        <th scope="col">Net Total</th>
-                        <th scope="col">Date</th>
+                        <th scope="col"><?= lang('Sales.id') ?></th>
+                        <th scope="col"><?= lang('Sales.invoice_no') ?></th>
+                        <th scope="col"><?= lang('Sales.customer') ?></th>
+                        <th scope="col"><?= lang('Sales.gross_total') ?></th>
+                        <th scope="col"><?= lang('Sales.returns') ?></th>
+                        <th scope="col"><?= lang('Sales.net_total') ?></th>
+                        <th scope="col"><?= lang('Sales.date') ?></th>
                         <th scope="col">
-                            Payment Type
+                            <?= lang('Sales.payment_type') ?>
                         </th>
                         <th scope="col">
-                            Status
+                            <?= lang('Sales.status') ?>
                         </th>
                         <th scope="col">
-                            Due
+                            <?= lang('Sales.due') ?>
                         </th>
                         <th scope="col" class="text-right">
-                            Actions
+                            <?= lang('Sales.actions') ?>
                         </th>
                     </tr>
                 </thead>
@@ -118,11 +118,11 @@
                         <i class="fas fa-receipt"></i>
                     </div>
                     <div>
-                        <h3 id="paymentHistoryTitle" class="text-lg font-semibold leading-tight">Payment History</h3>
-                        <p id="paymentHistorySubtitle" class="text-xs text-white/80">Sale <span id="paymentModalSaleId">#</span></p>
+                        <h3 id="paymentHistoryTitle" class="text-lg font-semibold leading-tight"><?= lang('Sales.payment_history_title') ?></h3>
+                        <p id="paymentHistorySubtitle" class="text-xs text-white/80"><?= lang('Sales.sale') ?> <span id="paymentModalSaleId">#</span></p>
                     </div>
                 </div>
-                <button onclick="closePaymentHistory()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center focus:outline-none focus:ring-2 focus:ring-white/60" aria-label="Close">
+                <button onclick="closePaymentHistory()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center focus:outline-none focus:ring-2 focus:ring-white/60" aria-label="<?= lang('Sales.close') ?>">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -136,52 +136,52 @@
                             <i class="fas fa-check"></i>
                         </span>
                         <div>
-                            <p class="text-xs text-gray-500 leading-none">Total Paid</p>
+                            <p class="text-xs text-gray-500 leading-none"><?= lang('Sales.total_paid') ?></p>
                             <p id="paymentTotalPaid" class="text-sm font-semibold text-gray-900">-</p>
                         </div>
                     </div>
                     <div id="paymentCountPill" class="hidden md:inline-flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">
                         <i class="fas fa-list-ol text-gray-500"></i>
-                        <span><span id="paymentCount">0</span> payment(s)</span>
+                        <span><span id="paymentCount">0</span> <?= lang('Sales.payments_count') ?></span>
                     </div>
                 </div>
 
                 <!-- Sale Details (auto-filled) -->
                 <div id="paymentDetailsBlock" class="mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Invoice</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.invoice') ?></p>
                         <p id="paymentInvoiceNo" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Customer</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.customer') ?></p>
                         <p id="paymentCustomer" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Date</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.date') ?></p>
                         <p id="paymentDate" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Payment Type</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.payment_type') ?></p>
                         <p id="paymentType" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Status</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.status') ?></p>
                         <p id="paymentStatus" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Gross Total</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.gross_total') ?></p>
                         <p id="paymentGross" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Returns</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.returns') ?></p>
                         <p id="paymentReturns" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Net Total</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.net_total') ?></p>
                         <p id="paymentNet" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3">
-                        <p class="text-xs text-gray-500 leading-none mb-1">Due</p>
+                        <p class="text-xs text-gray-500 leading-none mb-1"><?= lang('Sales.due') ?></p>
                         <p id="paymentDue" class="font-medium text-gray-900 truncate">-</p>
                     </div>
                 </div>
@@ -191,9 +191,9 @@
                     <table class="min-w-full text-sm" id="paymentHistoryTable">
                         <thead class="bg-gray-50 text-gray-600">
                             <tr>
-                                <th class="text-left py-3 px-3 font-semibold">Date</th>
-                                <th class="text-left py-3 px-3 font-semibold">Amount</th>
-                                <th class="text-left py-3 px-3 font-semibold">Description</th>
+                                <th class="text-left py-3 px-3 font-semibold"><?= lang('Sales.date') ?></th>
+                                <th class="text-left py-3 px-3 font-semibold"><?= lang('Sales.amount') ?></th>
+                                <th class="text-left py-3 px-3 font-semibold"><?= lang('Sales.description') ?></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -207,25 +207,25 @@
                     <div class="mx-auto mb-3 h-12 w-12 rounded-full bg-gray-100 text-gray-500 grid place-items-center">
                         <i class="fas fa-inbox"></i>
                     </div>
-                    <p class="text-gray-700 font-medium">No payments found</p>
-                    <p class="text-gray-500 text-sm">When this sale receives payments they'll appear here.</p>
+                    <p class="text-gray-700 font-medium"><?= lang('Sales.no_payments') ?></p>
+                    <p class="text-gray-500 text-sm"><?= lang('Sales.payments_hint') ?></p>
                 </div>
             </div>
 
             <!-- Footer -->
             <div class="px-5 py-3 bg-gray-50 border-t flex flex-wrap gap-2 justify-end">
                 <div class="mr-auto flex items-center gap-3 pl-1">
-                    <button type="button" onclick="printPaymentHistory()" class="btn btn-outline btn-sm flex items-center gap-2" title="Print">
+                    <button type="button" onclick="printPaymentHistory()" class="btn btn-outline btn-sm flex items-center gap-2" title="<?= lang('Sales.print') ?>">
                         <i class="fas fa-print"></i>
-                        <span>Print</span>
+                        <span><?= lang('Sales.print') ?></span>
                     </button>
-                    <button type="button" onclick="exportPaymentHistoryCSV()" class="btn btn-outline btn-sm flex items-center gap-2" title="Export CSV">
+                    <button type="button" onclick="exportPaymentHistoryCSV()" class="btn btn-outline btn-sm flex items-center gap-2" title="<?= lang('Sales.export') ?> CSV">
                         <i class="fas fa-file-export"></i>
-                        <span>Export</span>
+                        <span><?= lang('Sales.export') ?></span>
                     </button>
                 </div>
                 <button onclick="closePaymentHistory()" class="btn btn-secondary">
-                    Close
+                    <?= lang('Sales.close') ?>
                 </button>
             </div>
         </div>
@@ -243,10 +243,67 @@
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
 
+<style>
+    #salesTable .actions-menu {
+        min-width: 14rem;
+    }
+
+    #salesTable .actions-menu .actions-link {
+        text-align: start;
+    }
+</style>
+
 <script>
+    const salesI18n = {
+        loadingPayments: <?= json_encode(lang('Sales.loading_payments')) ?>,
+        walkIn: <?= json_encode(lang('Sales.walk_in')) ?>,
+        cash: <?= json_encode(lang('Sales.cash')) ?>,
+        searchPlaceholder: <?= json_encode(lang('Sales.search_placeholder')) ?>,
+        showEntries: <?= json_encode(lang('Sales.show_entries')) ?>,
+        showingEntries: <?= json_encode(lang('Sales.showing_entries')) ?>,
+        showingEmpty: <?= json_encode(lang('Sales.showing_empty')) ?>,
+        filteredEntries: <?= json_encode(lang('Sales.filtered_entries')) ?>,
+        zeroRecords: <?= json_encode(lang('Sales.zero_records')) ?>,
+        loadingSales: <?= json_encode(lang('Sales.loading_sales')) ?>,
+        first: <?= json_encode(lang('Sales.first')) ?>,
+        last: <?= json_encode(lang('Sales.last')) ?>,
+        excel: <?= json_encode(lang('Sales.excel')) ?>,
+        pdf: <?= json_encode(lang('Sales.pdf')) ?>,
+        print: <?= json_encode(lang('Sales.print')) ?>,
+        paid: <?= json_encode(lang('Sales.paid')) ?>,
+        partial: <?= json_encode(lang('Sales.partial')) ?>,
+        due: <?= json_encode(lang('Sales.due')) ?>,
+        actions: <?= json_encode(lang('Sales.actions')) ?>,
+        receivePayment: <?= json_encode(lang('Sales.receive_payment')) ?>,
+        paymentHistory: <?= json_encode(lang('Sales.payment_history')) ?>,
+        returnSale: <?= json_encode(lang('Sales.return_sale')) ?>,
+        edit: <?= json_encode(lang('Sales.edit')) ?>,
+        viewReceipt: <?= json_encode(lang('Sales.view_receipt')) ?>,
+        viewLedger: <?= json_encode(lang('Sales.view_ledger')) ?>,
+        delete: <?= json_encode(lang('Sales.delete')) ?>,
+        noActions: <?= json_encode(lang('Sales.no_actions')) ?>,
+        confirmDelete: <?= json_encode(lang('Sales.confirm_delete')) ?>,
+        csvPrefix: <?= json_encode(lang('Sales.payment_history_csv')) ?>,
+        paymentHistoryTitle: <?= json_encode(lang('Sales.payment_history_title')) ?>,
+        saleId: <?= json_encode(lang('Sales.sale_id')) ?>,
+        invoice: <?= json_encode(lang('Sales.invoice')) ?>,
+        customer: <?= json_encode(lang('Sales.customer')) ?>,
+        date: <?= json_encode(lang('Sales.date')) ?>,
+        paymentType: <?= json_encode(lang('Sales.payment_type')) ?>,
+        status: <?= json_encode(lang('Sales.status')) ?>,
+        gross: <?= json_encode(lang('Sales.gross')) ?>,
+        returns: <?= json_encode(lang('Sales.returns')) ?>,
+        netTotal: <?= json_encode(lang('Sales.net_total')) ?>,
+        totalPaidRow: <?= json_encode(lang('Sales.total_paid_row')) ?>,
+        dueRow: <?= json_encode(lang('Sales.due_row')) ?>,
+        amount: <?= json_encode(lang('Sales.amount')) ?>,
+        description: <?= json_encode(lang('Sales.description')) ?>,
+        close: <?= json_encode(lang('Sales.close')) ?>,
+    };
+
     function showPaymentHistory(saleId, meta) {
         // Reset states
-        $('#paymentHistoryTable tbody').html('<tr><td colspan="3" class="py-6 text-center text-gray-500">Loading payments...</td></tr>');
+        $('#paymentHistoryTable tbody').html('<tr><td colspan="3" class="py-6 text-center text-gray-500">' + salesI18n.loadingPayments + '</td></tr>');
         $('#paymentEmptyState').addClass('hidden');
         $('#paymentModalSaleId').text('#' + saleId);
         $('#paymentTotalPaid').text('-');
@@ -281,9 +338,9 @@
             };
             if (meta) {
                 $('#paymentInvoiceNo').text(meta.invoice_no || '-');
-                $('#paymentCustomer').text(meta.customer_name || 'Walk-in');
+                $('#paymentCustomer').text(meta.customer_name || salesI18n.walkIn);
                 $('#paymentDate').text(dateFmt(meta.created_at));
-                $('#paymentType').text((meta.payment_type || 'cash').charAt(0).toUpperCase() + (meta.payment_type || 'cash').slice(1));
+                $('#paymentType').text((meta.payment_type || salesI18n.cash).charAt(0).toUpperCase() + (meta.payment_type || salesI18n.cash).slice(1));
                 $('#paymentStatus').text((meta.payment_status || 'paid').charAt(0).toUpperCase() + (meta.payment_status || 'paid').slice(1));
                 $('#paymentGross').text(currencySymbol + money(meta.total));
                 $('#paymentReturns').text(currencySymbol + money(meta.return_total));
@@ -376,7 +433,7 @@
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', 'payment-history-sale-' + saleId + '.csv');
+        link.setAttribute('download', salesI18n.csvPrefix + saleId + '.csv');
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
@@ -390,7 +447,7 @@
         const totalPaid = $('#paymentTotalPaid').text();
         // Build table
         let htmlTable = '<table style="width:100%;border-collapse:collapse;font-family:Arial, sans-serif;font-size:12px">';
-        htmlTable += '<thead><tr style="background:#f3f4f6"><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Date</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Amount</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Description</th></tr></thead><tbody>';
+        htmlTable += '<thead><tr style="background:#f3f4f6"><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">' + salesI18n.date + '</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">' + salesI18n.amount + '</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">' + salesI18n.description + '</th></tr></thead><tbody>';
         $('#paymentHistoryTable tbody tr').each(function() {
             const $tds = $(this).find('td');
             if ($tds.length === 0) return;
@@ -405,25 +462,25 @@
         if (!w) return;
         // Key-value details grid
         const kv = [
-            ['Sale ID', '#' + saleId],
-            ['Invoice', meta.invoice_no || $('#paymentInvoiceNo').text() || '-'],
-            ['Customer', meta.customer_name || $('#paymentCustomer').text() || 'Walk-in'],
-            ['Date', $('#paymentDate').text() || meta.created_at || '-'],
-            ['Payment Type', $('#paymentType').text() || meta.payment_type || '-'],
-            ['Status', $('#paymentStatus').text() || meta.payment_status || '-'],
-            ['Gross Total', $('#paymentGross').text() || '-'],
-            ['Returns', $('#paymentReturns').text() || '-'],
-            ['Net Total', $('#paymentNet').text() || '-'],
-            ['Total Paid', totalPaid || '-'],
-            ['Due', $('#paymentDue').text() || '-']
+            [salesI18n.saleId, '#' + saleId],
+            [salesI18n.invoice, meta.invoice_no || $('#paymentInvoiceNo').text() || '-'],
+            [salesI18n.customer, meta.customer_name || $('#paymentCustomer').text() || salesI18n.walkIn],
+            [salesI18n.date, $('#paymentDate').text() || meta.created_at || '-'],
+            [salesI18n.paymentType, $('#paymentType').text() || meta.payment_type || '-'],
+            [salesI18n.status, $('#paymentStatus').text() || meta.payment_status || '-'],
+            [salesI18n.gross, $('#paymentGross').text() || '-'],
+            [salesI18n.returns, $('#paymentReturns').text() || '-'],
+            [salesI18n.netTotal, $('#paymentNet').text() || '-'],
+            [salesI18n.totalPaidRow, totalPaid || '-'],
+            [salesI18n.dueRow, $('#paymentDue').text() || '-']
         ];
         let kvHtml = '<div style="display:grid;grid-template-columns:140px 1fr;gap:6px 12px;margin:10px 0;font-family:Arial,sans-serif;font-size:12px">';
         kv.forEach(pair => {
             kvHtml += '<div style="font-weight:bold;color:#374151">' + pair[0] + '</div><div>' + pair[1] + '</div>';
         });
         kvHtml += '</div><div style="height:1px;background:#e5e7eb;margin:12px 0"></div>';
-        w.document.write('<!DOCTYPE html><html><head><title>Payment History Sale #' + saleId + '</title><style>@media print{body{margin:0;padding:12px 16px} h2{margin:0 0 4px;font-family:Arial} }</style></head><body>');
-        w.document.write('<h2>Payment History</h2>');
+        w.document.write('<!DOCTYPE html><html><head><title>' + salesI18n.paymentHistoryTitle + ' #' + saleId + '</title><style>@media print{body{margin:0;padding:12px 16px} h2{margin:0 0 4px;font-family:Arial} }</style></head><body>');
+        w.document.write('<h2>' + salesI18n.paymentHistoryTitle + '</h2>');
         w.document.write(kvHtml);
         w.document.write(htmlTable);
         w.document.write('</body></html>');
@@ -480,17 +537,17 @@
             dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
             buttons: [{
                     extend: 'excel',
-                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    text: '<i class="fas fa-file-excel"></i> ' + salesI18n.excel,
                     className: 'btn btn-outline btn-sm'
                 },
                 {
                     extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    text: '<i class="fas fa-file-pdf"></i> ' + salesI18n.pdf,
                     className: 'btn btn-outline btn-sm'
                 },
                 {
                     extend: 'print',
-                    text: '<i class="fas fa-print"></i> Print',
+                    text: '<i class="fas fa-print"></i> ' + salesI18n.print,
                     className: 'btn btn-secondary',
                     title: 'Products List',
                     exportOptions: {
@@ -562,17 +619,17 @@
                     name: 'customer_name',
                     render: function(data, type, row) {
                         if (!permissions.view) {
-                            return escapeHtml(data || 'Walk-in');
+                            return escapeHtml(data || salesI18n.walkIn);
                         }
 
                         const customerId = parseInt(row.customer_id, 10);
                         if (!customerId) {
-                            return '<span class="text-gray-400">Walk-in</span>';
+                            return '<span class="text-gray-400">' + salesI18n.walkIn + '</span>';
                         }
 
                         const ledgerUrl = routes.ledgerBase + '/' + customerId;
                         return `
-                            <a href="${ledgerUrl}" class="text-blue-600 hover:underline" title="View Ledger">
+                            <a href="${ledgerUrl}" class="text-blue-600 hover:underline" title="${salesI18n.viewLedger}">
                                 ${escapeHtml(data)}
                                 <i class="fas fa-book text-xs"></i>
                             </a>
@@ -616,7 +673,7 @@
                     data: 'payment_type',
                     name: 'payment_type',
                     render: function(data) {
-                        return escapeHtml(capitalize(data || 'cash'));
+                        return escapeHtml(capitalize(data || salesI18n.cash));
                     }
                 },
                 {
@@ -651,16 +708,16 @@
             },
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search sales...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching sales found",
-                processing: "Loading sales...",
+                searchPlaceholder: salesI18n.searchPlaceholder,
+                lengthMenu: salesI18n.showEntries,
+                info: salesI18n.showingEntries,
+                infoEmpty: salesI18n.showingEmpty,
+                infoFiltered: salesI18n.filteredEntries,
+                zeroRecords: salesI18n.zeroRecords,
+                processing: salesI18n.loadingSales,
                 paginate: {
-                    first: "First",
-                    last: "Last",
+                    first: salesI18n.first,
+                    last: salesI18n.last,
                     next: "<i class='fas fa-chevron-right'></i>",
                     previous: "<i class='fas fa-chevron-left'></i>"
                 }
@@ -731,17 +788,17 @@
                 paid: {
                     variant: 'success',
                     icon: 'fa-check-circle',
-                    label: 'Paid'
+                    label: salesI18n.paid
                 },
                 partial: {
                     variant: 'warning',
                     icon: 'fa-hourglass-half',
-                    label: 'Partial'
+                    label: salesI18n.partial
                 },
                 due: {
                     variant: 'danger',
                     icon: 'fa-exclamation-circle',
-                    label: 'Due'
+                    label: salesI18n.due
                 }
             };
             const meta = map[normalized] || map.paid;
@@ -760,7 +817,7 @@
                 menuItems += `
                     <a href="${routes.receivePayment}/${row.id}" class="actions-link actions-link--success">
                         <i class="fas fa-money-bill-wave"></i>
-                        <span>Receive Payment</span>
+                        <span>${salesI18n.receivePayment}</span>
                     </a>
                 `;
             }
@@ -769,7 +826,7 @@
                 menuItems += `
                     <a href="#" data-sale-id="${row.id}" class="payment-history-link actions-link actions-link--info">
                         <i class="fas fa-history"></i>
-                        <span>Payment History</span>
+                        <span>${salesI18n.paymentHistory}</span>
                     </a>
                 `;
             }
@@ -778,13 +835,13 @@
                 menuItems += `
                     <a href="${routes.returnSale}/${row.id}" class="actions-link actions-link--warning">
                         <i class="fas fa-undo"></i>
-                        <span>Return Sale</span>
+                        <span>${salesI18n.returnSale}</span>
                     </a>
                 `;
                 menuItems += `
                     <a href="${routes.edit}/${row.id}" class="actions-link actions-link--primary">
                         <i class="fas fa-edit"></i>
-                        <span>Edit</span>
+                        <span>${salesI18n.edit}</span>
                     </a>
                 `;
             }
@@ -793,7 +850,7 @@
                 menuItems += `
                     <a href="${routes.receipt}/${row.id}" target="_blank" class="actions-link actions-link--info">
                         <i class="fas fa-receipt"></i>
-                        <span>View Receipt</span>
+                        <span>${salesI18n.viewReceipt}</span>
                     </a>
                 `;
             }
@@ -805,47 +862,101 @@
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="actions-link actions-link--danger">
                             <i class="fas fa-trash-alt"></i>
-                            <span>Delete</span>
+                            <span>${salesI18n.delete}</span>
                         </button>
                     </form>
                 `;
             }
 
             if (!menuItems) {
-                return '<span class="text-gray-400 text-sm">No actions</span>';
+                return '<span class="text-gray-400 text-sm">' + salesI18n.noActions + '</span>';
             }
 
             return `
                 <div class="actions-wrapper relative">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm" aria-haspopup="true">
-                        <span>Actions</span>
+                        <span>${salesI18n.actions}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="actions-menu hidden absolute right-0 mt-1 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
+                    <div class="actions-menu hidden bg-white border border-gray-200 rounded-lg shadow-lg p-1">
                         ${menuItems}
                     </div>
                 </div>
             `;
         }
 
+        function positionActionsMenu($menu, $toggle) {
+            const toggleRect = $toggle[0].getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const margin = 8;
+            const verticalGap = 6;
+            const minVisibleHeight = 140;
+
+            const menuWidth = $menu.outerWidth() || 224;
+            const menuHeight = $menu.outerHeight() || 200;
+
+            const isRtl = (document.documentElement.getAttribute('dir') || '').toLowerCase() === 'rtl';
+
+            let left = isRtl ? (toggleRect.right - menuWidth) : toggleRect.left;
+            left = Math.max(margin, Math.min(left, viewportWidth - menuWidth - margin));
+
+            let top = toggleRect.bottom + verticalGap;
+            const availableBelow = Math.max(minVisibleHeight, viewportHeight - top - margin);
+
+            if ((top + minVisibleHeight) > (viewportHeight - margin)) {
+                top = Math.max(margin, viewportHeight - minVisibleHeight - margin);
+            }
+
+            $menu.css({
+                position: 'fixed',
+                top: `${top}px`,
+                left: `${left}px`,
+                right: 'auto',
+                maxHeight: `${availableBelow}px`,
+                overflowY: 'auto',
+                zIndex: 10050
+            });
+        }
+
+        function hideAllActionMenus() {
+            $('.actions-menu').addClass('hidden').css({
+                position: '',
+                top: '',
+                left: '',
+                right: '',
+                maxHeight: '',
+                overflowY: '',
+                zIndex: ''
+            });
+        }
+
         $(document).on('click', '.actions-toggle', function(e) {
             e.preventDefault();
-            const $menu = $(this).closest('.actions-wrapper').find('.actions-menu');
+            const $toggle = $(this);
+            const $menu = $toggle.closest('.actions-wrapper').find('.actions-menu');
             const isOpen = !$menu.hasClass('hidden');
-            $('.actions-menu').addClass('hidden');
+
+            hideAllActionMenus();
+
             if (!isOpen) {
                 $menu.removeClass('hidden');
+                positionActionsMenu($menu, $toggle);
             }
         });
 
         $(document).on('click', function(e) {
             if (!$(e.target).closest('.actions-wrapper').length) {
-                $('.actions-menu').addClass('hidden');
+                hideAllActionMenus();
             }
         });
 
+        $(window).on('resize scroll', function() {
+            hideAllActionMenus();
+        });
+
         $(document).on('submit', '.delete-sale-form', function(e) {
-            if (!confirm('Are you sure you want to delete this sale?')) {
+            if (!confirm(salesI18n.confirmDelete)) {
                 e.preventDefault();
             }
         });

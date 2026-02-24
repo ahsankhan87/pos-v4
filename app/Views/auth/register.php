@@ -4,7 +4,7 @@
     <div class="max-w-md w-full space-y-8">
         <div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Create a new account
+                <?= lang('Auth.createNewAccount') ?>
             </h2>
         </div>
 
@@ -33,60 +33,60 @@
 
             <div class="rounded-md shadow-sm space-y-4">
                 <div>
-                    <label for="username" class="sr-only">Username</label>
+                    <label for="username" class="sr-only"><?= lang('Auth.username') ?></label>
                     <input id="username" name="username" type="text" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Username" value="<?= old('username') ?>">
+                        placeholder="<?= lang('Auth.username') ?>" value="<?= old('username') ?>">
                 </div>
 
                 <div>
-                    <label for="email" class="sr-only">Email</label>
+                    <label for="email" class="sr-only"><?= lang('Auth.email') ?></label>
                     <input id="email" name="email" type="email" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Email" value="<?= old('email') ?>">
+                        placeholder="<?= lang('Auth.email') ?>" value="<?= old('email') ?>">
                 </div>
 
                 <div>
-                    <label for="name" class="sr-only">Full Name</label>
+                    <label for="name" class="sr-only"><?= lang('Auth.fullName') ?></label>
                     <input id="name" name="name" type="text" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Full Name" value="<?= old('name') ?>">
+                        placeholder="<?= lang('Auth.fullName') ?>" value="<?= old('name') ?>">
                 </div>
 
                 <div>
-                    <label for="phone" class="sr-only">Phone</label>
+                    <label for="phone" class="sr-only"><?= lang('Auth.phone') ?></label>
                     <input id="phone" name="phone" type="tel"
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Phone (optional)" value="<?= old('phone') ?>">
+                        placeholder="<?= lang('Auth.phoneOptional') ?>" value="<?= old('phone') ?>">
                 </div>
 
                 <div>
-                    <label for="password" class="sr-only">Password</label>
+                    <label for="password" class="sr-only"><?= lang('Auth.password') ?></label>
                     <input id="password" name="password" type="password" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Password (min 6 characters)">
+                        placeholder="<?= lang('Auth.passwordMin') ?>">
                 </div>
 
                 <div>
-                    <label for="password_confirm" class="sr-only">Confirm Password</label>
+                    <label for="password_confirm" class="sr-only"><?= lang('Auth.confirmPassword') ?></label>
                     <input id="password_confirm" name="password_confirm" type="password" required
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Confirm Password">
+                        placeholder="<?= lang('Auth.confirmPassword') ?>">
                 </div>
             </div>
 
             <div>
                 <button type="submit"
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Register
+                    <?= lang('Auth.register') ?>
                 </button>
             </div>
         </form>
 
         <div class="text-center text-sm">
-            <p class="text-gray-600">Already have an account?</p>
+            <p class="text-gray-600"><?= lang('Auth.alreadyHaveAccount') ?></p>
             <a href="<?= base_url('login') ?>" class="font-medium text-blue-600 hover:text-blue-500">
-                Login here
+                <?= lang('Auth.loginHere') ?>
             </a>
         </div>
     </div>

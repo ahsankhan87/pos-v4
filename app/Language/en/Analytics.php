@@ -1,0 +1,41 @@
+<?php
+
+return [
+    'salesAnalytics' => 'Sales Analytics',
+    'comparativeAnalysis' => 'Comparative Analysis',
+    'backToAnalytics' => 'Back to Analytics',
+    'last30Days' => 'Last 30 Days',
+    'thisMonth' => 'This Month',
+    'lastMonth' => 'Last Month',
+    'last3Months' => 'Last 3 Months',
+    'last6Months' => 'Last 6 Months',
+    'thisYear' => 'This Year',
+    'lastYear' => 'Last Year',
+    'showingDataFrom' => 'Showing data from',
+    'range' => 'Range',
+    'to' => 'to',
+
+    'dailySales' => 'Daily Sales',
+    'monthlySales' => 'Monthly Sales',
+    'topSellingProducts' => 'Top Selling Products',
+    'salesByPaymentMethod' => 'Sales by Payment Method',
+    'expensesByCategory' => 'Expenses by Category',
+
+    'unitsSold' => 'Units Sold',
+    'revenue' => 'Revenue',
+    'totalExpense' => 'Total Expense',
+
+    'notAvailable' => 'N/A',
+    'netSales' => 'Net Sales',
+    'transactions' => 'Transactions',
+    'averageSale' => 'Average Sale',
+    'grossProfit' => 'Gross Profit',
+    'expenses' => 'Expenses',
+    'netProfit' => 'Net Profit',
+    'current' => 'Current',
+    'previous' => 'Previous',
+    'returnsDeducted' => 'Returns deducted',
+    'growth' => 'Growth',
+    'details' => 'Details',
+    'metric' => 'Metric',
+];

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Unit-wise Sales Report - Print') ?></title>
+    <title><?= esc($title ?? (lang('Reports.unit_wise_sales_report') . ' - ' . lang('Reports.print'))) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,16 +73,16 @@
         }
     }
     ?>
-    <h2>Unit-wise Sales Report</h2>
-    <p>Employee: <?= esc($employeeName ?? 'All') ?></p>
-    <p>Period: <?= esc($from) ?> to <?= esc($to) ?></p>
+    <h2><?= lang('Reports.unit_wise_sales_report') ?></h2>
+    <p><?= lang('Reports.employee') ?>: <?= esc($employeeName ?? lang('Reports.all')) ?></p>
+    <p><?= lang('Reports.period') ?>: <?= esc($from) ?> <?= lang('Reports.to') ?> <?= esc($to) ?></p>
     <table>
         <thead>
             <tr>
-                <th>Unit</th>
-                <th class="text-right">Sales Count</th>
-                <th class="text-right">Total Quantity</th>
-                <th class="text-right">Total Sales</th>
+                <th><?= lang('Reports.unit') ?></th>
+                <th class="text-right"><?= lang('Reports.sales_count_col') ?></th>
+                <th class="text-right"><?= lang('Reports.total_quantity') ?></th>
+                <th class="text-right"><?= lang('Reports.total_sales') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -97,7 +97,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <th>Totals</th>
+                <th><?= lang('Reports.totals') ?></th>
                 <th class="text-right"><?= number_format($totalSaleCount) ?></th>
                 <th class="text-right"><?= number_format($totalQty, 2) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
@@ -105,8 +105,8 @@
         </tfoot>
     </table>
     <div class="no-print">
-        <button onclick="window.print()">Print</button>
-        <button onclick="window.close()">Close</button>
+        <button onclick="window.print()"><?= lang('Reports.print') ?></button>
+        <button onclick="window.close()"><?= lang('Reports.close') ?></button>
     </div>
 </body>
 

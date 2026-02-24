@@ -7,7 +7,7 @@
 <?= $this->section('content') ?>
 <div class="container mx-auto px-4 py-6">
     <h1 class="text-2xl font-semibold mb-4 flex items-center gap-2">
-        <i class="fa-solid fa-file-import text-slate-600"></i> <?= esc($title ?? 'Import Products') ?>
+        <i class="fa-solid fa-file-import text-slate-600"></i> <?= esc($title ?? lang('Products.import_products_title')) ?>
     </h1>
 
     <?php if (session()->getFlashdata('error')): ?>
@@ -26,43 +26,48 @@
         <form id="products-import-form" action="<?= site_url('products/import') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
             <?= csrf_field() ?>
             <div>
-                <label class="block text-sm font-medium text-gray-700">CSV File</label>
+                <label class="block text-sm font-medium text-gray-700"><?= lang('Products.csv_file') ?></label>
                 <input type="file" name="csv_file" accept=".csv,.txt" required class="mt-1 block w-full border border-gray-300 rounded p-2" />
-                <p class="text-xs text-gray-500 mt-1">Max 5 MB. UTF-8 CSV recommended.</p>
+                <p class="text-xs text-gray-500 mt-1"><?= lang('Products.max_5mb_utf8_csv') ?></p>
             </div>
             <div class="text-sm text-gray-700">
-                <p class="mb-2 font-medium">Accepted columns (case-insensitive):</p>
+                <p class="mb-2 font-medium"><?= lang('Products.accepted_columns_case_insensitive') ?></p>
                 <ul class="list-disc pl-5 space-y-1">
-                    <li><code>name</code> (required)</li>
-                    <li><code>price</code> or <code>unit_price</code> (one is optional but recommended)</li>
-                    <li><code>cost_price</code> (optional, included as requested)</li>
-                    <li><code>code</code>, <code>barcode</code> (used to update if match found)</li>
-                    <li><code>quantity</code>, <code>stock_alert</code>, <code>description</code> (optional)</li>
+                    <li><?= lang('Products.import_col_name_required') ?></li>
+                    <li><?= lang('Products.import_col_price_or_unit_price') ?></li>
+                    <li><?= lang('Products.import_col_cost_price_optional') ?></li>
+                    <li><?= lang('Products.import_col_code_barcode') ?></li>
+                    <li><?= lang('Products.import_col_quantity_stock_alert_description') ?></li>
                 </ul>
-                <p class="mt-2 text-xs text-gray-500">Upsert strategy: match by <strong>barcode</strong> (preferred) or <strong>code</strong> within the selected store. If no match, a new product is created.</p>
+                <p class="mt-2 text-xs text-gray-500"><?= lang('Products.import_upsert_strategy') ?></p>
             </div>
             <div>
                 <a href="<?= site_url('products') ?>" class="inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded">
                     <i class="fa-solid fa-arrow-left"></i>
-                    Back to Products
+                    <?= lang('Products.back_to_products') ?>
                 </a>
                 <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded">
                     <i class="fa-solid fa-file-import"></i>
-                    Import
+                    <?= lang('Products.import') ?>
                 </button>
-                <a href="<?= base_url('assets/samples/products_import_sample.csv') ?>" class="ml-3 text-indigo-700 hover:underline text-sm" download>Download sample CSV</a>
+                <a href="<?= base_url('assets/samples/products_import_sample.csv') ?>" class="ml-3 text-indigo-700 hover:underline text-sm" download><?= lang('Products.download_sample_csv') ?></a>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+    const importTexts = {
+        chooseCsvFile: <?= json_encode(lang('Products.choose_csv_file_to_upload')) ?>,
+        invalidFileType: <?= json_encode(lang('Products.invalid_file_type_csv_txt')) ?>,
+    };
+
     // Client-side guard to ensure a file is selected
     document.getElementById('products-import-form')?.addEventListener('submit', function(e) {
         const input = this.querySelector('input[type="file"][name="csv_file"]');
         if (!input || !input.files || input.files.length === 0) {
             e.preventDefault();
-            alert('Please choose a CSV file to upload.');
+            alert(importTexts.chooseCsvFile);
             input && input.focus();
             return false;
         }
@@ -71,7 +76,7 @@
         const extOk = /\.(csv|txt)$/i.test(file.name);
         if (!extOk) {
             e.preventDefault();
-            alert('Invalid file type. Please upload a .csv or .txt file.');
+            alert(importTexts.invalidFileType);
             return false;
         }
     });

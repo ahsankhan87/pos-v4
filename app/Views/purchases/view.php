@@ -3,23 +3,23 @@
 <?= $this->section('content') ?>
 <div class="container mx-auto px-4 py-6">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Purchase #<?= $purchase['invoice_no'] ?></h1>
+        <h1 class="text-2xl font-bold text-gray-800"><?= lang('Purchases.purchase') ?> #<?= $purchase['invoice_no'] ?></h1>
 
         <div class="flex space-x-2 mt-4 md:mt-0">
             <a href="<?= base_url("/purchases") ?>" class="inline-flex items-center px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-all">
-                <i class="fas fa-arrow-left mr-2"></i>Back to List
+                <i class="fas fa-arrow-left mr-2"></i><?= lang('Purchases.back_to_list') ?>
             </a>
             <a href="<?= base_url("/purchases/print/{$purchase['id']}") ?>" class="btn btn-secondary" target="_blank">
-                <i class="fas fa-print mr-2"></i> Print
+                <i class="fas fa-print mr-2"></i> <?= lang('Purchases.print') ?>
             </a>
 
             <a href="<?= base_url("/purchases/create") ?>" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i> Create New Purchase
+                <i class="fas fa-plus mr-2"></i> <?= lang('Purchases.create_new_purchase') ?>
             </a>
 
             <?php if (can('purchases.edit')): ?>
                 <a href="<?= base_url("/purchases/edit/{$purchase['id']}") ?>" class="btn btn-warning">
-                    <i class="fas fa-edit mr-2"></i> Edit
+                    <i class="fas fa-edit mr-2"></i> <?= lang('Purchases.edit') ?>
                 </a>
             <?php endif; ?>
         </div>
@@ -40,94 +40,94 @@
         <!-- Left Column - Purchase Info -->
         <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Information</h2>
+                <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_information') ?></h2>
 
                 <div class="space-y-3">
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Reference No</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.reference_no') ?></span>
                         <span class="block"><?= $purchase['invoice_no'] ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Date</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.date') ?></span>
                         <span class="block"><?= date('d M Y H:i', strtotime($purchase['date'])) ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Supplier</span>
-                        <span class="block"><?= $purchase['supplier']['name'] ?? 'N/A' ?></span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.supplier') ?></span>
+                        <span class="block"><?= $purchase['supplier']['name'] ?? lang('Purchases.na') ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Store</span>
-                        <span class="block"><?= $purchase['store']['name'] ?? 'N/A' ?></span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.store') ?></span>
+                        <span class="block"><?= $purchase['store']['name'] ?? lang('Purchases.na') ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Status</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.status') ?></span>
                         <span class="block">
                             <span class="px-2 py-1 text-xs font-semibold rounded-full 
                                 <?= $purchase['status'] === 'received' ? 'bg-green-100 text-green-800' : ($purchase['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') ?>">
-                                <?= ucfirst($purchase['status']) ?>
+                                <?= lang('Purchases.' . $purchase['status']) ?>
                             </span>
                         </span>
                     </div>
 
                     <?php if (!empty($purchase['supplier_invoice_no'])): ?>
                         <div>
-                            <span class="block text-sm font-medium text-gray-500">Supplier Invoice No</span>
+                            <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.supplier_invoice_no') ?></span>
                             <span class="block"><?= esc($purchase['supplier_invoice_no']) ?></span>
                         </div>
                     <?php endif; ?>
 
                     <?php if (!empty($purchase['invoice_image'])): ?>
                         <div>
-                            <span class="block text-sm font-medium text-gray-500">Invoice Image</span>
+                            <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.invoice_image') ?></span>
                             <a href="<?= base_url($purchase['invoice_image']) ?>" target="_blank" class="inline-block mt-1">
-                                <img src="<?= base_url($purchase['invoice_image']) ?>" alt="Invoice" class="h-32 w-auto rounded border hover:opacity-80 transition-opacity">
+                                <img src="<?= base_url($purchase['invoice_image']) ?>" alt="<?= lang('Purchases.invoice') ?>" class="h-32 w-auto rounded border hover:opacity-80 transition-opacity">
                             </a>
                         </div>
                     <?php endif; ?>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Created By</span>
-                        <span class="block"><?= $purchase['creator']['username'] ?? 'System' ?></span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.created_by') ?></span>
+                        <span class="block"><?= $purchase['creator']['username'] ?? lang('Purchases.system') ?></span>
                     </div>
                 </div>
             </div>
 
             <!-- Payment Status -->
             <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Payment Status</h2>
+                <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.payment_status') ?></h2>
 
                 <div class="space-y-3">
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Payment Method</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.payment_method') ?></span>
                         <span class="block"><?= ucfirst(str_replace('_', ' ', $purchase['payment_method'])) ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Payment Status</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.payment_status') ?></span>
                         <span class="block">
                             <span class="px-2 py-1 text-xs font-semibold rounded-full 
                                 <?= $purchase['payment_status'] === 'paid' ? 'bg-green-100 text-green-800' : ($purchase['payment_status'] === 'partial' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') ?>">
-                                <?= ucfirst($purchase['payment_status']) ?>
+                                <?= lang('Purchases.' . $purchase['payment_status']) ?>
                             </span>
                         </span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Grand Total</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.grand_total') ?></span>
                         <span class="block font-semibold"><?= number_to_currency($purchase['grand_total'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Amount Paid</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.amount_paid') ?></span>
                         <span class="block"><?= number_to_currency($purchase['paid_amount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                     </div>
 
                     <div>
-                        <span class="block text-sm font-medium text-gray-500">Due Amount</span>
+                        <span class="block text-sm font-medium text-gray-500"><?= lang('Purchases.due_amount') ?></span>
                         <?php $dueAmount = $purchase['grand_total'] - $purchase['paid_amount']; ?>
                         <span class="block"><?= number_to_currency($dueAmount, session()->get('currency_symbol'), 'en_US', 2) ?></span>
                     </div>
@@ -136,7 +136,7 @@
                 <?php //if ($purchase['payment_status'] !== 'paid' && $permissions['purchases.payments']): 
                 ?>
                 <button type="button" id="addPaymentBtn" class="mt-4 w-full btn btn-primary">
-                    <i class="fas fa-money-bill-wave mr-2"></i> Add Payment
+                    <i class="fas fa-money-bill-wave mr-2"></i> <?= lang('Purchases.add_payment') ?>
                 </button>
                 <?php // endif; 
                 ?>
@@ -145,7 +145,7 @@
             <!-- Notes -->
             <?php if (!empty($purchase['note'])): ?>
                 <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Notes</h2>
+                    <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.notes') ?></h2>
                     <p class="text-gray-700"><?= nl2br(esc($purchase['note'])) ?></p>
                 </div>
             <?php endif; ?>
@@ -155,17 +155,17 @@
         <div class="lg:col-span-2">
             <!-- Items -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Purchase Items</h2>
+                <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_items') ?></h2>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.product') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.quantity') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.cost_price') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.unit_price') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.subtotal') ?></th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -230,11 +230,11 @@
                 <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-2">
                         <div class="flex justify-between">
-                            <span class="font-medium">Subtotal:</span>
+                            <span class="font-medium"><?= lang('Purchases.subtotal') ?>:</span>
                             <span><?= number_to_currency($purchase['total_amount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="font-medium">Discount:</span>
+                            <span class="font-medium"><?= lang('Purchases.discount') ?>:</span>
                             <?php
                             $disount = 0;
                             if ($purchase['discount_type'] === 'percentage') {
@@ -246,17 +246,17 @@
                             <span><?= number_to_currency($disount, session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="font-medium">Tax:</span>
+                            <span class="font-medium"><?= lang('Purchases.tax') ?>:</span>
                             <span><?= number_to_currency($purchase['tax_amount'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="font-medium">Shipping Cost:</span>
+                            <span class="font-medium"><?= lang('Purchases.shipping_cost') ?>:</span>
                             <span><?= number_to_currency((float)$purchase['shipping_cost'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-md">
                         <div class="flex justify-between text-lg font-bold">
-                            <span>Grand Total:</span>
+                            <span><?= lang('Purchases.grand_total') ?>:</span>
                             <span><?= number_to_currency($purchase['grand_total'], session()->get('currency_symbol'), 'en_US', 2) ?></span>
                         </div>
                     </div>
@@ -266,12 +266,12 @@
             <!-- Payments -->
             <div class="bg-white rounded-lg shadow-md p-6 mt-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-medium text-gray-900">Payments</h2>
+                    <h2 class="text-lg font-medium text-gray-900"><?= lang('Purchases.payments') ?></h2>
 
                     <?php //if ($purchase['payment_status'] !== 'paid' && $permissions['purchases.payments']): 
                     ?>
                     <button type="button" id="addPaymentBtn2" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus mr-2"></i> Add Payment
+                        <i class="fas fa-plus mr-2"></i> <?= lang('Purchases.add_payment') ?>
                     </button>
                     <?php //endif; 
                     ?>
@@ -282,12 +282,12 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.date') ?></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.method') ?></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.reference') ?></th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.amount') ?></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.note') ?></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.actions') ?></th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -300,13 +300,13 @@
                                             <?= ucfirst(str_replace('_', ' ', $payment['payment_method'])) ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <?= $payment['reference'] ?? '-' ?>
+                                            <?= $payment['reference'] ?? lang('Purchases.hyphen') ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right font-medium">
                                             <?= number_to_currency($payment['amount'], session()->get('currency_symbol'), 'en_US', 2) ?>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <?= $payment['note'] ?? '-' ?>
+                                            <?= $payment['note'] ?? lang('Purchases.hyphen') ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <?php if (can('purchases.payments')): ?>
@@ -321,7 +321,7 @@
                         </table>
                     </div>
                 <?php else: ?>
-                    <p class="text-gray-500">No payments recorded for this purchase.</p>
+                    <p class="text-gray-500"><?= lang('Purchases.no_payments_recorded') ?></p>
                 <?php endif; ?>
             </div>
         </div>
@@ -341,38 +341,38 @@
             <form id="paymentForm" action="" method="post">
                 <input type="hidden" name="purchase_id" value="<?= $purchase['id'] ?>">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add Payment</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><?= lang('Purchases.add_payment') ?></h3>
 
                     <div class="space-y-4">
                         <div>
-                            <label for="payment_amount" class="block text-sm font-medium text-gray-700">Amount <span class="text-red-500">*</span></label>
+                            <label for="payment_amount" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.amount') ?> <span class="text-red-500">*</span></label>
                             <input type="number" autofocus="true" id="payment_amount" name="amount" required min="0.01" max="<?= $dueAmount ?>" step="0.01" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <p class="mt-1 text-sm text-gray-500">Due Amount: <?= number_to_currency($dueAmount, session()->get('currency_symbol'), 'en_US', 2) ?></p>
+                            <p class="mt-1 text-sm text-gray-500"><?= lang('Purchases.due_amount') ?>: <?= number_to_currency($dueAmount, session()->get('currency_symbol'), 'en_US', 2) ?></p>
                         </div>
 
                         <div>
-                            <label for="modal_payment_method" class="block text-sm font-medium text-gray-700">Payment Method *</label>
+                            <label for="modal_payment_method" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.payment_method') ?> *</label>
                             <select id="modal_payment_method" name="payment_method" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="cash">Cash</option>
-                                <option value="credit_card">Credit Card</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="check">Check</option>
-                                <option value="other">Other</option>
+                                <option value="cash"><?= lang('Purchases.cash') ?></option>
+                                <option value="credit_card"><?= lang('Purchases.credit_card') ?></option>
+                                <option value="bank_transfer"><?= lang('Purchases.bank_transfer') ?></option>
+                                <option value="check"><?= lang('Purchases.check') ?></option>
+                                <option value="other"><?= lang('Purchases.other') ?></option>
                             </select>
                         </div>
 
                         <div>
-                            <label for="payment_date" class="block text-sm font-medium text-gray-700">Payment Date *</label>
+                            <label for="payment_date" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.payment_date') ?> *</label>
                             <input type="datetime-local" id="payment_date" name="payment_date" required value="<?= date('Y-m-d\TH:i') ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
 
                         <div>
-                            <label for="payment_reference" class="block text-sm font-medium text-gray-700">Reference</label>
+                            <label for="payment_reference" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.reference') ?></label>
                             <input type="text" id="payment_reference" name="reference" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
 
                         <div>
-                            <label for="payment_note" class="block text-sm font-medium text-gray-700">Note</label>
+                            <label for="payment_note" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.note') ?></label>
                             <textarea id="payment_note" name="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                         </div>
                     </div>
@@ -380,10 +380,10 @@
 
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Save Payment
+                        <?= lang('Purchases.save_payment') ?>
                     </button>
                     <button type="button" id="cancelPayment" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Cancel
+                        <?= lang('Purchases.cancel') ?>
                     </button>
                 </div>
             </form>
@@ -393,6 +393,15 @@
 
 <!-- JavaScript for purchase view page -->
 <script>
+    const purchaseTexts = {
+        failedSavePayment: <?= json_encode(lang('Purchases.failed_save_payment'), JSON_UNESCAPED_UNICODE) ?>,
+        unknownError: <?= json_encode(lang('Purchases.unknown_error'), JSON_UNESCAPED_UNICODE) ?>,
+        errorSavingPayment: <?= json_encode(lang('Purchases.error_saving_payment'), JSON_UNESCAPED_UNICODE) ?>,
+        confirmDeletePayment: <?= json_encode(lang('Purchases.confirm_delete_payment'), JSON_UNESCAPED_UNICODE) ?>,
+        failedDeletePayment: <?= json_encode(lang('Purchases.failed_delete_payment'), JSON_UNESCAPED_UNICODE) ?>,
+        errorDeletingPayment: <?= json_encode(lang('Purchases.error_deleting_payment'), JSON_UNESCAPED_UNICODE) ?>,
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         // Payment modal handling
         const paymentModal = document.getElementById('paymentModal');
@@ -440,12 +449,12 @@
                         paymentModal.classList.add('hidden');
                         window.location.reload();
                     } else {
-                        alert('Failed to save payment: ' + (data.message || 'Unknown error'));
+                        alert(purchaseTexts.failedSavePayment + ': ' + (data.message || purchaseTexts.unknownError));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while saving the payment');
+                    alert(purchaseTexts.errorSavingPayment);
                 });
         });
 
@@ -455,7 +464,7 @@
             btn.addEventListener('click', function() {
                 const paymentId = this.getAttribute('data-id');
 
-                if (confirm('Are you sure you want to delete this payment?')) {
+                if (confirm(purchaseTexts.confirmDeletePayment)) {
                     // Get CSRF token from meta tag
                     const csrfTokenName = document.querySelector('meta[name*="csrf"]').getAttribute('name');
                     const csrfTokenValue = document.querySelector('meta[name*="csrf"]').getAttribute('content');
@@ -479,12 +488,12 @@
                             if (data.success) {
                                 window.location.reload();
                             } else {
-                                alert('Failed to delete payment: ' + (data.message || 'Unknown error'));
+                                alert(purchaseTexts.failedDeletePayment + ': ' + (data.message || purchaseTexts.unknownError));
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('An error occurred while deleting the payment');
+                            alert(purchaseTexts.errorDeletingPayment);
                         });
                 }
             });

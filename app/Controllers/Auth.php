@@ -51,6 +51,8 @@ class Auth extends BaseController
                 'role_id' => $user['role_id'],
             ]);
 
+            $this->applyLocale($user['preferred_locale'] ?? null);
+
             // Check user's stores
             $userStores = $this->userModel->getUserStores($user['id']);
 
@@ -235,5 +237,84 @@ class Auth extends BaseController
         // Log the logout action
         session()->destroy();
         return redirect()->to('/login')->with('message', 'You have been logged out');
+    }
+
+    public function setLanguage($locale = null)
+    {
+        $normalizedLocale = $this->normalizeLocale($locale);
+        $this->applyLocale($normalizedLocale);
+
+        $userId = (int) session('user_id');
+        if ($userId > 0) {
+            $this->persistUserLocale($userId, $normalizedLocale);
+        }
+
+        $returnUrl = (string) $this->request->getGet('return');
+        if ($returnUrl !== '' && $this->isSafeReturnUrl($returnUrl)) {
+            return redirect()->to($returnUrl);
+        }
+
+        try {
+            return redirect()->back();
+        } catch (\Throwable $e) {
+            return redirect()->to('/');
+        }
+    }
+
+    private function normalizeLocale($locale)
+    {
+        $supportedLocales = config('App')->supportedLocales ?? ['en'];
+        $normalizedLocale = strtolower(trim((string) $locale));
+
+        if (! in_array($normalizedLocale, $supportedLocales, true)) {
+            return (string) (config('App')->defaultLocale ?? 'en');
+        }
+
+        return $normalizedLocale;
+    }
+
+    private function applyLocale($locale)
+    {
+        $normalizedLocale = $this->normalizeLocale($locale);
+
+        session()->set('locale', $normalizedLocale);
+        $this->request->setLocale($normalizedLocale);
+        service('language')->setLocale($normalizedLocale);
+    }
+
+    private function persistUserLocale($userId, $locale)
+    {
+        try {
+            $hasLocaleColumn = ! empty($this->userModel->db
+                ->query("SHOW COLUMNS FROM `pos_users` LIKE 'preferred_locale'")
+                ->getResultArray());
+
+            if (! $hasLocaleColumn) {
+                return;
+            }
+
+            $this->userModel->update($userId, ['preferred_locale' => $locale]);
+        } catch (\Throwable $e) {
+        }
+    }
+
+    private function isSafeReturnUrl($url)
+    {
+        if (! is_string($url) || trim($url) === '') {
+            return false;
+        }
+
+        $base = parse_url(base_url());
+        $target = parse_url($url);
+
+        if ($target === false) {
+            return false;
+        }
+
+        if (! isset($target['host'])) {
+            return substr($url, 0, 1) === '/';
+        }
+
+        return isset($base['host']) && strcasecmp($target['host'], $base['host']) === 0;
     }
 }

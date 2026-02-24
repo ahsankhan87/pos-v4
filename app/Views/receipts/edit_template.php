@@ -4,9 +4,9 @@
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Edit Receipt Template</h2>
+            <h2 class="text-2xl font-bold text-gray-800"><?= lang('Receipts.editReceiptTemplate') ?></h2>
             <a href="<?= site_url('receipts/templates') ?>" class="text-blue-600 hover:text-blue-800">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Templates
+                <i class="fas fa-arrow-left mr-2"></i><?= lang('Receipts.backToTemplates') ?>
             </a>
         </div>
 
@@ -24,11 +24,11 @@
             <?= csrf_field() ?>
 
             <div class="mb-4">
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Receipts.templateName') ?></label>
                 <input type="text" id="name" name="name" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     value="<?= old('name', $template['name']) ?>"
-                    placeholder="e.g., Thermal 80mm Receipt">
+                    placeholder="<?= lang('Receipts.templateNamePlaceholder') ?>">
             </div>
 
             <div class="mb-4">
@@ -36,14 +36,14 @@
                     <input type="checkbox" id="is_default" name="is_default" value="1"
                         class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         <?= old('is_default', $template['is_default']) ? 'checked' : '' ?>>
-                    <span class="ml-2 text-sm text-gray-700">Set as default template</span>
+                    <span class="ml-2 text-sm text-gray-700"><?= lang('Receipts.setAsDefaultTemplate') ?></span>
                 </label>
             </div>
 
             <div class="mb-4">
-                <label for="template" class="block text-sm font-medium text-gray-700 mb-2">HTML Template</label>
+                <label for="template" class="block text-sm font-medium text-gray-700 mb-2"><?= lang('Receipts.htmlTemplate') ?></label>
                 <div class="mb-2 text-sm text-gray-600">
-                    <strong>Available placeholders:</strong>
+                    <strong><?= lang('Receipts.availablePlaceholders') ?>:</strong>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2 p-3 bg-gray-50 rounded">
                         <code>{{store_name}}</code>
                         <code>{{store_address}}</code>
@@ -73,27 +73,27 @@
                 </div>
                 <textarea id="template" name="template" rows="20" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                    placeholder="Enter HTML template..."><?= esc(old('template', $template['template'])) ?></textarea>
+                    placeholder="<?= lang('Receipts.enterHtmlTemplate') ?>"><?= esc(old('template', $template['template'])) ?></textarea>
             </div>
 
             <div class="flex justify-end space-x-3">
                 <a href="<?= site_url('receipts/templates') ?>" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                    Cancel
+                    <?= lang('Receipts.cancel') ?>
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    Update Template
+                    <?= lang('Receipts.updateTemplate') ?>
                 </button>
             </div>
         </form>
 
         <!-- Preview Section -->
         <div class="mt-8 border-t pt-6">
-            <h3 class="text-lg font-semibold mb-4">Template Preview</h3>
+            <h3 class="text-lg font-semibold mb-4"><?= lang('Receipts.templatePreview') ?></h3>
             <div class="border rounded-lg p-4 bg-gray-50">
                 <iframe id="preview" style="width: 100%; height: 600px; border: 1px solid #ddd; background: white; border-radius: 4px;"></iframe>
             </div>
             <button type="button" onclick="updatePreview()" class="mt-3 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                <i class="fas fa-sync-alt mr-2"></i>Update Preview
+                <i class="fas fa-sync-alt mr-2"></i><?= lang('Receipts.updatePreview') ?>
             </button>
         </div>
     </div>
@@ -107,15 +107,15 @@
         // Replace placeholders with sample data
         let preview = templateContent;
         const sampleData = {
-            '{{store_name}}': 'Sample Store',
-            '{{store_address}}': '123 Main Street, City',
+            '{{store_name}}': <?= json_encode(lang('Receipts.sampleStore'), JSON_UNESCAPED_UNICODE) ?>,
+            '{{store_address}}': <?= json_encode(lang('Receipts.sampleAddress'), JSON_UNESCAPED_UNICODE) ?>,
             '{{store_phone}}': '(555) 123-4567',
-            '{{store_footer}}': 'Thank you for your business!',
+            '{{store_footer}}': <?= json_encode(lang('Receipts.sampleFooter'), JSON_UNESCAPED_UNICODE) ?>,
             '{{receipt_number}}': 'INV-2025-001',
             '{{date}}': new Date().toLocaleString(),
             '{{cashier}}': 'John Doe',
-            '{{customer}}': '<div>Customer: Jane Smith</div>',
-            '{{items}}': '<tr><td>Sample Product</td><td>2</td><td>$10.00</td><td>$20.00</td></tr>',
+            '{{customer}}': '<div>' + <?= json_encode(lang('Receipts.customer')) ?> + ': Jane Smith</div>',
+            '{{items}}': '<tr><td>' + <?= json_encode(lang('Receipts.sampleProduct')) ?> + '</td><td>2</td><td>$10.00</td><td>$20.00</td></tr>',
             '{{subtotal}}': '20.00',
             '{{total_discount}}': '2.00',
             '{{tax}}': '1.80',

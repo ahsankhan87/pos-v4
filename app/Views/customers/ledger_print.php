@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Customer Ledger') ?></title>
+    <title><?= esc($title ?? lang('Customers.customer_ledger')) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -124,22 +124,22 @@
 
 <body>
     <div class="header">
-        <h2>CUSTOMER LEDGER</h2>
-        <p style="margin: 5px 0;">Period: <?= date('d M Y', strtotime($from)) ?> to <?= date('d M Y', strtotime($to)) ?></p>
+        <h2><?= strtoupper(lang('Customers.customer_ledger')) ?></h2>
+        <p style="margin: 5px 0;"><?= lang('Customers.period') ?>: <?= date('d M Y', strtotime($from)) ?> <?= lang('Customers.to') ?> <?= date('d M Y', strtotime($to)) ?></p>
     </div>
 
     <div class="customer-info">
         <table>
             <tr>
-                <td style="width: 50%;"><strong>Customer Name:</strong> <?= esc($customer['name']) ?></td>
-                <td style="width: 50%;"><strong>Phone:</strong> <?= esc($customer['phone']) ?></td>
+                <td style="width: 50%;"><strong><?= lang('Customers.customer_name') ?>:</strong> <?= esc($customer['name']) ?></td>
+                <td style="width: 50%;"><strong><?= lang('Customers.phone') ?>:</strong> <?= esc($customer['phone']) ?></td>
             </tr>
             <tr>
-                <td><strong>Email:</strong> <?= esc($customer['email']) ?></td>
-                <td><strong>Date:</strong> <?= date('d M Y') ?></td>
+                <td><strong><?= lang('Customers.email') ?>:</strong> <?= esc($customer['email']) ?></td>
+                <td><strong><?= lang('Customers.date') ?>:</strong> <?= date('d M Y') ?></td>
             </tr>
             <tr>
-                <td colspan="2"><strong>Address:</strong> <?= esc($customer['address']) ?></td>
+                <td colspan="2"><strong><?= lang('Customers.address') ?>:</strong> <?= esc($customer['address']) ?></td>
             </tr>
         </table>
     </div>
@@ -147,19 +147,19 @@
     <table class="ledger">
         <thead>
             <tr>
-                <th style="width: 10%;">Date</th>
-                <th style="width: 40%;">Description</th>
-                <th style="width: 10%;">Ref</th>
-                <th style="width: 13%;" class="text-end">Debit (Dr)</th>
-                <th style="width: 13%;" class="text-end">Credit (Cr)</th>
-                <th style="width: 14%;" class="text-end">Balance</th>
+                <th style="width: 10%;"><?= lang('Customers.date') ?></th>
+                <th style="width: 40%;"><?= lang('Customers.description') ?></th>
+                <th style="width: 10%;"><?= lang('Customers.ref') ?></th>
+                <th style="width: 13%;" class="text-end"><?= lang('Customers.debit') ?> (Dr)</th>
+                <th style="width: 13%;" class="text-end"><?= lang('Customers.credit') ?> (Cr)</th>
+                <th style="width: 14%;" class="text-end"><?= lang('Customers.balance') ?></th>
             </tr>
         </thead>
         <tbody>
             <?php if ($openingBalance != 0): ?>
                 <tr class="opening-row">
                     <td><?= date('d M Y', strtotime($from)) ?></td>
-                    <td>Opening Balance</td>
+                    <td><?= lang('Customers.opening_balance') ?></td>
                     <td class="text-center">-</td>
                     <td class="text-end">-</td>
                     <td class="text-end">-</td>
@@ -188,14 +188,14 @@
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" class="text-center">No transactions found for the selected period</td>
+                    <td colspan="6" class="text-center"><?= lang('Customers.no_transactions_selected_period') ?></td>
                 </tr>
             <?php endif; ?>
         </tbody>
         <?php if (!empty($ledger)): ?>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                    <td colspan="3" class="text-end"><strong><?= lang('Customers.total') ?>:</strong></td>
                     <td class="text-end"><strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></td>
                     <td class="text-end"><strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></td>
                     <td class="text-end"><strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></td>
@@ -206,24 +206,24 @@
 
     <?php if (!empty($ledger)): ?>
         <div class="summary">
-            <h4 style="margin-top: 0;">Summary</h4>
-            <p>Opening Balance: <strong><?= number_to_currency($openingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Total Sales (Debit): <strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Total Payments (Credit): <strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></p>
-            <p>Closing Balance: <strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
+            <h4 style="margin-top: 0;"><?= lang('Customers.summary') ?></h4>
+            <p><?= lang('Customers.opening_balance') ?>: <strong><?= number_to_currency($openingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p><?= lang('Customers.total_sales_debit') ?>: <strong><?= number_to_currency($totalDebit, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p><?= lang('Customers.total_payments_credit') ?>: <strong><?= number_to_currency($totalCredit, 'PKR', 'en_PK', 2) ?></strong></p>
+            <p><?= lang('Customers.closing_balance') ?>: <strong><?= number_to_currency($closingBalance, 'PKR', 'en_PK', 2) ?></strong></p>
             <?php if ($closingBalance > 0): ?>
-                <p style="color: green;"><em>Amount Receivable from Customer</em></p>
+                <p style="color: green;"><em><?= lang('Customers.amount_receivable_from_customer') ?></em></p>
             <?php elseif ($closingBalance < 0): ?>
-                <p style="color: red;"><em>Amount Payable to Customer</em></p>
+                <p style="color: red;"><em><?= lang('Customers.amount_payable_to_customer') ?></em></p>
             <?php else: ?>
-                <p style="color: blue;"><em>Account Settled</em></p>
+                <p style="color: blue;"><em><?= lang('Customers.account_settled') ?></em></p>
             <?php endif; ?>
         </div>
     <?php endif; ?>
 
     <div class="no-print" style="margin-top: 15px; text-align: center;">
-        <button onclick="window.print()" style="padding: 8px 16px; font-size: 12px;">Print</button>
-        <button onclick="window.close()" style="padding: 8px 16px; font-size: 12px;">Close</button>
+        <button onclick="window.print()" style="padding: 8px 16px; font-size: 12px;"><?= lang('Customers.print') ?></button>
+        <button onclick="window.close()" style="padding: 8px 16px; font-size: 12px;"><?= lang('Customers.close') ?></button>
     </div>
 
     <script>

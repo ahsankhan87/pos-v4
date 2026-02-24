@@ -15,21 +15,21 @@
                         <i class="fas fa-boxes"></i>
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold text-gray-900">Products</h1>
-                        <p class="text-xs text-gray-500">Browse and manage your catalog</p>
+                        <h1 class="text-lg font-bold text-gray-900"><?= lang('Products.title') ?></h1>
+                        <p class="text-xs text-gray-500"><?= lang('Products.subtitle') ?></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap py-2">
                     <?php if (can('products.create')): ?>
                         <a href="<?= site_url('products/new') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm">
                             <i class="fas fa-plus-circle"></i>
-                            <span class="hidden sm:inline">Add Product</span>
-                            <span class="sm:hidden">Add</span>
+                            <span class="hidden sm:inline"><?= lang('Products.add_product') ?></span>
+                            <span class="sm:hidden"><?= lang('Products.add_short') ?></span>
                         </a>
                         <a href="<?= site_url('products/import') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm">
                             <i class="fas fa-file-import"></i>
-                            <span class="hidden sm:inline">Import CSV</span>
-                            <span class="sm:hidden">Import</span>
+                            <span class="hidden sm:inline"><?= lang('Products.import_csv') ?></span>
+                            <span class="sm:hidden"><?= lang('Products.import_short') ?></span>
                         </a>
                     <?php endif; ?>
 
@@ -37,8 +37,8 @@
                     <div class="relative inline-block" x-data="{ open: false, disabled: true }" x-init="window.bulkActionsDropdown = { enable: () => { disabled = false; }, disable: () => { disabled = true; open = false; }, isDisabled: () => disabled }">
                         <button @click="if(!disabled) open = !open" :disabled="disabled" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-all duration-200 border-2 border-gray-300 hover:border-gray-400 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm">
                             <i class="fas fa-tasks"></i>
-                            <span class="hidden sm:inline">Bulk Actions</span>
-                            <span class="sm:hidden">Bulk</span>
+                            <span class="hidden sm:inline"><?= lang('Products.bulk_actions') ?></span>
+                            <span class="sm:hidden"><?= lang('Products.bulk_short') ?></span>
                             <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
                         </button>
 
@@ -55,18 +55,18 @@
 
                             <a href="#" id="bulk-print" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                 <i class="fas fa-barcode w-5 text-blue-600"></i>
-                                <span class="font-medium">Print Selected</span>
+                                <span class="font-medium"><?= lang('Products.print_selected') ?></span>
                             </a>
 
                             <a href="#" id="bulk-export" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                 <i class="fas fa-file-export w-5 text-green-600"></i>
-                                <span class="font-medium">Export Selected</span>
+                                <span class="font-medium"><?= lang('Products.export_selected') ?></span>
                             </a>
 
                             <?php if (can('inventory.update')): ?>
                                 <a href="#" id="bulk-adjust" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-sliders-h w-5 text-orange-600"></i>
-                                    <span class="font-medium">Adjust Stock</span>
+                                    <span class="font-medium"><?= lang('Products.adjust_stock') ?></span>
                                 </a>
                             <?php endif; ?>
 
@@ -74,7 +74,7 @@
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <a href="#" id="bulk-delete" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-50 transition-colors">
                                     <i class="fas fa-trash-alt w-5 text-red-600"></i>
-                                    <span class="font-medium">Delete Selected</span>
+                                    <span class="font-medium"><?= lang('Products.delete_selected') ?></span>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -86,34 +86,34 @@
 
     <?php if (session()->getFlashdata('success')) : ?>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong class="font-bold">Success!</strong>
+            <strong class="font-bold"><?= lang('Products.success') ?></strong>
             <span class="block sm:inline"><?= session()->getFlashdata('success') ?></span>
         </div>
     <?php endif; ?>
 
     <?php if (session()->getFlashdata('error')) : ?>
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong class="font-bold">Error!</strong>
+            <strong class="font-bold"><?= lang('Products.error') ?></strong>
             <span class="block sm:inline"><?= session()->getFlashdata('error') ?></span>
         </div>
     <?php endif; ?>
 
     <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200 text-sm font-semibold text-gray-700">Product List</div>
+            <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200 text-sm font-semibold text-gray-700"><?= lang('Products.product_list') ?></div>
             <div class="overflow-x-auto">
                 <table id="productsTable" class="data-table">
                     <thead>
                         <tr>
                             <th><input type="checkbox" id="select-all"></th>
-                            <th scope="col">ID</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Code</th>
-                            <th scope="col">Barcode</th>
-                            <th scope="col">Cost Price</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Actions</th>
+                            <th scope="col"><?= lang('Products.id') ?></th>
+                            <th scope="col"><?= lang('Products.name') ?></th>
+                            <th scope="col"><?= lang('Products.code') ?></th>
+                            <th scope="col"><?= lang('Products.barcode') ?></th>
+                            <th scope="col"><?= lang('Products.cost_price') ?></th>
+                            <th scope="col"><?= lang('Products.price') ?></th>
+                            <th scope="col"><?= lang('Products.quantity') ?></th>
+                            <th scope="col"><?= lang('Products.actions') ?></th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -132,6 +132,41 @@
 
 <script>
     $(document).ready(function() {
+        const productTexts = {
+            columns: <?= json_encode(lang('Products.columns'), JSON_UNESCAPED_UNICODE) ?>,
+            print: <?= json_encode(lang('Products.print'), JSON_UNESCAPED_UNICODE) ?>,
+            productsListTitle: <?= json_encode(lang('Products.products_list_title'), JSON_UNESCAPED_UNICODE) ?>,
+            exportExcel: <?= json_encode(lang('Products.export_excel'), JSON_UNESCAPED_UNICODE) ?>,
+            service: <?= json_encode(lang('Products.service'), JSON_UNESCAPED_UNICODE) ?>,
+            searchProducts: <?= json_encode(lang('Products.search_products'), JSON_UNESCAPED_UNICODE) ?>,
+            showEntries: <?= json_encode(lang('Products.show_entries'), JSON_UNESCAPED_UNICODE) ?>,
+            showingEntries: <?= json_encode(lang('Products.showing_entries'), JSON_UNESCAPED_UNICODE) ?>,
+            showingNoEntries: <?= json_encode(lang('Products.showing_no_entries'), JSON_UNESCAPED_UNICODE) ?>,
+            filteredEntries: <?= json_encode(lang('Products.filtered_entries'), JSON_UNESCAPED_UNICODE) ?>,
+            noMatchingProducts: <?= json_encode(lang('Products.no_matching_products'), JSON_UNESCAPED_UNICODE) ?>,
+            loadingProducts: <?= json_encode(lang('Products.loading_products'), JSON_UNESCAPED_UNICODE) ?>,
+            first: <?= json_encode(lang('Products.first'), JSON_UNESCAPED_UNICODE) ?>,
+            last: <?= json_encode(lang('Products.last'), JSON_UNESCAPED_UNICODE) ?>,
+            view: <?= json_encode(lang('Products.view'), JSON_UNESCAPED_UNICODE) ?>,
+            stockMovementHistory: <?= json_encode(lang('Products.stock_movement_history'), JSON_UNESCAPED_UNICODE) ?>,
+            printBarcodeLabels: <?= json_encode(lang('Products.print_barcode_labels'), JSON_UNESCAPED_UNICODE) ?>,
+            edit: <?= json_encode(lang('Products.edit'), JSON_UNESCAPED_UNICODE) ?>,
+            adjustStock: <?= json_encode(lang('Products.adjust_stock'), JSON_UNESCAPED_UNICODE) ?>,
+            delete: <?= json_encode(lang('Products.delete'), JSON_UNESCAPED_UNICODE) ?>,
+            noActions: <?= json_encode(lang('Products.no_actions'), JSON_UNESCAPED_UNICODE) ?>,
+            actions: <?= json_encode(lang('Products.actions'), JSON_UNESCAPED_UNICODE) ?>,
+            deleteProductConfirm: <?= json_encode(lang('Products.delete_product_confirm'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkNoEligiblePrint: <?= json_encode(lang('Products.bulk_no_eligible_print'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkDeleteConfirm: <?= json_encode(lang('Products.bulk_delete_confirm'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkDeleteResult: <?= json_encode(lang('Products.bulk_delete_result'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkDeleteFailed: <?= json_encode(lang('Products.bulk_delete_failed'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkNoEligibleAdjust: <?= json_encode(lang('Products.bulk_no_eligible_adjust'), JSON_UNESCAPED_UNICODE) ?>,
+            enterValidNumber: <?= json_encode(lang('Products.enter_valid_number'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkAdjustDefaultReason: <?= json_encode(lang('Products.bulk_adjust_default_reason'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkAdjustResult: <?= json_encode(lang('Products.bulk_adjust_result'), JSON_UNESCAPED_UNICODE) ?>,
+            bulkAdjustFailed: <?= json_encode(lang('Products.bulk_adjust_failed'), JSON_UNESCAPED_UNICODE) ?>
+        };
+
         const csrfName = <?= json_encode(csrf_token()) ?>;
         let csrfHash = <?= json_encode(csrf_hash()) ?>;
         const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
@@ -159,15 +194,15 @@
             pagingType: 'full_numbers',
             buttons: [{
                     extend: 'colvis',
-                    text: '<i class="fas fa-columns"></i> Columns',
+                    text: '<i class="fas fa-columns"></i> ' + productTexts.columns,
                     className: 'btn btn-secondary',
                     columns: ':not(:first-child):not(:last-child)'
                 },
                 {
                     extend: 'print',
-                    text: '<i class="fas fa-print"></i> Print',
+                    text: '<i class="fas fa-print"></i> ' + productTexts.print,
                     className: 'btn btn-secondary',
-                    title: 'Products List',
+                    title: productTexts.productsListTitle,
                     exportOptions: {
                         columns: ':visible:not(:first-child):not(:last-child)'
                     },
@@ -181,34 +216,32 @@
                             'margin': '0'
                         });
                         $body.find('h1').css({
-                            'font-size': '14px',
                             'margin': '0 0 8px 0'
                         });
                         // Apply DataTables compact class and ensure small cell padding
                         $table.addClass('compact').css('font-size', 'inherit');
                         $(win.document.head).append(
-                            '<style>\
-                                @page { margin: 8mm; }\
-                                body { padding: 8mm; }\
-                                table { border-collapse: collapse !important; }\
-                                table.dataTable thead th,\
-                                table.dataTable tbody td,\
-                                table.dataTable tfoot th,\
-                                table.dataTable tfoot td {\
-                                    padding: 4px 6px !important;\
-                                }\
-                                table.dataTable thead th {\
-                                    border-bottom: 1px solid #ddd !important;\
-                                }\
-                                table.dataTable tbody tr td {\
-                                    border-top: 1px solid #f0f0f0 !important;\
-                                }\
-                            </style>'
+                            '<style>' +
+                            '@page { margin: 8mm; }' +
+                            'table { border-collapse: collapse !important; }' +
+                            'table.dataTable thead th,' +
+                            'table.dataTable tbody td,' +
+                            'table.dataTable tfoot th,' +
+                            'table.dataTable tfoot td {' +
+                            'padding: 4px 6px !important;' +
+                            '}' +
+                            'table.dataTable thead th {' +
+                            'border-bottom: 1px solid #ddd !important;' +
+                            '}' +
+                            'table.dataTable tbody tr td {' +
+                            'border-top: 1px solid #f0f0f0 !important;' +
+                            '}' +
+                            '</style>'
                         );
                     }
                 },
                 {
-                    text: '<i class="fas fa-file-excel"></i> Export Excel',
+                    text: '<i class="fas fa-file-excel"></i> ' + productTexts.exportExcel,
                     className: 'btn btn-success',
                     action: function() {
                         window.location.href = <?= json_encode(site_url('products/export')) ?>;
@@ -238,7 +271,7 @@
                         const isService = (row.type === 'service') || (parseInt(row.is_stock_tracked ?? 1, 10) === 0);
                         const nameHtml = escapeHtml(data);
                         if (isService) {
-                            return `${nameHtml} <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 align-middle">Service</span>`;
+                            return `${nameHtml} <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 align-middle">${productTexts.service}</span>`;
                         }
                         return nameHtml;
                     }
@@ -292,16 +325,16 @@
             ],
             language: {
                 search: "_INPUT_",
-                searchPlaceholder: "Search products...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching products found",
-                processing: "Loading products...",
+                searchPlaceholder: productTexts.searchProducts,
+                lengthMenu: productTexts.showEntries,
+                info: productTexts.showingEntries,
+                infoEmpty: productTexts.showingNoEntries,
+                infoFiltered: productTexts.filteredEntries,
+                zeroRecords: productTexts.noMatchingProducts,
+                processing: productTexts.loadingProducts,
                 paginate: {
-                    first: "First",
-                    last: "Last",
+                    first: productTexts.first,
+                    last: productTexts.last,
                     next: "<i class='fas fa-chevron-right'></i>",
                     previous: "<i class='fas fa-chevron-left'></i>"
                 }
@@ -340,20 +373,20 @@
                 menuItems += `
                     <a href="${routes.view}" class="actions-link actions-link--info">
                         <i class="fas fa-eye"></i>
-                        <span>View</span>
+                        <span>${productTexts.view}</span>
                     </a>
                 `;
                 if (!isService) {
                     menuItems += `
                         <a href="${routes.history}" class="actions-link actions-link--info">
                             <i class="fas fa-history"></i>
-                            <span>Stock Movement History</span>
+                            <span>${productTexts.stockMovementHistory}</span>
                         </a>
                     `;
                     menuItems += `
                         <a href="${routes.barcode}" target="_blank" class="actions-link actions-link--info">
                             <i class="fas fa-barcode"></i>
-                            <span>Print Barcode Labels</span>
+                            <span>${productTexts.printBarcodeLabels}</span>
                         </a>
                     `;
                 }
@@ -362,7 +395,7 @@
                 menuItems += `
                     <a href="${routes.edit}" class="actions-link actions-link--primary">
                         <i class="fas fa-edit"></i>
-                        <span>Edit</span>
+                        <span>${productTexts.edit}</span>
                     </a>
                 `;
             }
@@ -370,7 +403,7 @@
                 menuItems += `
                     <a href="${routes.adjust}" class="actions-link actions-link--warning">
                         <i class="fas fa-sliders-h"></i>
-                        <span>Adjust Stock</span>
+                        <span>${productTexts.adjustStock}</span>
                     </a>
                 `;
             }
@@ -381,48 +414,100 @@
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="actions-link actions-link--danger">
                             <i class="fas fa-trash-alt"></i>
-                            <span>Delete</span>
+                            <span>${productTexts.delete}</span>
                         </button>
                     </form>
                 `;
             }
 
             if (!menuItems) {
-                return '<span class="text-gray-400 text-sm">No actions</span>';
+                return '<span class="text-gray-400 text-sm">' + productTexts.noActions + '</span>';
             }
 
             return `
                 <div class="actions-wrapper relative">
                     <button type="button" class="actions-toggle btn btn-muted btn-sm" aria-haspopup="true">
-                        <span>Actions</span>
+                        <span>${productTexts.actions}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="actions-menu hidden absolute right-0 mt-1 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
+                    <div class="actions-menu hidden bg-white border border-gray-200 rounded-lg shadow-lg p-1">
                         ${menuItems}
                     </div>
                 </div>
             `;
         }
 
+        function positionActionsMenu($menu, $toggle) {
+            const toggleRect = $toggle[0].getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const margin = 8;
+            const verticalGap = 6;
+            const minVisibleHeight = 140;
+
+            const menuWidth = $menu.outerWidth() || 224;
+            const isRtl = (document.documentElement.getAttribute('dir') || '').toLowerCase() === 'rtl';
+
+            let left = isRtl ? (toggleRect.right - menuWidth) : toggleRect.left;
+            left = Math.max(margin, Math.min(left, viewportWidth - menuWidth - margin));
+
+            let top = toggleRect.bottom + verticalGap;
+            const availableBelow = Math.max(minVisibleHeight, viewportHeight - top - margin);
+
+            if ((top + minVisibleHeight) > (viewportHeight - margin)) {
+                top = Math.max(margin, viewportHeight - minVisibleHeight - margin);
+            }
+
+            $menu.css({
+                position: 'fixed',
+                top: `${top}px`,
+                left: `${left}px`,
+                right: 'auto',
+                maxHeight: `${availableBelow}px`,
+                overflowY: 'auto',
+                zIndex: 10050
+            });
+        }
+
+        function hideAllActionMenus() {
+            $('.actions-menu').addClass('hidden').css({
+                position: '',
+                top: '',
+                left: '',
+                right: '',
+                maxHeight: '',
+                overflowY: '',
+                zIndex: ''
+            });
+        }
+
         $(document).on('click', '.actions-toggle', function(e) {
             e.preventDefault();
             if ($(this).is(':disabled')) return; // prevent opening when disabled (used by bulk dropdown)
-            const $menu = $(this).closest('.actions-wrapper').find('.actions-menu');
+            const $toggle = $(this);
+            const $menu = $toggle.closest('.actions-wrapper').find('.actions-menu');
             const isOpen = !$menu.hasClass('hidden');
-            $('.actions-menu').addClass('hidden');
+
+            hideAllActionMenus();
+
             if (!isOpen) {
                 $menu.removeClass('hidden');
+                positionActionsMenu($menu, $toggle);
             }
         });
 
         $(document).on('click', function(e) {
             if (!$(e.target).closest('.actions-wrapper').length) {
-                $('.actions-menu').addClass('hidden');
+                hideAllActionMenus();
             }
         });
 
+        $(window).on('resize scroll', function() {
+            hideAllActionMenus();
+        });
+
         $(document).on('submit', '.delete-product-form', function(e) {
-            if (!confirm('Are you sure you want to delete this product?')) {
+            if (!confirm(productTexts.deleteProductConfirm)) {
                 e.preventDefault();
             }
         });
@@ -468,7 +553,7 @@
                 }
             });
             if (!validIds.length) {
-                alert('No eligible products selected (services and items without barcodes are excluded).');
+                alert(productTexts.bulkNoEligiblePrint);
                 return;
             }
             const url = <?= json_encode(site_url('products/print-barcodes')) ?> + '?ids=' + encodeURIComponent(validIds.join(','));
@@ -491,7 +576,7 @@
                 return this.value;
             }).get();
             if (!ids.length) return;
-            if (!confirm('Delete ' + ids.length + ' selected product(s)?\nProducts with related sales or purchases will be skipped.')) return;
+            if (!confirm(productTexts.bulkDeleteConfirm.replace('{count}', ids.length))) return;
             const payload = new FormData();
             payload.append(csrfName, csrfHash);
             ids.forEach(id => payload.append('ids[]', id));
@@ -506,11 +591,12 @@
                 }).then(r => r.ok ? r.json() : Promise.reject(r))
                 .then(data => {
                     if (data.token) csrfHash = data.token;
-                    alert('Deleted: ' + (data.deleted ?? 0) + (data.skipped && data.skipped.length ? ('\nSkipped: ' + data.skipped.length) : ''));
+                    const skippedText = data.skipped && data.skipped.length ? ('\nSkipped: ' + data.skipped.length) : '';
+                    alert(productTexts.bulkDeleteResult.replace('{deleted}', (data.deleted ?? 0)).replace('{skipped}', skippedText));
                     table.ajax.reload(null, false);
                 })
                 .catch((err) => {
-                    alert('Bulk delete failed. If this is a CSRF error, please reload the page and try again.');
+                    alert(productTexts.bulkDeleteFailed);
                 });
         });
 
@@ -524,7 +610,7 @@
                 if (!isService) ids.push(data.id);
             });
             if (!ids.length) {
-                alert('No eligible products selected (services are excluded).');
+                alert(productTexts.bulkNoEligibleAdjust);
                 return;
             }
             $('#bulk-adjust-modal').removeClass('hidden');
@@ -534,7 +620,7 @@
                 const val = parseFloat($('#bulk-adjust-value').val());
                 const reason = $('#bulk-adjust-reason').val().trim();
                 if (!isFinite(val)) {
-                    alert('Enter a valid number.');
+                    alert(productTexts.enterValidNumber);
                     return;
                 }
                 let mode = 'delta';
@@ -548,7 +634,7 @@
                 payload.append(csrfName, csrfHash);
                 payload.append('mode', mode);
                 payload.append('value', value);
-                payload.append('reason', reason || 'Bulk stock adjustment');
+                payload.append('reason', reason || productTexts.bulkAdjustDefaultReason);
                 ids.forEach(id => payload.append('ids[]', id));
                 fetch(<?= json_encode(site_url('products/bulk-adjust')) ?>, {
                         method: 'POST',
@@ -561,12 +647,13 @@
                     }).then(r => r.ok ? r.json() : Promise.reject(r))
                     .then(data => {
                         if (data.token) csrfHash = data.token;
-                        alert('Adjusted: ' + (data.adjusted ?? 0) + (data.errors && data.errors.length ? ('\nErrors: ' + data.errors.length) : ''));
+                        const errorsText = data.errors && data.errors.length ? ('\nErrors: ' + data.errors.length) : '';
+                        alert(productTexts.bulkAdjustResult.replace('{adjusted}', (data.adjusted ?? 0)).replace('{errors}', errorsText));
                         table.ajax.reload(null, false);
                         $('#bulk-adjust-modal').addClass('hidden');
                     })
                     .catch((err) => {
-                        alert('Bulk adjust failed. If this is a CSRF error, please reload the page and try again.');
+                        alert(productTexts.bulkAdjustFailed);
                     });
             });
         });
@@ -582,30 +669,30 @@
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-lg border border-gray-200 w-full max-w-md">
             <div class="px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-                <div class="text-sm font-semibold text-gray-800">Adjust Stock (<span id="bulk-adjust-count">0</span> selected)</div>
+                <div class="text-sm font-semibold text-gray-800"><?= lang('Products.adjust_stock') ?> (<span id="bulk-adjust-count">0</span> <?= lang('Products.selected') ?>)</div>
                 <button id="bulk-adjust-close" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-4 space-y-3 text-sm">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Adjustment Type</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.adjustment_type') ?></label>
                     <select id="bulk-adjust-type" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="increase">Increase (+)</option>
-                        <option value="decrease">Decrease (-)</option>
-                        <option value="set">Set To (absolute)</option>
+                        <option value="increase"><?= lang('Products.increase') ?></option>
+                        <option value="decrease"><?= lang('Products.decrease') ?></option>
+                        <option value="set"><?= lang('Products.set_to') ?></option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Amount</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.amount') ?></label>
                     <input type="number" step="0.01" id="bulk-adjust-value" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="e.g., 5">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Reason (optional)</label>
-                    <input type="text" id="bulk-adjust-reason" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Stock count, damage, etc.">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.reason_optional') ?></label>
+                    <input type="text" id="bulk-adjust-reason" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="<?= esc(lang('Products.reason_placeholder')) ?>">
                 </div>
             </div>
             <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-end gap-2">
-                <button id="bulk-adjust-cancel" class="btn btn-muted">Cancel</button>
-                <button id="bulk-adjust-apply" class="btn btn-warning"><i class="fas fa-check mr-1"></i> Apply</button>
+                <button id="bulk-adjust-cancel" class="btn btn-muted"><?= lang('Products.cancel') ?></button>
+                <button id="bulk-adjust-apply" class="btn btn-warning"><i class="fas fa-check mr-1"></i> <?= lang('Products.apply') ?></button>
             </div>
         </div>
     </div>

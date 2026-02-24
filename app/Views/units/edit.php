@@ -3,7 +3,7 @@
 
 <div class="max-w-3xl mx-auto py-6">
     <div class="bg-white shadow rounded p-6">
-        <h1 class="text-2xl font-bold mb-6">Edit Unit</h1>
+        <h1 class="text-2xl font-bold mb-6"><?= lang('Units.edit_unit') ?></h1>
 
         <?php if (session()->getFlashdata('errors')): ?>
             <div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -19,23 +19,23 @@
             <?= csrf_field() ?>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Name</label>
+                <label class="block text-sm font-medium text-gray-700"><?= lang('Units.name') ?></label>
                 <input type="text" name="name" value="<?= old('name', $unit['name']) ?>" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Abbreviation</label>
-                <input type="text" name="abbreviation" value="<?= old('abbreviation', $unit['abbreviation']) ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="e.g. pcs, kg, box">
+                <label class="block text-sm font-medium text-gray-700"><?= lang('Units.abbreviation') ?></label>
+                <input type="text" name="abbreviation" value="<?= old('abbreviation', $unit['abbreviation']) ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="<?= esc(lang('Units.placeholder_abbreviation')) ?>">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea name="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="Optional description"><?= old('description', $unit['description']) ?></textarea>
+                <label class="block text-sm font-medium text-gray-700"><?= lang('Units.description') ?></label>
+                <textarea name="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="<?= esc(lang('Units.placeholder_description')) ?>"><?= old('description', $unit['description']) ?></textarea>
             </div>
 
             <div class="flex items-center gap-3">
-                <button type="submit" class="btn btn-primary">Update</button>
-                <a href="<?= site_url('units') ?>" class="text-gray-600 hover:underline text-sm">Cancel</a>
+                <button type="submit" class="btn btn-primary"><?= lang('Units.update') ?></button>
+                <a href="<?= site_url('units') ?>" class="text-gray-600 hover:underline text-sm"><?= lang('Units.cancel') ?></a>
             </div>
         </form>
     </div>

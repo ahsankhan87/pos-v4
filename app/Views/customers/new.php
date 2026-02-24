@@ -11,10 +11,10 @@
                     <div class="w-8 h-8 rounded bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shadow">
                         <i class="fas fa-user"></i>
                     </div>
-                    <h1 class="text-lg font-bold text-gray-900">Add New Customer</h1>
+                    <h1 class="text-lg font-bold text-gray-900"><?= lang('Customers.add_new_customer') ?></h1>
                 </div>
                 <a href="<?= site_url('customers') ?>" class="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1">
-                    <i class="fas fa-arrow-left"></i> Back to customers
+                    <i class="fas fa-arrow-left"></i> <?= lang('Customers.back_to_customers') ?>
                 </a>
             </div>
         </div>
@@ -25,7 +25,7 @@
         <!-- Alerts -->
         <?php if (session()->getFlashdata('error')): ?>
             <div class="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm">
-                <div class="font-semibold mb-1 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Please fix the errors below</div>
+                <div class="font-semibold mb-1 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> <?= lang('Customers.please_fix_errors') ?></div>
                 <?= session()->getFlashdata('error') ?>
                 <?= validation_list_errors() ?>
             </div>
@@ -35,7 +35,7 @@
         <?php endif; ?>
         <?php if (session()->getFlashdata('success')) : ?>
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Success!</strong>
+                <strong class="font-bold"><?= lang('Customers.success') ?></strong>
                 <span class="block sm:inline"><?= session()->getFlashdata('success') ?></span>
             </div>
         <?php endif; ?>
@@ -47,42 +47,42 @@
                 <!-- Customer Info -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
-                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-blue-600"></i> Customer Info</h3>
+                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-id-card text-blue-600"></i> <?= lang('Customers.customer_info') ?></h3>
                     </div>
                     <div class="p-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.name') ?> <span class="text-red-500">*</span></label>
                                 <input type="text" name="name" autofocus value="<?= set_value('name') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                                 <?php if (!empty($errors['name'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['name']) ?></p><?php endif; ?>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Email </label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.email') ?> </label>
                                 <input type="email" name="email" value="<?= set_value('email') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <?php if (!empty($errors['email'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['email']) ?></p><?php endif; ?>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Phone</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.phone') ?></label>
                                 <input type="text" name="phone" value="<?= set_value('phone') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <?php if (!empty($errors['phone'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['phone']) ?></p><?php endif; ?>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Area</label>
-                                <input type="text" name="area" value="<?= set_value('area') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., Downtown, North Zone">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.area') ?></label>
+                                <input type="text" name="area" value="<?= set_value('area') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.area_placeholder')) ?>">
                                 <?php if (!empty($errors['area'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['area']) ?></p><?php endif; ?>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Address</label>
-                                <input type="text" name="address" value="<?= set_value('address') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Optional">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.address') ?></label>
+                                <input type="text" name="address" value="<?= set_value('address') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.optional')) ?>">
                                 <?php if (!empty($errors['address'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['address']) ?></p><?php endif; ?>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Opening Balance</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.opening_balance') ?></label>
                                 <input type="number" step="0.01" name="opening_balance" value="<?= set_value('opening_balance', '0.00') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
                                 <?php if (!empty($errors['opening_balance'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['opening_balance']) ?></p><?php endif; ?>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Credit Limit</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.credit_limit') ?></label>
                                 <input type="number" step="0.01" name="credit_limit" value="<?= set_value('credit_limit', '0.00') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
                                 <?php if (!empty($errors['credit_limit'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['credit_limit']) ?></p><?php endif; ?>
                             </div>
@@ -95,13 +95,13 @@
             <div class="space-y-4">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-16">
                     <div class="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
-                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-save text-slate-600"></i> Actions</h3>
+                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-save text-slate-600"></i> <?= lang('Customers.actions') ?></h3>
                     </div>
                     <div class="p-4 space-y-2">
                         <input type="hidden" name="created_at" value="<?= date('Y-m-d H:i:s') ?>">
-                        <button type="submit" class="btn btn-primary w-full"><i class="fas fa-check"></i> Save</button>
-                        <button type="submit" name="submit_action" value="save_new" class="btn btn-secondary w-full"><i class="fas fa-plus"></i> Save & New</button>
-                        <a href="<?= site_url('customers') ?>" class="btn btn-muted w-full"><i class="fas fa-times"></i> Cancel</a>
+                        <button type="submit" class="btn btn-primary w-full"><i class="fas fa-check"></i> <?= lang('Customers.save') ?></button>
+                        <button type="submit" name="submit_action" value="save_new" class="btn btn-secondary w-full"><i class="fas fa-plus"></i> <?= lang('Customers.save_new') ?></button>
+                        <a href="<?= site_url('customers') ?>" class="btn btn-muted w-full"><i class="fas fa-times"></i> <?= lang('Customers.cancel') ?></a>
                     </div>
                 </div>
             </div>

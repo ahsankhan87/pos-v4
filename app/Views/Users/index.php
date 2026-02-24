@@ -5,18 +5,18 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage staff access, roles, and activity within the platform.</p>
+            <h1 class="text-2xl font-bold text-gray-900"><?= lang('Users.user_management') ?></h1>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Users.management_subtitle') ?></p>
         </div>
         <div class="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
             <?php if (can('manage_users')): ?>
                 <a href="<?= site_url('users/permissions/') ?>" class="btn btn-secondary">
-                    <i class="fas fa-lock"></i> Role Permissions
+                    <i class="fas fa-lock"></i> <?= lang('Users.role_permissions') ?>
                 </a>
             <?php endif; ?>
             <?php if (can('users.create')): ?>
                 <a href="<?= site_url('users/new') ?>" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i> Add New User
+                    <i class="fas fa-user-plus"></i> <?= lang('Users.add_new_user') ?>
                 </a>
             <?php endif; ?>
         </div>
@@ -42,27 +42,28 @@
 
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Team Directory</h2>
-            <span class="text-sm text-gray-500">Total: <?= $totalUsers ?></span>
+            <h2 class="text-lg font-semibold text-gray-900"><?= lang('Users.team_directory') ?></h2>
+            <span class="text-sm text-gray-500"><?= lang('Users.total') ?>: <?= $totalUsers ?></span>
         </div>
         <div class="overflow-x-auto">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Role</th>
-                        <th scope="col">Status</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Users.id') ?></th>
+                        <th scope="col"><?= lang('Users.name') ?></th>
+                        <th scope="col"><?= lang('Users.username') ?></th>
+                        <th scope="col"><?= lang('Users.email') ?></th>
+                        <th scope="col"><?= lang('Users.preferred_locale') ?></th>
+                        <th scope="col"><?= lang('Users.role') ?></th>
+                        <th scope="col"><?= lang('Users.status') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Users.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (! empty($users)): ?>
                         <?php foreach ($users as $user): ?>
                             <?php
-                            $roleName = 'Unknown';
+                            $roleName = lang('Users.unknown');
                             foreach ($roles as $role) {
                                 if ((int) $role['id'] === (int) $user['role_id']) {
                                     $roleName = $role['name'];
@@ -84,18 +85,28 @@
                                     <?= esc($user['email']) ?>
                                 </td>
                                 <td class="text-sm text-slate-500">
+                                    <?php
+                                    $preferredLocale = strtolower((string) ($user['preferred_locale'] ?? 'en'));
+                                    if ($preferredLocale === 'ar') {
+                                        echo esc(lang('Users.locale_ar'));
+                                    } else {
+                                        echo esc(lang('Users.locale_en'));
+                                    }
+                                    ?>
+                                </td>
+                                <td class="text-sm text-slate-500">
                                     <?= esc($roleName) ?>
                                 </td>
                                 <td class="text-sm">
                                     <?php if ((int) $user['is_active'] === 1): ?>
                                         <span class="badge badge--success">
                                             <i class="fas fa-check"></i>
-                                            Active
+                                            <?= lang('Users.active') ?>
                                         </span>
                                     <?php else: ?>
                                         <span class="badge badge--danger">
                                             <i class="fas fa-ban"></i>
-                                            Inactive
+                                            <?= lang('Users.inactive') ?>
                                         </span>
                                     <?php endif; ?>
                                 </td>
@@ -103,41 +114,41 @@
                                     <?php if (can('users.update') || can('users.delete')): ?>
                                         <div class="actions-wrapper">
                                             <button type="button" class="actions-toggle btn btn-muted btn-sm">
-                                                <span>Actions</span>
+                                                <span><?= lang('Users.actions') ?></span>
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                             <div class="actions-menu hidden">
                                                 <?php if (can('users.update')): ?>
                                                     <a href="<?= site_url('user-stores/manage/' . $user['id']) ?>" class="actions-link actions-link--info">
                                                         <i class="fas fa-store"></i>
-                                                        <span>Manage Stores</span>
+                                                        <span><?= lang('Users.manage_stores') ?></span>
                                                     </a>
                                                     <a href="<?= site_url('users/edit/' . $user['id']) ?>" class="actions-link actions-link--primary">
                                                         <i class="fas fa-edit"></i>
-                                                        <span>Edit</span>
+                                                        <span><?= lang('Users.edit') ?></span>
                                                     </a>
                                                 <?php endif; ?>
                                                 <?php if (can('users.delete')): ?>
-                                                    <form action="<?= site_url('users/delete/' . $user['id']) ?>" method="post" onsubmit="return confirm('Delete this user?');">
+                                                    <form action="<?= site_url('users/delete/' . $user['id']) ?>" method="post" onsubmit="return confirm('<?= esc(lang('Users.delete_user_confirm')) ?>');">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="_method" value="DELETE">
                                                         <button type="submit" class="actions-link actions-link--danger">
                                                             <i class="fas fa-trash-alt"></i>
-                                                            <span>Delete</span>
+                                                            <span><?= lang('Users.delete') ?></span>
                                                         </button>
                                                     </form>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php else: ?>
-                                        <span class="text-xs text-slate-400">No actions available</span>
+                                        <span class="text-xs text-slate-400"><?= lang('Users.no_actions_available') ?></span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="6" class="text-center text-sm text-slate-500 py-6">No users found.</td>
+                            <td colspan="8" class="text-center text-sm text-slate-500 py-6"><?= lang('Users.no_users_found') ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

@@ -4,12 +4,12 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Permissions</h1>
-            <p class="mt-1 text-sm text-gray-500">Control access to features by managing system permissions.</p>
+            <h1 class="text-2xl font-bold text-gray-900"><?= lang('Permissions.permissions') ?></h1>
+            <p class="mt-1 text-sm text-gray-500"><?= lang('Permissions.subtitle') ?></p>
         </div>
         <?php if (can('manage_users')): ?>
             <a href="<?= site_url('permissions/new') ?>" class="btn btn-primary mt-4 sm:mt-0">
-                <i class="fas fa-plus-circle"></i> New Permission
+                <i class="fas fa-plus-circle"></i> <?= lang('Permissions.newPermission') ?>
             </a>
         <?php endif; ?>
     </div>
@@ -34,17 +34,17 @@
 
     <div class="table-card">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Permission Registry</h2>
-            <span class="text-sm text-gray-500">Total: <?= $totalPermissions ?></span>
+            <h2 class="text-lg font-semibold text-gray-900"><?= lang('Permissions.registry') ?></h2>
+            <span class="text-sm text-gray-500"><?= lang('Permissions.total') ?>: <?= $totalPermissions ?></span>
         </div>
         <div class="overflow-x-auto">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Description</th>
-                        <th scope="col" class="text-right">Actions</th>
+                        <th scope="col"><?= lang('Permissions.id') ?></th>
+                        <th scope="col"><?= lang('Permissions.name') ?></th>
+                        <th scope="col"><?= lang('Permissions.description') ?></th>
+                        <th scope="col" class="text-right"><?= lang('Permissions.actions') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -56,39 +56,39 @@
                                     <?= esc($permission['name']) ?>
                                 </td>
                                 <td class="text-sm text-slate-500 whitespace-normal">
-                                    <?= esc($permission['description'] ?? 'N/A') ?>
+                                    <?= esc($permission['description'] ?? lang('Permissions.notAvailable')) ?>
                                 </td>
                                 <td class="text-sm text-right">
                                     <?php if (can('manage_users')): ?>
                                         <div class="actions-wrapper">
                                             <button type="button" class="actions-toggle btn btn-muted btn-sm">
-                                                <span>Actions</span>
+                                                <span><?= lang('Permissions.actions') ?></span>
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                             <div class="actions-menu hidden">
                                                 <a href="<?= site_url('permissions/edit/' . $permission['id']) ?>" class="actions-link actions-link--primary">
                                                     <i class="fas fa-edit"></i>
-                                                    <span>Edit</span>
+                                                    <span><?= lang('Permissions.edit') ?></span>
                                                 </a>
-                                                <form action="<?= site_url('permissions/delete/' . $permission['id']) ?>" method="post" onsubmit="return confirm('Delete this permission?');">
+                                                <form action="<?= site_url('permissions/delete/' . $permission['id']) ?>" method="post" onsubmit="return confirm(<?= json_encode(lang('Permissions.confirmDelete')) ?>);">
                                                     <?= csrf_field() ?>
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     <button type="submit" class="actions-link actions-link--danger">
                                                         <i class="fas fa-trash-alt"></i>
-                                                        <span>Delete</span>
+                                                        <span><?= lang('Permissions.delete') ?></span>
                                                     </button>
                                                 </form>
                                             </div>
                                         </div>
                                     <?php else: ?>
-                                        <span class="text-xs text-slate-400">No actions available</span>
+                                        <span class="text-xs text-slate-400"><?= lang('Permissions.noActionsAvailable') ?></span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="4" class="text-center text-sm text-slate-500 py-6">No permissions configured.</td>
+                            <td colspan="4" class="text-center text-sm text-slate-500 py-6"><?= lang('Permissions.noPermissionsConfigured') ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

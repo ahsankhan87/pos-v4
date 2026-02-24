@@ -10,7 +10,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Print Labels 60×25</title>
+    <title><?= lang('Products.print_labels_60x25') ?></title>
     <style>
         :root {
             --barcode-height-mm: <?= isset($barcodeHeightMm) ? (float)$barcodeHeightMm : 12.0 ?>mm;
@@ -93,8 +93,8 @@
 
 <body style="text-align: center;">
     <div class="no-print" style="margin: 15px; text-align: center;">
-        <button onclick="window.print()" style="padding: 8px 16px; font-size: 12px;">Print</button>
-        <button onclick="window.close()" style="padding: 8px 16px; font-size: 12px;">Close</button>
+        <button onclick="window.print()" style="padding: 8px 16px; font-size: 12px;"><?= lang('Products.print') ?></button>
+        <button onclick="window.close()" style="padding: 8px 16px; font-size: 12px;"><?= lang('Products.close') ?></button>
     </div>
 
     <?php foreach ($labels as $row): ?>
@@ -104,7 +104,7 @@
                 <div class="price"><?= esc($currencySymbol) ?> <?= number_format((float)$row['price'], 2) ?></div>
             <?php endif; ?>
             <?php $img = barcode_image($row['barcode'] ?? ''); ?>
-            <img class="barcode" src="<?= $img ?>" alt="barcode" />
+            <img class="barcode" src="<?= $img ?>" alt="<?= esc(lang('Products.barcode')) ?>" />
             <?php if (!empty($row['barcode'])): ?>
                 <div class="code"><?= esc($row['barcode']) ?></div>
             <?php endif; ?>

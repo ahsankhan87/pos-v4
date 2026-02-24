@@ -126,22 +126,22 @@ if ($employee_id && !empty($employees)) {
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Category-wise Sales Report</h2>
-                <p class="text-sm text-gray-500 mt-1">Range: <span class="font-medium text-gray-700"><?= esc($from) ?></span> to <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if ($employeeName): ?> · Employee: <span class="font-medium text-gray-700"><?= esc($employeeName) ?></span><?php endif; ?></p>
+                <h2 class="text-2xl font-bold text-gray-900"><?= lang('Reports.category_wise_sales_report') ?></h2>
+                <p class="text-sm text-gray-500 mt-1"><?= lang('Reports.range') ?>: <span class="font-medium text-gray-700"><?= esc($from) ?></span> <?= lang('Reports.to') ?> <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if ($employeeName): ?> · <?= lang('Reports.employee') ?>: <span class="font-medium text-gray-700"><?= esc($employeeName) ?></span><?php endif; ?></p>
             </div>
             <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 w-full lg:w-auto">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">To</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
                     <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Employee</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
                     <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
-                        <option value="">All Employees</option>
+                        <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                 <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
                         <?php endforeach;
@@ -149,9 +149,9 @@ if ($employee_id && !empty($employees)) {
                     </select>
                 </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft"><i class="fas fa-filter mr-2"></i> Apply</button>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft"><i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?></button>
                     <?php if (can('reports.category_sales')): ?>
-                        <a href="<?= site_url('sales/category-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft"><i class="fas fa-print mr-2"></i> Print</a>
+                        <a href="<?= site_url('sales/category-report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . ($employee_id ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft"><i class="fas fa-print mr-2"></i> <?= lang('Reports.print') ?></a>
                     <?php endif; ?>
                     <?php $empParam = $employee_id ? ('&employee_id=' . urlencode($employee_id)) : ''; ?>
                     <!-- <?php if (can('reports.export')): ?>
@@ -162,55 +162,55 @@ if ($employee_id && !empty($employees)) {
 
                 <div class="sm:col-span-2 md:col-span-6">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
-                        <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Today</button>
-                        <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Yesterday</button>
-                        <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">Last 7 days</button>
-                        <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600">This Month</button>
+                        <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.today') ?></button>
+                        <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.yesterday') ?></button>
+                        <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.last_7_days') ?></button>
+                        <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.this_month') ?></button>
                     </div>
                 </div>
             </form>
         </div>
         <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                <div class="text-xs text-blue-700">Total Sales</div>
+                <div class="text-xs text-blue-700"><?= lang('Reports.total_sales') ?></div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></div>
             </div>
             <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                <div class="text-xs text-emerald-700">Total Quantity</div>
+                <div class="text-xs text-emerald-700"><?= lang('Reports.total_quantity') ?></div>
                 <div class="mt-1 text-xl font-semibold text-emerald-900"><?= number_format($totalQty, 2) ?></div>
             </div>
             <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                <div class="text-xs text-amber-700">Sale Count</div>
+                <div class="text-xs text-amber-700"><?= lang('Reports.sales_count_col') ?></div>
                 <div class="mt-1 text-xl font-semibold text-amber-900"><?= number_format($totalSaleCount) ?></div>
             </div>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div class="text-xs text-gray-600">Categories</div>
+                <div class="text-xs text-gray-600"><?= lang('Reports.categories') ?></div>
                 <div class="mt-1 text-xl font-semibold text-gray-900"><?= number_format($rowCount) ?></div>
             </div>
         </div>
     </div>
     <div class="bg-white shadow rounded-lg print-container">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Totals by Category</h3>
-            <div class="text-sm text-gray-500">Showing <?= number_format($rowCount) ?> records</div>
+            <h3 class="text-lg font-semibold text-gray-900"><?= lang('Reports.totals_by_category') ?></h3>
+            <div class="text-sm text-gray-500"><?= lang('Reports.showing') ?> <?= number_format($rowCount) ?> <?= lang('Reports.records') ?></div>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sales Count</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.category') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.sales_count_col') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_quantity') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_sales') ?></th>
                         <?php if ($canProfit): ?>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.profit') ?></th>
                         <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     <?php foreach ($rows as $row): ?>
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-3 text-sm text-gray-900"><?= esc($row['category_name'] ?? 'Uncategorized') ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900"><?= esc($row['category_name'] ?? lang('Reports.uncategorized')) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((float)($row['total_qty'] ?? 0), 2) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>
@@ -222,7 +222,7 @@ if ($employee_id && !empty($employees)) {
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Totals</td>
+                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalSaleCount) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty, 2) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>

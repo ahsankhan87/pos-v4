@@ -2,7 +2,7 @@
 <?= $this->section('content') ?>
 <?php if (!isset($product) || !is_array($product)) : ?>
     <div class="max-w-4xl mx-auto p-4">
-        <div class="bg-red-50 text-red-800 border border-red-200 rounded p-3">Product not found.</div>
+        <div class="bg-red-50 text-red-800 border border-red-200 rounded p-3"><?= lang('Products.product_not_found') ?></div>
     </div>
 <?php else: ?>
     <?php $units = $units ?? [];
@@ -18,10 +18,10 @@
                         <div class="w-8 h-8 rounded bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow">
                             <i class="fas fa-pen"></i>
                         </div>
-                        <h1 class="text-lg font-bold text-gray-900">Edit Product</h1>
+                        <h1 class="text-lg font-bold text-gray-900"><?= lang('Products.edit_product') ?></h1>
                         <span class="text-xs text-gray-500 ml-2">#<?= (int)$product['id'] ?></span>
                     </div>
-                    <a href="<?= site_url('products') ?>" class="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back to products</a>
+                    <a href="<?= site_url('products') ?>" class="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"><i class="fas fa-arrow-left"></i> <?= lang('Products.back_to_products') ?></a>
                 </div>
             </div>
         </div>
@@ -30,7 +30,7 @@
             <!-- Alerts -->
             <?php if (session()->getFlashdata('error') || validation_list_errors()): ?>
                 <div class="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm">
-                    <div class="font-semibold mb-1 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Please fix the errors below</div>
+                    <div class="font-semibold mb-1 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> <?= lang('Products.please_fix_errors') ?></div>
                     <?= session()->getFlashdata('error') ?>
                     <?= validation_list_errors() ?>
                 </div>
@@ -44,33 +44,33 @@
                     <!-- Product Info -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
-                            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-blue-600"></i> Product Info</h3>
+                            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-blue-600"></i> <?= lang('Products.product_info') ?></h3>
                         </div>
                         <div class="p-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Type <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.type') ?> <span class="text-red-500">*</span></label>
                                     <?php $typeVal = old('type', $product['type'] ?? 'product'); ?>
                                     <select name="type" id="product-type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                                        <option value="product" <?= $typeVal === 'product' ? 'selected' : '' ?>>Product</option>
-                                        <option value="service" <?= $typeVal === 'service' ? 'selected' : '' ?>>Service</option>
+                                        <option value="product" <?= $typeVal === 'product' ? 'selected' : '' ?>><?= lang('Products.product_type') ?></option>
+                                        <option value="service" <?= $typeVal === 'service' ? 'selected' : '' ?>><?= lang('Products.service_type') ?></option>
                                     </select>
                                     <?php if (!empty($errors['type'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['type']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.name') ?> <span class="text-red-500">*</span></label>
                                     <input type="text" name="name" value="<?= esc(old('name', $product['name'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                                     <?php if (!empty($errors['name'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['name']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Code</label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.code') ?></label>
                                     <input type="text" name="code" value="<?= esc(old('code', $product['code'] ?? '')) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <?php if (!empty($errors['code'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['code']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Unit</label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.unit') ?></label>
                                     <select name="unit_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <option value="">Select unit</option>
+                                        <option value=""><?= lang('Products.select_unit') ?></option>
                                         <?php foreach ($units as $unit): ?>
                                             <option value="<?= esc($unit['id']) ?>" <?= (string) old('unit_id', $product['unit_id'] ?? '') === (string) $unit['id'] ? 'selected' : '' ?>><?= esc($unit['name']) ?><?= ! empty($unit['abbreviation']) ? ' (' . esc($unit['abbreviation']) . ')' : '' ?></option>
                                         <?php endforeach; ?>
@@ -78,9 +78,9 @@
                                     <?php if (!empty($errors['unit_id'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['unit_id']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Category</label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.category') ?></label>
                                     <select name="category_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <option value="">Select category</option>
+                                        <option value=""><?= lang('Products.select_category') ?></option>
                                         <?php if (!empty($categories)): foreach ($categories as $cat): ?>
                                                 <option value="<?= esc($cat['id']) ?>" <?= (string) old('category_id', $product['category_id'] ?? '') === (string) $cat['id'] ? 'selected' : '' ?>><?= esc($cat['name']) ?></option>
                                         <?php endforeach;
@@ -89,9 +89,9 @@
                                     <?php if (!empty($errors['category_id'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['category_id']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Supplier</label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.supplier') ?></label>
                                     <select name="supplier_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <option value="">Select supplier</option>
+                                        <option value=""><?= lang('Products.select_supplier') ?></option>
                                         <?php if (!empty($suppliers)): foreach ($suppliers as $sup): ?>
                                                 <option value="<?= esc($sup['id']) ?>" <?= (string) old('supplier_id', $product['supplier_id'] ?? '') === (string) $sup['id'] ? 'selected' : '' ?>><?= esc($sup['name']) ?></option>
                                         <?php endforeach;
@@ -100,13 +100,13 @@
                                     <?php if (!empty($errors['supplier_id'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['supplier_id']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Stock Alert</label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.stock_alert') ?></label>
                                     <input type="number" name="stock_alert" value="<?= esc(old('stock_alert', $product['stock_alert'])) ?>" class="product-only w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0" step="0.01" data-product-only>
                                     <?php if (!empty($errors['stock_alert'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['stock_alert']) ?></p><?php endif; ?>
                                 </div>
                                 <div class="md:col-span-2">
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Description</label>
-                                    <input type="text" name="description" value="<?= esc(old('description', $product['description'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Optional">
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.description') ?></label>
+                                    <input type="text" name="description" value="<?= esc(old('description', $product['description'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Products.optional')) ?>">
                                 </div>
                             </div>
                         </div>
@@ -115,12 +115,12 @@
                     <!-- Pricing & Inventory -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-200">
-                            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-calculator text-emerald-600"></i> Pricing & Inventory</h3>
+                            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-calculator text-emerald-600"></i> <?= lang('Products.pricing_inventory') ?></h3>
                         </div>
                         <div class="p-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Cost Price <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.cost_price') ?> <span class="text-red-500">*</span></label>
                                     <div class="relative">
                                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"><?= esc($currency) ?></span>
                                         <input type="text" inputmode="decimal" id="cost_price" name="cost_price" value="<?= esc(old('cost_price', $product['cost_price'])) ?>" class="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
@@ -128,7 +128,7 @@
                                     <?php if (!empty($errors['cost_price'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['cost_price']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Retail Price <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.retail_price') ?> <span class="text-red-500">*</span></label>
                                     <div class="relative">
                                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"><?= esc($currency) ?></span>
                                         <input type="text" inputmode="decimal" id="price" name="price" value="<?= esc(old('price', $product['price'])) ?>" class="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
@@ -136,14 +136,14 @@
                                     <?php if (!empty($errors['price'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['price']) ?></p><?php endif; ?>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Margin %</label>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.margin_percent') ?></label>
                                     <input type="text" inputmode="decimal" id="margin_percent" value="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Auto-calculates price from cost">
-                                    <p class="text-xs text-gray-500 mt-1">Change margin to auto-set price; editing price will recalc margin.</p>
+                                    <p class="text-xs text-gray-500 mt-1"><?= lang('Products.margin_help') ?></p>
                                 </div>
                                 <div>
-                                    <label for="carton_size" class="block text-xs font-semibold text-gray-700 mb-1">Pieces per Carton/Box</label>
+                                    <label for="carton_size" class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Products.pieces_per_carton') ?></label>
                                     <input type="number" step="0.01" name="carton_size" id="carton_size" value="<?= esc(old('carton_size', $product['carton_size'] ?? '')) ?>" class="product-only w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., 6 for 6 pieces per carton" data-product-only>
-                                    <p class="text-xs text-gray-500 mt-1">Leave empty if not sold in cartons.</p>
+                                    <p class="text-xs text-gray-500 mt-1"><?= lang('Products.carton_help') ?></p>
                                     <?php if (!empty($errors['carton_size'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['carton_size']) ?></p><?php endif; ?>
                                 </div>
                             </div>
@@ -157,15 +157,15 @@
                     <div class="product-only bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" data-product-only>
                         <div class="px-4 py-2 bg-gradient-to-r from-purple-50 to-fuchsia-50 border-b border-gray-200">
                             <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
-                                <i class="fas fa-barcode text-purple-600"></i> Barcode
-                                <span class="text-gray-500 text-xs" title="Scan or type an existing barcode. Leave blank to keep, or enter a new one. Click Generate to create one.">
+                                <i class="fas fa-barcode text-purple-600"></i> <?= lang('Products.barcode_section') ?>
+                                <span class="text-gray-500 text-xs" title="<?= esc(lang('Products.barcode_help_edit')) ?>">
                                     <i class="fas fa-circle-info"></i>
                                 </span>
                             </h3>
                         </div>
                         <div class="p-4 space-y-2">
                             <div class="flex gap-2">
-                                <input type="text" name="barcode" id="product-barcode" value="<?= esc(old('barcode', $product['barcode'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Leave blank to keep existing">
+                                <input type="text" name="barcode" id="product-barcode" value="<?= esc(old('barcode', $product['barcode'])) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Products.leave_blank_keep_existing')) ?>">
                             </div>
                             <?php if (!empty($errors['barcode'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['barcode']) ?></p>
                                 <?php $img = barcode_image($product['barcode'] ?? ''); ?>
@@ -173,7 +173,7 @@
                                     <img id="barcode-preview" src="<?= $img ?>" alt="Barcode preview" class="max-h-24 mx-auto" />
                                 </div>
                             <?php endif; ?>
-                            <p class="text-xs text-gray-500">Tip: You can scan or type a barcode. Leave blank to keep existing.</p>
+                            <p class="text-xs text-gray-500"><?= lang('Products.barcode_tip_edit') ?></p>
                         </div>
                     </div>
 
@@ -181,10 +181,10 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                         <div class="flex flex-col gap-2">
                             <button type="submit" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-md">
-                                <i class="fas fa-save mr-2"></i> Update Product
+                                <i class="fas fa-save mr-2"></i> <?= lang('Products.update_product') ?>
                             </button>
                             <input type="hidden" name="is_stock_tracked" id="is_stock_tracked_input" value="<?= $typeVal === 'service' ? '0' : '1' ?>">
-                            <a href="<?= site_url('products') ?>" class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2.5 rounded-lg font-semibold text-sm">Cancel</a>
+                            <a href="<?= site_url('products') ?>" class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2.5 rounded-lg font-semibold text-sm"><?= lang('Products.cancel') ?></a>
                         </div>
                     </div>
                 </div>
