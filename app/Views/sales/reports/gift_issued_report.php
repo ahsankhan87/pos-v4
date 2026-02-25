@@ -7,6 +7,16 @@ $employee_id = isset($employee_id) ? $employee_id : '';
 $category_name = isset($category_name) && $category_name !== '' ? $category_name : 'Gift';
 $currency = session()->get('currency_symbol') ?? '$';
 
+$printParams = [
+    'from' => $from,
+    'to' => $to,
+    'category_name' => $category_name,
+];
+if ($employee_id !== '') {
+    $printParams['employee_id'] = $employee_id;
+}
+$printUrl = site_url('sales/gift-issued-report/print?' . http_build_query($printParams));
+
 $totalQty = 0.0;
 $totalAmount = 0.0;
 $customerCount = 0;
@@ -51,6 +61,11 @@ foreach ((array)$rows as $row) {
                     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
+                    <?php if (can('reports.customer_sales')): ?>
+                        <a href="<?= esc($printUrl) ?>" target="_blank" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                            <i class="fas fa-print mr-2"></i> <?= lang('Reports.print') ?>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>

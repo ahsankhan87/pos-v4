@@ -45,6 +45,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('report/print', 'Reports\Sales::reportPrint', ['filter' => 'permission:reports.daily_sales']);
     $routes->get('product-report/print', 'Reports\Sales::productReportPrint', ['filter' => 'permission:reports.product_sales']);
     $routes->get('customer-report/print', 'Reports\Sales::customerReportPrint', ['filter' => 'permission:reports.customer_sales']);
+    $routes->get('gift-issued-report/print', 'Reports\Sales::giftIssuedReportPrint', ['filter' => 'permission:reports.customer_sales']);
     $routes->get('category-report/print', 'Reports\Sales::categoryReportPrint', ['filter' => 'permission:reports.category_sales']);
     $routes->get('unit-report/print', 'Reports\Sales::unitReportPrint', ['filter' => 'permission:reports.unit_sales']);
     $routes->get('inactive-customers-report/print', 'Reports\Sales::inactiveCustomersReportPrint', ['filter' => 'permission:reports.inactive_customers']);

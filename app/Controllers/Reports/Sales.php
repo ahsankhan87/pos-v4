@@ -1000,6 +1000,75 @@ class Sales extends BaseController
         ]);
     }
 
+    public function giftIssuedReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+        $categoryName = trim((string)($this->request->getGet('category_name') ?? 'Gift'));
+        if ($categoryName === '') {
+            $categoryName = 'Gift';
+        }
+
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+
+        $storeId = session('store_id');
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('pos_sale_items si')
+            ->select('COALESCE(c.name, "Walk-in Customer") as customer_name,
+                COALESCE(c.phone, "") as customer_phone,
+                COALESCE(c.area, "") as customer_area,
+                COALESCE(cat.name, "Uncategorized") as category_name,
+                DATE(MAX(s.created_at)) as issued_date,
+                COALESCE(GROUP_CONCAT(DISTINCT p.name ORDER BY p.name SEPARATOR ", "), "-") as gift_products,
+                COUNT(DISTINCT s.id) as invoice_count,
+                COALESCE(SUM(si.quantity), 0) as gift_qty,
+                COALESCE(SUM(si.subtotal), 0) as gift_amount')
+            ->join('pos_sales s', 's.id = si.sale_id')
+            ->join('pos_products p', 'p.id = si.product_id', 'left')
+            ->join('pos_categories cat', 'cat.id = p.category_id', 'left')
+            ->join('pos_customers c', 'c.id = s.customer_id', 'left')
+            ->where('s.store_id', $storeId)
+            ->where('s.status !=', 'draft')
+            ->where('s.created_at >=', $from . ' 00:00:00')
+            ->where('s.created_at <=', $to . ' 23:59:59')
+            ->where('LOWER(cat.name)', strtolower($categoryName))
+            ->groupBy('s.customer_id, c.name, c.phone, c.area, cat.id, cat.name')
+            ->orderBy('gift_qty', 'DESC');
+
+        if (!empty($employeeId)) {
+            $builder->where('s.employee_id', (int)$employeeId);
+        }
+
+        $rows = $builder->get()->getResultArray();
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $employeeName = lang('Reports.all_employees');
+        if (!empty($employeeId)) {
+            foreach ($employees as $emp) {
+                if ((int)($emp['id'] ?? 0) === (int)$employeeId) {
+                    $employeeName = (string)($emp['name'] ?? $employeeName);
+                    break;
+                }
+            }
+        }
+
+        return view('sales/reports/gift_issued_report_print', [
+            'title' => 'Gift Issued Report - Print',
+            'rows' => $rows,
+            'from' => $from,
+            'to' => $to,
+            'employee_id' => $employeeId,
+            'employeeName' => $employeeName,
+            'category_name' => $categoryName,
+        ]);
+    }
+
     public function categoryReport()
     {
         $dateParam = $this->request->getGet('date');
