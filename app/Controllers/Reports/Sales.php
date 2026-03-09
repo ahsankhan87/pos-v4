@@ -461,6 +461,196 @@ class Sales extends BaseController
         return $rows;
     }
 
+    protected function buildCategoryPivotReportData(string $from, string $to, $storeId, $employeeId = null): array
+    {
+        $db = \Config\Database::connect();
+
+        $salesBuilder = $db->table('pos_sale_items')
+            ->select('pos_sales.employee_id, TRIM(COALESCE(pos_customers.area, "")) as customer_area, pos_categories.id as category_id, pos_categories.name as category_name, SUM(pos_sale_items.subtotal) as gross_sales')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $salesBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $salesRows = $salesBuilder
+            ->groupBy('pos_sales.employee_id, customer_area, pos_categories.id')
+            ->get()
+            ->getResultArray();
+
+        $returnsBuilder = $db->table('pos_sales_returns')
+            ->select('pos_sales.employee_id, TRIM(COALESCE(pos_customers.area, "")) as customer_area, pos_categories.id as category_id, pos_categories.name as category_name, SUM(pos_sales_returns.return_amount) as amount_returned')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
+            ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales_returns.created_at <=', $to . ' 23:59:59')
+            ->where('pos_sales_returns.store_id', $storeId);
+        if (!empty($employeeId)) {
+            $returnsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $returnRows = $returnsBuilder
+            ->groupBy('pos_sales.employee_id, customer_area, pos_categories.id')
+            ->get()
+            ->getResultArray();
+
+        $salesCountBuilder = $db->table('pos_sales')
+            ->select('pos_sales.employee_id, TRIM(COALESCE(pos_customers.area, "")) as customer_area, COUNT(*) as sale_count')
+            ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
+            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59');
+        if (!empty($employeeId)) {
+            $salesCountBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $salesCountRows = $salesCountBuilder
+            ->groupBy('pos_sales.employee_id, customer_area')
+            ->get()
+            ->getResultArray();
+
+        $productCountBuilder = $db->table('pos_sale_items')
+            ->select('pos_sales.employee_id, TRIM(COALESCE(pos_customers.area, "")) as customer_area, COUNT(DISTINCT pos_sale_items.product_id) as product_count')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id')
+            ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
+            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.created_at >=', $from . ' 00:00:00')
+            ->where('pos_sales.created_at <=', $to . ' 23:59:59');
+        if (!empty($employeeId)) {
+            $productCountBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+        $productCountRows = $productCountBuilder
+            ->groupBy('pos_sales.employee_id, customer_area')
+            ->get()
+            ->getResultArray();
+
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->findAll();
+        $employeeNames = [];
+
+        foreach ($employees as $emp) {
+            $empId = (int)($emp['id'] ?? 0);
+            $employeeNames[$empId] = (string)($emp['name'] ?? '');
+        }
+
+        $salesCountByRow = [];
+        foreach ($salesCountRows as $r) {
+            $empId = (int)($r['employee_id'] ?? 0);
+            $customerArea = trim((string)($r['customer_area'] ?? ''));
+            $rowKey = $empId . '|' . $customerArea;
+            $salesCountByRow[$rowKey] = (int)($r['sale_count'] ?? 0);
+        }
+
+        $productCountByRow = [];
+        foreach ($productCountRows as $r) {
+            $empId = (int)($r['employee_id'] ?? 0);
+            $customerArea = trim((string)($r['customer_area'] ?? ''));
+            $rowKey = $empId . '|' . $customerArea;
+            $productCountByRow[$rowKey] = (int)($r['product_count'] ?? 0);
+        }
+
+        $rowsByEmployee = [];
+        $categoryMeta = [];
+        $categoryTotals = [];
+
+        foreach ($salesRows as $r) {
+            $empId = (int)($r['employee_id'] ?? 0);
+            $customerArea = trim((string)($r['customer_area'] ?? ''));
+            $rowKey = $empId . '|' . $customerArea;
+            $catId = (int)($r['category_id'] ?? 0);
+            $catName = (string)($r['category_name'] ?? lang('Reports.uncategorized'));
+            $amount = (float)($r['gross_sales'] ?? 0);
+
+            if (!isset($rowsByEmployee[$rowKey])) {
+                $rowsByEmployee[$rowKey] = [
+                    'employee_id' => $empId,
+                    'employee_name' => $employeeNames[$empId] ?? lang('Reports.unassigned'),
+                    'area_route' => ($customerArea !== '' ? $customerArea : '-'),
+                    'sale_count' => (int)($salesCountByRow[$rowKey] ?? 0),
+                    'product_count' => (int)($productCountByRow[$rowKey] ?? 0),
+                    'categories' => [],
+                    'total_sales' => 0.0,
+                ];
+            }
+
+            $rowsByEmployee[$rowKey]['categories'][$catId] = ($rowsByEmployee[$rowKey]['categories'][$catId] ?? 0.0) + $amount;
+            $rowsByEmployee[$rowKey]['total_sales'] += $amount;
+
+            $categoryMeta[$catId] = ['id' => $catId, 'name' => $catName];
+            $categoryTotals[$catId] = ($categoryTotals[$catId] ?? 0.0) + $amount;
+        }
+
+        foreach ($returnRows as $r) {
+            $empId = (int)($r['employee_id'] ?? 0);
+            $customerArea = trim((string)($r['customer_area'] ?? ''));
+            $rowKey = $empId . '|' . $customerArea;
+            $catId = (int)($r['category_id'] ?? 0);
+            $catName = (string)($r['category_name'] ?? lang('Reports.uncategorized'));
+            $amountReturned = (float)($r['amount_returned'] ?? 0);
+
+            if (!isset($rowsByEmployee[$rowKey])) {
+                $rowsByEmployee[$rowKey] = [
+                    'employee_id' => $empId,
+                    'employee_name' => $employeeNames[$empId] ?? lang('Reports.unassigned'),
+                    'area_route' => ($customerArea !== '' ? $customerArea : '-'),
+                    'sale_count' => (int)($salesCountByRow[$rowKey] ?? 0),
+                    'product_count' => (int)($productCountByRow[$rowKey] ?? 0),
+                    'categories' => [],
+                    'total_sales' => 0.0,
+                ];
+            }
+
+            $rowsByEmployee[$rowKey]['categories'][$catId] = ($rowsByEmployee[$rowKey]['categories'][$catId] ?? 0.0) - $amountReturned;
+            $rowsByEmployee[$rowKey]['total_sales'] -= $amountReturned;
+
+            $categoryMeta[$catId] = ['id' => $catId, 'name' => $catName];
+            $categoryTotals[$catId] = ($categoryTotals[$catId] ?? 0.0) - $amountReturned;
+        }
+
+        $categories = array_values($categoryMeta);
+        usort($categories, static function ($a, $b) use ($categoryTotals) {
+            $av = (float)($categoryTotals[(int)$a['id']] ?? 0);
+            $bv = (float)($categoryTotals[(int)$b['id']] ?? 0);
+            if ($av === $bv) {
+                return strcmp((string)$a['name'], (string)$b['name']);
+            }
+            return ($av < $bv) ? 1 : -1;
+        });
+
+        $rows = array_values($rowsByEmployee);
+        usort($rows, static function ($a, $b) {
+            $av = (float)($a['total_sales'] ?? 0);
+            $bv = (float)($b['total_sales'] ?? 0);
+            if ($av === $bv) {
+                return strcmp((string)$a['employee_name'], (string)$b['employee_name']);
+            }
+            return ($av < $bv) ? 1 : -1;
+        });
+
+        $grandSaleCount = 0;
+        $grandProductCount = 0;
+        $grandTotalSales = 0.0;
+        foreach ($rows as $r) {
+            $grandSaleCount += (int)($r['sale_count'] ?? 0);
+            $grandProductCount += (int)($r['product_count'] ?? 0);
+            $grandTotalSales += (float)($r['total_sales'] ?? 0);
+        }
+
+        return [
+            'categories' => $categories,
+            'rows' => $rows,
+            'categoryTotals' => $categoryTotals,
+            'grand' => [
+                'sale_count' => $grandSaleCount,
+                'product_count' => $grandProductCount,
+                'total_sales' => $grandTotalSales,
+            ],
+        ];
+    }
+
     protected function applyReturnsToSaleRows(array $saleRows, $storeId): array
     {
         if (empty($saleRows)) {
@@ -1119,6 +1309,76 @@ class Sales extends BaseController
             'employees' => $employees,
             'employee_id' => $employeeId,
             'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
+        ]);
+    }
+
+    public function categoryPivotReport()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $storeId = session('store_id');
+        $pivot = $this->buildCategoryPivotReportData($from, $to, $storeId, $employeeId);
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+
+        return view('sales/reports/category_pivot_report', [
+            'title' => 'Category Pivot Report',
+            'from' => $from,
+            'to' => $to,
+            'employee_id' => $employeeId,
+            'employees' => $employees,
+            'categories' => $pivot['categories'],
+            'rows' => $pivot['rows'],
+            'categoryTotals' => $pivot['categoryTotals'],
+            'grand' => $pivot['grand'],
+        ]);
+    }
+
+    public function categoryPivotReportPrint()
+    {
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        $employeeId = $this->request->getGet('employee_id');
+
+        if ($from > $to) {
+            $temp = $from;
+            $from = $to;
+            $to = $temp;
+        }
+
+        $storeId = session('store_id');
+        $pivot = $this->buildCategoryPivotReportData($from, $to, $storeId, $employeeId);
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+
+        $employeeName = lang('Reports.all_employees');
+        if (!empty($employeeId)) {
+            foreach ($employees as $emp) {
+                if ((int)($emp['id'] ?? 0) === (int)$employeeId) {
+                    $employeeName = (string)($emp['name'] ?? $employeeName);
+                    break;
+                }
+            }
+        }
+
+        return view('sales/reports/category_pivot_report_print', [
+            'title' => 'Category Pivot Report - Print',
+            'from' => $from,
+            'to' => $to,
+            'employee_id' => $employeeId,
+            'employeeName' => $employeeName,
+            'categories' => $pivot['categories'],
+            'rows' => $pivot['rows'],
+            'categoryTotals' => $pivot['categoryTotals'],
+            'grand' => $pivot['grand'],
         ]);
     }
 

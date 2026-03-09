@@ -30,6 +30,7 @@ return [
     'customer_sales' => 'Customer Sales',
     'gift_issued_report' => 'Gift Issued Report',
     'category_sales' => 'Category Sales',
+    'category_pivot_sales' => 'Category Pivot Sales',
     'unit_sales' => 'Unit Sales',
     'employee_sales' => 'Employee Sales',
     'profit_loss' => 'Profit & Loss',

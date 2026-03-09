@@ -1,46 +1,51 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4"><?= lang('Reports.employee_commission_report') ?></h1>
+<div class="max-w-7xl mx-auto">
+    <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-6 py-4 border-b border-gray-100 space-y-3">
+            <div class="flex flex-col gap-0.5 sm:flex-row sm:items-end sm:justify-between">
+                <h1 class="text-xl font-bold text-gray-900\"><?= lang('Reports.employee_commission_report') ?></h1>
+                <p class="text-sm text-gray-500\"><?= lang('Reports.range') ?>: <span class="font-medium text-gray-700\"><?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?></span> <?= lang('Reports.to') ?> <span class="font-medium text-gray-700\"><?= esc($to ?? date('Y-m-d')) ?></span></p>
+            </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-        <form action="<?= site_url('sales/employee-commission-report') ?>" method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
-            <div class="md:col-span-2">
-                <label for="employee_id" class="block text-sm font-medium text-gray-700"><?= lang('Reports.select_employee') ?>:</label>
-                <select name="employee_id" id="employee_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                    <option value=""><?= lang('Reports.all_employees') ?></option>
-                    <?php foreach ($employees as $employee): ?>
-                        <option value="<?= $employee['id'] ?>" <?= (isset($selectedEmployeeId) && (string)$selectedEmployeeId === (string)$employee['id']) ? 'selected' : '' ?>>
-                            <?= esc($employee['name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div>
-                <label for="from" class="block text-sm font-medium text-gray-700"><?= lang('Reports.from') ?>:</label>
-                <input type="date" name="from" id="from" value="<?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-            </div>
-            <div>
-                <label for="to" class="block text-sm font-medium text-gray-700"><?= lang('Reports.to') ?>:</label>
-                <input type="date" name="to" id="to" value="<?= esc($to ?? date('Y-m-d')) ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-            </div>
-            <div class="md:col-span-2 flex flex-wrap gap-2">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"><?= lang('Reports.apply') ?></button>
-                <button type="button" onclick="window.print()" class="px-4 py-2 bg-gray-700 text-white rounded-md"><?= lang('Reports.print') ?></button>
-                <?php if (can('reports.export')): ?>
-                    <a href="<?= site_url('sales/employee-commission-report/export_excel?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="px-4 py-2 bg-green-600 text-white rounded-md"><?= lang('Reports.export_excel') ?></a>
-                    <a href="<?= site_url('sales/employee-commission-report/export_pdf?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="px-4 py-2 bg-red-600 text-white rounded-md"><?= lang('Reports.export_pdf') ?></a>
-                <?php endif; ?>
-            </div>
-            <div class="md:col-span-6 flex flex-wrap gap-2 text-sm text-gray-600">
-                <button name="from" value="<?= date('Y-m-d') ?>" formaction="<?= site_url('sales/employee-commission-report') ?>" class="px-3 py-1 border rounded hover:bg-gray-50"><?= lang('Reports.today') ?></button>
-                <button name="from" value="<?= date('Y-m-d', strtotime('-1 day')) ?>" formaction="<?= site_url('sales/employee-commission-report') ?>" class="px-3 py-1 border rounded hover:bg-gray-50"><?= lang('Reports.yesterday') ?></button>
-                <button type="button" class="px-3 py-1 border rounded hover:bg-gray-50" onclick="quickRange(7)"><?= lang('Reports.last_7_days') ?></button>
-                <button type="button" class="px-3 py-1 border rounded hover:bg-gray-50" onclick="quickRange(30)"><?= lang('Reports.last_30_days') ?></button>
-                <button type="button" class="px-3 py-1 border rounded hover:bg-gray-50" onclick="thisMonth()"><?= lang('Reports.this_month') ?></button>
-            </div>
-        </form>
+            <form action="<?= site_url('sales/employee-commission-report') ?>" method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                <div class="md:col-span-3">
+                    <label for="employee_id" class="block text-xs font-medium text-gray-500 mb-1\"><?= lang('Reports.select_employee') ?></label>
+                    <select name="employee_id" id="employee_id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+                        <option value=""><?= lang('Reports.all_employees') ?></option>
+                        <?php foreach ($employees as $employee): ?>
+                            <option value="<?= $employee['id'] ?>" <?= (isset($selectedEmployeeId) && (string)$selectedEmployeeId === (string)$employee['id']) ? 'selected' : '' ?>>
+                                <?= esc($employee['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="from" class="block text-xs font-medium text-gray-500 mb-1\"><?= lang('Reports.from') ?></label>
+                    <input type="date" name="from" id="from" value="<?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?>" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="to" class="block text-xs font-medium text-gray-500 mb-1\"><?= lang('Reports.to') ?></label>
+                    <input type="date" name="to" id="to" value="<?= esc($to ?? date('Y-m-d')) ?>" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+                </div>
+                <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
+                    <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2\"><?= lang('Reports.apply') ?></button>
+                    <button type="button" onclick="window.print()" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white\"><?= lang('Reports.print') ?></button>
+                    <?php if (can('reports.export')): ?>
+                        <a href="<?= site_url('sales/employee-commission-report/export_excel?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-green-600 text-sm text-white\"><?= lang('Reports.export_excel') ?></a>
+                        <a href="<?= site_url('sales/employee-commission-report/export_pdf?from=' . urlencode($from ?? date('Y-m-d', strtotime('-30 days'))) . '&to=' . urlencode($to ?? date('Y-m-d')) . (empty($selectedEmployeeId) ? '' : '&employee_id=' . urlencode($selectedEmployeeId))) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-red-600 text-sm text-white\"><?= lang('Reports.export_pdf') ?></a>
+                    <?php endif; ?>
+                </div>
+                <div class="md:col-span-12 pt-0.5 flex flex-wrap gap-2 text-xs text-gray-600">
+                    <button name="from" value="<?= date('Y-m-d') ?>" formaction="<?= site_url('sales/employee-commission-report') ?>" class="px-3 py-1 border rounded hover:bg-gray-50"><?= lang('Reports.today') ?></button>
+                    <button name="from" value="<?= date('Y-m-d', strtotime('-1 day')) ?>" formaction="<?= site_url('sales/employee-commission-report') ?>" class="px-3 py-1 border rounded hover:bg-gray-50"><?= lang('Reports.yesterday') ?></button>
+                    <button type="button" class="px-3 py-1 border rounded hover:bg-gray-50" onclick="quickRange(7)"><?= lang('Reports.last_7_days') ?></button>
+                    <button type="button" class="px-3 py-1 border rounded hover:bg-gray-50" onclick="quickRange(30)"><?= lang('Reports.last_30_days') ?></button>
+                    <button type="button" class="px-3 py-1 border rounded hover:bg-gray-50" onclick="thisMonth()"><?= lang('Reports.this_month') ?></button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <?php if (!empty($reportData)): ?>

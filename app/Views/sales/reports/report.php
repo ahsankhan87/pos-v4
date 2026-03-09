@@ -116,9 +116,9 @@ function money_fmt($v)
 <div class="max-w-7xl mx-auto print-root">
     <!-- Header + Filters -->
     <div class="bg-white shadow rounded-lg mb-6">
-        <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900"><?= lang('Reports.sales_report') ?></h2>
+        <div class="px-6 py-4 border-b border-gray-100 space-y-3">
+            <div class="flex flex-col gap-0.5 sm:flex-row sm:items-end sm:justify-between">
+                <h2 class="text-xl font-bold text-gray-900"><?= lang('Reports.sales_report') ?></h2>
                 <p class="text-sm text-gray-500 mt-1"><?= lang('Reports.range') ?>: <span class="font-medium text-gray-700"><?= esc($from) ?></span> <?= lang('Reports.to') ?> <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · <?= lang('Reports.employee') ?>: <span class="font-medium text-gray-700">
                             <?php
                                                                                                                                                                                                                                                     $selectedEmp = null;
@@ -131,16 +131,16 @@ function money_fmt($v)
                                                                                                                                                                                                                                                     echo esc($selectedEmp['name'] ?? lang('Reports.unknown'));
                             ?></span><?php endif; ?></p>
             </div>
-            <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 w-full lg:w-auto">
-                <div>
+            <form method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
                     <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
-                <div>
+                <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
                     <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
                         <option value=""><?= lang('Reports.all') ?></option>
@@ -149,15 +149,15 @@ function money_fmt($v)
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="flex items-end gap-2 flex">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft">
+                <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
+                    <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
 
                     <?php if (canAny(['reports.daily_sales', 'reports.sale_items', 'reports.expense_report', 'reports.expense_category_report', 'reports.tax_report', 'reports.inactive_customers'])): ?>
                         <!-- Reports Dropdown (Alpine.js) -->
                         <div class="relative inline-block" x-data="{ open: false }">
-                            <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 shadow-soft">
+                            <button type="button" @click="open = !open" class="inline-flex h-9 items-center gap-2 px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800 shadow-soft">
                                 <i class="fas fa-chart-line"></i>
                                 <span><?= lang('Reports.reports') ?></span>
                                 <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
@@ -215,7 +215,7 @@ function money_fmt($v)
                         </div>
 
                         <?php if (can('reports.sale_items')): ?>
-                            <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-soft">
+                            <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-indigo-600 text-sm text-white hover:bg-indigo-700 shadow-soft">
                                 <i class="fas fa-list mr-2"></i> <?= lang('Reports.items') ?>
                             </a>
                         <?php endif; ?>
@@ -233,7 +233,7 @@ function money_fmt($v)
                         </a>
                     <?php endif; ?>
                 </div> -->
-                <div class="sm:col-span-2 md:col-span-5">
+                <div class="md:col-span-12 pt-0.5">
                     <div class="flex flex-wrap gap-2 text-xs no-print">
                         <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.today') ?></button>
                         <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= lang('Reports.yesterday') ?></button>

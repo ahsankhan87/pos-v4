@@ -30,6 +30,7 @@ return [
     'customer_sales' => 'مبيعات العملاء',
     'gift_issued_report' => 'تقرير الهدايا المصدرة',
     'category_sales' => 'مبيعات الفئات',
+    'category_pivot_sales' => 'جدول مبيعات الفئات',
     'unit_sales' => 'مبيعات الوحدات',
     'employee_sales' => 'مبيعات الموظفين',
     'profit_loss' => 'الأرباح والخسائر',

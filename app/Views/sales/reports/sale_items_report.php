@@ -27,9 +27,9 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
 ?>
 <div class="max-w-7xl mx-auto">
     <div class="bg-white shadow rounded-lg mb-6">
-        <div class="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900"><?= esc(lang('Reports.sale_items_report')) ?></h2>
+        <div class="px-6 py-4 border-b border-gray-100 space-y-3">
+            <div class="flex flex-col gap-0.5 sm:flex-row sm:items-end sm:justify-between">
+                <h2 class="text-xl font-bold text-gray-900"><?= esc(lang('Reports.sale_items_report')) ?></h2>
                 <p class="text-sm text-gray-500 mt-1"><?= esc(lang('Reports.range')) ?>: <span class="font-medium text-gray-700"><?= esc($from) ?></span> <?= esc(lang('Reports.to')) ?> <span class="font-medium text-gray-700"><?= esc($to) ?></span><?php if (!empty($employee_id)): ?> · <?= esc(lang('Reports.employee')) ?>: <span class="font-medium text-gray-700"><?php
                                                                                                                                                                                                                                                                                                                                                                             $sel = null;
                                                                                                                                                                                                                                                                                                                                                                             foreach (($employees ?? []) as $e) {
@@ -40,16 +40,16 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                                                                                                                                                                                                                                                                                                                                                                             }
                                                                                                                                                                                                                                                                                                                                                                             echo esc($sel['name'] ?? lang('Reports.unknown')); ?></span><?php endif; ?></p>
             </div>
-            <form method="get" class="no-print grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 w-full lg:w-auto">
-                <div>
+            <form method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.from')) ?></label>
                     <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.to')) ?></label>
                     <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
-                <div>
+                <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.employee')) ?></label>
                     <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
                         <option value=""><?= esc(lang('Reports.all')) ?></option>
@@ -58,11 +58,11 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="flex items-end gap-2">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-soft"><i class="fas fa-filter mr-2"></i> <?= esc(lang('Reports.apply')) ?></button>
-                    <a href="<?= site_url('sales/report?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? '&employee_id=' . urlencode($employee_id) : '')) ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 shadow-soft"><i class="fas fa-arrow-left mr-2"></i> <?= esc(lang('Reports.back')) ?></a>
+                <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
+                    <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 shadow-soft"><i class="fas fa-filter mr-2"></i> <?= esc(lang('Reports.apply')) ?></button>
+                    <a href="<?= site_url('sales/report?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? '&employee_id=' . urlencode($employee_id) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-200 text-sm text-gray-800 hover:bg-gray-300 shadow-soft"><i class="fas fa-arrow-left mr-2"></i> <?= esc(lang('Reports.back')) ?></a>
                 </div>
-                <div class="sm:col-span-2 md:col-span-5 flex flex-wrap gap-2 text-xs">
+                <div class="md:col-span-12 pt-0.5 flex flex-wrap gap-2 text-xs">
                     <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= esc(lang('Reports.today')) ?></button>
                     <button type="button" data-range="yesterday" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= esc(lang('Reports.yesterday')) ?></button>
                     <button type="button" data-range="last7" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= esc(lang('Reports.last_7_days')) ?></button>

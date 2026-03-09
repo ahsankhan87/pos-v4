@@ -314,6 +314,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                                         <a href="<?= site_url('sales/category-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                             <i class="fas fa-tags mr-2"></i> <?= lang('Navigation.category_sales') ?>
                                                         </a>
+                                                        <a href="<?= site_url('sales/category-pivot-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                            <i class="fas fa-table mr-2"></i> <?= lang('Navigation.category_pivot_sales') ?>
+                                                        </a>
                                                         <a href="<?= site_url('sales/unit-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                             <i class="fas fa-ruler mr-2"></i> <?= lang('Navigation.unit_sales') ?>
                                                         </a>
@@ -592,6 +595,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         <a href="<?= site_url('sales/product-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-box mr-2"></i> <?= lang('Navigation.product_sales') ?></a>
                                         <a href="<?= site_url('sales/customer-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-user-tie mr-2"></i> <?= lang('Navigation.customer_sales') ?></a>
                                         <a href="<?= site_url('sales/category-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-tags mr-2"></i> <?= lang('Navigation.category_sales') ?></a>
+                                        <a href="<?= site_url('sales/category-pivot-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-table mr-2"></i> <?= lang('Navigation.category_pivot_sales') ?></a>
                                         <a href="<?= site_url('sales/unit-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-ruler mr-2"></i> <?= lang('Navigation.unit_sales') ?></a>
                                         <a href="<?= site_url('sales/gift-issued-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center"><i class="fas fa-gift mr-2"></i> <?= lang('Navigation.gift_issued_report') ?></a>
                                         <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-user-friends mr-2"></i> <?= lang('Navigation.employee_sales') ?></a>
