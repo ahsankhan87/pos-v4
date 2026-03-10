@@ -1,3 +1,8 @@
+<?php
+$categories = $categories ?? [];
+$useAutoColumnWidthInPrint = count($categories) > 14;
+$hideAreaInPrint = count($categories) > 14;
+?>
 <!DOCTYPE html>
 <html lang="<?= esc(current_locale()) ?>" dir="<?= esc(locale_direction()) ?>">
 
@@ -94,7 +99,8 @@
             }
 
             body {
-                margin: 5mm;
+                margin: 4mm;
+                font-size: 10px;
             }
 
             .table-wrap {
@@ -103,23 +109,71 @@
 
             table {
                 table-layout: fixed;
+                width: 100%;
+            }
+
+            table.print-auto-columns {
+                table-layout: auto;
+                width: 100%;
             }
 
             th,
             td {
-                font-size: 8px;
-                padding: 2px 3px;
+                font-size: 10px;
+                padding: 3px 4px;
+                line-height: 1.2;
                 white-space: normal;
                 word-break: break-word;
             }
 
+            table.print-auto-columns th,
+            table.print-auto-columns td {
+                white-space: normal;
+                word-break: break-word;
+            }
+
+            table.print-auto-columns th.cat-col,
+            table.print-auto-columns td.cat-cell,
+            table.print-auto-columns th.cat-total-cell {
+                white-space: nowrap;
+                word-break: normal;
+            }
+
+            h2 {
+                margin: 0 0 3px 0;
+                font-size: 13px;
+                line-height: 1.1;
+            }
+
+            p {
+                margin: 1px 0;
+                font-size: 9px;
+                line-height: 1.1;
+            }
+
+            table.print-auto-columns th.col-sno,
+            table.print-auto-columns td.col-sno,
+            table.print-auto-columns th.col-emp,
+            table.print-auto-columns td.col-emp,
+            table.print-auto-columns th.col-area,
+            table.print-auto-columns td.col-area,
+            table.print-auto-columns th.col-count,
+            table.print-auto-columns td.col-count,
+            table.print-auto-columns th.col-total,
+            table.print-auto-columns td.col-total,
+            table.print-auto-columns th.cat-col,
+            table.print-auto-columns td.cat-cell,
+            table.print-auto-columns th.cat-total-cell {
+                width: auto !important;
+            }
+
             thead th.cat-col {
-                writing-mode: vertical-rl;
-                transform: rotate(180deg);
-                text-align: left;
-                vertical-align: bottom;
-                line-height: 1.05;
-                padding: 2px 1px;
+                writing-mode: horizontal-tb;
+                transform: none;
+                text-align: right;
+                vertical-align: middle;
+                line-height: 1.1;
+                padding: 1px 2px;
             }
 
             td.cat-cell {
@@ -132,11 +186,9 @@
 <body>
     <?php
     $currency = session()->get('currency_symbol') ?? '$';
-    $categories = $categories ?? [];
     $rows = $rows ?? [];
     $categoryTotals = $categoryTotals ?? [];
     $grand = $grand ?? ['sale_count' => 0, 'product_count' => 0, 'total_sales' => 0];
-    $hideAreaInPrint = count($categories) > 14;
 
     if (!function_exists('cat_abbr')) {
         function cat_abbr($name)
@@ -186,7 +238,7 @@
     <p><?= lang('Reports.period') ?>: <?= esc($from) ?> <?= lang('Reports.to') ?> <?= esc($to) ?></p>
 
     <div class="table-wrap">
-        <table>
+        <table class="<?= $useAutoColumnWidthInPrint ? 'print-auto-columns' : 'print-fit-page' ?>">
             <thead>
                 <tr>
                     <th class="col-sno"><?= lang('Reports.s_no') ?></th>
