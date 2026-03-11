@@ -12,7 +12,7 @@
             <form action="<?= site_url('sales/employee-commission-report') ?>" method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                 <div class="md:col-span-3">
                     <label for="employee_id" class="block text-xs font-medium text-gray-500 mb-1\"><?= lang('Reports.select_employee') ?></label>
-                    <select name="employee_id" id="employee_id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+                    <select name="employee_id" id="employee_id" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
                         <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php foreach ($employees as $employee): ?>
                             <option value="<?= $employee['id'] ?>" <?= (isset($selectedEmployeeId) && (string)$selectedEmployeeId === (string)$employee['id']) ? 'selected' : '' ?>>
@@ -23,11 +23,11 @@
                 </div>
                 <div class="md:col-span-2">
                     <label for="from" class="block text-xs font-medium text-gray-500 mb-1\"><?= lang('Reports.from') ?></label>
-                    <input type="date" name="from" id="from" value="<?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?>" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+                    <input type="date" name="from" id="from" value="<?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?>" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
                 </div>
                 <div class="md:col-span-2">
                     <label for="to" class="block text-xs font-medium text-gray-500 mb-1\"><?= lang('Reports.to') ?></label>
-                    <input type="date" name="to" id="to" value="<?= esc($to ?? date('Y-m-d')) ?>" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+                    <input type="date" name="to" id="to" value="<?= esc($to ?? date('Y-m-d')) ?>" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
                 </div>
                 <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
                     <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2\"><?= lang('Reports.apply') ?></button>

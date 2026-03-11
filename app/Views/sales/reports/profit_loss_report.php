@@ -189,12 +189,12 @@ if (!empty($employee_id) && !empty($employees)) {
                         <div>
                             <label class="block text-xs font-medium text-blue-100 mb-1"><?= esc(lang('Reports.from_date')) ?></label>
                             <input type="date" name="from" value="<?= esc($from) ?>"
-                                class="w-full border-white/20 bg-white/10 text-white placeholder-blue-200 rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
+                                class="w-full border border-white/20 bg-white/10 text-white placeholder-blue-200 rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-blue-100 mb-1"><?= esc(lang('Reports.to_date')) ?></label>
                             <input type="date" name="to" value="<?= esc($to) ?>"
-                                class="w-full border-white/20 bg-white/10 text-white placeholder-blue-200 rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
+                                class="w-full border border-white/20 bg-white/10 text-white placeholder-blue-200 rounded-md shadow-sm focus:ring-white focus:border-white px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-blue-100 mb-1"><?= esc(lang('Reports.employee')) ?></label>

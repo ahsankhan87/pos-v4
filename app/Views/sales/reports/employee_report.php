@@ -8,7 +8,7 @@
         <form action="<?= site_url('sales/employee-report') ?>" method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700"><?= lang('Reports.employee') ?></label>
-                <select name="employee_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select name="employee_id" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                     <option value=""><?= lang('Reports.all_employees') ?></option>
                     <?php foreach (($employees ?? []) as $emp): ?>
                         <option value="<?= $emp['id'] ?>" <?= (!empty($selectedEmployeeId) && (string)$selectedEmployeeId === (string)$emp['id']) ? 'selected' : '' ?>>
@@ -19,11 +19,11 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700"><?= lang('Reports.from') ?></label>
-                <input type="date" name="from" value="<?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="date" name="from" value="<?= esc($from ?? date('Y-m-d', strtotime('-30 days'))) ?>" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700"><?= lang('Reports.to') ?></label>
-                <input type="date" name="to" value="<?= esc($to ?? date('Y-m-d')) ?>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="date" name="to" value="<?= esc($to ?? date('Y-m-d')) ?>" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
             </div>
             <div class="md:col-span-2 flex gap-2">
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"><?= lang('Reports.apply') ?></button>

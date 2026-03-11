@@ -117,6 +117,9 @@
 
     <h2><?= lang('Reports.product_wise_sales_report') ?></h2>
     <p><?= lang('Reports.employee') ?>: <?= esc($employeeName ?? lang('Reports.employee_all')) ?></p>
+    <?php if (!empty($customerName)): ?>
+        <p><?= lang('Reports.customer') ?>: <?= esc($customerName) ?></p>
+    <?php endif; ?>
     <p><?= lang('Reports.period') ?>: <?= esc($from) ?> <?= lang('Reports.to') ?> <?= esc($to) ?></p>
     <?php if ($q !== ''): ?>
         <p><?= lang('Reports.search') ?>: <?= esc($q) ?></p>

@@ -43,15 +43,15 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
             <form method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.from')) ?></label>
-                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.to')) ?></label>
-                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.employee')) ?></label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
+                    <select name="employee_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
                         <option value=""><?= esc(lang('Reports.all')) ?></option>
                         <?php foreach (($employees ?? []) as $emp): ?>
                             <option value="<?= (int)$emp['id'] ?>" <?= !empty($employee_id) && (int)$employee_id === (int)$emp['id'] ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
@@ -115,7 +115,7 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                         <?php foreach ($items as $it): ?>
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2 text-sm text-gray-900">#<?= (int)$sid ?></td>
-                                <td class="px-4 py-2 text-sm"><a href="<?= site_url('receipts/generate/' . (int)$sid) ?>" target="_blank" class="text-blue-600 hover:underline"><?= esc($it['invoice_no'] ?? '—') ?></a></td>
+                                <td class="px-4 py-2 text-sm"><a href="<?= site_url('receipts/generate/' . (int)$sid) ?>" target="_blank" class="text-blue-600 hover:underline"><?= esc($it['invoice_no'] ?? '€”') ?></a></td>
                                 <td class="px-4 py-2 text-sm text-gray-700"><?= esc($it['customer_name'] ?? lang('Reports.unknown')) ?></td>
                                 <td class="px-4 py-2">
                                     <div class="text-sm font-semibold text-gray-900"><?= esc($it['product_name']) ?></div>
@@ -124,7 +124,7 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                                 <td class="px-4 py-2 text-center text-sm text-gray-700"><?= number_format($it['quantity'], 2) ?></td>
                                 <td class="px-4 py-2 text-right text-sm text-red-600"><?= esc($currency) . ' ' . mf($it['cost_amount']) ?></td>
                                 <td class="px-4 py-2 text-right text-sm text-gray-700"><?= esc($currency) . ' ' . mf($it['unit_price']) ?></td>
-                                <td class="px-4 py-2 text-right text-sm text-red-600"><?= $it['discount_amount'] > 0 ? ('-' . esc($currency) . ' ' . mf($it['discount_amount'])) : '—' ?></td>
+                                <td class="px-4 py-2 text-right text-sm text-red-600"><?= $it['discount_amount'] > 0 ? ('-' . esc($currency) . ' ' . mf($it['discount_amount'])) : '€”' ?></td>
                                 <td class="px-4 py-2 text-right text-sm font-semibold text-gray-900"><?= esc($currency) . ' ' . mf($it['net_revenue']) ?></td>
                             </tr>
                         <?php endforeach; ?>

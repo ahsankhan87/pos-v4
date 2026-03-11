@@ -26,7 +26,7 @@ class Sales extends BaseController
         $pdf->SetFont('helvetica', '', 10);
     }
 
-    protected function buildProductReportItems(string $from, string $to, $storeId, $employeeId = null, string $q = '', bool $includeProfit = false): array
+    protected function buildProductReportItems(string $from, string $to, $storeId, $employeeId = null, string $q = '', bool $includeProfit = false, $customerId = null): array
     {
         $saleItemsModel = new \App\Models\M_sale_items();
         $salesSelect =
@@ -47,6 +47,10 @@ class Sales extends BaseController
 
         if (!empty($employeeId)) {
             $salesBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+
+        if (!empty($customerId)) {
+            $salesBuilder->where('pos_sales.customer_id', (int)$customerId);
         }
 
         if ($q !== '') {
@@ -86,6 +90,10 @@ class Sales extends BaseController
 
         if (!empty($employeeId)) {
             $returnsBuilder->where('pos_sales.employee_id', (int)$employeeId);
+        }
+
+        if (!empty($customerId)) {
+            $returnsBuilder->where('pos_sales.customer_id', (int)$customerId);
         }
 
         if ($q !== '') {
@@ -974,6 +982,7 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
+        $customerId = $this->request->getGet('customer_id');
         $q = trim((string) $this->request->getGet('q'));
         if ($from > $to) {
             $temp = $from;
@@ -983,8 +992,9 @@ class Sales extends BaseController
         $storeId = session('store_id');
         helper('permission');
         $includeProfit = function_exists('can') ? can('reports.profit_loss') : false;
-        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, $q, $includeProfit);
+        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, $q, $includeProfit, $customerId);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $customers = (new \App\Models\M_customers())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/product_report', [
             'title' => 'Product-wise Sales Report',
             'items' => $items,
@@ -992,6 +1002,8 @@ class Sales extends BaseController
             'to' => $to,
             'employees' => $employees,
             'employee_id' => $employeeId,
+            'customers' => $customers,
+            'customer_id' => $customerId,
             'q' => $q,
         ]);
 
@@ -1053,6 +1065,7 @@ class Sales extends BaseController
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
         $employeeId = $this->request->getGet('employee_id');
+        $customerId = $this->request->getGet('customer_id');
         $q = trim((string) $this->request->getGet('q'));
         if ($from > $to) {
             $temp = $from;
@@ -1062,8 +1075,9 @@ class Sales extends BaseController
         $storeId = session('store_id');
         helper('permission');
         $includeProfit = function_exists('can') ? can('reports.profit_loss') : false;
-        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, $q, $includeProfit);
+        $items = $this->buildProductReportItems($from, $to, $storeId, $employeeId, $q, $includeProfit, $customerId);
         $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        $customers = (new \App\Models\M_customers())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
         return view('sales/reports/product_report_print', [
             'title' => 'Product-wise Sales Report - Print',
             'items' => $items,
@@ -1072,6 +1086,9 @@ class Sales extends BaseController
             'employees' => $employees,
             'employeeName' => $employeeId ? ($employees[array_search($employeeId, array_column($employees, 'id'))]['name'] ?? 'Unknown') : 'All',
             'employee_id' => $employeeId,
+            'customers' => $customers,
+            'customerName' => $customerId ? ($customers[array_search($customerId, array_column($customers, 'id'))]['name'] ?? 'Unknown') : null,
+            'customer_id' => $customerId,
             'q' => $q,
         ]);
     }

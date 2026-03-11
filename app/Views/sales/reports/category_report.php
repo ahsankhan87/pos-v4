@@ -132,15 +132,15 @@ if ($employee_id && !empty($employees)) {
             <form method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
-                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
-                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <select name="employee_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                         <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                 <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>

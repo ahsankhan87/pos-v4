@@ -141,15 +141,15 @@ $printUrl = site_url('sales/customer-report/print?' . http_build_query($printPar
                 <input type="hidden" name="q" value="<?= esc($q) ?>">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
-                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
-                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <select name="employee_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                         <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                 <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
@@ -216,7 +216,7 @@ $printUrl = site_url('sales/customer-report/print?' . http_build_query($printPar
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div class="no-print w-full sm:w-72">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.search_customer') ?></label>
-                    <input type="text" id="customerSearch" value="<?= esc($q) ?>" placeholder="<?= esc(lang('Reports.type_customer_name')) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
+                    <input type="text" id="customerSearch" value="<?= esc($q) ?>" placeholder="<?= esc(lang('Reports.type_customer_name')) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
                 </div>
                 <div class="text-sm text-gray-500"><?= lang('Reports.showing') ?> <span id="recordCount"><?= number_format($customerCount) ?></span> <?= lang('Reports.records') ?></div>
             </div>

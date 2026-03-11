@@ -134,15 +134,15 @@ function money_fmt($v)
             <form method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
-                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
-                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
+                    <select name="employee_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
                         <option value=""><?= lang('Reports.all') ?></option>
                         <?php foreach (($employees ?? []) as $emp): ?>
                             <option value="<?= (int)$emp['id'] ?>" <?= !empty($employee_id) && (int)$employee_id === (int)$emp['id'] ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
@@ -153,72 +153,15 @@ function money_fmt($v)
                     <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
-
-                    <?php if (canAny(['reports.daily_sales', 'reports.sale_items', 'reports.expense_report', 'reports.expense_category_report', 'reports.tax_report', 'reports.inactive_customers'])): ?>
-                        <!-- Reports Dropdown (Alpine.js) -->
-                        <div class="relative inline-block" x-data="{ open: false }">
-                            <button type="button" @click="open = !open" class="inline-flex h-9 items-center gap-2 px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800 shadow-soft">
-                                <i class="fas fa-chart-line"></i>
-                                <span><?= lang('Reports.reports') ?></span>
-                                <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;"></i>
-                            </button>
-
-                            <div x-show="open"
-                                @click.away="open = false"
-                                x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 scale-95"
-                                x-transition:enter-end="opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100 scale-100"
-                                x-transition:leave-end="opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
-                                style="display: none;">
-
-
-                                <?php if (can('reports.daily_sales')): ?>
-                                    <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                        <i class="fas fa-print w-5 text-gray-700"></i>
-                                        <span class="font-medium"><?= lang('Reports.print_sales_report') ?></span>
-                                    </a>
-                                <?php endif; ?>
-
-                                <?php if (can('reports.expense_report')): ?>
-                                    <a href="<?= site_url('sales/expense-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                        <i class="fas fa-receipt w-5 text-blue-600"></i>
-                                        <span class="font-medium"><?= lang('Reports.expense_report') ?></span>
-                                    </a>
-                                <?php endif; ?>
-
-                                <?php if (can('reports.expense_category_report')): ?>
-                                    <a href="<?= site_url('sales/expense-category-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                        <i class="fas fa-layer-group w-5 text-indigo-600"></i>
-                                        <span class="font-medium"><?= lang('Reports.expense_category_report') ?></span>
-                                    </a>
-                                <?php endif; ?>
-
-                                <?php if (can('reports.tax_report')): ?>
-                                    <a href="<?= site_url('sales/tax-report') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                        <i class="fas fa-percentage w-5 text-rose-600"></i>
-                                        <span class="font-medium"><?= lang('Reports.tax_report') ?></span>
-                                    </a>
-                                <?php endif; ?>
-
-                                <div class="border-t border-gray-100 my-1"></div>
-
-                                <?php if (can('reports.inactive_customers')): ?>
-                                    <a href="<?= site_url('sales/inactive-customers-report?days=30') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                                        <i class="fas fa-user-clock w-5 text-orange-600"></i>
-                                        <span class="font-medium"><?= lang('Reports.inactive_customers_30') ?></span>
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <?php if (can('reports.sale_items')): ?>
-                            <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-indigo-600 text-sm text-white hover:bg-indigo-700 shadow-soft">
-                                <i class="fas fa-list mr-2"></i> <?= lang('Reports.items') ?>
-                            </a>
-                        <?php endif; ?>
+                    <?php if (can('reports.sale_items')): ?>
+                        <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-indigo-600 text-sm text-white hover:bg-indigo-700 shadow-soft">
+                            <i class="fas fa-list mr-2"></i> <?= lang('Reports.items') ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if (can('reports.daily_sales')): ?>
+                        <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800 shadow-soft">
+                            <i class="fas fa-print mr-2"></i> <?= lang('Reports.print_sales_report') ?>
+                        </a>
                     <?php endif; ?>
                 </div>
                 <!-- <div class="flex items-end gap-2">
@@ -322,8 +265,6 @@ function money_fmt($v)
 <script src="<?= base_url() ?>assets/datatable-1.11.5/vfs_fonts.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
-<!-- Alpine.js for dropdown (same asset used in Products page) -->
-<script defer src="<?= base_url('assets/js/alpinejs.cdn.min.js') ?>"></script>
 <script>
     // Quick ranges helper & DataTables init
     (function() {

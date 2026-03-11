@@ -127,15 +127,15 @@ if ($employee_id && !empty($employees)) {
             <form method="get" class="no-print grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
-                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
-                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <select name="employee_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                         <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                 <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
@@ -203,7 +203,7 @@ if ($employee_id && !empty($employees)) {
                 <tbody class="bg-white divide-y divide-gray-100">
                     <?php foreach ($rows as $row): ?>
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-3 text-sm text-gray-900"><?= esc($row['unit_name'] ?? '—') ?><?= !empty($row['abbreviation']) ? ' (' . esc($row['abbreviation']) . ')' : '' ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900"><?= esc($row['unit_name'] ?? '€”') ?><?= !empty($row['abbreviation']) ? ' (' . esc($row['abbreviation']) . ')' : '' ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((float)($row['total_qty'] ?? 0), 2) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>

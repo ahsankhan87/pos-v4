@@ -587,13 +587,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
     // Role/permission-based locks (same behavior as sales/new)
     const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
     const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
-    const SHOW_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
+    const SHOW_ITEM_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
 
     function buildCartTabSequence(hasUnit) {
         let seq = hasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
         if (!CAN_EDIT_PRICE) seq = seq.filter(f => f !== 'price');
         if (!CAN_EDIT_DISCOUNT) seq = seq.filter(f => f !== 'discount' && f !== 'discount_type');
-        if (!SHOW_DISCOUNT_TYPE) seq = seq.filter(f => f !== 'discount_type');
+        if (!SHOW_ITEM_DISCOUNT_TYPE) seq = seq.filter(f => f !== 'discount_type');
         return seq;
     }
 
@@ -735,18 +735,85 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             setTimeout(() => $('.bg-green-50').fadeOut(), 3000);
         }
 
+        // Commit any in-progress cart field edits (including focused inputs) before submit.
+        function commitPendingCartEdits() {
+            $('#cart-items tr[data-cart-idx]').each(function() {
+                const idx = parseInt(this.getAttribute('data-cart-idx'), 10);
+                if (isNaN(idx) || !cart[idx]) return;
+
+                const row = this;
+
+                const qtyInput = row.querySelector('.cart-qty-input');
+                if (qtyInput) {
+                    let qty = parseFloat(qtyInput.value);
+                    if (!isFinite(qty) || qty < 0.01) qty = 0.01;
+
+                    const cartonSize = parseFloat(cart[idx].carton_size) || 1;
+                    const unitSelector = row.querySelector('.cart-unit-selector');
+                    const unit = unitSelector ? unitSelector.value : 'pieces';
+                    if (unit === 'cartons' && cartonSize > 1) {
+                        qty = qty * cartonSize;
+                    }
+
+                    if (cart[idx].stock && qty > cart[idx].stock) {
+                        qty = cart[idx].stock;
+                    }
+                    cart[idx].quantity = qty;
+                }
+
+                if (CAN_EDIT_PRICE) {
+                    const priceInput = row.querySelector('.cart-price-input');
+                    if (priceInput) {
+                        let price = parseFloat(priceInput.value);
+                        if (!isFinite(price) || price < 0) price = 0;
+                        cart[idx].price = price;
+                    }
+                }
+
+                if (CAN_EDIT_DISCOUNT) {
+                    const discountInput = row.querySelector('.item-discount-input');
+                    if (discountInput) {
+                        let discount = parseFloat(discountInput.value);
+                        if (!isFinite(discount) || discount < 0) discount = 0;
+                        cart[idx].discount = discount;
+                    }
+
+                    if (SHOW_ITEM_DISCOUNT_TYPE) {
+                        const discountTypeInput = row.querySelector('.item-discount-type');
+                        if (discountTypeInput) {
+                            cart[idx].discount_type = (discountTypeInput.value === 'percentage') ? 'percentage' : 'fixed';
+                        }
+                    } else {
+                        cart[idx].discount_type = 'fixed';
+                    }
+                }
+            });
+
+            calculateTotals();
+            syncHiddenFormData();
+            $('#cart-data').val(JSON.stringify(cart));
+        }
+
         // Form submission handling
+        let isSubmittingForm = false;
         $('form').on('submit', function(e) {
-            let errors = validateSaleForm();
+            e.preventDefault();
+
+            if (isSubmittingForm) {
+                return false;
+            }
+
+            commitPendingCartEdits();
+
+            const errors = validateSaleForm();
             if (errors.length > 0) {
-                e.preventDefault();
                 showFormErrors(errors);
                 return false;
             }
 
-            $('#cart-data').val(JSON.stringify(cart));
-            syncHiddenFormData();
-
+            isSubmittingForm = true;
+            this.submit(); // Native submit to avoid re-triggering jQuery handlers
+            return false;
         });
 
         // Auto-focus barcode input
@@ -1089,13 +1156,14 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             let subtotal = 0; // gross
             let totalDiscount = 0;
 
-            const showDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE;
+            const showDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_ITEM_DISCOUNT_TYPE;
 
             cart.forEach((item, idx) => {
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                 let lineDiscount = 0;
                 if (item.discount && parseFloat(item.discount) > 0) {
-                    if ((item.discount_type || 'fixed') === 'percentage') {
+                    const effectiveDiscountType = SHOW_ITEM_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+                    if (effectiveDiscountType === 'percentage') {
                         lineDiscount = lineBase * (parseFloat(item.discount) / 100);
                     } else {
                         lineDiscount = parseFloat(item.discount);
@@ -1260,7 +1328,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
                 // 3) Else, barcode fallback unless editing cart or totals inputs
                 const editableFields = ['discount', 'taxRate', 'tenderedAmountInput'];
-                if (SHOW_DISCOUNT_TYPE) {
+                if (SHOW_ITEM_DISCOUNT_TYPE) {
                     editableFields.push('discount_type');
                 }
                 const isEditingField = editableFields.includes(activeElement?.id) ||
@@ -1285,7 +1353,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     const base = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                     let d = 0;
                     if (item.discount && parseFloat(item.discount) > 0) {
-                        if ((item.discount_type || 'fixed') === 'percentage') {
+                        const effectiveDiscountType = SHOW_ITEM_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+                        if (effectiveDiscountType === 'percentage') {
                             d = base * (parseFloat(item.discount) / 100);
                         } else {
                             d = parseFloat(item.discount);
@@ -1612,6 +1681,9 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             // F9 or Ctrl+S - Complete sale (if cart has items)
             else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
+
+                commitPendingCartEdits();
+
                 if (cart.length === 0) {
                     showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
                     return false;
@@ -1626,10 +1698,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
 
                 // Confirm and submit
                 if (confirm(<?= json_encode(lang('Sales.confirm_update_sale')) ?>)) {
-                    // Update cart data before submit
-                    $('#cart-data').val(JSON.stringify(cart));
-                    syncHiddenFormData();
-                    $('form')[0].submit();
+                    // Trigger normal submit flow (same as pressing submit button).
+                    const formEl = document.querySelector('form');
+                    if (formEl && typeof formEl.requestSubmit === 'function') {
+                        formEl.requestSubmit();
+                    } else if (formEl) {
+                        $(formEl).trigger('submit');
+                    }
                 }
                 return false;
             }

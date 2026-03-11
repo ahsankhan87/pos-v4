@@ -4,6 +4,7 @@
 $from = isset($from) ? $from : (isset($date) ? $date : date('Y-m-d'));
 $to = isset($to) ? $to : $from;
 $employee_id = isset($employee_id) ? $employee_id : '';
+$customer_id = isset($customer_id) ? $customer_id : '';
 $currency = session()->get('currency_symbol') ?? '$';
 $canProfit = can('reports.profit_loss');
 $totalQty = 0;
@@ -27,6 +28,16 @@ if (!empty($employee_id) && !empty($employees)) {
     foreach ($employees as $emp) {
         if ((int)$emp['id'] === (int)$employee_id) {
             $employeeName = $emp['name'];
+            break;
+        }
+    }
+}
+
+$customerName = '';
+if (!empty($customer_id) && !empty($customers)) {
+    foreach ($customers as $customer) {
+        if ((int)$customer['id'] === (int)$customer_id) {
+            $customerName = $customer['name'];
             break;
         }
     }
@@ -80,16 +91,74 @@ $printParams = [
 if ($employee_id !== '') {
     $printParams['employee_id'] = $employee_id;
 }
+if ($customer_id !== '') {
+    $printParams['customer_id'] = $customer_id;
+}
 if ($q !== '') {
     $printParams['q'] = $q;
 }
 $printUrl = site_url('sales/product-report/print?' . http_build_query($printParams));
 ?>
 
+<script src="<?= base_url() ?>assets/js/select2/select2.min.js"></script>
+<link href="<?= base_url() ?>assets/js/select2/select2.min.css" rel="stylesheet" />
+
 <style>
     html,
     body {
         margin: 0 !important;
+    }
+
+    /* Match Select2 controls with report input styling */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        height: 40px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        background-color: #fff;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 38px;
+        color: #111827;
+        padding-left: 0.75rem;
+        padding-right: 2rem;
+        font-size: 0.875rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 38px;
+        right: 6px;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single,
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.875rem;
+        outline: none;
+    }
+
+    .select2-results__option {
+        font-size: 0.875rem;
     }
 
     @media print {
@@ -178,6 +247,7 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                 <p class="text-sm text-gray-500 mt-1">
                     <?= lang('Reports.range') ?>: <span class="font-medium text-gray-700"><?= esc($from) ?></span> <?= lang('Reports.to') ?> <span class="font-medium text-gray-700"><?= esc($to) ?></span>
                     <?php if ($employeeName): ?> · <?= lang('Reports.employee') ?>: <span class="font-medium text-gray-700"><?= esc($employeeName) ?></span><?php endif; ?>
+                    <?php if ($customerName): ?> · <?= lang('Reports.customer') ?>: <span class="font-medium text-gray-700"><?= esc($customerName) ?></span><?php endif; ?>
                 </p>
             </div>
 
@@ -186,17 +256,17 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                 <input type="hidden" name="q" value="<?= esc($q) ?>">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.from') ?></label>
-                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="from" value="<?= esc($from) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.to') ?></label>
-                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <input type="date" name="to" value="<?= esc($to) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
                 </div>
 
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.employee') ?></label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+                    <select name="employee_id" id="employee_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 select2-employee">
                         <option value=""><?= lang('Reports.all_employees') ?></option>
                         <?php if (!empty($employees)): foreach ($employees as $emp): ?>
                                 <option value="<?= esc($emp['id']) ?>" <?= ($employee_id !== '' && (int)$employee_id === (int)$emp['id']) ? 'selected' : '' ?>><?= esc($emp['name']) ?></option>
@@ -205,7 +275,18 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                     </select>
                 </div>
 
-                <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.customer') ?></label>
+                    <select name="customer_id" id="customer_id" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 select2-customer">
+                        <option value=""><?= lang('Reports.all') . ' ' . lang('Reports.customers') ?></option>
+                        <?php if (!empty($customers)): foreach ($customers as $customer): ?>
+                                <option value="<?= esc($customer['id']) ?>" <?= ($customer_id !== '' && (int)$customer_id === (int)$customer['id']) ? 'selected' : '' ?>><?= esc($customer['name']) ?></option>
+                        <?php endforeach;
+                        endif; ?>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 flex flex-col sm:flex-row gap-2 md:justify-end">
                     <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
@@ -260,7 +341,7 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                 <!-- added: Search above the table -->
                 <div class="no-print w-full sm:w-72">
                     <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.search_product') ?></label>
-                    <input type="text" id="productSearch" value="<?= esc($q) ?>" placeholder="<?= esc(lang('Reports.type_name_or_code')) ?>" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
+                    <input type="text" id="productSearch" value="<?= esc($q) ?>" placeholder="<?= esc(lang('Reports.type_name_or_code')) ?>" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2" autocomplete="off">
                 </div>
 
                 <div class="text-sm text-gray-500">
@@ -273,12 +354,12 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.product') ?></th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_quantity') ?></th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_sales') ?></th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.avg') ?></th>
+                        <th class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.product') ?></th>
+                        <th class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.total_quantity') ?></th>
+                        <th class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.total_sales') ?></th>
+                        <th class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.avg') ?></th>
                         <?php if ($canProfit): ?>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.profit') ?></th>
+                            <th class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.profit') ?></th>
                         <?php endif; ?>
                     </tr>
                 </thead>
@@ -292,35 +373,32 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                         $rowProfit = (float)($item['profit'] ?? 0);
                         ?>
                         <tr class="hover:bg-gray-50" data-qty="<?= esc($rowQty) ?>" data-sales="<?= esc($rowSales) ?>" data-profit="<?= esc($rowProfit) ?>">
-                            <td class="px-6 py-3 text-sm text-gray-900">
-                                <div class="font-medium"><?= esc($item['product_name']) ?></div>
-                                <?php if (!empty($item['product_code'])): ?>
-                                    <div class="text-xs text-gray-500"><?= esc($item['product_code']) ?></div>
-                                <?php endif; ?>
+                            <td class="px-4 py-2 text-sm text-gray-900">
+                                <div class="font-medium\"><?= esc($item['product_name']) ?></div>
                             </td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= formatQuantity($rowQty, (float)($item['carton_size'] ?? 0)) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowSales) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowAvg) ?></td>
+                            <td class="px-4 py-2 text-sm text-gray-900 text-right"><?= formatQuantity($rowQty, (float)($item['carton_size'] ?? 0)) ?></td>
+                            <td class="px-4 py-2 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowSales) ?></td>
+                            <td class="px-4 py-2 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowAvg) ?></td>
                             <?php if ($canProfit): ?>
-                                <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowProfit) ?></td>
+                                <td class="px-4 py-2 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowProfit) ?></td>
                             <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
 
                     <!-- added: "no matches" row -->
                     <tr id="noMatchesRow" style="display:none;">
-                        <td colspan="<?= $canProfit ? '5' : '4' ?>" class="px-6 py-6 text-sm text-gray-500 text-center"><?= lang('Reports.no_matching_products') ?></td>
+                        <td colspan="<?= $canProfit ? '5' : '4' ?>" class="px-4 py-4 text-sm text-gray-500 text-center\"><?= lang('Reports.no_matching_products') ?></td>
                     </tr>
                 </tbody>
 
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
-                        <td id="totalQtyCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty) ?></td>
-                        <td id="totalSalesCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
-                        <td id="totalAvgCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></td>
+                        <td class="px-4 py-2 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
+                        <td id="totalQtyCell" class="px-4 py-2 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty) ?></td>
+                        <td id="totalSalesCell" class="px-4 py-2 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
+                        <td id="totalAvgCell" class="px-4 py-2 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt(avg_price($totalSales, $totalQty)) ?></td>
                         <?php if ($canProfit): ?>
-                            <td id="totalProfitCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></td>
+                            <td id="totalProfitCell" class="px-4 py-2 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalProfit) ?></td>
                         <?php endif; ?>
                     </tr>
                 </tfoot>
@@ -331,6 +409,31 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
 <script>
     (function() {
+        if (window.jQuery && $.fn.select2) {
+            $('.select2-employee').select2({
+                width: '100%',
+                allowClear: true,
+                placeholder: "<?= esc(lang('Reports.all_employees')) ?>"
+            });
+
+            $('.select2-customer').select2({
+                width: '100%',
+                allowClear: true,
+                placeholder: "<?= esc(lang('Reports.all') . ' ' . lang('Reports.customers')) ?>"
+            });
+
+            $('.select2-employee, .select2-customer').on('select2:open', function() {
+                // Focus Select2 search immediately when dropdown opens.
+                setTimeout(function() {
+                    const search = document.querySelector('.select2-container--open .select2-search__field');
+                    if (search) {
+                        search.focus();
+                        search.select();
+                    }
+                }, 0);
+            });
+        }
+
         function fmt(d) {
             return d.toISOString().slice(0, 10);
         }
