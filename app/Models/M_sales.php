@@ -12,6 +12,7 @@ class M_sales extends Model
     protected $allowedFields = [
         'customer_id',
         'invoice_no',
+        'sales_order_id',
         'user_id',
         'description',
         'total',

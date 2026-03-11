@@ -254,35 +254,37 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             <div class="px-4 py-3 border-b bg-gray-50">
                 <h2 class="font-semibold text-gray-700"><?= lang('Customers.transactions') ?></h2>
             </div>
-            <div class="overflow-x-auto">
-                <table id="ledgerTable" class="min-w-full">
-                    <thead class="bg-gray-50 text-xs uppercase text-gray-500">
-                        <tr>
-                            <th class="px-4 py-3 text-left"><?= lang('Customers.date') ?></th>
-                            <th class="px-4 py-3 text-left"><?= lang('Customers.ref') ?></th>
-                            <th class="px-4 py-3 text-left"><?= lang('Customers.description') ?></th>
-                            <th class="px-4 py-3 text-left"><?= lang('Customers.type') ?></th>
-                            <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>><?= lang('Customers.debit') ?> (<?= esc($currencySymbol) ?>)</th>
-                            <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>><?= lang('Customers.credit') ?> (<?= esc($currencySymbol) ?>)</th>
-                            <?php if ($showBalanceInTable && $canViewAmounts): ?>
-                                <th class="px-4 py-3 text-right"><?= lang('Customers.balance') ?> (<?= esc($currencySymbol) ?>)</th>
-                            <?php endif; ?>
-                            <th class="px-4 py-3 text-center"><?= lang('Customers.actions') ?></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y"></tbody>
-                    <tfoot class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left" colspan="4"><?= lang('Customers.totals') ?></th>
-                            <th class="px-4 py-3 text-right text-rose-700" <?= $hiddenAmountsStyle ?>><?= $currencySymbol . number_format($totalDebit, 2) ?></th>
-                            <th class="px-4 py-3 text-right text-emerald-700" <?= $hiddenAmountsStyle ?>><?= $currencySymbol . number_format($totalCredit, 2) ?></th>
-                            <?php if ($showBalanceInTable && $canViewAmounts): ?>
-                                <th class="px-4 py-3 text-right font-semibold"><?= $currencySymbol . number_format($closingBalance, 2) ?></th>
-                            <?php endif; ?>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div class="p-3">
+                <div class="overflow-x-auto rounded-lg border border-gray-100">
+                    <table id="ledgerTable" class="min-w-full bg-white">
+                        <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                            <tr>
+                                <th class="px-4 py-3 text-left"><?= lang('Customers.date') ?></th>
+                                <th class="px-4 py-3 text-left"><?= lang('Customers.ref') ?></th>
+                                <th class="px-4 py-3 text-left"><?= lang('Customers.description') ?></th>
+                                <th class="px-4 py-3 text-left"><?= lang('Customers.type') ?></th>
+                                <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>><?= lang('Customers.debit') ?> (<?= esc($currencySymbol) ?>)</th>
+                                <th class="px-4 py-3 text-right" <?= $hiddenAmountsStyle ?>><?= lang('Customers.credit') ?> (<?= esc($currencySymbol) ?>)</th>
+                                <?php if ($showBalanceInTable && $canViewAmounts): ?>
+                                    <th class="px-4 py-3 text-right"><?= lang('Customers.balance') ?> (<?= esc($currencySymbol) ?>)</th>
+                                <?php endif; ?>
+                                <th class="px-4 py-3 text-center"><?= lang('Customers.actions') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y"></tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left" colspan="4"><?= lang('Customers.totals') ?></th>
+                                <th class="px-4 py-3 text-right text-rose-700" <?= $hiddenAmountsStyle ?>><?= $currencySymbol . number_format($totalDebit, 2) ?></th>
+                                <th class="px-4 py-3 text-right text-emerald-700" <?= $hiddenAmountsStyle ?>><?= $currencySymbol . number_format($totalCredit, 2) ?></th>
+                                <?php if ($showBalanceInTable && $canViewAmounts): ?>
+                                    <th class="px-4 py-3 text-right font-semibold"><?= $currencySymbol . number_format($closingBalance, 2) ?></th>
+                                <?php endif; ?>
+                                <th class="px-4 py-3"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -412,6 +414,7 @@ $openingBalance = isset($openingBalance) ? (float)$openingBalance : (count($ledg
             var table = jQuery('#ledgerTable').DataTable({
                 serverSide: true,
                 processing: true,
+                dom: '<"flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3"lf>rt<"flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-3"ip>',
                 pagingType: 'full_numbers',
                 order: [
                     [0, 'asc']

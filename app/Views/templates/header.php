@@ -224,6 +224,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <a href="<?php echo site_url('sales') ?>" accesskey="l" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+L'])) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                 <i class="fas fa-list mr-2"></i> <?= lang('Navigation.sales_list') ?>
                                             </a>
+                                            <a href="<?= site_url('sales-orders') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'sales-orders') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                <i class="fas fa-clipboard-list mr-2"></i> <?= lang('Navigation.sales_order') ?>
+                                            </a>
 
                                             <div class="border-t border-gray-100"></div>
                                             <a href="<?= site_url('products') ?>" accesskey="o" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+O'])) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
@@ -502,6 +505,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 </a>
                                 <a href="<?= site_url('sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-list mr-2"></i> <?= lang('Navigation.sales_list') ?>
+                                </a>
+                                <a href="<?= site_url('sales-orders') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'sales-orders') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
+                                    <i class="fas fa-clipboard-list mr-2"></i> <?= lang('Navigation.sales_order') ?>
                                 </a>
                             </div>
                         </div>
@@ -824,7 +830,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         </a>
                                     <?php endif; ?>
 
-                                    <?php if (can('reports.customer_sales')): ?>
+                                    <!-- <?php if (can('reports.customer_sales')): ?>
                                         <div class="px-3 pt-2 pb-1">
                                             <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider"><?= lang('Navigation.gift_reports') ?></p>
                                         </div>
@@ -832,7 +838,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <i class="fas fa-gift mr-3 <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'text-white' : 'text-gray-400 group-hover:text-blue-500' ?>"></i>
                                             <span class="<?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'font-bold' : '' ?>"><?= lang('Navigation.gift_issued_report') ?></span>
                                         </a>
-                                    <?php endif; ?>
+                                    <?php endif; ?> -->
                                 </div>
 
                                 <!-- More Options -->

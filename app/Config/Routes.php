@@ -114,6 +114,22 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->delete('delete/(:num)', 'Sales::delete/$1', ['filter' => 'permission:sales.delete']);
 });
 
+$routes->group('sales-orders', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'SalesOrders::index', ['filter' => 'permission:sales_order.view']);
+    $routes->get('new', 'SalesOrders::new', ['filter' => 'permission:sales_order.create']);
+    $routes->post('create', 'SalesOrders::create', ['filter' => 'permission:sales_order.create']);
+    $routes->get('edit/(:num)', 'SalesOrders::edit/$1', ['filter' => 'permission:sales_order.create']);
+    $routes->post('update/(:num)', 'SalesOrders::update/$1', ['filter' => 'permission:sales_order.create']);
+    $routes->post('delete/(:num)', 'SalesOrders::delete/$1', ['filter' => 'permission:sales_order.create']);
+    $routes->get('(:num)', 'SalesOrders::show/$1', ['filter' => 'permission:sales_order.view']);
+
+    $routes->post('(:num)/submit', 'SalesOrders::submit/$1', ['filter' => 'permission:sales_order.submit']);
+    $routes->post('(:num)/approve', 'SalesOrders::approve/$1', ['filter' => 'permission:sales_order.approve']);
+    $routes->post('(:num)/reject', 'SalesOrders::reject/$1', ['filter' => 'permission:sales_order.reject']);
+    $routes->post('(:num)/convert', 'SalesOrders::convertToInvoiceDraft/$1', ['filter' => 'permission:sales_order.convert']);
+    $routes->post('(:num)/convert-completed', 'SalesOrders::convertToCompletedInvoice/$1', ['filter' => 'permission:sales_order.convert']);
+});
+
 
 $routes->group('categories', ['filter' => 'auth'], function ($routes) {
     // View

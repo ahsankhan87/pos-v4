@@ -56,6 +56,7 @@ return [
     'quick_access' => 'وصول سريع',
     'most_used' => 'الأكثر استخدامًا',
     'new_pos_sale' => 'عملية بيع نقطة بيع جديدة',
+    'sales_order' => 'أمر بيع',
     'new_purchase' => 'شراء جديد',
     'pos_terminal' => 'نقطة البيع',
     'all_products' => 'كل المنتجات',

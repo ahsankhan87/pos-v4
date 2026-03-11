@@ -35,71 +35,76 @@
         <?php endif; ?>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.supplier_name') ?></th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.phone') ?></th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.email') ?></th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.opening_balance') ?></th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.current_balance') ?></th>
-                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.actions') ?></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php if (!empty($suppliers)): ?>
-                            <?php foreach ($suppliers as $supplier): ?>
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        <?= esc($supplier['name']) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <?= esc($supplier['phone']) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <?= esc($supplier['email']) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <span class="font-medium text-gray-900">
-                                            <?= number_to_currency($supplier['opening_balance'], 'PKR', 'en_PK', 2) ?>
-                                        </span>
-                                        <button class="ml-2 text-blue-600 hover:text-blue-800 transition-colors edit-opening-balance"
-                                            data-supplier-id="<?= $supplier['id'] ?>"
-                                            data-current-balance="<?= $supplier['opening_balance'] ?>"
-                                            title="<?= esc(lang('SupplierLedger.edit_opening_balance')) ?>">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold <?= $supplier['current_balance'] > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' ?>">
-                                            <?= number_to_currency($supplier['current_balance'], 'PKR', 'en_PK', 2) ?>
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                        <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
-                                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
-                                            <i class="fas fa-eye mr-2"></i> <?= lang('SupplierLedger.view_ledger') ?>
-                                        </a>
+            <div class="p-3">
+                <div class="overflow-x-auto rounded-lg border border-gray-100">
+                    <table id="supplierLedgerTable" class="min-w-full divide-y divide-gray-200 bg-white">
+                        <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.supplier_name') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.phone') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.email') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.opening_balance') ?></th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.current_balance') ?></th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider"><?= lang('SupplierLedger.actions') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <?php if (!empty($suppliers)): ?>
+                                <?php foreach ($suppliers as $supplier): ?>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <?= esc($supplier['name']) ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            <?= esc($supplier['phone']) ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            <?= esc($supplier['email']) ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="font-medium text-gray-900">
+                                                <?= number_to_currency($supplier['opening_balance'], 'PKR', 'en_PK', 2) ?>
+                                            </span>
+                                            <button class="ml-2 text-blue-600 hover:text-blue-800 transition-colors edit-opening-balance"
+                                                data-supplier-id="<?= $supplier['id'] ?>"
+                                                data-current-balance="<?= $supplier['opening_balance'] ?>"
+                                                title="<?= esc(lang('SupplierLedger.edit_opening_balance')) ?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold <?= $supplier['current_balance'] > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' ?>">
+                                                <?= number_to_currency($supplier['current_balance'], 'PKR', 'en_PK', 2) ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                            <a href="<?= base_url('supplier-ledger/view/' . $supplier['id']) ?>"
+                                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                                                <i class="fas fa-eye mr-2"></i> <?= lang('SupplierLedger.view_ledger') ?>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                                            <p class="text-gray-500 text-sm"><?= lang('SupplierLedger.no_suppliers_found') ?></p>
+                                        </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
-                                    <div class="flex flex-col items-center">
-                                        <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                                        <p class="text-gray-500 text-sm"><?= lang('SupplierLedger.no_suppliers_found') ?></p>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
+<script src="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.js"></script>
 
 <!-- Opening Balance Modal -->
 <div id="openingBalanceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
@@ -141,6 +146,14 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (window.jQuery && jQuery.fn.DataTable) {
+            jQuery('#supplierLedgerTable').DataTable({
+                dom: '<"flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3"lf>rt<"flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-3"ip>',
+                pageLength: 25,
+                order: []
+            });
+        }
+
         const modal = document.getElementById('openingBalanceModal');
 
         // Show modal

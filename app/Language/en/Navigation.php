@@ -56,6 +56,8 @@ return [
     'quick_access' => 'Quick Access',
     'most_used' => 'Most Used',
     'new_pos_sale' => 'New POS Sale',
+    'sales_orders' => 'Salesman Orders',
+    'sales_order' => 'Sales Order',
     'new_purchase' => 'New Purchase',
     'pos_terminal' => 'POS Terminal',
     'all_products' => 'All Products',
