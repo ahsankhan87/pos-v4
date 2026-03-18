@@ -108,7 +108,7 @@
                             <th><input type="checkbox" id="select-all"></th>
                             <th scope="col"><?= lang('Products.id') ?></th>
                             <th scope="col"><?= lang('Products.name') ?></th>
-                            <th scope="col"><?= lang('Products.code') ?></th>
+                            <th scope="col"><?= lang('Products.category') ?></th>
                             <th scope="col"><?= lang('Products.barcode') ?></th>
                             <th scope="col"><?= lang('Products.cost_price') ?></th>
                             <th scope="col"><?= lang('Products.price') ?></th>
@@ -277,8 +277,8 @@
                     }
                 },
                 {
-                    data: 'code',
-                    name: 'code',
+                    data: 'category_name',
+                    name: 'category_name',
                     render: data => escapeHtml(data ?? '')
                 },
                 {

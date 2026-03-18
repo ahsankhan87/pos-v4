@@ -345,13 +345,13 @@ class Products extends BaseController
 
         // Map DataTables column indexes to database columns.
         // Must align with the client-side columns array in products/index.php:
-        // 0: (checkbox), 1: id, 2: name, 3: code, 4: barcode, 5: cost_price, 6: price, 7: quantity, 8: (actions)
-        $columns = ['', 'id', 'name', 'code', 'barcode', 'cost_price', 'price', 'quantity', ''];
+        // 0: (checkbox), 1: id, 2: name, 3: category, 4: barcode, 5: cost_price, 6: price, 7: quantity, 8: (actions)
+        $columns = ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.cost_price', 'pos_products.price', 'pos_products.quantity', ''];
 
         $db = \Config\Database::connect();
         $storeId = session('store_id');
 
-        $baseBuilder = $db->table('pos_products')->where('store_id', $storeId);
+        $baseBuilder = $db->table('pos_products')->where('pos_products.store_id', $storeId);
         if (!empty($supplierId)) {
             $baseBuilder->where('supplier_id', (int)$supplierId);
         }
@@ -359,18 +359,19 @@ class Products extends BaseController
         $totalRecords = (clone $baseBuilder)->countAllResults();
 
         $filteredBuilder = clone $baseBuilder;
+        $filteredBuilder->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left');
 
         if (!empty($search)) {
             $filteredBuilder->groupStart()
-                ->like('name', $search)
-                ->orLike('code', $search)
-                ->orLike('barcode', $search)
+                ->like('pos_products.name', $search)
+                ->orLike('pos_categories.name', $search)
+                ->orLike('pos_products.barcode', $search)
                 ->groupEnd();
         }
 
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
-        $filteredBuilder->select('id, name, cost_price, price, quantity, carton_size, IFNULL(description, "") as description, code, barcode, type, is_stock_tracked');
+        $filteredBuilder->select('pos_products.id, pos_products.name, pos_products.cost_price, pos_products.price, pos_products.quantity, pos_products.carton_size, IFNULL(pos_products.description, "") as description, pos_products.barcode, pos_products.type, pos_products.is_stock_tracked, IFNULL(pos_categories.name, "") as category_name');
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 1); // default to ID column index
