@@ -151,6 +151,8 @@ class Sales extends BaseController
         $items = json_decode($cart_data, true);
         $canEditLinePrice = can('sales.edit_price');
         $canEditLineDiscount = can('sales.edit_discount');
+        $isAdminOverrideUser = $this->isAdminUser();
+        $adminOverrideMessages = [];
         // Discount handling: prefer item-wise discount if provided per line
         $discountInput = (float) ($this->request->getPost('discount') ?? 0);
         $total = $this->request->getPost('grand_total') ?? 0;
@@ -221,6 +223,41 @@ class Sales extends BaseController
             $effectiveDiscountType = 'fixed';
             if ($canEditLineDiscount && isset($line['discount_type']) && strtolower((string) $line['discount_type']) === 'percentage') {
                 $effectiveDiscountType = 'percentage';
+            }
+
+            $lineBase = $effectivePrice * $qty;
+            $enteredDiscountAmount = 0.0;
+            if ($effectiveDiscount > 0) {
+                if ($effectiveDiscountType === 'percentage') {
+                    $enteredDiscountAmount = $lineBase * ($effectiveDiscount / 100);
+                } else {
+                    $enteredDiscountAmount = $effectiveDiscount;
+                }
+                if ($enteredDiscountAmount > $lineBase) {
+                    $enteredDiscountAmount = $lineBase;
+                }
+            }
+
+            $limitType = strtolower((string) ($product['max_discount_type'] ?? 'fixed'));
+            if (!in_array($limitType, ['fixed', 'percentage'], true)) {
+                $limitType = 'fixed';
+            }
+            $limitValue = max(0.0, (float) ($product['max_discount_value'] ?? 0));
+            $allowedDiscountAmount = $limitType === 'percentage'
+                ? ($lineBase * ($limitValue / 100))
+                : $limitValue;
+
+            if ($enteredDiscountAmount - $allowedDiscountAmount > 0.0001) {
+                $productName = (string) ($product['name'] ?? ('Product #' . $productId));
+                $limitLabel = $limitType === 'percentage'
+                    ? (rtrim(rtrim(number_format($limitValue, 2, '.', ''), '0'), '.') . '%')
+                    : number_format($limitValue, 2, '.', '');
+
+                if (!$isAdminOverrideUser) {
+                    return redirect()->back()->withInput()->with('error', 'Discount for "' . $productName . '" exceeds product limit (' . $limitLabel . ').');
+                }
+
+                $adminOverrideMessages[] = $productName . ' (entered discount exceeds configured limit ' . $limitLabel . ')';
             }
 
             $line['price'] = $effectivePrice;
@@ -448,6 +485,9 @@ class Sales extends BaseController
                 }
                 // Log the sale creation/completion
                 logAction('sale_created', 'Sale ID: ' . $sale_id . ', Customer ID: ' . $customer_id . ', Total: ' . $total . ($isDraftCompletion ? ' (completed draft)' : ''));
+                if (!empty($adminOverrideMessages)) {
+                    logAction('sale_discount_override', 'Sale ID: ' . $sale_id . ', Admin override applied for: ' . implode('; ', $adminOverrideMessages));
+                }
 
                 // For draft completion, clear any existing draft items
                 if ($isDraftCompletion) {
@@ -527,8 +567,12 @@ class Sales extends BaseController
             $db->transComplete();
 
             // Generate receipt
-            return redirect()->to(site_url("/receipts/generate/{$sale_id}"))
+            $redirect = redirect()->to(site_url("/receipts/generate/{$sale_id}"))
                 ->with('success', 'Sale created successfully. Receipt will be generated.');
+            if (!empty($adminOverrideMessages)) {
+                $redirect = $redirect->with('warning', 'Admin override: one or more item discounts exceeded product limits.');
+            }
+            return $redirect;
             // return redirect()->to(site_url('sales/receipt/' . $sale_id));
         } else {
             return redirect()->back()->with('error', 'Please select customer and add products.');
@@ -620,6 +664,8 @@ class Sales extends BaseController
             $tenderedAmount = (float) ($this->request->getPost('tendered_amount') ?? 0);
             $employeeId = (int) ($this->request->getPost('employee_id') ?: 0);
             $customerId = (int) ($this->request->getPost('customer_id') ?: 0);
+            $isAdminOverrideUser = $this->isAdminUser();
+            $adminOverrideMessages = [];
 
             $errors = [];
             if (empty($cartData) || !is_array($cartData)) {
@@ -681,6 +727,29 @@ class Sales extends BaseController
                         }
                         if ($lineDiscount > $lineBase) {
                             $lineDiscount = $lineBase;
+                        }
+
+                        $limitType = strtolower((string) ($product['max_discount_type'] ?? 'fixed'));
+                        if (!in_array($limitType, ['fixed', 'percentage'], true)) {
+                            $limitType = 'fixed';
+                        }
+                        $limitValue = max(0.0, (float) ($product['max_discount_value'] ?? 0));
+                        $allowedDiscountAmount = $limitType === 'percentage'
+                            ? ($lineBase * ($limitValue / 100))
+                            : $limitValue;
+
+                        if ($lineDiscount - $allowedDiscountAmount > 0.0001) {
+                            $productName = (string) ($product['name'] ?? ('Product #' . $productId));
+                            $limitLabel = $limitType === 'percentage'
+                                ? (rtrim(rtrim(number_format($limitValue, 2, '.', ''), '0'), '.') . '%')
+                                : number_format($limitValue, 2, '.', '');
+
+                            if (!$isAdminOverrideUser) {
+                                $errors[] = 'Discount for "' . $productName . '" exceeds product limit (' . $limitLabel . ').';
+                                break;
+                            }
+
+                            $adminOverrideMessages[] = $productName . ' (entered discount exceeds configured limit ' . $limitLabel . ')';
                         }
                     }
                     $itemwiseDiscountSum += $lineDiscount;
@@ -888,6 +957,9 @@ class Sales extends BaseController
                 }
 
                 logAction('sale_updated', sprintf('Sale ID %s updated. Total: %s', $saleId, $total));
+                if (!empty($adminOverrideMessages)) {
+                    logAction('sale_discount_override', 'Sale ID: ' . $saleId . ', Admin override applied for: ' . implode('; ', $adminOverrideMessages));
+                }
             } catch (\Throwable $e) {
                 $db->transRollback();
                 log_message('error', 'Failed to update sale ID ' . $saleId . ': ' . $e->getMessage());
@@ -900,7 +972,11 @@ class Sales extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Failed to update sale. Please try again.');
             }
 
-            return redirect()->to(site_url("/receipts/generate/{$saleId}"))->with('success', 'Sale updated successfully.');
+            $redirect = redirect()->to(site_url("/receipts/generate/{$saleId}"))->with('success', 'Sale updated successfully.');
+            if (!empty($adminOverrideMessages)) {
+                $redirect = $redirect->with('warning', 'Admin override: one or more item discounts exceeded product limits.');
+            }
+            return $redirect;
         }
 
         $employees = $this->employeeModel->forStore()->findAll();
@@ -919,6 +995,26 @@ class Sales extends BaseController
             'cartItems' => $cartItems,
             'salesShowDiscountType' => $salesShowDiscountType,
         ]);
+    }
+
+    private function isAdminUser(): bool
+    {
+        $roleId = (int) (session('role_id') ?? 0);
+        if ($roleId === 1) {
+            return true;
+        }
+
+        $roleName = strtolower((string) (session('role_name') ?? session('user_role') ?? ''));
+        if ($roleName === 'admin') {
+            return true;
+        }
+
+        if ($roleId > 0) {
+            $role = $this->roleModel->find($roleId);
+            return strtolower((string) ($role['name'] ?? '')) === 'admin';
+        }
+
+        return false;
     }
 
     public function delete($saleId)

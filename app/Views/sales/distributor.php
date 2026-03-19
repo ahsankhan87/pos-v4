@@ -37,6 +37,22 @@ $canEditLineDiscount = can('sales.edit_discount');
             </div>
         </div>
     <?php endif; ?>
+    <?php
+    $oldCartData = json_decode((string) old('cart_data', '[]'), true);
+    if (!is_array($oldCartData)) {
+        $oldCartData = [];
+    }
+    ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="max-w-[1920px] mx-auto px-4 mt-3">
+            <div class="bg-amber-50 border-l-4 border-amber-400 p-3 rounded">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-amber-500 mr-2"></i>
+                    <span class="text-amber-800 text-sm"><?= session()->getFlashdata('warning') ?></span>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Keyboard Shortcuts Modal -->
     <div id="helpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -83,6 +99,29 @@ $canEditLineDiscount = can('sales.edit_discount');
         <input type="hidden" name="invoice_no" value="<?= $invoiceNo ?>">
         <?php if (isset($resumeDraftId)): ?>
             <input type="hidden" name="draft_id" id="draft_id" value="<?= (int) $resumeDraftId ?>">
+            <script>
+                window.__DRAFT_PREFILL__ = {
+                    cart: <?= isset($prefillCartJson) ? $prefillCartJson : '[]' ?>,
+                    discountValue: <?= json_encode($prefillDiscountValue ?? 0) ?>,
+                    discountType: <?= json_encode($prefillDiscountType ?? 'fixed') ?>,
+                    customerId: <?= json_encode($prefillCustomerId ?? 0) ?>,
+                    employeeId: <?= json_encode($prefillEmployeeId ?? 0) ?>,
+                    paymentMethod: <?= json_encode($prefillPaymentMethod ?? 'cash') ?>,
+                    description: <?= json_encode($prefillDescription ?? '') ?>
+                };
+            </script>
+        <?php elseif (!empty($oldCartData)): ?>
+            <script>
+                window.__DRAFT_PREFILL__ = {
+                    cart: <?= json_encode($oldCartData) ?>,
+                    discountValue: <?= json_encode((float) old('discount', 0)) ?>,
+                    discountType: <?= json_encode(old('discount_type', 'fixed')) ?>,
+                    customerId: <?= json_encode((int) old('customer_id', 0)) ?>,
+                    employeeId: <?= json_encode((int) old('employee_id', 0)) ?>,
+                    paymentMethod: <?= json_encode(old('payment_method', 'cash')) ?>,
+                    description: <?= json_encode((string) old('description', '')) ?>
+                };
+            </script>
         <?php endif; ?>
 
         <div class="grid grid-cols-12 gap-4">
@@ -303,6 +342,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         // Role/permission-based locks
         const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
         const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
+        const IS_ADMIN_USER = <?= strtolower((string) ($userRole ?? '')) === 'admin' ? 'true' : 'false' ?>;
 
         // Per-installation setting from Settings page: show/hide item discount type dropdown (fixed/%).
         // When hidden, all item discounts are treated as fixed.
@@ -359,6 +399,38 @@ $canEditLineDiscount = can('sales.edit_discount');
             let successHtml = `<div class="max-w-[1920px] mx-auto px-4 mt-3"><div class="bg-green-50 border-l-4 border-green-400 p-3 rounded"><span class="text-green-700 text-sm"><i class="fas fa-check-circle mr-1"></i>${message}</span></div></div>`;
             $('.min-h-screen').prepend(successHtml);
             setTimeout(() => $('.bg-green-50').fadeOut(), 3000);
+        }
+
+        function validateProductDiscountLimits(items) {
+            const errors = [];
+            if (!CAN_EDIT_DISCOUNT || IS_ADMIN_USER) {
+                return errors;
+            }
+
+            (items || []).forEach((item) => {
+                const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                const discountRaw = parseFloat(item.discount) || 0;
+                const discountType = SHOW_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+
+                let enteredDiscount = 0;
+                if (discountRaw > 0) {
+                    enteredDiscount = discountType === 'percentage' ? (lineBase * discountRaw / 100) : discountRaw;
+                    if (enteredDiscount > lineBase) {
+                        enteredDiscount = lineBase;
+                    }
+                }
+
+                const limitType = (item.max_discount_type === 'percentage') ? 'percentage' : 'fixed';
+                const limitValue = Math.max(0, parseFloat(item.max_discount_value) || 0);
+                const allowedDiscount = limitType === 'percentage' ? (lineBase * limitValue / 100) : limitValue;
+
+                if (enteredDiscount - allowedDiscount > 0.0001) {
+                    const limitLabel = limitType === 'percentage' ? `${limitValue}%` : `<?= session()->get('currency_symbol') ?>${limitValue.toFixed(2)}`;
+                    errors.push(`Discount for ${item.name} exceeds product limit (${limitLabel}).`);
+                }
+            });
+
+            return errors;
         }
 
         // ============================================
@@ -430,6 +502,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                 code: '',
                 price: 0,
                 cost_price: 0,
+                max_discount_value: 0,
+                max_discount_type: 'fixed',
                 quantity: 1,
                 stock: 0, // High number to not restrict editing
                 carton_size: 0,
@@ -467,6 +541,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     code: product.code || '',
                     price: parseFloat(product.price || 0),
                     cost_price: product.cost_price || 0,
+                    max_discount_value: parseFloat(product.max_discount_value || 0),
+                    max_discount_type: product.max_discount_type || 'fixed',
                     quantity: 1,
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
@@ -596,7 +672,9 @@ $canEditLineDiscount = can('sales.edit_discount');
                                         price: product.price,
                                         cost_price: product.cost_price,
                                         quantity: product.quantity,
-                                        carton_size: product.carton_size
+                                        carton_size: product.carton_size,
+                                        max_discount_value: product.max_discount_value,
+                                        max_discount_type: product.max_discount_type
                                     }))
                                 };
                             },
@@ -661,6 +739,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     code: product.code || '',
                     price: parseFloat(product.price || 0),
                     cost_price: product.cost_price || 0,
+                    max_discount_value: parseFloat(product.max_discount_value || 0),
+                    max_discount_type: product.max_discount_type || 'fixed',
                     quantity: cart[idx].quantity, // Keep the edited quantity
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
@@ -836,6 +916,12 @@ $canEditLineDiscount = can('sales.edit_discount');
                 showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
                 return false;
             }
+            const limitErrors = validateProductDiscountLimits(validItems);
+            if (limitErrors.length > 0) {
+                e.preventDefault();
+                showFormErrors(limitErrors);
+                return false;
+            }
             if (!SHOW_DISCOUNT_TYPE) {
                 validItems.forEach(it => {
                     it.discount_type = 'fixed';
@@ -899,6 +985,11 @@ $canEditLineDiscount = can('sales.edit_discount');
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
                 const validItems = getValidCartItems();
+                const limitErrors = validateProductDiscountLimits(validItems);
+                if (limitErrors.length > 0) {
+                    showFormErrors(limitErrors);
+                    return false;
+                }
                 if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
                     $('#cart-data').val(JSON.stringify(validItems));
                     $('form')[0].submit();
@@ -1015,6 +1106,11 @@ $canEditLineDiscount = can('sales.edit_discount');
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
                 const validItems = getValidCartItems();
+                const limitErrors = validateProductDiscountLimits(validItems);
+                if (limitErrors.length > 0) {
+                    showFormErrors(limitErrors);
+                    return false;
+                }
                 if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
                     $('#cart-data').val(JSON.stringify(validItems));
                     $('form')[0].submit();
@@ -1025,8 +1121,48 @@ $canEditLineDiscount = can('sales.edit_discount');
             }
         });
 
-        // Initialize with one empty line ready
-        addEmptyLine();
+        // Initialize with draft/old-input cart if available; otherwise one empty row.
+        if (window.__DRAFT_PREFILL__) {
+            try {
+                cart = (window.__DRAFT_PREFILL__.cart || []).map(function(it) {
+                    return {
+                        id: it.id,
+                        name: it.name,
+                        code: it.code || '',
+                        price: parseFloat(it.price || 0),
+                        cost_price: parseFloat(it.cost_price || 0),
+                        max_discount_value: parseFloat(it.max_discount_value || 0),
+                        max_discount_type: it.max_discount_type || 'fixed',
+                        quantity: parseFloat(it.quantity || 0),
+                        stock: parseFloat(it.stock || 0),
+                        barcode: it.barcode || '',
+                        carton_size: parseFloat(it.carton_size || 0),
+                        discount: parseFloat(it.discount || 0) || 0,
+                        discount_type: it.discount_type || 'fixed'
+                    };
+                });
+                $('#discount_type').val(window.__DRAFT_PREFILL__.discountType || 'fixed').trigger('change');
+                $('#discount').val(window.__DRAFT_PREFILL__.discountValue || 0);
+                if (window.__DRAFT_PREFILL__.customerId) {
+                    $('#customer-select').val(String(window.__DRAFT_PREFILL__.customerId)).trigger('change');
+                }
+                if (window.__DRAFT_PREFILL__.employeeId) {
+                    $('#employee-select').val(String(window.__DRAFT_PREFILL__.employeeId)).trigger('change');
+                }
+                if (window.__DRAFT_PREFILL__.paymentMethod) {
+                    $('select[name="payment_method"]').val(window.__DRAFT_PREFILL__.paymentMethod).trigger('change');
+                }
+                if (typeof window.__DRAFT_PREFILL__.description === 'string') {
+                    $('#sale_description').val(window.__DRAFT_PREFILL__.description);
+                }
+                renderCart();
+            } catch (e) {
+                console.warn('Draft prefill failed', e);
+                addEmptyLine();
+            }
+        } else {
+            addEmptyLine();
+        }
     });
 </script>
 

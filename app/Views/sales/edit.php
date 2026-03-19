@@ -91,6 +91,16 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             </div>
         </div>
     <?php endif; ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="max-w-full mx-auto px-2 mt-2">
+            <div class="bg-amber-50 border-l-2 border-amber-400 p-2 rounded">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-amber-500 mr-2 text-xs"></i>
+                    <span class="text-amber-800 text-xs"><?= session()->getFlashdata('warning') ?></span>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Keyboard Shortcuts Modal -->
     <div id="helpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">

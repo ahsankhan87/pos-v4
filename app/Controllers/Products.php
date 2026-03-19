@@ -80,6 +80,8 @@ class Products extends BaseController
             'name' => 'required',
             'price' => 'required',
             'cost_price' => 'required',
+            'max_discount_value' => 'permit_empty|decimal|greater_than_equal_to[0]',
+            'max_discount_type' => 'permit_empty|in_list[fixed,percentage]',
             'barcode' => 'permit_empty|is_unique[pos_products.barcode]',
             'code' => 'permit_empty',
             'stock_alert' => 'permit_empty',
@@ -100,6 +102,12 @@ class Products extends BaseController
         }
 
         $post = $this->validator->getValidated();
+        if (($post['max_discount_type'] ?? 'fixed') === 'percentage' && (float) ($post['max_discount_value'] ?? 0) > 100) {
+            return redirect()->back()->withInput()->with('error', 'Product discount limit percentage cannot exceed 100.');
+        }
+        if (($post['max_discount_type'] ?? 'fixed') === 'fixed' && (float) ($post['max_discount_value'] ?? 0) > (float) ($post['cost_price'] ?? 0)) {
+            return redirect()->back()->withInput()->with('error', 'Product discount limit cannot exceed cost price.');
+        }
 
         $storeId = session('store_id') ?? '';
         $barcode = trim((string) ($post['barcode'] ?? ''));
@@ -111,6 +119,8 @@ class Products extends BaseController
             'name' => $post['name'],
             'price' => $post['price'],
             'cost_price' => $post['cost_price'],
+            'max_discount_value' => isset($post['max_discount_value']) ? (float) $post['max_discount_value'] : 0.0,
+            'max_discount_type' => $post['max_discount_type'] ?? 'fixed',
             'description' => $post['description'],
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
@@ -196,6 +206,8 @@ class Products extends BaseController
             'name' => 'required',
             'price' => 'required',
             'cost_price' => 'required',
+            'max_discount_value' => 'permit_empty|decimal|greater_than_equal_to[0]',
+            'max_discount_type' => 'permit_empty|in_list[fixed,percentage]',
             'code' => 'permit_empty',
             'stock_alert' => 'permit_empty',
             'description' => 'permit_empty',
@@ -213,6 +225,12 @@ class Products extends BaseController
         }
 
         $post = $this->validator->getValidated();
+        if (($post['max_discount_type'] ?? 'fixed') === 'percentage' && (float) ($post['max_discount_value'] ?? 0) > 100) {
+            return redirect()->back()->withInput()->with('error', 'Product discount limit percentage cannot exceed 100.');
+        }
+        if (($post['max_discount_type'] ?? 'fixed') === 'fixed' && (float) ($post['max_discount_value'] ?? 0) > (float) ($post['cost_price'] ?? 0)) {
+            return redirect()->back()->withInput()->with('error', 'Product discount limit cannot exceed cost price.');
+        }
         $model = new M_products();
         $model->update($id, $post);
 
@@ -273,7 +291,7 @@ class Products extends BaseController
         // Require minimum 1 character to search (performance optimization for large datasets)
         if (empty($q) || strlen(trim($q)) < 1) {
             // Return empty array or top 20 products
-            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size');
+            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type');
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
             }
@@ -288,7 +306,7 @@ class Products extends BaseController
                 ->orLike('code', $q)
                 ->orLike('barcode', $q)
                 ->groupEnd();
-            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size');
+            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type');
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
             }
@@ -308,6 +326,8 @@ class Products extends BaseController
                 'text' => $p['name'] . ' (Stock: ' . $this->formatQuantityForDisplay($p['quantity'], $p['carton_size']) . ')',
                 'price' => $p['price'],
                 'cost_price' => $p['cost_price'],
+                'max_discount_value' => isset($p['max_discount_value']) ? (float) $p['max_discount_value'] : 0.0,
+                'max_discount_type' => $p['max_discount_type'] ?? 'fixed',
                 'quantity' => $p['quantity'],
                 'carton_size' => $p['carton_size'] ?? null,
             ];
@@ -320,7 +340,7 @@ class Products extends BaseController
         $barcode = $this->request->getGet('barcode');
         $model = new \App\Models\M_products();
         $product = $model->where('barcode', $barcode)
-            ->select('id, name, code, cost_price, price, quantity, carton_size')
+            ->select('id, name, code, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type')
             ->forStore()
             ->first();
         return $this->response->setJSON($product ?? []);

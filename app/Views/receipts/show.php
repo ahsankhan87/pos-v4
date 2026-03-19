@@ -62,6 +62,12 @@
         </div>
     </div>
 
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="mb-4 bg-amber-50 border border-amber-200 text-amber-900 px-3 py-2 rounded text-sm">
+            <i class="fas fa-exclamation-circle mr-1"></i><?= esc(session()->getFlashdata('warning')) ?>
+        </div>
+    <?php endif; ?>
+
     <!-- Keyboard shortcuts hint banner (always visible) -->
     <div id="receipt-shortcuts-hint" class="mb-4 bg-blue-50 border border-blue-200 text-blue-900 px-3 py-2 rounded text-xs flex items-center">
         <i class="fas fa-keyboard mr-2"></i>

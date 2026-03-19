@@ -14,6 +14,8 @@ class M_products extends Model
         'name',
         'cost_price',
         'price',
+        'max_discount_value',
+        'max_discount_type',
         'quantity',
         'stock_alert',
         'description',

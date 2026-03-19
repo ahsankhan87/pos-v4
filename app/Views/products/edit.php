@@ -146,6 +146,22 @@
                                     <p class="text-xs text-gray-500 mt-1"><?= lang('Products.carton_help') ?></p>
                                     <?php if (!empty($errors['carton_size'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['carton_size']) ?></p><?php endif; ?>
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Max Discount Limit</label>
+                                    <input type="number" step="0.01" min="0" name="max_discount_value" value="<?= esc(old('max_discount_value', $product['max_discount_value'] ?? '0')) ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <p class="text-xs text-gray-500 mt-1">Used at sales line level to block non-admin over-limit discount.</p>
+                                    <?php if (!empty($errors['max_discount_value'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['max_discount_value']) ?></p><?php endif; ?>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Discount Limit Type</label>
+                                    <?php $maxDiscountType = old('max_discount_type', $product['max_discount_type'] ?? 'fixed'); ?>
+                                    <select name="max_discount_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="fixed" <?= $maxDiscountType === 'fixed' ? 'selected' : '' ?>>Fixed Amount (<?= esc($currency) ?>)</option>
+                                        <option value="percentage" <?= $maxDiscountType === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
+                                    </select>
+                                    <?php if (!empty($errors['max_discount_type'])): ?><p class="text-red-600 text-xs mt-1"><?= esc($errors['max_discount_type']) ?></p><?php endif; ?>
+                                </div>
+
                             </div>
                         </div>
                     </div>
