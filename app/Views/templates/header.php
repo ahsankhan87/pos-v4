@@ -229,6 +229,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                                     <a href="<?php echo site_url('sales') ?>" accesskey="l" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+L'])) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                         <i class="fas fa-list mr-2"></i> <?= lang('Navigation.sales_list') ?>
                                                     </a>
+                                                    <a href="<?= site_url('recurring-invoices') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'recurring-invoices') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                        <i class="fas fa-rotate mr-2"></i> <?= lang('Navigation.recurring_invoices') ?>
+                                                    </a>
                                                 <?php endif; ?>
                                                 <?php if (can('sales_order.view')): ?>
                                                     <a href="<?= site_url('sales-orders') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'sales-orders') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
@@ -607,6 +610,9 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                         <a href="<?= site_url('sales') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                             <i class="fas fa-list mr-2"></i> <?= lang('Navigation.sales_list') ?>
                                         </a>
+                                        <a href="<?= site_url('recurring-invoices') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'recurring-invoices') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
+                                            <i class="fas fa-rotate mr-2"></i> <?= lang('Navigation.recurring_invoices') ?>
+                                        </a>
                                     <?php endif; ?>
                                     <?php if (can('sales_order.view')): ?>
                                         <a href="<?= site_url('sales-orders') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'sales-orders') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
@@ -898,6 +904,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                             <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+L</span>
                                         <?php endif; ?>
                                     </a>
+
                                 <?php endif; ?>
 
                                 <?php if (can('purchases.create')): ?>

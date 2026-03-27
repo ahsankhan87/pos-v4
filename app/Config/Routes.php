@@ -114,6 +114,18 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->delete('delete/(:num)', 'Sales::delete/$1', ['filter' => 'permission:sales.delete']);
 });
 
+$routes->group('recurring-invoices', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'RecurringInvoices::index', ['filter' => 'permission:sales.view']);
+    $routes->get('new', 'RecurringInvoices::new', ['filter' => 'permission:sales.create']);
+    $routes->post('create', 'RecurringInvoices::create', ['filter' => 'permission:sales.create']);
+    $routes->get('edit/(:num)', 'RecurringInvoices::edit/$1', ['filter' => 'permission:sales.update']);
+    $routes->post('update/(:num)', 'RecurringInvoices::update/$1', ['filter' => 'permission:sales.update']);
+    $routes->post('toggle/(:num)', 'RecurringInvoices::toggle/$1', ['filter' => 'permission:sales.update']);
+    $routes->post('clone/(:num)', 'RecurringInvoices::cloneTemplate/$1', ['filter' => 'permission:sales.create']);
+    $routes->post('delete/(:num)', 'RecurringInvoices::delete/$1', ['filter' => 'permission:sales.delete']);
+    $routes->post('generate-now/(:num)', 'RecurringInvoices::generateNow/$1', ['filter' => 'permission:sales.create']);
+});
+
 $routes->group('sales-orders', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'SalesOrders::index', ['filter' => 'permission:sales_order.view']);
     $routes->get('new', 'SalesOrders::new', ['filter' => 'permission:sales_order.create']);

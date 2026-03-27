@@ -61,6 +61,7 @@ return [
     'most_used' => 'الأكثر استخدامًا',
     'new_pos_sale' => 'عملية بيع نقطة بيع جديدة',
     'sales_order' => 'أمر بيع',
+    'recurring_invoices' => 'الفواتير الدورية',
     'new_purchase' => 'شراء جديد',
     'pos_terminal' => 'نقطة البيع',
     'all_products' => 'كل المنتجات',
