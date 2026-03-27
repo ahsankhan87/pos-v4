@@ -13,11 +13,13 @@
                 <i class="fas fa-print mr-2"></i> <?= lang('Purchases.print') ?>
             </a>
 
-            <a href="<?= base_url("/purchases/create") ?>" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i> <?= lang('Purchases.create_new_purchase') ?>
-            </a>
+            <?php if (can('purchases.create')): ?>
+                <a href="<?= base_url("/purchases/create") ?>" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i> <?= lang('Purchases.create_new_purchase') ?>
+                </a>
+            <?php endif; ?>
 
-            <?php if (can('purchases.edit')): ?>
+            <?php if (can('purchases.update') || can('purchases.edit')): ?>
                 <a href="<?= base_url("/purchases/edit/{$purchase['id']}") ?>" class="btn btn-warning">
                     <i class="fas fa-edit mr-2"></i> <?= lang('Purchases.edit') ?>
                 </a>
@@ -36,9 +38,9 @@
         </div>
     <?php endif; ?>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Left Column - Purchase Info -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-3">
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_information') ?></h2>
 
@@ -152,7 +154,7 @@
         </div>
 
         <!-- Right Column - Items and Payments -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-9">
             <!-- Items -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_items') ?></h2>
@@ -180,7 +182,6 @@
                                             <?php endif; ?>
                                             <div>
                                                 <div class="font-medium text-gray-900"><?= $item['product_name'] ?></div>
-                                                <div class="text-sm text-gray-500"><?= $item['product_code'] ?></div>
                                             </div>
                                         </div>
                                     </td>
@@ -268,13 +269,11 @@
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-medium text-gray-900"><?= lang('Purchases.payments') ?></h2>
 
-                    <?php //if ($purchase['payment_status'] !== 'paid' && $permissions['purchases.payments']): 
-                    ?>
-                    <button type="button" id="addPaymentBtn2" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus mr-2"></i> <?= lang('Purchases.add_payment') ?>
-                    </button>
-                    <?php //endif; 
-                    ?>
+                    <?php if ($purchase['payment_status'] !== 'paid' && can('purchases.payments')): ?>
+                        <button type="button" id="addPaymentBtn2" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus mr-2"></i> <?= lang('Purchases.add_payment') ?>
+                        </button>
+                    <?php endif; ?>
                 </div>
 
                 <?php if (!empty($purchase['payments'])): ?>

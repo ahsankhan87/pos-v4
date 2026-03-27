@@ -35,11 +35,13 @@ class Products extends BaseController
     {
         helper('barcode');
         $model = new M_products();
+        $canViewCostPrice = can('reports.profit_loss');
         // Fetch product with category and supplier name
         $data['product'] = $model
-            ->select('pos_products.*, pos_categories.name as category_name, pos_suppliers.name as supplier_name')
+            ->select('pos_products.*, pos_categories.name as category_name, pos_suppliers.name as supplier_name, pos_units.name as unit_name, pos_units.abbreviation as unit_abbreviation')
             ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
             ->join('pos_suppliers', 'pos_suppliers.id = pos_products.supplier_id', 'left')
+            ->join('pos_units', 'pos_units.id = pos_products.unit_id', 'left')
             ->where('pos_products.id', $id)
             ->where('pos_products.store_id', session('store_id'))
             ->first();
@@ -48,6 +50,11 @@ class Products extends BaseController
         if (!$data['product']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Product not found');
         }
+
+        if (! $canViewCostPrice) {
+            unset($data['product']['cost_price']);
+        }
+
         return view('products/show', $data);
     }
 
@@ -104,9 +111,6 @@ class Products extends BaseController
         $post = $this->validator->getValidated();
         if (($post['max_discount_type'] ?? 'fixed') === 'percentage' && (float) ($post['max_discount_value'] ?? 0) > 100) {
             return redirect()->back()->withInput()->with('error', 'Product discount limit percentage cannot exceed 100.');
-        }
-        if (($post['max_discount_type'] ?? 'fixed') === 'fixed' && (float) ($post['max_discount_value'] ?? 0) > (float) ($post['cost_price'] ?? 0)) {
-            return redirect()->back()->withInput()->with('error', 'Product discount limit cannot exceed cost price.');
         }
 
         $storeId = session('store_id') ?? '';
@@ -227,9 +231,6 @@ class Products extends BaseController
         $post = $this->validator->getValidated();
         if (($post['max_discount_type'] ?? 'fixed') === 'percentage' && (float) ($post['max_discount_value'] ?? 0) > 100) {
             return redirect()->back()->withInput()->with('error', 'Product discount limit percentage cannot exceed 100.');
-        }
-        if (($post['max_discount_type'] ?? 'fixed') === 'fixed' && (float) ($post['max_discount_value'] ?? 0) > (float) ($post['cost_price'] ?? 0)) {
-            return redirect()->back()->withInput()->with('error', 'Product discount limit cannot exceed cost price.');
         }
         $model = new M_products();
         $model->update($id, $post);
@@ -363,10 +364,12 @@ class Products extends BaseController
         $supplierId = $this->request->getGet('supplier_id');
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
+        $canViewCostPrice = can('reports.profit_loss');
         // Map DataTables column indexes to database columns.
-        // Must align with the client-side columns array in products/index.php:
-        // 0: (checkbox), 1: id, 2: name, 3: category, 4: barcode, 5: cost_price, 6: price, 7: quantity, 8: (actions)
-        $columns = ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.cost_price', 'pos_products.price', 'pos_products.quantity', ''];
+        // Must align with the client-side columns array in products/index.php.
+        $columns = $canViewCostPrice
+            ? ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.cost_price', 'pos_products.price', 'pos_products.quantity', '']
+            : ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.price', 'pos_products.quantity', ''];
 
         $db = \Config\Database::connect();
         $storeId = session('store_id');
@@ -391,7 +394,24 @@ class Products extends BaseController
 
         $totalFiltered = (clone $filteredBuilder)->countAllResults();
 
-        $filteredBuilder->select('pos_products.id, pos_products.name, pos_products.cost_price, pos_products.price, pos_products.quantity, pos_products.carton_size, IFNULL(pos_products.description, "") as description, pos_products.barcode, pos_products.type, pos_products.is_stock_tracked, IFNULL(pos_categories.name, "") as category_name');
+        $selectFields = [
+            'pos_products.id',
+            'pos_products.name',
+            'pos_products.price',
+            'pos_products.quantity',
+            'pos_products.carton_size',
+            'IFNULL(pos_products.description, "") as description',
+            'pos_products.barcode',
+            'pos_products.type',
+            'pos_products.is_stock_tracked',
+            'IFNULL(pos_categories.name, "") as category_name',
+        ];
+
+        if ($canViewCostPrice) {
+            $selectFields[] = 'pos_products.cost_price';
+        }
+
+        $filteredBuilder->select(implode(', ', $selectFields));
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 1); // default to ID column index
@@ -409,6 +429,13 @@ class Products extends BaseController
         $filteredBuilder->limit($length, $start);
 
         $products = $filteredBuilder->get()->getResultArray();
+
+        if (! $canViewCostPrice) {
+            foreach ($products as &$product) {
+                unset($product['cost_price']);
+            }
+            unset($product);
+        }
 
         return $this->response->setJSON([
             'draw' => $draw,

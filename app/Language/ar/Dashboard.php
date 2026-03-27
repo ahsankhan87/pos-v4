@@ -6,6 +6,8 @@ return [
     'today_sales' => 'مبيعات اليوم',
     'month_sales' => 'مبيعات هذا الشهر',
     'low_stock_items' => 'أصناف منخفضة المخزون',
+    'total_debtors_amount' => 'إجمالي المدينين',
+    'total_creditors_amount' => 'إجمالي الدائنين',
     'inventory_value' => 'قيمة المخزون',
     'recent_sales' => 'أحدث المبيعات',
     'view_all' => 'عرض الكل',

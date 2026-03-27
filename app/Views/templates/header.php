@@ -1091,7 +1091,7 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                                 <div class="text-sm text-yellow-900">
                                     <strong><?= lang('Navigation.heads_up') ?></strong> <?= lang('Navigation.to') ?> <?= $bannerInfo['is_trial'] ? lang('Navigation.trial') : lang('Navigation.subscription_plan') ?> <?= $bannerInfo['days_left'] === 0 ? lang('Navigation.has_expired') : lang('Navigation.ending_soon') ?>.
                                     <?= lang('Navigation.visit_website') ?> <a target="_blank" rel="noopener" href="https://khybersoft.com" class="underline"><?= lang('Navigation.our_website') ?></a>
-                                    <?= lang('Navigation.or') ?> <a href="tel:<?= preg_replace('/[^0-9+]/', '', '+923459079213') ?>" class="underline"><?= lang('Navigation.call_us') ?></a> <?= lang('Navigation.to') ?> <a href="billing/manage"><?= lang('Navigation.renew_subscription') ?></a>.
+                                    <?= lang('Navigation.or') ?> <a href="tel:<?= preg_replace('/[^0-9+]/', '', '+923459079213') ?>" class="underline"><?= lang('Navigation.call_us') ?></a> <?= lang('Navigation.to') ?> <a href="<?= site_url('billing/manage') ?>" class="underline"><?= lang('Navigation.renew_subscription') ?></a>.
                                 </div>
                                 <form method="post" action="<?= site_url('billing/dismiss-banner') ?>">
                                     <?= csrf_field() ?>

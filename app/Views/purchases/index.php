@@ -86,7 +86,7 @@
         const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
         const permissions = {
             view: <?= can('purchases.view') ? 'true' : 'false' ?>,
-            update: <?= can('purchases.update') ? 'true' : 'false' ?>,
+            update: <?= (can('purchases.update') || can('purchases.edit')) ? 'true' : 'false' ?>,
             delete: <?= can('purchases.delete') ? 'true' : 'false' ?>
         };
 

@@ -53,9 +53,9 @@ $canEditLineDiscount = can('sales.edit_discount');
     <?php if (session()->get('error')): ?>
         <div class="max-w-full mx-auto px-2 mt-2">
             <div class="bg-red-50 border-l-2 border-red-400 p-2 rounded">
-                <div class="flex items-center">
+                <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-red-400 mr-2 text-xs"></i>
-                    <span class="text-red-700 text-xs"><?= session()->get('error') ?></span>
+                    <div class="text-red-700 text-xs whitespace-pre-line"><?= nl2br(esc((string) session()->get('error'))) ?></div>
                 </div>
             </div>
         </div>
@@ -662,6 +662,7 @@ $canEditLineDiscount = can('sales.edit_discount');
 
             cart.forEach((item) => {
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                const qty = parseFloat(item.quantity) || 0;
                 const discountRaw = parseFloat(item.discount) || 0;
                 const discountType = SHOW_ITEM_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
 
@@ -675,7 +676,7 @@ $canEditLineDiscount = can('sales.edit_discount');
 
                 const limitType = (item.max_discount_type === 'percentage') ? 'percentage' : 'fixed';
                 const limitValue = Math.max(0, parseFloat(item.max_discount_value) || 0);
-                const allowedDiscount = limitType === 'percentage' ? (lineBase * limitValue / 100) : limitValue;
+                const allowedDiscount = limitType === 'percentage' ? (lineBase * limitValue / 100) : (limitValue * qty);
 
                 if (enteredDiscount - allowedDiscount > 0.0001) {
                     const limitLabel = limitType === 'percentage' ? `${limitValue}%` : `<?= session()->get('currency_symbol') ?>${limitValue.toFixed(2)}`;
@@ -689,12 +690,13 @@ $canEditLineDiscount = can('sales.edit_discount');
         function showFormErrors(errors) {
             $('.bg-red-50').remove(); // Remove existing errors
             if (errors.length > 0) {
+                const itemsHtml = errors.map((error) => `<li>${error}</li>`).join('');
                 let errorHtml = `
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                     <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                        <div class="flex items-center">
+                        <div class="flex items-start">
                             <i class="fas fa-exclamation-triangle text-red-400 mr-3"></i>
-                            <span class="text-red-700">${errors.join(' ')}</span>
+                            <ul class="text-red-700 space-y-1 list-disc pl-4">${itemsHtml}</ul>
                         </div>
                     </div>
                 </div>

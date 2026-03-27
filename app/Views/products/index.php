@@ -1,5 +1,6 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
+<?php $canViewCostPrice = can('reports.profit_loss'); ?>
 
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
@@ -110,7 +111,9 @@
                             <th scope="col"><?= lang('Products.name') ?></th>
                             <th scope="col"><?= lang('Products.category') ?></th>
                             <th scope="col"><?= lang('Products.barcode') ?></th>
-                            <th scope="col"><?= lang('Products.cost_price') ?></th>
+                            <?php if ($canViewCostPrice): ?>
+                                <th scope="col"><?= lang('Products.cost_price') ?></th>
+                            <?php endif; ?>
                             <th scope="col"><?= lang('Products.price') ?></th>
                             <th scope="col"><?= lang('Products.quantity') ?></th>
                             <th scope="col"><?= lang('Products.actions') ?></th>
@@ -175,6 +178,7 @@
             update: <?= can('products.update') ? 'true' : 'false' ?>,
             adjust: <?= can('inventory.update') ? 'true' : 'false' ?>,
             delete: <?= can('products.delete') ? 'true' : 'false' ?>,
+            costPrice: <?= $canViewCostPrice ? 'true' : 'false' ?>,
         };
 
         const table = $('#productsTable').DataTable({
@@ -292,11 +296,11 @@
                         return escapeHtml(data ?? '');
                     }
                 },
-                {
+                ...(permissions.costPrice ? [{
                     data: 'cost_price',
                     name: 'cost_price',
                     render: data => currencySymbol + formatNumber(data)
-                },
+                }] : []),
                 {
                     data: 'price',
                     name: 'price',

@@ -1,6 +1,19 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <?php $currency = session('currency_symbol') ?? '$'; ?>
+<?php $canViewCostPrice = can('reports.profit_loss'); ?>
+<?php
+$discountLimitType = (($product['max_discount_type'] ?? 'fixed') === 'percentage') ? 'percentage' : 'fixed';
+$discountLimitValue = (float) ($product['max_discount_value'] ?? 0);
+$discountLimitLabel = $discountLimitType === 'percentage'
+    ? rtrim(rtrim(number_format($discountLimitValue, 2, '.', ''), '0'), '.') . '%'
+    : esc($currency) . ' ' . number_format($discountLimitValue, 2, '.', '');
+$unitLabel = trim((string) ($product['unit_name'] ?? ''));
+if (!empty($product['unit_abbreviation'])) {
+    $unitLabel .= ' (' . $product['unit_abbreviation'] . ')';
+}
+$unitLabel = $unitLabel !== '' ? $unitLabel : lang('Products.not_available');
+?>
 
 <div class="min-h-screen bg-slate-100">
     <!-- Top Bar -->
@@ -48,6 +61,10 @@
                                 <div class="font-medium text-gray-900"><?= esc($product['code'] ?? '') ?></div>
                             </div>
                             <div>
+                                <div class="text-gray-500"><?= lang('Products.unit') ?></div>
+                                <div class="font-medium text-gray-900"><?= esc($unitLabel) ?></div>
+                            </div>
+                            <div>
                                 <div class="text-gray-500"><?= lang('Products.category') ?></div>
                                 <div class="font-medium text-gray-900"><?= esc($product['category_name'] ?? lang('Products.not_available')) ?></div>
                             </div>
@@ -62,6 +79,14 @@
                             <div>
                                 <div class="text-gray-500"><?= lang('Products.stock_alert') ?></div>
                                 <div class="font-medium text-gray-900"><?= number_format((float)($product['stock_alert'] ?? 0), 2, '.', '') ?></div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500"><?= lang('Products.expiry_date') ?></div>
+                                <div class="font-medium text-gray-900"><?= !empty($product['expiry_date']) ? esc($product['expiry_date']) : lang('Products.not_available') ?></div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Stock Tracking</div>
+                                <div class="font-medium text-gray-900"><?= ((int) ($product['is_stock_tracked'] ?? 1)) === 1 ? 'Enabled' : 'Disabled' ?></div>
                             </div>
                             <div>
                                 <div class="text-gray-500"><?= lang('Products.created') ?></div>
@@ -80,10 +105,12 @@
                             <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-calculator text-emerald-600"></i> <?= lang('Products.pricing_inventory') ?></h3>
                         </div>
                         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <div class="text-gray-500"><?= lang('Products.cost_price') ?></div>
-                                <div class="font-medium text-gray-900"><?= esc($currency) ?> <?= number_format((float)($product['cost_price'] ?? 0), 2, '.', '') ?></div>
-                            </div>
+                            <?php if ($canViewCostPrice): ?>
+                                <div>
+                                    <div class="text-gray-500"><?= lang('Products.cost_price') ?></div>
+                                    <div class="font-medium text-gray-900"><?= esc($currency) ?> <?= number_format((float)($product['cost_price'] ?? 0), 2, '.', '') ?></div>
+                                </div>
+                            <?php endif; ?>
                             <div>
                                 <div class="text-gray-500"><?= lang('Products.retail_price') ?></div>
                                 <div class="font-medium text-gray-900"><?= esc($currency) ?> <?= number_format((float)($product['price'] ?? 0), 2, '.', '') ?></div>
@@ -96,6 +123,27 @@
                                 <div class="text-gray-500"><?= lang('Products.pieces_per_carton') ?></div>
                                 <div class="font-medium text-gray-900"><?= isset($product['carton_size']) && $product['carton_size'] !== null ? number_format((float)$product['carton_size'], 2, '.', '') : lang('Products.not_available') ?></div>
                             </div>
+                            <?php if ($canViewCostPrice): ?>
+                                <div>
+                                    <div class="text-gray-500">Margin</div>
+                                    <div class="font-medium text-gray-900">
+                                        <?php
+                                        $cost = (float) ($product['cost_price'] ?? 0);
+                                        $price = (float) ($product['price'] ?? 0);
+                                        if ($cost > 0) {
+                                            echo number_format((($price - $cost) / $cost) * 100, 2, '.', '') . '%';
+                                        } else {
+                                            echo lang('Products.not_available');
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <div>
+                                <div class="text-gray-500">Discount Limit</div>
+                                <div class="font-medium text-gray-900"><?= $discountLimitLabel ?> (<?= $discountLimitType === 'percentage' ? 'Percentage' : 'Fixed Amount' ?>)</div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

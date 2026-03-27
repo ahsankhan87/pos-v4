@@ -18,6 +18,7 @@ class PurchaseModel extends Model
         'total_amount',
         'discount',
         'discount_type',
+        'tax_rate',
         'tax_amount',
         'shipping_cost',
         'grand_total',
@@ -395,8 +396,30 @@ class PurchaseModel extends Model
             }
         }
 
-        // Update purchase header
-        $this->update($id, $data);
+        // Update purchase header first. If this fails, abort the transaction so
+        // header fields (tax_rate, discount, shipping, etc.) do not silently fail.
+        $headerData = $data;
+
+        // Avoid false unique validation failure when invoice number is unchanged.
+        if (isset($headerData['invoice_no']) && isset($oldPurchase['invoice_no']) && (string) $headerData['invoice_no'] === (string) $oldPurchase['invoice_no']) {
+            unset($headerData['invoice_no']);
+        }
+
+        // Provide the current id for validation placeholders like {id}.
+        $headerData['id'] = $id;
+
+        if (! $this->update($id, $headerData)) {
+            log_message('error', 'Purchase header update failed', [
+                'purchase_id' => $id,
+                'errors' => $this->errors(),
+                'data' => $headerData,
+                'db_error' => $this->db->error(),
+            ]);
+
+            $this->db->transRollback();
+
+            return false;
+        }
 
         // Insert new/updated items
         foreach ($items as $item) {

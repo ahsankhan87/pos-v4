@@ -35,7 +35,8 @@ class Dashboard extends BaseController
             //'weeklySales' => $this->getWeeklySales(),
             'monthlySales' => $this->getMonthlySalesTotal(),
             //'monthlySalesData' => $this->getMonthlySales(),
-            'lowStockItems' => $this->getLowStockItems(),
+            'totalDebtorsAmount' => $this->getTotalDebtorsAmount(),
+            'totalCreditorsAmount' => $this->getTotalCreditorsAmount(),
             'recentSales' => $this->getRecentSales(5),
             'topProducts' => $this->getTopProducts(5),
             'inventoryValue' => $this->getInventoryValue(),
@@ -157,6 +158,62 @@ class Dashboard extends BaseController
             ->countAllResults();
     }
 
+    protected function getTotalDebtorsAmount()
+    {
+        $cache = \Config\Services::cache();
+        $amount = $cache->get('dashboard_total_debtors_amount');
+
+        if ($amount === null) {
+            $db = \Config\Database::connect();
+            $storeId = session('store_id');
+
+            $ledgerSub = $db->table('pos_customer_ledger')
+                ->select('customer_id, SUM(debit) as t_debit, SUM(credit) as t_credit')
+                ->groupBy('customer_id');
+
+            $builder = $db->table('pos_customers c')
+                ->select('COALESCE(SUM(CASE WHEN (COALESCE(c.opening_balance,0) + COALESCE(l.t_debit,0) - COALESCE(l.t_credit,0)) > 0 THEN (COALESCE(c.opening_balance,0) + COALESCE(l.t_debit,0) - COALESCE(l.t_credit,0)) ELSE 0 END), 0) as amount', false)
+                ->join('(' . $ledgerSub->getCompiledSelect() . ') l', 'l.customer_id = c.id', 'left');
+
+            if ($storeId !== null) {
+                $builder->where('c.store_id', $storeId);
+            }
+
+            $amount = (float) ($builder->get()->getRow()->amount ?? 0);
+            $cache->save('dashboard_total_debtors_amount', $amount, 3600);
+        }
+
+        return $amount;
+    }
+
+    protected function getTotalCreditorsAmount()
+    {
+        $cache = \Config\Services::cache();
+        $amount = $cache->get('dashboard_total_creditors_amount');
+
+        if ($amount === null) {
+            $db = \Config\Database::connect();
+            $storeId = session('store_id');
+
+            $ledgerSub = $db->table('pos_supplier_ledger')
+                ->select('supplier_id, SUM(debit) as t_debit, SUM(credit) as t_credit')
+                ->groupBy('supplier_id');
+
+            $builder = $db->table('pos_suppliers s')
+                ->select('COALESCE(SUM(CASE WHEN (COALESCE(s.opening_balance,0) + COALESCE(l.t_credit,0) - COALESCE(l.t_debit,0)) > 0 THEN (COALESCE(s.opening_balance,0) + COALESCE(l.t_credit,0) - COALESCE(l.t_debit,0)) ELSE 0 END), 0) as amount', false)
+                ->join('(' . $ledgerSub->getCompiledSelect() . ') l', 'l.supplier_id = s.id', 'left');
+
+            if ($storeId !== null) {
+                $builder->where('s.store_id', $storeId);
+            }
+
+            $amount = (float) ($builder->get()->getRow()->amount ?? 0);
+            $cache->save('dashboard_total_creditors_amount', $amount, 3600);
+        }
+
+        return $amount;
+    }
+
     protected function getRecentSales($limit = 5)
     {
         return $this->saleModel
@@ -224,6 +281,8 @@ class Dashboard extends BaseController
         $cache->delete('monthly_sales');
         $cache->delete('monthly_sales_total');
         $cache->delete('low_stock_items');
+        $cache->delete('dashboard_total_debtors_amount');
+        $cache->delete('dashboard_total_creditors_amount');
         $cache->delete('top_products');
         $cache->delete('inventory_value');
         session()->setFlashdata('message', 'Caches cleared successfully.');

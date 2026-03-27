@@ -165,9 +165,9 @@
         <?php endif; ?>
         <form id="purchaseForm" action="<?= base_url('/purchases/store') ?>" method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Left Column - Purchase Info -->
-                <div class="lg:col-span-1">
+                <div class="lg:col-span-3">
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_information') ?></h2>
 
@@ -245,7 +245,7 @@
                 </div>
 
                 <!-- Right Column - Items -->
-                <div class="lg:col-span-2">
+                <div class="lg:col-span-9">
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h2 class="text-lg font-medium text-gray-900 mb-4"><?= lang('Purchases.purchase_items') ?></h2>
 
@@ -355,7 +355,9 @@
                     <!-- Form Actions -->
                     <div class="mt-6 flex justify-end space-x-3">
                         <!-- <button type="button" id="saveDraftBtn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Save Draft</button> -->
-                        <button type="submit" class="btn btn-primary"><?= lang('Purchases.save_purchase') ?> <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd></button>
+                        <?php if (can('purchases.create')): ?>
+                            <button type="submit" class="btn btn-primary"><?= lang('Purchases.save_purchase') ?> <kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd></button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -672,17 +674,16 @@
 
             const $row = $(`
             <tr id="${rowId}" class="item-row" data-product-id="${item.product_id}">
-                <td class="px-2 py-4">
+                <td class="px-4 py-4">
                     <div class="flex items-center">
                         <div class="ml-4">
                             <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
-                            <div class="text-sm text-gray-500">${escapeHtml(item.code)}</div>
                             <div class="text-xs text-gray-400">${i18n.stock}: ${stockDisplay}</div>
                         </div>
                     </div>
                     <input type="hidden" name="items[${item.product_id}][product_id]" value="${item.product_id}">
                 </td>
-                <td class="px-2 py-4">
+                <td class="px-4 py-4">
                     <div class="space-y-1">
                         <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
                             value="${item.quantity.toFixed(2)}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
@@ -694,20 +695,20 @@
                         ` : `<div class="text-xs text-gray-500">${i18n.pieces}</div>`}
                     </div>
                 </td>
-                <td class="px-2 py-4">
+                <td class="px-4 py-4">
                     <input type="number" class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                         value="${item.cost_price}" min="0" step="0.01">
                 </td>
-                <td class="px-2 py-4">
+                <td class="px-4 py-4">
                     <input type="number" class="item-unit-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                         value="${item.unit_price}" min="0" step="0.01">
                 </td>
               
-                <td class="px-2 py-4 font-medium">
+                <td class="px-4 py-4 font-medium">
                     <span class="item-subtotal">${formatCurrency(item.subtotal)}</span>
                     <input type="hidden" class="item-subtotal-input" name="items[${item.product_id}][subtotal]" value="${item.subtotal}">
                 </td>
-                <td class="px-2 py-4">
+                <td class="px-4 py-4">
                     <button type="button" class="remove-item text-red-500 hover:text-red-700">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -1170,6 +1171,29 @@
 
     .select2-container--default .select2-results__option--highlighted[aria-selected] .text-gray-900 {
         color: #111827 !important;
+    }
+
+    /* Make purchase form textboxes clearly visible */
+    #purchaseForm input[type="text"],
+    #purchaseForm input[type="number"],
+    #purchaseForm input[type="datetime-local"],
+    #purchaseForm textarea,
+    #purchaseForm select {
+        border: 1px solid #94a3b8 !important;
+        background-color: #ffffff;
+    }
+
+    #purchaseForm input[type="text"]:focus,
+    #purchaseForm input[type="number"]:focus,
+    #purchaseForm input[type="datetime-local"]:focus,
+    #purchaseForm textarea:focus,
+    #purchaseForm select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+    }
+
+    #purchaseForm input[readonly] {
+        background-color: #f1f5f9;
     }
 
     /* Keyboard shortcut kbd styling */

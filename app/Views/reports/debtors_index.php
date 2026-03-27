@@ -70,6 +70,7 @@
             print: <?= json_encode(lang('Reports.print'), JSON_UNESCAPED_UNICODE) ?>,
             csv: <?= json_encode(lang('Reports.csv'), JSON_UNESCAPED_UNICODE) ?>,
             excel: <?= json_encode(lang('Reports.excel'), JSON_UNESCAPED_UNICODE) ?>,
+            all: <?= json_encode(lang('Reports.all'), JSON_UNESCAPED_UNICODE) ?>,
             totalsUpper: <?= json_encode(lang('Reports.totals_upper'), JSON_UNESCAPED_UNICODE) ?>,
             debtorsCustomersBalances: <?= json_encode(lang('Reports.debtors_customers_balances'), JSON_UNESCAPED_UNICODE) ?>,
             debtorsExportTitle: <?= json_encode(lang('Reports.debtors_export_title'), JSON_UNESCAPED_UNICODE) ?>,
@@ -91,7 +92,10 @@
                     d.onlyOutstanding = document.getElementById('onlyOutstanding').checked ? '1' : '0';
                 }
             },
-            lengthMenu: [25, 50, 100, 200],
+            lengthMenu: [
+                [25, 50, 100, 200, -1],
+                [25, 50, 100, 200, dtTexts.all]
+            ],
             pageLength: 25,
             order: [
                 [7, 'desc']

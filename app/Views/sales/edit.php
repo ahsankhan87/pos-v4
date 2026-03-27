@@ -84,9 +84,9 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
     <?php if (session()->get('error')): ?>
         <div class="max-w-full mx-auto px-2 mt-2">
             <div class="bg-red-50 border-l-2 border-red-400 p-2 rounded">
-                <div class="flex items-center">
+                <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-red-400 mr-2 text-xs"></i>
-                    <span class="text-red-700 text-xs"><?= session()->get('error') ?></span>
+                    <div class="text-red-700 text-xs whitespace-pre-line"><?= nl2br(esc((string) session()->get('error'))) ?></div>
                 </div>
             </div>
         </div>
@@ -598,6 +598,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
     const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
     const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
     const SHOW_ITEM_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
+    const IS_ADMIN_USER = <?= strtolower((string) ($userRole ?? '')) === 'admin' ? 'true' : 'false' ?>;
 
     function buildCartTabSequence(hasUnit) {
         let seq = hasUnit ? ['price', 'qty', 'unit', 'discount', 'discount_type'] : ['price', 'qty', 'discount', 'discount_type'];
@@ -697,6 +698,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             if (!$('select[name="payment_method"]').val()) {
                 errors.push('Please select a payment method.');
             }
+            errors = errors.concat(validateProductDiscountLimits());
             // Cash validation: ensure tendered >= total for cash payments
             // const payMethod = $('select[name="payment_method"]').val();
             // const payType = $('#payment_type').val();
@@ -709,15 +711,49 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             return errors;
         }
 
+        function validateProductDiscountLimits() {
+            const errors = [];
+            if (!CAN_EDIT_DISCOUNT || IS_ADMIN_USER) {
+                return errors;
+            }
+
+            cart.forEach((item) => {
+                const qty = parseFloat(item.quantity) || 0;
+                const lineBase = (parseFloat(item.price) || 0) * qty;
+                const discountRaw = parseFloat(item.discount) || 0;
+                const discountType = SHOW_ITEM_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
+
+                let enteredDiscount = 0;
+                if (discountRaw > 0) {
+                    enteredDiscount = discountType === 'percentage' ? (lineBase * discountRaw / 100) : discountRaw;
+                    if (enteredDiscount > lineBase) {
+                        enteredDiscount = lineBase;
+                    }
+                }
+
+                const limitType = (item.max_discount_type === 'percentage') ? 'percentage' : 'fixed';
+                const limitValue = Math.max(0, parseFloat(item.max_discount_value) || 0);
+                const allowedDiscount = limitType === 'percentage' ? (lineBase * limitValue / 100) : (limitValue * qty);
+
+                if (enteredDiscount - allowedDiscount > 0.0001) {
+                    const limitLabel = limitType === 'percentage' ? `${limitValue}%` : `<?= session()->get('currency_symbol') ?>${limitValue.toFixed(2)}`;
+                    errors.push(`Discount for ${item.name} exceeds product limit (${limitLabel}).`);
+                }
+            });
+
+            return errors;
+        }
+
         function showFormErrors(errors) {
             $('.bg-red-50').remove(); // Remove existing errors
             if (errors.length > 0) {
+                const itemsHtml = errors.map((error) => `<li>${error}</li>`).join('');
                 let errorHtml = `
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                     <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                        <div class="flex items-center">
+                        <div class="flex items-start">
                             <i class="fas fa-exclamation-triangle text-red-400 mr-3"></i>
-                            <span class="text-red-700">${errors.join(' ')}</span>
+                            <ul class="text-red-700 space-y-1 list-disc pl-4">${itemsHtml}</ul>
                         </div>
                     </div>
                 </div>
@@ -896,7 +932,10 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             code: product.code,
                             price: product.price,
                             quantity: product.quantity,
-                            cost_price: product.cost_price
+                            cost_price: product.cost_price,
+                            carton_size: product.carton_size,
+                            max_discount_value: product.max_discount_value,
+                            max_discount_type: product.max_discount_type
                         })),
                         pagination: {
                             more: false
@@ -979,6 +1018,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 code: item.code || item.product_code || '',
                 price: Number(item.price ?? 0),
                 cost_price: Number(item.cost_price ?? 0),
+                max_discount_value: Number(item.max_discount_value ?? 0),
+                max_discount_type: (item.max_discount_type === 'percentage') ? 'percentage' : 'fixed',
                 quantity: quantity > 0 ? quantity : 1,
                 stock: stock > 0 ? stock : (quantity > 0 ? quantity : 1),
                 barcode: item.barcode || '',
@@ -1101,6 +1142,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         code: product.code || '',
                         price: parseFloat(product.price || 0),
                         cost_price: product.cost_price || 0,
+                        max_discount_value: parseFloat(product.max_discount_value || 0),
+                        max_discount_type: product.max_discount_type || 'fixed',
                         quantity: 1,
                         stock: parseInt(product.quantity || 0),
                         carton_size: parseFloat(product.carton_size || 0)

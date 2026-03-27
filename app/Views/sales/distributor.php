@@ -30,9 +30,9 @@ $canEditLineDiscount = can('sales.edit_discount');
     <?php if (session()->get('error')): ?>
         <div class="max-w-[1920px] mx-auto px-4 mt-3">
             <div class="bg-red-50 border-l-4 border-red-400 p-3 rounded">
-                <div class="flex items-center">
+                <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
-                    <span class="text-red-700 text-sm"><?= session()->get('error') ?></span>
+                    <div class="text-red-700 text-sm whitespace-pre-line"><?= nl2br(esc((string) session()->get('error'))) ?></div>
                 </div>
             </div>
         </div>
@@ -409,6 +409,7 @@ $canEditLineDiscount = can('sales.edit_discount');
 
             (items || []).forEach((item) => {
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+                const qty = parseFloat(item.quantity) || 0;
                 const discountRaw = parseFloat(item.discount) || 0;
                 const discountType = SHOW_DISCOUNT_TYPE ? (item.discount_type || 'fixed') : 'fixed';
 
@@ -422,7 +423,7 @@ $canEditLineDiscount = can('sales.edit_discount');
 
                 const limitType = (item.max_discount_type === 'percentage') ? 'percentage' : 'fixed';
                 const limitValue = Math.max(0, parseFloat(item.max_discount_value) || 0);
-                const allowedDiscount = limitType === 'percentage' ? (lineBase * limitValue / 100) : limitValue;
+                const allowedDiscount = limitType === 'percentage' ? (lineBase * limitValue / 100) : (limitValue * qty);
 
                 if (enteredDiscount - allowedDiscount > 0.0001) {
                     const limitLabel = limitType === 'percentage' ? `${limitValue}%` : `<?= session()->get('currency_symbol') ?>${limitValue.toFixed(2)}`;

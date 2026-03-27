@@ -176,6 +176,7 @@ class Sales extends BaseController
 
         // Validation
         $errors = [];
+        $discountLimitErrors = [];
         if (!$payment_method) {
             $errors[] = 'Payment method is required.';
         }
@@ -190,7 +191,7 @@ class Sales extends BaseController
             }
         }
         if (!empty($errors)) {
-            return redirect()->back()->withInput()->with('error', implode(' ', $errors));
+            return redirect()->back()->withInput()->with('error', implode("\n", $errors));
         }
 
         // Enforce server-side restrictions for price/discount edits per role permissions.
@@ -199,17 +200,20 @@ class Sales extends BaseController
         foreach ($items as $line) {
             $productId = (int) ($line['id'] ?? 0);
             if ($productId <= 0) {
-                return redirect()->back()->withInput()->with('error', 'Invalid product in cart.');
+                $errors[] = 'Invalid product in cart.';
+                continue;
             }
 
             $product = $productModel->forStore()->find($productId);
             if (!$product) {
-                return redirect()->back()->withInput()->with('error', 'Product not found for sale item.');
+                $errors[] = 'Product not found for sale item.';
+                continue;
             }
 
             $qty = (float) ($line['quantity'] ?? 0);
             if ($qty < 0.01) {
-                return redirect()->back()->withInput()->with('error', 'Invalid quantity in cart.');
+                $errors[] = 'Invalid quantity in cart.';
+                continue;
             }
 
             $effectivePrice = $canEditLinePrice
@@ -245,7 +249,7 @@ class Sales extends BaseController
             $limitValue = max(0.0, (float) ($product['max_discount_value'] ?? 0));
             $allowedDiscountAmount = $limitType === 'percentage'
                 ? ($lineBase * ($limitValue / 100))
-                : $limitValue;
+                : ($limitValue * $qty);
 
             if ($enteredDiscountAmount - $allowedDiscountAmount > 0.0001) {
                 $productName = (string) ($product['name'] ?? ('Product #' . $productId));
@@ -254,7 +258,8 @@ class Sales extends BaseController
                     : number_format($limitValue, 2, '.', '');
 
                 if (!$isAdminOverrideUser) {
-                    return redirect()->back()->withInput()->with('error', 'Discount for "' . $productName . '" exceeds product limit (' . $limitLabel . ').');
+                    $discountLimitErrors[] = 'Discount for "' . $productName . '" exceeds product limit (' . $limitLabel . ').';
+                    continue;
                 }
 
                 $adminOverrideMessages[] = $productName . ' (entered discount exceeds configured limit ' . $limitLabel . ')';
@@ -269,6 +274,9 @@ class Sales extends BaseController
             }
 
             $sanitizedItems[] = $line;
+        }
+        if (!empty($errors) || !empty($discountLimitErrors)) {
+            return redirect()->back()->withInput()->with('error', implode("\n", array_merge($errors, $discountLimitErrors)));
         }
         $items = $sanitizedItems;
 
@@ -370,7 +378,7 @@ class Sales extends BaseController
         }
 
         if (!empty($errors)) {
-            return redirect()->back()->withInput()->with('error', implode(' ', $errors));
+            return redirect()->back()->withInput()->with('error', implode("\n", $errors));
         }
 
         // Fetch commission rate from employee table if employee_id is set
@@ -632,6 +640,8 @@ class Sales extends BaseController
                 'code' => $product['code'] ?? '',
                 'price' => (float) $line['price'],
                 'cost_price' => isset($line['cost_price']) ? (float) $line['cost_price'] : (float) ($product['cost_price'] ?? 0),
+                'max_discount_value' => isset($product['max_discount_value']) ? (float) $product['max_discount_value'] : 0.0,
+                'max_discount_type' => isset($product['max_discount_type']) && strtolower((string) $product['max_discount_type']) === 'percentage' ? 'percentage' : 'fixed',
                 'quantity' => (float) $line['quantity'],
                 'stock' => $currentStock + (float) $line['quantity'],
                 'barcode' => $product['barcode'] ?? '',
@@ -668,6 +678,7 @@ class Sales extends BaseController
             $adminOverrideMessages = [];
 
             $errors = [];
+            $discountLimitErrors = [];
             if (empty($cartData) || !is_array($cartData)) {
                 $errors[] = 'Cart is empty.';
             }
@@ -736,7 +747,7 @@ class Sales extends BaseController
                         $limitValue = max(0.0, (float) ($product['max_discount_value'] ?? 0));
                         $allowedDiscountAmount = $limitType === 'percentage'
                             ? ($lineBase * ($limitValue / 100))
-                            : $limitValue;
+                            : ($limitValue * $quantity);
 
                         if ($lineDiscount - $allowedDiscountAmount > 0.0001) {
                             $productName = (string) ($product['name'] ?? ('Product #' . $productId));
@@ -745,8 +756,8 @@ class Sales extends BaseController
                                 : number_format($limitValue, 2, '.', '');
 
                             if (!$isAdminOverrideUser) {
-                                $errors[] = 'Discount for "' . $productName . '" exceeds product limit (' . $limitLabel . ').';
-                                break;
+                                $discountLimitErrors[] = 'Discount for "' . $productName . '" exceeds product limit (' . $limitLabel . ').';
+                                continue;
                             }
 
                             $adminOverrideMessages[] = $productName . ' (entered discount exceeds configured limit ' . $limitLabel . ')';
@@ -765,6 +776,9 @@ class Sales extends BaseController
                         'discount_type' => $dtype,
                     ];
                 }
+            }
+            if (!empty($discountLimitErrors)) {
+                $errors = array_merge($errors, $discountLimitErrors);
             }
             // Compute discount strictly from item-wise totals in edit flow
             // Ignore global discount fallback to prevent unintended defaults (e.g., 1)
@@ -807,7 +821,7 @@ class Sales extends BaseController
             }
 
             if (!empty($errors)) {
-                return redirect()->back()->withInput()->with('error', implode(' ', $errors));
+                return redirect()->back()->withInput()->with('error', implode("\n", $errors));
             }
 
             if (!$customerId) {
@@ -1224,7 +1238,7 @@ class Sales extends BaseController
             }
         }
         if (!empty($errors)) {
-            return redirect()->back()->withInput()->with('error', implode(' ', $errors));
+            return redirect()->back()->withInput()->with('error', implode("\n", $errors));
         }
 
         // Walk-in customer handling: create/find default Walk-in per store when not selected

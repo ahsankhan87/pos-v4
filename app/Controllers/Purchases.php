@@ -221,6 +221,7 @@ class Purchases extends BaseController
             'total_amount' => $totals['total'],
             'discount' => $this->request->getPost('discount') ?? 0,
             'discount_type' => $this->request->getPost('discount_type') ?? 'fixed',
+            'tax_rate' => (float) ($this->request->getPost('tax_rate') ?? 0),
             'tax_amount' => $totals['tax'],
             'shipping_cost' => $this->request->getPost('shipping_cost') ?? 0,
             'grand_total' => $totals['grand_total'],
@@ -339,7 +340,7 @@ class Purchases extends BaseController
             'suppliers' => $this->supplierModel->findAll(),
             'products' => $this->productModel->select('id, name, code, cost_price, price, quantity')->findAll(),
             'stores' => $this->storeModel->findAll(),
-            'taxRate' => $settingModel->first()['tax_rate'] ?? 0,
+            'taxRate' => isset($purchase['tax_rate']) ? (float) $purchase['tax_rate'] : (float) ($settingModel->first()['tax_rate'] ?? 0),
         ];
 
         return view('purchases/edit', $data);
@@ -359,6 +360,12 @@ class Purchases extends BaseController
             'date' => 'required|valid_date',
             'items' => 'required',
             'payment_method' => 'required|in_list[cash,credit_card,bank_transfer,check,other]',
+            'discount' => 'permit_empty|numeric',
+            'discount_type' => 'permit_empty|in_list[fixed,percentage]',
+            'shipping_cost' => 'permit_empty|numeric',
+            'tax_rate' => 'permit_empty|numeric',
+            'paid_amount' => 'permit_empty|numeric',
+            'status' => 'permit_empty|in_list[received,pending,ordered]',
             'supplier_invoice_no' => 'permit_empty|max_length[100]',
             'invoice_image' => 'permit_empty|max_size[invoice_image,5120]|is_image[invoice_image]'
         ];
@@ -377,7 +384,6 @@ class Purchases extends BaseController
         // Process items to calculate totals
         $processedItems = [];
         $subtotal = 0;
-        $totalTax = 0;
 
         foreach ($items as $item) {
             if (empty($item['product_id']) || empty($item['quantity']) || empty($item['cost_price'])) {
@@ -389,14 +395,12 @@ class Purchases extends BaseController
             $unitPrice = (float)($item['unit_price'] ?? 0);
             $discount = (float)($item['discount'] ?? 0);
             $discountType = $item['discount_type'] ?? 'fixed';
-            $taxRate = (float)($item['tax_rate'] ?? 0);
-
-            // Calculate item totals
+            // Calculate item totals. Purchase tax is applied at header level,
+            // so the item subtotal stays pre-tax and only reflects item discounts.
             $itemBeforeDiscount = $quantity * $costPrice;
             $discountAmount = $discountType === 'percentage' ? ($itemBeforeDiscount * $discount / 100) : $discount;
-            $itemAfterDiscount = $itemBeforeDiscount - $discountAmount;
-            $itemTax = $itemAfterDiscount * ($taxRate / 100);
-            $itemSubtotal = $itemAfterDiscount + $itemTax;
+            $discountAmount = min($discountAmount, $itemBeforeDiscount);
+            $itemSubtotal = $itemBeforeDiscount - $discountAmount;
 
             $processedItems[] = [
                 'id' => $item['id'] ?? null,
@@ -406,13 +410,16 @@ class Purchases extends BaseController
                 'unit_price' => $unitPrice,
                 'discount' => $discount,
                 'discount_type' => $discountType,
-                'tax_rate' => $taxRate,
-                'tax_amount' => $itemTax,
+                'tax_rate' => 0,
+                'tax_amount' => 0,
                 'subtotal' => $itemSubtotal
             ];
 
             $subtotal += $itemSubtotal;
-            $totalTax += $itemTax;
+        }
+
+        if (empty($processedItems)) {
+            return redirect()->back()->withInput()->with('error', 'No valid items provided');
         }
 
         // Calculate final totals
@@ -421,8 +428,18 @@ class Purchases extends BaseController
         $shippingCost = (float)($this->request->getPost('shipping_cost') ?? 0);
         $taxRate = (float)($this->request->getPost('tax_rate') ?? 0);
 
-        $discountAmount = $discountType === 'percentage' ? ($subtotal * $discount / 100) : $discount;
-        $grandTotal = $subtotal - $discountAmount + $totalTax + $shippingCost;
+        $totals = $this->calculateTotals($processedItems);
+        $subtotal = (float) ($totals['total'] ?? 0);
+        $purchaseTaxAmount = (float) ($totals['tax'] ?? 0);
+        $grandTotal = (float) ($totals['grand_total'] ?? 0);
+        $paidAmount = (float) ($this->request->getPost('paid_amount') ?? $purchase['paid_amount'] ?? 0);
+        $paymentStatus = 'pending';
+
+        if ($paidAmount >= $grandTotal - 0.01) {
+            $paymentStatus = 'paid';
+        } elseif ($paidAmount > 0) {
+            $paymentStatus = 'partial';
+        }
 
         // Handle invoice image upload
         $invoiceImagePath = $purchase['invoice_image'] ?? null; // Keep existing image
@@ -464,10 +481,12 @@ class Purchases extends BaseController
             'discount' => $discount,
             'discount_type' => $discountType,
             'tax_rate' => $taxRate,
-            'tax_amount' => $totalTax,
+            'tax_amount' => $purchaseTaxAmount,
             'shipping_cost' => $shippingCost,
             'grand_total' => $grandTotal,
-            'due_amount' => $grandTotal - $purchase['paid_amount'], // Keep existing payments
+            'paid_amount' => $paidAmount,
+            'due_amount' => max(0, $grandTotal - $paidAmount),
+            'payment_status' => $paymentStatus,
             'payment_method' => $this->request->getPost('payment_method'),
             'note' => $this->request->getPost('note'),
             'status' => $this->request->getPost('status') ?? 'pending',

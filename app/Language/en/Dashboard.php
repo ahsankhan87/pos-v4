@@ -6,6 +6,8 @@ return [
     'today_sales' => "Today's Sales",
     'month_sales' => "This Month's Sales",
     'low_stock_items' => 'Low Stock Items',
+    'total_debtors_amount' => 'Total Debtors Amount',
+    'total_creditors_amount' => 'Total Creditors Amount',
     'inventory_value' => 'Inventory Value',
     'recent_sales' => 'Recent Sales',
     'view_all' => 'View All',
