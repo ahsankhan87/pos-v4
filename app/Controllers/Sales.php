@@ -674,6 +674,7 @@ class Sales extends BaseController
             $tenderedAmount = (float) ($this->request->getPost('tendered_amount') ?? 0);
             $employeeId = (int) ($this->request->getPost('employee_id') ?: 0);
             $customerId = (int) ($this->request->getPost('customer_id') ?: 0);
+            $description = trim((string) ($this->request->getPost('description') ?? ''));
             $isAdminOverrideUser = $this->isAdminUser();
             $adminOverrideMessages = [];
 
@@ -914,6 +915,7 @@ class Sales extends BaseController
                 $saleUpdate = [
                     'created_at' => $saleDate,
                     'customer_id' => $customerId,
+                    'description' => $description,
                     'payment_type' => $paymentType,
                     'payment_method' => $paymentMethod,
                     'total' => $total,
@@ -1516,6 +1518,9 @@ class Sales extends BaseController
 
         $returnItems = $this->request->getPost('return_items'); // [product_id => quantity]
         $reason = $this->request->getPost('reason');
+        $returnDate = (string) $this->request->getPost('return_date');
+        $returnDate = preg_match('/^\d{4}-\d{2}-\d{2}$/', $returnDate) ? $returnDate : date('Y-m-d');
+        $returnTimestamp = $returnDate . ' ' . date('H:i:s');
         $userId = session('user_id');
         $store_id = session('store_id');
 
@@ -1560,7 +1565,7 @@ class Sales extends BaseController
                             $item['cost_price'] ?? 0,
                             $item['price'] ?? 0,
                             $sale['invoice_no'] ?? '',
-                            date('Y-m-d H:i:s')
+                            $returnTimestamp
                         );
 
                         // Update customer ledger when payment type is credit
@@ -1582,13 +1587,13 @@ class Sales extends BaseController
                             $customerLedgerModel->insert([
                                 'customer_id' => $sale['customer_id'],
                                 'sale_id' => $saleId,
-                                'date' => date('Y-m-d H:i:s'),
+                                'date' => $returnTimestamp,
                                 'description' => 'Return for Invoice #' . $sale['invoice_no'],
                                 'debit' => 0,
                                 'credit' => $returnAmount,
                                 'balance' => $newBalance,
                                 'ref_no' => $sale['invoice_no'],
-                                'created_at' => date('Y-m-d H:i:s')
+                                'created_at' => $returnTimestamp
                             ]);
                         }
 
@@ -1610,7 +1615,7 @@ class Sales extends BaseController
                             'return_amount' => round($qty * $unitNetForRow, 2),
                             'reason' => $reason,
                             'user_id' => $userId,
-                            'created_at' => date('Y-m-d H:i:s'),
+                            'created_at' => $returnTimestamp,
                             'store_id' => $store_id,
                         ]);
                     }

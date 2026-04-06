@@ -76,6 +76,7 @@ return [
     'sold_qty' => 'الكمية المباعة',
     'returned' => 'المرتجع',
     'return_qty' => 'كمية الإرجاع',
+    'return_date' => 'تاريخ الإرجاع',
     'reason_for_return' => 'سبب الإرجاع',
     'cancel' => 'إلغاء',
     'process_return' => 'تنفيذ الإرجاع',

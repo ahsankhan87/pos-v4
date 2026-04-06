@@ -6,6 +6,7 @@ use App\Config\Billingcfg as BillingConfig;
 use App\Models\LicenseModel;
 use App\Models\PlanModel;
 use App\Models\SubscriptionModel;
+use App\Models\UserModel;
 
 class LicenseService
 {
@@ -13,6 +14,7 @@ class LicenseService
     protected $licenseModel;
     protected $planModel;
     protected $subscriptionModel;
+    protected $userModel;
 
     public function __construct()
     {
@@ -20,6 +22,7 @@ class LicenseService
         $this->licenseModel = new LicenseModel();
         $this->planModel = new PlanModel();
         $this->subscriptionModel = new SubscriptionModel();
+        $this->userModel = new UserModel();
     }
 
     protected function secret()
@@ -53,7 +56,7 @@ class LicenseService
      * $expiresAt controls the subscription expiry once activated.
      * $redeemBy (optional) limits how long this code can be activated (voucher window).
      */
-    public function generateLicenseCode($userId, $planCode, $expiresAt, $redeemBy = null)
+    public function generateLicenseCode($userId, $planCode, $expiresAt, $redeemBy = null, $storeId = null)
     {
         // Safety guard: do not allow generation unless explicitly enabled and from CLI
         $allow = getenv('ALLOW_LICENSE_GENERATION');
@@ -69,8 +72,11 @@ class LicenseService
             $redeemBy = is_numeric($redeemBy) ? (int) $redeemBy : strtotime($redeemBy);
         }
 
+        $resolvedStoreId = $this->resolveLicenseStoreId((int) $userId, $storeId);
+
         $payload = [
             'uid' => (int) $userId,
+            'sid' => $resolvedStoreId,
             'plan' => (string) $planCode,
             'exp' => is_numeric($expiresAt) ? (int) $expiresAt : strtotime($expiresAt),
             'iat' => $issuedAt,
@@ -92,6 +98,7 @@ class LicenseService
             'meta' => json_encode([
                 'issued_at' => $issuedAt,
                 'redeem_by' => $redeemBy,
+                'store_id' => $resolvedStoreId,
             ]),
         ]);
 
@@ -149,6 +156,12 @@ class LicenseService
             return [false, 'License user mismatch'];
         }
 
+        $currentStoreId = (int) (session()->get('store_id') ?? 0);
+        if (!empty($payload['sid']) && (int) $payload['sid'] !== $currentStoreId) {
+            $this->log('ACTIVATE_FAIL', $code, 'store_mismatch', $userId);
+            return [false, 'License store mismatch'];
+        }
+
         // Enforce single-use: if license was already activated, reject
         $existingLic = $this->licenseModel->findByCode($code);
         if ($existingLic && !empty($existingLic['activated_at'])) {
@@ -168,10 +181,11 @@ class LicenseService
         $sub = $this->subscriptionModel->where('user_id', $userId)->orderBy('id', 'DESC')->first();
         $data = [
             'user_id' => $userId,
+            'store_id' => (int) (session()->get('store_id') ?? 0),
             'plan_id' => $plan['id'],
             'status' => 'active',
             'is_trial' => 0,
-            'trial_ends_at' => null,
+            'trial_ends_at' => $sub['trial_ends_at'] ?? null,
             'renews_at' => $expAt,
             'ends_at' => null,
             'provider' => 'license',
@@ -200,6 +214,31 @@ class LicenseService
         }
 
         return [true, 'License activated'];
+    }
+
+    protected function resolveLicenseStoreId($userId, $storeId = null)
+    {
+        $storeId = $storeId !== null ? (int) $storeId : 0;
+        if ($storeId > 0) {
+            return $storeId;
+        }
+
+        $stores = $this->userModel->getUserStores((int) $userId);
+        if (count($stores) === 1) {
+            return (int) ($stores[0]['id'] ?? 0);
+        }
+
+        if (count($stores) > 1) {
+            throw new \RuntimeException('Multiple stores found for this user. Provide a store ID when generating the license.');
+        }
+
+        $user = $this->userModel->find((int) $userId);
+        $fallbackStoreId = (int) ($user['store_id'] ?? 0);
+        if ($fallbackStoreId > 0) {
+            return $fallbackStoreId;
+        }
+
+        throw new \RuntimeException('Unable to determine store ID for this user. Provide a store ID when generating the license.');
     }
 
     protected function log($event, $code, $detail, $userId)

@@ -183,7 +183,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1"><?= lang('Sales.date') ?></label>
-                            <input type="datetime-local" name="sale_date" value="<?= date('Y-m-d\TH:i:s') ?>" class="w-full text-sm rounded border-gray-300">
+                            <input type="datetime-local" name="sale_date" value="<?= date('Y-m-d\TH:i') ?>"
+                                class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
                         </div>
 
                         <div>
@@ -211,7 +212,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1"><?= lang('Sales.description') ?></label>
                             <textarea name="description" id="sale_description" rows="2"
-                                class="w-full text-sm rounded border-gray-300"
+                                class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500"
                                 placeholder="<?= esc(lang('Sales.optional_invoice_notes')) ?>"><?= esc(old('description', '')) ?></textarea>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">

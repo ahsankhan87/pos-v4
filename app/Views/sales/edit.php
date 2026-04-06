@@ -388,6 +388,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             </select>
                         </div>
 
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.description') ?></label>
+                            <textarea name="description" id="sale_description" rows="2"
+                                class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500"
+                                placeholder="<?= esc(lang('Sales.optional_invoice_notes')) ?>"><?= esc(old('description', $sale['description'] ?? '')) ?></textarea>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.pay_type') ?></label>

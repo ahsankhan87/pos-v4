@@ -47,10 +47,18 @@ class Billing extends BaseController
             ]);
         }
 
+        $starter = $this->plans->findByCode('starter');
+        if ($starter && (int) ($starter['trial_days'] ?? 0) <= 0) {
+            $this->plans->update((int) $starter['id'], ['trial_days' => 14]);
+        }
+
+        $userId = session()->get('user_id');
+
         $data = [
             'title' => 'Plans & Pricing',
             'plans' => $this->plans->where('is_active', 1)->findAll(),
-            'subscription' => $this->subs->getActiveForUser(session()->get('user_id')),
+            'subscription' => $this->subs->getActiveForUser($userId),
+            'hasUsedTrial' => $userId ? $this->subs->hasUsedTrial($userId) : false,
         ];
         return view('billing/plans', $data);
     }
@@ -65,6 +73,11 @@ class Billing extends BaseController
             return redirect()->to('/billing/plans')->with('error', 'Plan not found');
         }
 
+        if ($plan['code'] === 'starter' && (int) ($plan['trial_days'] ?? 0) <= 0) {
+            $this->plans->update((int) $plan['id'], ['trial_days' => 14]);
+            $plan = $this->plans->find((int) $plan['id']);
+        }
+
         $userId = session()->get('user_id');
         if (!$userId) {
             return redirect()->to('/login');
@@ -74,12 +87,18 @@ class Billing extends BaseController
         $sub = $this->subs->getActiveForUser($userId);
         // No existing subscription: start new
         if (!$sub) {
-            $trialEnds = $plan['price_monthly'] > 0 ? date('Y-m-d H:i:s', strtotime('+' . (int) ($plan['trial_days'] ?: 0) . ' days')) : null;
+            $trialDays = max(0, (int) ($plan['trial_days'] ?? 0));
+            if ($trialDays > 0 && $this->subs->hasUsedTrial($userId)) {
+                return redirect()->to('/billing/plans')->with('error', 'Your trial has already been used. Please activate a license or contact support to continue.');
+            }
+
+            $trialEnds = $trialDays > 0 ? date('Y-m-d H:i:s', strtotime('+' . $trialDays . ' days')) : null;
             $data = [
                 'user_id' => $userId,
+                'store_id' => (int) (session()->get('store_id') ?? 0),
                 'plan_id' => $plan['id'],
-                'status' => $plan['price_monthly'] > 0 ? 'trialing' : 'active',
-                'is_trial' => $plan['price_monthly'] > 0 ? 1 : 0,
+                'status' => $trialDays > 0 ? 'trialing' : 'active',
+                'is_trial' => $trialDays > 0 ? 1 : 0,
                 'trial_ends_at' => $trialEnds,
                 'renews_at' => $trialEnds,
                 'ends_at' => null,
@@ -117,7 +136,6 @@ class Billing extends BaseController
             'plan_id' => $plan['id'],
             'status' => 'active',
             'is_trial' => 0,
-            'trial_ends_at' => null,
             // keep renews_at as-is
             'ends_at' => null,
             'provider' => 'manual',

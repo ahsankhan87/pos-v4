@@ -11,11 +11,13 @@ class LicenseMake extends BaseCommand
     protected $group       = 'Billing';
     protected $name        = 'license:make';
     protected $description = 'Generate a signed license code for a user and plan';
-    protected $usage       = 'license:make <userId> <planCode> <expiry> [redeemBy]'; // redeemBy optional: e.g. "+7 days" or 2026-01-15
+    protected $usage       = 'license:make <userId> <planCode> <expiry> [redeemBy] [storeId]'; // redeemBy optional: e.g. "+7 days" or 2026-01-15
     protected $arguments   = [
         'userId'   => 'User ID the license is bound to',
         'planCode' => 'Plan code (e.g., pro)',
         'expiry'   => 'Expiry (strtotime-compatible, e.g., "+1 year" or 2026-01-01)',
+        'redeemBy' => 'Optional redeem deadline (e.g., "+7 days" or 2026-01-15)',
+        'storeId'  => 'Optional store ID to bind the license to a specific tenant/store',
     ];
 
     public function run(array $params)
@@ -24,6 +26,7 @@ class LicenseMake extends BaseCommand
         $planCode = $params[1] ?? null;
         $expiryArg = $params[2] ?? null;
         $redeemArg = $params[3] ?? null;
+        $storeIdArg = $params[4] ?? null;
 
         if (!$userId || !$planCode || !$expiryArg) {
             CLI::error('Usage: php spark ' . $this->name . ' <userId> <planCode> <expiry> [redeemBy]');
@@ -46,6 +49,16 @@ class LicenseMake extends BaseCommand
             }
         }
 
+        $storeId = null;
+        if ($storeIdArg !== null && $storeIdArg !== '') {
+            if (!ctype_digit((string) $storeIdArg)) {
+                CLI::error('Invalid storeId argument. Use a numeric store ID.');
+                return;
+            }
+
+            $storeId = (int) $storeIdArg;
+        }
+
         // Require explicit env flag for safety
         if (getenv('ALLOW_LICENSE_GENERATION') !== '1') {
             CLI::error('License generation disabled. Set ALLOW_LICENSE_GENERATION=1 in your environment.');
@@ -54,7 +67,7 @@ class LicenseMake extends BaseCommand
 
         $service = new LicenseService();
         try {
-            $code = $service->generateLicenseCode((int)$userId, (string)$planCode, $ts, $redeemTs);
+            $code = $service->generateLicenseCode((int)$userId, (string)$planCode, $ts, $redeemTs, $storeId);
             CLI::write('License Code:', 'green');
             CLI::write($code);
             if ($redeemTs) {
@@ -62,6 +75,11 @@ class LicenseMake extends BaseCommand
             } else {
                 $days = (int) (getenv('LICENSE_REDEEM_WINDOW_DAYS') ?: 7);
                 CLI::write('Redeem window: ' . $days . ' day(s) from issue');
+            }
+            if ($storeId !== null) {
+                CLI::write('Store ID: ' . $storeId);
+            } else {
+                CLI::write('Store ID: auto-resolved from user mapping');
             }
         } catch (\Throwable $e) {
             CLI::error('Failed: ' . $e->getMessage());

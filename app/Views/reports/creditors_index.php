@@ -5,23 +5,46 @@
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/buttons.dataTables.min.css">
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900"><?= esc($title) ?></h1>
-            <p class="mt-1 text-sm text-gray-500"><?= esc(lang('Reports.suppliers_outstanding_balances_with_print_and_export')) ?></p>
+    <div class="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-3 py-3 sm:px-4">
+            <div class="flex flex-col gap-0.5">
+                <h1 class="text-xl font-bold tracking-tight text-slate-900"><?= esc($title) ?></h1>
+                <p class="text-xs text-slate-500 sm:text-sm"><?= esc(lang('Reports.suppliers_outstanding_balances_with_print_and_export')) ?></p>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <label class="inline-flex items-center gap-2 text-sm">
-                <input type="checkbox" id="onlyOutstanding" class="rounded" checked>
-                <span><?= esc(lang('Reports.only_outstanding')) ?></span>
-            </label>
+        <div class="px-3 py-3 sm:px-4">
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-8 xl:items-end">
+                <div class="xl:col-span-3">
+                    <label for="fromDate" class="mb-1 block text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500"><?= esc(lang('Reports.from_date')) ?></label>
+                    <input type="date" id="fromDate" class="form-control form-control-sm w-full" style="border: 1px solid #cbd5e1; border-radius: 0.5rem; min-height: 36px;">
+                </div>
+                <div class="xl:col-span-3">
+                    <label for="toDate" class="mb-1 block text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500"><?= esc(lang('Reports.to_date')) ?></label>
+                    <input type="date" id="toDate" class="form-control form-control-sm w-full" style="border: 1px solid #cbd5e1; border-radius: 0.5rem; min-height: 36px;">
+                </div>
+                <div class="xl:col-span-2">
+                    <button type="button" id="applyFilters" class="btn btn-primary btn-sm w-full h-9 rounded-md"><?= esc(lang('Reports.filter')) ?></button>
+                </div>
+            </div>
+            <div class="mt-2.5 flex flex-col gap-2 border-t border-slate-100 pt-2.5 lg:flex-row lg:items-center lg:justify-between">
+                <label class="inline-flex items-center gap-2 self-start rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700 sm:text-sm">
+                    <input type="checkbox" id="onlyOutstanding" class="rounded" checked>
+                    <span><?= esc(lang('Reports.only_outstanding')) ?></span>
+                </label>
+                <div id="creditorsDateShortcuts" class="flex flex-wrap items-center gap-2">
+                    <button type="button" data-range="all" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.all')) ?></button>
+                    <button type="button" data-range="today" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.today')) ?></button>
+                    <button type="button" data-range="yesterday" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.yesterday')) ?></button>
+                    <button type="button" data-range="last7" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.last_7_days')) ?></button>
+                    <button type="button" data-range="last30" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.last_30_days')) ?></button>
+                    <button type="button" data-range="thisMonth" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.this_month')) ?></button>
+                    <button type="button" data-range="lastMonth" class="date-shortcut inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors"><?= esc(lang('Reports.last_month')) ?></button>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="table-card">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900"><?= esc(lang('Reports.creditors_summary')) ?></h2>
-        </div>
         <div class="overflow-x-auto">
             <table id="creditorsTable" class="data-table">
                 <thead>
@@ -59,6 +82,9 @@
 <script src="<?= base_url() ?>assets/datatable-1.11.5/buttons.print.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+
         const routes = {
             data: <?= json_encode(site_url('reports/creditors/data')) ?>,
             ledger: <?= json_encode(site_url('supplier-ledger/view')) ?>
@@ -70,6 +96,8 @@
             csv: <?= json_encode(lang('Reports.csv'), JSON_UNESCAPED_UNICODE) ?>,
             excel: <?= json_encode(lang('Reports.excel'), JSON_UNESCAPED_UNICODE) ?>,
             all: <?= json_encode(lang('Reports.all'), JSON_UNESCAPED_UNICODE) ?>,
+            fromDate: <?= json_encode(lang('Reports.from_date'), JSON_UNESCAPED_UNICODE) ?>,
+            toDate: <?= json_encode(lang('Reports.to_date'), JSON_UNESCAPED_UNICODE) ?>,
             totalsUpper: <?= json_encode(lang('Reports.totals_upper'), JSON_UNESCAPED_UNICODE) ?>,
             creditorsSuppliersBalances: <?= json_encode(lang('Reports.creditors_suppliers_balances'), JSON_UNESCAPED_UNICODE) ?>,
             creditorsExportTitle: <?= json_encode(lang('Reports.creditors_export_title'), JSON_UNESCAPED_UNICODE) ?>,
@@ -77,6 +105,145 @@
             showEntries: <?= json_encode(lang('Reports.show_entries')) ?>,
             ledger: <?= json_encode(lang('Reports.ledger'), JSON_UNESCAPED_UNICODE) ?>
         };
+
+        const fromDateInput = document.getElementById('fromDate');
+        const toDateInput = document.getElementById('toDate');
+        const onlyOutstandingCheckbox = document.getElementById('onlyOutstanding');
+        const applyFiltersButton = document.getElementById('applyFilters');
+        const shortcutButtons = Array.from(document.querySelectorAll('#creditorsDateShortcuts .date-shortcut'));
+
+        const initialFrom = (params.get('from') || '').trim();
+        const initialTo = (params.get('to') || '').trim();
+        const initialOnlyOutstanding = params.get('onlyOutstanding');
+
+        fromDateInput.value = initialFrom;
+        toDateInput.value = initialTo;
+        if (initialOnlyOutstanding === '0' || initialOnlyOutstanding === '1') {
+            onlyOutstandingCheckbox.checked = initialOnlyOutstanding === '1';
+        }
+
+        function formatDateValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+
+        function getShortcutRange(key) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (key === 'all') {
+                return {
+                    from: '',
+                    to: ''
+                };
+            }
+
+            if (key === 'today') {
+                const value = formatDateValue(today);
+                return {
+                    from: value,
+                    to: value
+                };
+            }
+
+            if (key === 'yesterday') {
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const value = formatDateValue(yesterday);
+                return {
+                    from: value,
+                    to: value
+                };
+            }
+
+            if (key === 'last7') {
+                const from = new Date(today);
+                from.setDate(from.getDate() - 6);
+                return {
+                    from: formatDateValue(from),
+                    to: formatDateValue(today)
+                };
+            }
+
+            if (key === 'last30') {
+                const from = new Date(today);
+                from.setDate(from.getDate() - 29);
+                return {
+                    from: formatDateValue(from),
+                    to: formatDateValue(today)
+                };
+            }
+
+            if (key === 'thisMonth') {
+                return {
+                    from: formatDateValue(new Date(today.getFullYear(), today.getMonth(), 1)),
+                    to: formatDateValue(new Date(today.getFullYear(), today.getMonth() + 1, 0))
+                };
+            }
+
+            if (key === 'lastMonth') {
+                return {
+                    from: formatDateValue(new Date(today.getFullYear(), today.getMonth() - 1, 1)),
+                    to: formatDateValue(new Date(today.getFullYear(), today.getMonth(), 0))
+                };
+            }
+
+            return null;
+        }
+
+        function syncShortcutButtons() {
+            let activeRange = 'custom';
+
+            shortcutButtons.forEach(function(button) {
+                const range = getShortcutRange(button.dataset.range);
+                if (range && range.from === fromDateInput.value && range.to === toDateInput.value) {
+                    activeRange = button.dataset.range;
+                }
+            });
+
+            shortcutButtons.forEach(function(button) {
+                const isActive = button.dataset.range === activeRange;
+                button.classList.toggle('bg-blue-600', isActive);
+                button.classList.toggle('border-blue-600', isActive);
+                button.classList.toggle('text-white', isActive);
+                button.classList.toggle('bg-white', !isActive);
+                button.classList.toggle('border-gray-300', !isActive);
+                button.classList.toggle('text-gray-700', !isActive);
+            });
+        }
+
+        function updateQueryString() {
+            const from = fromDateInput.value;
+            const to = toDateInput.value;
+
+            if (from) {
+                params.set('from', from);
+            } else {
+                params.delete('from');
+            }
+
+            if (to) {
+                params.set('to', to);
+            } else {
+                params.delete('to');
+            }
+
+            params.set('onlyOutstanding', onlyOutstandingCheckbox.checked ? '1' : '0');
+            history.replaceState({}, '', url.pathname + (params.toString() ? '?' + params.toString() : ''));
+        }
+
+        function getPrintDateSummaryHtml() {
+            const from = fromDateInput.value || dtTexts.all;
+            const to = toDateInput.value || dtTexts.all;
+
+            return '<div style="margin:0 0 8px 0;font-size:11px;color:#374151;">' +
+                '<strong>' + dtTexts.fromDate + ':</strong> ' + from +
+                ' &nbsp;|&nbsp; ' +
+                '<strong>' + dtTexts.toDate + ':</strong> ' + to +
+                '</div>';
+        }
 
         const table = $('#creditorsTable').DataTable({
             processing: true,
@@ -88,7 +255,9 @@
                 url: routes.data,
                 type: 'GET',
                 data: function(d) {
-                    d.onlyOutstanding = document.getElementById('onlyOutstanding').checked ? '1' : '0';
+                    d.from = fromDateInput.value;
+                    d.to = toDateInput.value;
+                    d.onlyOutstanding = onlyOutstandingCheckbox.checked ? '1' : '0';
                 }
             },
             lengthMenu: [
@@ -113,12 +282,20 @@
                     customize: function(win) {
                         var $body = $(win.document.body);
                         var $table = $body.find('table');
+                        var $title = $body.find('h1').first();
 
                         // Calculate totals from table rows
                         var openingTotal = 0,
                             debitsTotal = 0,
                             creditsTotal = 0,
                             balanceTotal = 0;
+
+                        $body.find('#print-date-range').remove();
+                        if ($title.length) {
+                            $('<div id="print-date-range">' + getPrintDateSummaryHtml() + '</div>').insertAfter($title);
+                        } else {
+                            $body.prepend('<div id="print-date-range">' + getPrintDateSummaryHtml() + '</div>');
+                        }
 
                         $table.find('tbody tr').each(function() {
                             var $cells = $(this).find('td');
@@ -177,7 +354,7 @@
                             $tfoot.find('tr').remove();
                         }
                         var $footerRow = $('<tr></tr>').appendTo($tfoot);
-                        $footerRow.html('<td colspan="3" style="font-weight:bold;">' + dtTexts.totalsUpper + '</td><td style="text-align:right;font-weight:bold;">' + currency + openingTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + debitsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + creditsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + balanceTotal.toFixed(2) + '</td><td></td>');
+                        $footerRow.html('<td colspan="3" style="font-weight:bold;">' + dtTexts.totalsUpper + '</td><td style="text-align:right;font-weight:bold;">' + currency + openingTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + debitsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + creditsTotal.toFixed(2) + '</td><td style="text-align:right;font-weight:bold;">' + currency + balanceTotal.toFixed(2) + '</td>');
 
                         $body.css({
                             'font-size': '11px',
@@ -360,9 +537,45 @@
             }
         });
 
-        document.getElementById('onlyOutstanding').addEventListener('change', function() {
+        onlyOutstandingCheckbox.addEventListener('change', function() {
+            updateQueryString();
             table.ajax.reload();
         });
+
+        function reloadTable(resetPaging) {
+            updateQueryString();
+            syncShortcutButtons();
+            table.ajax.reload(null, resetPaging !== false);
+        }
+
+        applyFiltersButton.addEventListener('click', function() {
+            reloadTable(true);
+        });
+
+        [fromDateInput, toDateInput].forEach(function(input) {
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    reloadTable(true);
+                }
+            });
+        });
+
+        shortcutButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                const range = getShortcutRange(button.dataset.range);
+                if (!range) {
+                    return;
+                }
+
+                fromDateInput.value = range.from;
+                toDateInput.value = range.to;
+                reloadTable(true);
+            });
+        });
+
+        syncShortcutButtons();
+        updateQueryString();
     });
 </script>
 <?= $this->endSection() ?>

@@ -19,11 +19,13 @@
         <?php
         $currentPlanId = $subscription['plan_id'] ?? null;
         $nextPlanId = $subscription['next_plan_id'] ?? null;
+        $hasUsedTrial = !empty($hasUsedTrial);
         ?>
         <?php foreach ($plans as $plan): ?>
             <?php
             $isCurrent = $currentPlanId && ((int)$currentPlanId === (int)$plan['id']);
             $isScheduled = $nextPlanId && ((int)$nextPlanId === (int)$plan['id']);
+            $trialLocked = empty($subscription) && $hasUsedTrial && (int)($plan['trial_days'] ?? 0) > 0;
             ?>
             <div class="bg-white shadow rounded p-4">
                 <div class="flex justify-between items-center">
@@ -53,6 +55,9 @@
                     <?php elseif ($isScheduled): ?>
                         <button class="px-3 py-2 bg-gray-200 text-gray-600 rounded cursor-not-allowed" disabled><?= lang('Billing.scheduled') ?></button>
                         <span class="ml-2 text-xs text-yellow-700">(<?= lang('Billing.willSwitchOnRenewal') ?>)</span>
+                    <?php elseif ($trialLocked): ?>
+                        <button class="px-3 py-2 bg-gray-200 text-gray-600 rounded cursor-not-allowed" disabled>Trial Used</button>
+                        <span class="ml-2 text-xs text-red-700">You have already used your trial for this account.</span>
                     <?php else: ?>
                         <a class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" href="<?= site_url('billing/subscribe/' . urlencode($plan['code'])) ?>">
                             <?= lang('Billing.choose') ?> <?= esc($plan['name']) ?>

@@ -22,9 +22,25 @@
             </div>
         <?php endif; ?>
 
-        <?php if (session()->has('message')): ?>
+        <?php $message = session('message') ?? ($message ?? null); ?>
+        <?php if ($message): ?>
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                <?= session('message') ?>
+                <?= $message ?>
+            </div>
+        <?php endif; ?>
+
+        <?php $loginUsername = $loginUsername ?? null; ?>
+        <?php $loginEmail = $loginEmail ?? null; ?>
+        <?php if ($loginUsername || $loginEmail): ?>
+            <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded relative" role="alert">
+                <p class="font-semibold">Your login details</p>
+                <?php if ($loginUsername): ?>
+                    <p class="mt-1 text-sm">Username: <?= esc($loginUsername) ?></p>
+                <?php endif; ?>
+                <?php if ($loginEmail): ?>
+                    <p class="text-sm">Email: <?= esc($loginEmail) ?></p>
+                <?php endif; ?>
+                <p class="mt-1 text-sm">Use the password you created during registration.</p>
             </div>
         <?php endif; ?>
 

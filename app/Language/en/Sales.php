@@ -76,6 +76,7 @@ return [
     'sold_qty' => 'Sold Qty',
     'returned' => 'Returned',
     'return_qty' => 'Return Qty',
+    'return_date' => 'Return Date',
     'reason_for_return' => 'Reason for Return',
     'cancel' => 'Cancel',
     'process_return' => 'Process Return',

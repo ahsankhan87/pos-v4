@@ -143,12 +143,7 @@ $showProfitDashboard = can('reports.profit_loss');
                 </div>
                 <div>
                     <p class="text-xs font-medium text-gray-500"><?= lang('Dashboard.today_sales') ?></p>
-                    <?php if ($showProfitDashboard): ?>
-                        <p class="text-xl font-semibold"><?= session()->get('currency_symbol') . number_format($todaySales, 2) ?></p>
-                    <?php else: ?>
-                        <p class="text-[11px] font-medium text-gray-500">No permission to view</p>
-                    <?php endif; ?>
-
+                    <p class="text-xl font-semibold"><?= session()->get('currency_symbol') . number_format($todaySales, 2) ?></p>
                 </div>
             </div>
         </div>
@@ -163,12 +158,7 @@ $showProfitDashboard = can('reports.profit_loss');
                 </div>
                 <div>
                     <p class="text-xs font-medium text-gray-500"><?= lang('Dashboard.month_sales') ?></p>
-                    <?php if ($showProfitDashboard): ?>
-                        <p class="text-xl font-semibold"><?= session()->get('currency_symbol') . number_format($monthlySales, 2) ?></p>
-                    <?php else: ?>
-                        <p class="text-[11px] font-medium text-gray-500">No permission to view</p>
-                    <?php endif; ?>
-
+                    <p class="text-xl font-semibold"><?= session()->get('currency_symbol') . number_format($monthlySales, 2) ?></p>
                 </div>
             </div>
         </div>

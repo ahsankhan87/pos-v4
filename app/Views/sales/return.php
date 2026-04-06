@@ -4,6 +4,10 @@
     <h2 class="text-2xl font-bold mb-6 text-blue-700"><?= lang('Sales.sales_return_for_invoice', ['invoice' => esc($sale['invoice_no'])]) ?></h2>
     <form method="post" action="<?= site_url('sales/processReturn/' . $sale['id']) ?>">
         <?= csrf_field() ?>
+        <div class="mb-4">
+            <label for="return_date" class="block font-semibold mb-1"><?= lang('Sales.return_date') ?></label>
+            <input type="date" id="return_date" name="return_date" value="<?= esc(old('return_date', date('Y-m-d'))) ?>" class="w-full border rounded px-3 py-2" required>
+        </div>
         <table class="min-w-full mb-4">
             <thead>
                 <tr>

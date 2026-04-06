@@ -2,11 +2,15 @@
 
 namespace App\Controllers;
 
+use App\Models\PlanModel;
+use App\Models\SubscriptionModel;
 use App\Models\UserModel;
+use App\Services\Tenancy\TenantProvisioningService;
 
 class Auth extends BaseController
 {
     protected $userModel;
+    protected $storeModel;
 
     public function __construct()
     {
@@ -18,6 +22,8 @@ class Auth extends BaseController
 
     public function login()
     {
+        $session = session();
+
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'username' => 'required',
@@ -42,7 +48,6 @@ class Auth extends BaseController
             }
 
             // Set user session
-            $session = session();
             $session->set([
                 'user_id' => $user['id'],
                 'username' => $user['username'],
@@ -63,6 +68,7 @@ class Auth extends BaseController
 
             // Find default store
             $defaultStore = null;
+
             foreach ($userStores as $store) {
                 if (!empty($store['is_default'])) {
                     $defaultStore = $store;
@@ -106,7 +112,10 @@ class Auth extends BaseController
         }
 
         $data = [
-            'title' => 'Login'
+            'title' => 'Login',
+            'message' => $this->buildRegisteredMessage(),
+            'loginUsername' => trim((string) $this->request->getGet('username')),
+            'loginEmail' => trim((string) $this->request->getGet('email')),
         ];
 
         return  view('auth/login', $data);
@@ -122,7 +131,9 @@ class Auth extends BaseController
                 'password' => 'required|min_length[5]',
                 'password_confirm' => 'required|matches[password]',
                 'name' => 'required|min_length[3]',
-                'store_id' => 'permit_empty|is_natural_no_zero'
+                'company_name' => 'required|min_length[2]|max_length[191]',
+                'company_slug' => 'required|min_length[3]|max_length[50]|alpha_dash',
+                'tenant_base_url' => 'required|valid_url|max_length[255]'
             ];
 
             if (!$this->validate($rules)) {
@@ -135,24 +146,336 @@ class Auth extends BaseController
                 'password' => $this->request->getPost('password'),
                 'name' => $this->request->getPost('name'),
                 'phone' => $this->request->getPost('phone'),
-                'is_active' => 1, // Set to 0 if you want admin approval
-                'store_id' => 0, // Default store assignment, can be updated later
+                'is_active' => 1,
             ];
 
-            $this->userModel->insert($data);
-            // Log the registration action
+            $companyName = trim((string) $this->request->getPost('company_name'));
+            $companySlug = trim((string) $this->request->getPost('company_slug'));
+            $tenantBaseUrl = $this->normalizeTenantBaseUrl((string) $this->request->getPost('tenant_base_url'));
 
-            logAction('registration', 'New user registered: ' . $data['username'] . ' with email: ' . $data['email']);
-            //
-            // Redirect to login page with success message
-            return redirect()->to('/login')->with('message', 'Registration successful! Please login.');
+            if ($tenantBaseUrl === '') {
+                return redirect()->back()->withInput()->with('error', 'Tenant base URL is invalid');
+            }
+
+            $tenantProvisioning = new TenantProvisioningService();
+            $slugCheck = $tenantProvisioning->validateSlug($companySlug);
+            if (!$slugCheck[0]) {
+                return redirect()->back()->withInput()->with('error', $slugCheck[1]);
+            }
+
+            $companySlug = $slugCheck[1];
+
+            $db = \Config\Database::connect();
+            $db->transBegin();
+
+            $storeId = $this->storeModel->insert([
+                'name' => $companyName,
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'address' => '',
+                'receipt_header' => $companyName,
+                'receipt_footer' => 'Thank you for your business',
+                'is_active' => 1,
+                'is_default' => 1,
+                'currency_code' => 'PKR',
+                'currency_symbol' => 'Rs',
+                'timezone' => 'Asia/Karachi',
+                'website_url' => $tenantBaseUrl . '/' . $companySlug,
+            ], true);
+
+            if (!$storeId) {
+                $db->transRollback();
+                $errors = $this->storeModel->errors();
+                $dbError = $db->error();
+
+                if (!empty($dbError['message'])) {
+                    log_message('error', 'Registration store creation failed: {message}', [
+                        'message' => $dbError['message'],
+                    ]);
+                }
+
+                $message = 'Unable to create company store';
+                if (!empty($errors)) {
+                    $message .= ': ' . implode(' | ', $errors);
+                } elseif (ENVIRONMENT !== 'production' && !empty($dbError['message'])) {
+                    $message .= ': ' . $dbError['message'];
+                }
+
+                return redirect()->back()->withInput()->with('error', $message);
+            }
+
+            $data['store_id'] = (int) $storeId;
+
+            $userId = $this->userModel->insert($data, true);
+            if (!$userId) {
+                $db->transRollback();
+                $errors = $this->userModel->errors();
+                return redirect()->back()->withInput()->with('error', 'Unable to create user account' . (!empty($errors) ? (': ' . implode(' | ', $errors)) : ''));
+            }
+
+            $linked = $this->storeModel->addUserToStore((int) $userId, (int) $storeId);
+            if (!$linked) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Unable to map user to company store');
+            }
+
+            $planModel = new PlanModel();
+            $starter = $planModel->findByCode('starter');
+            if (!$starter) {
+                $starterId = $planModel->insert([
+                    'code' => 'starter',
+                    'name' => 'Starter',
+                    'price_monthly' => 0,
+                    'price_yearly' => 0,
+                    'currency' => 'USD',
+                    'trial_days' => 14,
+                    'features' => json_encode(['analytics' => false, 'backups' => false, 'api' => false, 'multi_warehouse' => false, 'whatsapp' => false, 'import_export' => true]),
+                    'is_active' => 1,
+                ], true);
+
+                if (!$starterId) {
+                    $db->transRollback();
+                    $errors = $planModel->errors();
+                    $dbError = $db->error();
+
+                    if (!empty($dbError['message'])) {
+                        log_message('error', 'Registration starter plan creation failed: {message}', [
+                            'message' => $dbError['message'],
+                        ]);
+                    }
+
+                    $message = 'Unable to create starter plan';
+                    if (!empty($errors)) {
+                        $message .= ': ' . implode(' | ', $errors);
+                    } elseif (ENVIRONMENT !== 'production' && !empty($dbError['message'])) {
+                        $message .= ': ' . $dbError['message'];
+                    }
+
+                    return redirect()->back()->withInput()->with('error', $message);
+                }
+
+                $starter = $planModel->find($starterId);
+            }
+
+            if ($starter && (int) ($starter['trial_days'] ?? 0) <= 0) {
+                $planModel->update((int) $starter['id'], ['trial_days' => 14]);
+                $starter = $planModel->find((int) $starter['id']);
+            }
+
+            $subs = new SubscriptionModel();
+            $trialDays = max(0, (int) ($starter['trial_days'] ?? 0));
+            $trialEndsAt = $trialDays > 0 ? date('Y-m-d H:i:s', strtotime('+' . $trialDays . ' days')) : null;
+            $subId = $subs->insert([
+                'user_id' => (int) $userId,
+                'store_id' => (int) $storeId,
+                'plan_id' => (int) ($starter['id'] ?? 0),
+                'status' => $trialDays > 0 ? 'trialing' : 'active',
+                'is_trial' => $trialDays > 0 ? 1 : 0,
+                'trial_ends_at' => $trialEndsAt,
+                'renews_at' => $trialEndsAt,
+                'ends_at' => null,
+                'provider' => 'manual',
+            ]);
+
+            if (!$subId) {
+                $db->transRollback();
+                $errors = $subs->errors();
+                $dbError = $db->error();
+
+                if (!empty($dbError['message'])) {
+                    log_message('error', 'Registration starter subscription creation failed: {message}', [
+                        'message' => $dbError['message'],
+                    ]);
+                }
+
+                $message = 'Unable to create starter subscription';
+                if (!empty($errors)) {
+                    $message .= ': ' . implode(' | ', $errors);
+                } elseif (ENVIRONMENT !== 'production' && !empty($dbError['message'])) {
+                    $message .= ': ' . $dbError['message'];
+                }
+
+                return redirect()->back()->withInput()->with('error', $message);
+            }
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Registration failed while preparing company data');
+            }
+
+            try {
+                $provision = $tenantProvisioning->provision((int) $storeId, $companyName, $companySlug, (int) $userId, $tenantBaseUrl);
+            } catch (\Throwable $e) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Company provisioning failed: ' . $e->getMessage());
+            }
+
+            if (!$provision[0]) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Company provisioning failed: ' . $provision[1]);
+            }
+
+            $tenantData = $provision[1] ?? [];
+            $tenantAppUrl = preg_replace('#/public/?$#i', '', trim((string) ($tenantData['app_url'] ?? ''))) ?? '';
+            if ($tenantAppUrl !== '') {
+                $this->storeModel->update((int) $storeId, ['website_url' => $tenantAppUrl]);
+            }
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Registration failed while finalizing company setup');
+            }
+
+            $db->transCommit();
+            // Log the registration action
+            logAction('registration', 'New user registered: ' . $data['username'] . ' with email: ' . $data['email'], [
+                'user_id' => (int) $userId,
+                'store_id' => (int) $storeId,
+            ]);
+
+            $welcomeEmailSent = $this->sendRegistrationWelcomeEmail(
+                $data['email'],
+                $data['username'],
+                $companyName,
+                $tenantAppUrl !== '' ? $tenantAppUrl : ($tenantBaseUrl . '/' . $companySlug)
+            );
+
+            $tenantLoginUrl = '/login';
+            if ($tenantAppUrl !== '') {
+                $tenantLoginUrl = rtrim($tenantAppUrl, '/') . '/login?registered=1'
+                    . '&username=' . rawurlencode((string) $data['username'])
+                    . '&email=' . rawurlencode((string) $data['email'])
+                    . '&welcome_email=' . ($welcomeEmailSent ? '1' : '0');
+            }
+
+            $message = 'Registration successful! Please login using the username and password you created.';
+            if ($welcomeEmailSent) {
+                $message .= ' A welcome email has been sent to ' . $data['email'] . '.';
+            }
+
+            return redirect()->to($tenantLoginUrl)->with('message', $message);
         }
 
         $data = [
-            'title' => 'Register'
+            'title' => 'Register',
+            'tenant_base_url_default' => $this->getDefaultTenantBaseUrl(),
         ];
 
         return view('auth/register', $data);
+    }
+
+    private function getDefaultTenantBaseUrl()
+    {
+        $uri = $this->request->getUri();
+        $origin = $uri->getScheme() . '://' . $uri->getAuthority();
+
+        $segments = array_values($uri->getSegments());
+        $last = strtolower((string) end($segments));
+        if (in_array($last, ['register', 'login'], true)) {
+            array_pop($segments);
+        }
+
+        $rootFolder = strtolower(trim((string) basename(rtrim(ROOTPATH, "\\/"))));
+        $last = strtolower((string) end($segments));
+        if ($last === $rootFolder) {
+            array_pop($segments);
+        }
+
+        $basePath = empty($segments) ? '' : ('/' . implode('/', $segments));
+        return rtrim($origin . $basePath, '/');
+    }
+
+    private function normalizeTenantBaseUrl($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return '';
+        }
+
+        if (!preg_match('#^https?://#i', $url)) {
+            return '';
+        }
+
+        return rtrim($url, '/');
+    }
+
+    private function buildRegisteredMessage()
+    {
+        if ($this->request->getGet('registered') !== '1') {
+            return null;
+        }
+
+        $username = trim((string) $this->request->getGet('username'));
+        $email = trim((string) $this->request->getGet('email'));
+        $welcomeEmailSent = $this->request->getGet('welcome_email') === '1';
+
+        $parts = ['Registration successful. Sign in with the credentials you created during registration.'];
+
+        if ($username !== '') {
+            $parts[] = 'Username: ' . $username . '.';
+        }
+
+        if ($email !== '') {
+            $parts[] = 'Email: ' . $email . '.';
+        }
+
+        if ($welcomeEmailSent && $email !== '') {
+            $parts[] = 'A welcome email was sent to ' . $email . '.';
+        }
+
+        return implode(' ', $parts);
+    }
+
+    private function sendRegistrationWelcomeEmail($toEmail, $username, $companyName, $loginUrl)
+    {
+        $toEmail = trim((string) $toEmail);
+        if ($toEmail === '') {
+            return false;
+        }
+
+        try {
+            $emailConfig = config('Email');
+            if (empty($emailConfig->fromEmail)) {
+                log_message('warning', 'Welcome email skipped because Email.fromEmail is not configured.');
+                return false;
+            }
+
+            $email = service('email');
+            $email->clear(true);
+            $email->setFrom($emailConfig->fromEmail, $emailConfig->fromName ?: 'POS System');
+            $email->setTo($toEmail);
+            $email->setSubject('Welcome to ' . $companyName);
+
+            $message = implode("\n", [
+                'Welcome to ' . $companyName . '.',
+                '',
+                'Your business workspace is ready.',
+                'Login URL: ' . rtrim((string) $loginUrl, '/') . '/login',
+                'Username: ' . $username,
+                'Email: ' . $toEmail,
+                'Password: Use the password you created during registration.',
+                '',
+                'If you forget your password, use the password reset option on the login page.',
+            ]);
+
+            $email->setMessage($message);
+
+            if (!$email->send()) {
+                log_message('warning', 'Welcome email failed for {email}: {error}', [
+                    'email' => $toEmail,
+                    'error' => method_exists($email, 'printDebugger') ? strip_tags((string) $email->printDebugger(['headers'])) : 'unknown mail error',
+                ]);
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            log_message('warning', 'Welcome email exception for {email}: {message}', [
+                'email' => $toEmail,
+                'message' => $e->getMessage(),
+            ]);
+            return false;
+        }
     }
 
     public function forgotPassword()

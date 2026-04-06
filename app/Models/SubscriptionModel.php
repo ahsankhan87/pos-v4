@@ -13,6 +13,7 @@ class SubscriptionModel extends Model
     protected $returnType = 'array';
     protected $allowedFields = [
         'user_id',
+        'store_id',
         'plan_id',
         'next_plan_id',
         'status',
@@ -38,5 +39,17 @@ class SubscriptionModel extends Model
             ->groupEnd()
             ->orderBy('id', 'DESC')
             ->first();
+    }
+
+    public function hasUsedTrial($userId)
+    {
+        return $this->withDeleted()
+            ->where('user_id', (int) $userId)
+            ->groupStart()
+            ->where('trial_ends_at IS NOT NULL', null, false)
+            ->orWhere('is_trial', 1)
+            ->orWhere('status', 'trialing')
+            ->groupEnd()
+            ->first() !== null;
     }
 }

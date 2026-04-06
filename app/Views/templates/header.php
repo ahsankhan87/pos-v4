@@ -171,10 +171,8 @@ $segments = explode('/', $currentUrl);
 $segment1 = $segments[0] ?? '';
 $segment2 = $segments[1] ?? '';
 
-// $segment1 = $uri->getSegment(1) ?? '';
-// $segment2 = $uri->getSegment(2) ?? '';
-$isPosPage = ($uri->getSegment(1) === 'sales' && ($uri->getSegment(2) === 'new' || $uri->getSegment(2) === 'distributor'));
-$isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) === 'create');
+$isPosPage = ($segment1 === 'sales' && ($segment2 === 'new' || $segment2 === 'distributor'));
+$isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
 ?>
 
 <body class="min-h-full antialiased" data-page="<?= $isPosPage ? 'pos' : ($isPurchasePage ? 'purchase' : 'default') ?>">
@@ -1130,6 +1128,8 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="text-sm text-gray-500">
                     &copy; <?= date('Y') ?> <?= lang('Navigation.copyright') ?>
+                    <span class="mx-2">|</span>
+                    <span>Powered by <a href="https://khybersoft.com" target="_blank" rel="noopener" class="hover:text-gray-700 underline">khybersoft.com</a>.</span>
                 </div>
                 <div class="mt-4 md:mt-0">
                     <nav class="flex space-x-6">
@@ -1544,6 +1544,105 @@ $isPurchasePage = ($uri->getSegment(1) === 'purchases' && $uri->getSegment(2) ==
                     toggleOverlay(false);
                 }
             });
+        })();
+    </script>
+    <script>
+        (function() {
+            function applyGlobalDataTablePrintStyle(win) {
+                if (!win || !win.document) {
+                    return;
+                }
+
+                var doc = win.document;
+                var body = doc.body;
+                if (!body) {
+                    return;
+                }
+
+                body.style.color = '#111827';
+                body.style.fontSize = '11px';
+                body.style.lineHeight = '1.25';
+                body.style.margin = '0';
+                body.style.padding = '6mm';
+
+                var title = body.querySelector('h1');
+                if (title) {
+                    title.style.fontSize = '14px';
+                    title.style.margin = '0 0 8px 0';
+                    title.style.color = '#000';
+                }
+
+                if (!doc.getElementById('global-dt-print-powered-by')) {
+                    var poweredBy = doc.createElement('div');
+                    poweredBy.id = 'global-dt-print-powered-by';
+                    poweredBy.innerHTML = 'Powered by <a href="https://khybersoft.com" target="_blank" rel="noopener">khybersoft.com</a>.';
+                    body.appendChild(poweredBy);
+                }
+
+                if (!doc.getElementById('global-dt-print-style')) {
+                    var style = doc.createElement('style');
+                    style.id = 'global-dt-print-style';
+                    style.textContent = [
+                        '@page { margin: 6mm; }',
+                        'body { color: #000 !important; }',
+                        'table { width: 100% !important; border-collapse: collapse !important; }',
+                        'table.dataTable, table.dataTable.no-footer { border: 1px solid #4b5563 !important; }',
+                        'table.dataTable thead th, table.dataTable tbody td, table.dataTable tfoot th, table.dataTable tfoot td {',
+                        '  padding: 4px 6px !important;',
+                        '  color: #000 !important;',
+                        '  border: 1px solid #6b7280 !important;',
+                        '}',
+                        'table.dataTable thead th { background: #f3f4f6 !important; font-weight: 700 !important; }',
+                        'table.dataTable tfoot tr { background: #f3f4f6 !important; font-weight: 700 !important; }',
+                        'table.dataTable tbody tr { background: #ffffff !important; }',
+                        '#global-dt-print-powered-by { margin-top: 10px; text-align: right; font-size: 10px; color: #374151 !important; }',
+                        '#global-dt-print-powered-by a { color: #111827 !important; text-decoration: none; }'
+                    ].join('');
+                    doc.head.appendChild(style);
+                }
+            }
+
+            function patchDataTablePrintButton() {
+                if (!window.jQuery || !jQuery.fn || !jQuery.fn.dataTable || !jQuery.fn.dataTable.ext || !jQuery.fn.dataTable.ext.buttons || !jQuery.fn.dataTable.ext.buttons.print) {
+                    return false;
+                }
+
+                var printButton = jQuery.fn.dataTable.ext.buttons.print;
+                if (printButton.__globalPrintStylePatched) {
+                    return true;
+                }
+
+                var originalAction = printButton.action;
+                printButton.action = function(e, dt, button, config, cb) {
+                    config = config || {};
+
+                    if (!config.__globalDtPrintWrapped) {
+                        var userCustomize = config.customize;
+                        config.customize = function(win) {
+                            applyGlobalDataTablePrintStyle(win);
+                            if (typeof userCustomize === 'function') {
+                                userCustomize.call(this, win);
+                            }
+                        };
+                        config.__globalDtPrintWrapped = true;
+                    }
+
+                    return originalAction.call(this, e, dt, button, config, cb);
+                };
+
+                printButton.__globalPrintStylePatched = true;
+                return true;
+            }
+
+            if (!patchDataTablePrintButton()) {
+                var tries = 0;
+                var interval = setInterval(function() {
+                    tries += 1;
+                    if (patchDataTablePrintButton() || tries >= 30) {
+                        clearInterval(interval);
+                    }
+                }, 200);
+            }
         })();
     </script>
 
