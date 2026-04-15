@@ -103,6 +103,7 @@
             all: <?= json_encode(lang('Reports.all'), JSON_UNESCAPED_UNICODE) ?>,
             fromDate: <?= json_encode(lang('Reports.from_date'), JSON_UNESCAPED_UNICODE) ?>,
             toDate: <?= json_encode(lang('Reports.to_date'), JSON_UNESCAPED_UNICODE) ?>,
+            reportGeneratedOn: <?= json_encode(lang('Reports.report_generated_on'), JSON_UNESCAPED_UNICODE) ?>,
             totalsUpper: <?= json_encode(lang('Reports.totals_upper'), JSON_UNESCAPED_UNICODE) ?>,
             debtorsCustomersBalances: <?= json_encode(lang('Reports.debtors_customers_balances'), JSON_UNESCAPED_UNICODE) ?>,
             debtorsExportTitle: <?= json_encode(lang('Reports.debtors_export_title'), JSON_UNESCAPED_UNICODE) ?>,
@@ -250,11 +251,14 @@
         function getPrintDateSummaryHtml() {
             const from = fromDateInput.value || dtTexts.all;
             const to = toDateInput.value || dtTexts.all;
+            const printedAt = new Date().toLocaleString();
 
             return '<div style="margin:0 0 8px 0;font-size:11px;color:#374151;">' +
                 '<strong>' + dtTexts.fromDate + ':</strong> ' + from +
                 ' &nbsp;|&nbsp; ' +
                 '<strong>' + dtTexts.toDate + ':</strong> ' + to +
+                ' &nbsp;|&nbsp; ' +
+                '<strong>' + dtTexts.reportGeneratedOn + ':</strong> ' + printedAt +
                 '</div>';
         }
 
