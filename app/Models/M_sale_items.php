@@ -16,5 +16,10 @@ class M_sale_items extends Model
         'subtotal',
         'discount',
         'discount_type',
+        'is_gift',
+        'promotion_id',
+        'promotion_rule_id',
+        'source_product_id',
+        'qualifying_line_key',
     ];
 }

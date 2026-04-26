@@ -1184,7 +1184,10 @@ class Sales extends BaseController
             ->where('s.status !=', 'draft')
             ->where('s.created_at >=', $from . ' 00:00:00')
             ->where('s.created_at <=', $to . ' 23:59:59')
-            ->where('LOWER(cat.name)', strtolower($categoryName))
+            ->groupStart()
+            ->where('COALESCE(si.is_gift, 0)', 1)
+            ->orWhere('LOWER(cat.name)', strtolower($categoryName))
+            ->groupEnd()
             ->groupBy('s.customer_id, c.name, c.phone, c.area, cat.id, cat.name')
             ->orderBy('gift_qty', 'DESC');
 
@@ -1245,7 +1248,10 @@ class Sales extends BaseController
             ->where('s.status !=', 'draft')
             ->where('s.created_at >=', $from . ' 00:00:00')
             ->where('s.created_at <=', $to . ' 23:59:59')
-            ->where('LOWER(cat.name)', strtolower($categoryName))
+            ->groupStart()
+            ->where('COALESCE(si.is_gift, 0)', 1)
+            ->orWhere('LOWER(cat.name)', strtolower($categoryName))
+            ->groupEnd()
             ->groupBy('s.customer_id, c.name, c.phone, c.area, cat.id, cat.name')
             ->orderBy('gift_qty', 'DESC');
 

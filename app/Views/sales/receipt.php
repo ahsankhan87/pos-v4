@@ -19,7 +19,12 @@
         </tr>
         <?php foreach ($items as $item): ?>
             <tr>
-                <td class="py-2 px-4"><?= esc($item['product_name']) ?></td>
+                <td class="py-2 px-4">
+                    <?= esc($item['product_name']) ?>
+                    <?php if (!empty($item['is_gift'])): ?>
+                        <span class="ml-2 inline-block rounded bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">PROMO GIFT</span>
+                    <?php endif; ?>
+                </td>
                 <td class="py-2 px-4"><?= esc($item['price']) ?></td>
                 <td class="py-2 px-4"><?= esc($item['quantity']) ?></td>
                 <td class="py-2 px-4"><?= esc($item['subtotal']) ?></td>

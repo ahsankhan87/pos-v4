@@ -126,6 +126,16 @@ $routes->group('recurring-invoices', ['filter' => 'auth'], function ($routes) {
     $routes->post('generate-now/(:num)', 'RecurringInvoices::generateNow/$1', ['filter' => 'permission:sales.create']);
 });
 
+$routes->group('promotions', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Promotions::index', ['filter' => 'permission:promotions.view']);
+    $routes->get('new', 'Promotions::new', ['filter' => 'permission:promotions.create']);
+    $routes->post('create', 'Promotions::create', ['filter' => 'permission:promotions.create']);
+    $routes->get('edit/(:num)', 'Promotions::edit/$1', ['filter' => 'permission:promotions.update']);
+    $routes->post('update/(:num)', 'Promotions::update/$1', ['filter' => 'permission:promotions.update']);
+    $routes->post('toggle/(:num)', 'Promotions::toggle/$1', ['filter' => 'permission:promotions.update']);
+    $routes->post('delete/(:num)', 'Promotions::delete/$1', ['filter' => 'permission:promotions.delete']);
+});
+
 $routes->group('sales-orders', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'SalesOrders::index', ['filter' => 'permission:sales_order.view']);
     $routes->get('new', 'SalesOrders::new', ['filter' => 'permission:sales_order.create']);

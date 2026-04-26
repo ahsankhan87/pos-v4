@@ -207,7 +207,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                 <a href="<?= site_url('dashboard') ?>" id="dashboard-menu-link" accesskey="d" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+D'])) ?>" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800">
                                     <i class="fas fa-tachometer-alt mr-2 text-blue-200"></i> <?= lang('Navigation.dashboard') ?>
                                 </a>
-                                <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'products.view', 'products.create', 'customers.view', 'employees.view', 'inventory.view', 'categories.view'])): ?>
+                                <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'products.view', 'products.create', 'customers.view', 'employees.view', 'inventory.view', 'categories.view', 'promotions.view', 'promotions.create', 'promotions.update', 'promotions.delete'])): ?>
                                     <div class="relative dropdown-menu">
                                         <button class="dropdown-toggle px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-cash-register mr-2 text-blue-200"></i> <?= lang('Navigation.sales') ?>
@@ -229,6 +229,16 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                     </a>
                                                     <a href="<?= site_url('recurring-invoices') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'recurring-invoices') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
                                                         <i class="fas fa-rotate mr-2"></i> <?= lang('Navigation.recurring_invoices') ?>
+                                                    </a>
+                                                <?php endif; ?>
+                                                <?php if (can('promotions.create')): ?>
+                                                    <a href="<?= site_url('promotions/new') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'promotions' && $segment2 == 'new') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                        <i class="fas fa-plus-circle mr-2"></i> <?= lang('Promotions.new_promotion') ?>
+                                                    </a>
+                                                <?php endif; ?>
+                                                <?php if (can('promotions.view')): ?>
+                                                    <a href="<?= site_url('promotions') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'promotions' && $segment2 !== 'new') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                        <i class="fas fa-gift mr-2"></i> <?= lang('Navigation.promotions') ?>
                                                     </a>
                                                 <?php endif; ?>
                                                 <?php if (can('sales_order.view')): ?>
@@ -587,7 +597,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                         </a>
 
                         <!-- Mobile Sales Dropdown -->
-                        <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view'])): ?>
+                        <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'promotions.view', 'promotions.create', 'promotions.update', 'promotions.delete'])): ?>
                             <div>
                                 <button class="mobile-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600">
                                     <span class="flex items-center">
@@ -610,6 +620,16 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                         </a>
                                         <a href="<?= site_url('recurring-invoices') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'recurring-invoices') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
                                             <i class="fas fa-rotate mr-2"></i> <?= lang('Navigation.recurring_invoices') ?>
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if (can('promotions.create')): ?>
+                                        <a href="<?= site_url('promotions/new') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'promotions' && $segment2 == 'new') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
+                                            <i class="fas fa-plus-circle mr-2"></i> <?= lang('Promotions.new_promotion') ?>
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if (can('promotions.view')): ?>
+                                        <a href="<?= site_url('promotions') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'promotions' && $segment2 !== 'new') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
+                                            <i class="fas fa-gift mr-2"></i> <?= lang('Navigation.promotions') ?>
                                         </a>
                                     <?php endif; ?>
                                     <?php if (can('sales_order.view')): ?>

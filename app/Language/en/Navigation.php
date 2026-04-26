@@ -63,6 +63,7 @@ return [
     'sales_orders' => 'Salesman Orders',
     'sales_order' => 'Sales Order',
     'recurring_invoices' => 'Recurring Invoices',
+    'promotions' => 'Promotions',
     'new_purchase' => 'New Purchase',
     'pos_terminal' => 'POS Terminal',
     'all_products' => 'All Products',

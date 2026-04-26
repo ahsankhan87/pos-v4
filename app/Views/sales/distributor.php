@@ -495,6 +495,10 @@ $canEditLineDiscount = can('sales.edit_discount');
         let cart = [];
         let lastGrandTotal = 0;
 
+        function isPromotionGift(item) {
+            return Number(item && item.is_gift ? item.is_gift : 0) === 1;
+        }
+
         // Add empty line with editable product search
         function addEmptyLine() {
             // Add a placeholder item to cart with empty/default values
@@ -527,7 +531,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         }
 
         function addToCart(product) {
-            const existingItem = cart.find(item => item.id == product.id);
+            const existingItem = cart.find(item => !isPromotionGift(item) && item.id == product.id);
 
             if (existingItem) {
                 if (existingItem.quantity < existingItem.stock) {
@@ -564,6 +568,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             const showDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE;
 
             cart.forEach((item, idx) => {
+                const isGift = isPromotionGift(item);
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                 let lineDiscount = 0;
                 if (item.discount && parseFloat(item.discount) > 0) {
@@ -581,45 +586,50 @@ $canEditLineDiscount = can('sales.edit_discount');
 
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const stockDisplay = cartonSize > 1 ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
+                const promoMeta = isGift ? `<div class="text-xs text-amber-700 mt-1">${escapeHtml(item.promotion_text || 'Promotion gift item')}</div>` : '';
+                const readonlyPrice = !CAN_EDIT_PRICE || isGift;
+                const readonlyDiscount = !CAN_EDIT_DISCOUNT || isGift;
 
                 const discountTypeControl = showDiscountTypeDropdown ? `
                             <select onchange="updateItemDiscountType(${idx}, this.value)" 
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                ${readonlyDiscount ? 'disabled tabindex="-1"' : ''}
                                 data-field="discount_type" data-row="${idx}"
-                                class="cart-field w-16 px-1 py-1.5 text-xs border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                class="cart-field w-16 px-1 py-1.5 text-xs border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${readonlyDiscount ? ' bg-gray-100 cursor-not-allowed' : ''}">
                                 <option value="fixed" ${(item.discount_type || 'fixed') === 'fixed' ? 'selected' : ''}"><?= session()->get('currency_symbol') ?></option>
                                 <option value="percentage" ${(item.discount_type || 'fixed') === 'percentage' ? 'selected' : ''}>%</option>
                             </select>
                         ` : ``;
 
                 tbody += `
-                <tr class="hover:bg-gray-50" data-cart-idx="${idx}">
+                <tr class="${isGift ? 'bg-amber-50/70 hover:bg-amber-50' : 'hover:bg-gray-50'}" data-cart-idx="${idx}">
                     <td class="px-3 py-3">
-                        <select class="product-dropdown w-full" data-idx="${idx}" data-field="product" data-row="${idx}">
+                        <select class="product-dropdown w-full" data-idx="${idx}" data-field="product" data-row="${idx}" ${isGift ? 'disabled' : ''}>
                             <option value="${item.id}" selected>${escapeHtml(item.name)}</option>
                         </select>
-                        <div class="text-xs text-gray-500 mt-1"><?= lang('Sales.code') ?>: ${escapeHtml(item.code || <?= json_encode(lang('Sales.na')) ?>)} • <?= lang('Sales.stock_label') ?>: ${stockDisplay}</div>
+                        <div class="text-xs text-gray-500 mt-1"><?= lang('Sales.code') ?>: ${escapeHtml(item.code || <?= json_encode(lang('Sales.na')) ?>)} • <?= lang('Sales.stock_label') ?>: ${stockDisplay}${isGift ? ' • Promotion gift' : ''}</div>
+                        ${promoMeta}
                     </td>
                     <td class="px-3 py-3 text-center">
                         <input type="number" value="${item.quantity}" min="0.01" step="0.01" 
+                            ${isGift ? 'readonly tabindex="-1"' : ''}
                             onchange="updateQtyInput(${idx}, this.value)"
                             data-field="quantity" data-row="${idx}"
-                            class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${isGift ? ' bg-gray-100 cursor-not-allowed' : ''}">
                     </td>
                     <td class="px-3 py-3 text-center">
                         <input type="number" value="${item.price}" min="0" step="0.001" 
-                            ${CAN_EDIT_PRICE ? '' : 'readonly tabindex="-1"'}
+                            ${readonlyPrice ? 'readonly tabindex="-1"' : ''}
                             onchange="updatePrice(${idx}, this.value)"
                             data-field="price" data-row="${idx}"
-                            class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_PRICE ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                            class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${readonlyPrice ? ' bg-gray-100 cursor-not-allowed' : ''}">
                     </td>
                     <td class="px-3 py-3 text-center">
                         <div class="flex items-center gap-1">
                             <input type="number" value="${item.discount}" min="0" step="0.001" 
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                ${readonlyDiscount ? 'disabled tabindex="-1"' : ''}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-field="discount" data-row="${idx}"
-                                class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                class="cart-field w-24 px-2 py-1.5 text-sm text-center border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500${readonlyDiscount ? ' bg-gray-100 cursor-not-allowed' : ''}">
                             ${discountTypeControl}
                         </div>
                     </td>
@@ -628,8 +638,9 @@ $canEditLineDiscount = can('sales.edit_discount');
                     </td>
                     <td class="px-3 py-3 text-center">
                         <button type="button" onclick="removeItem(${idx})" 
-                            class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded">
-                            <i class="fas fa-trash"></i>
+                            class="${isGift ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-800 hover:bg-red-50'} p-2 rounded"
+                            ${isGift ? 'disabled title="Promotion gift item"' : ''}>
+                            <i class="fas ${isGift ? 'fa-lock' : 'fa-trash'}"></i>
                         </button>
                     </td>
                 </tr>
@@ -735,6 +746,9 @@ $canEditLineDiscount = can('sales.edit_discount');
         // Update cart item with selected product
         function updateCartItemWithProduct(idx, product) {
             if (cart[idx]) {
+                if (isPromotionGift(cart[idx])) {
+                    return;
+                }
                 cart[idx] = {
                     id: product.id,
                     name: product.name,
@@ -747,7 +761,14 @@ $canEditLineDiscount = can('sales.edit_discount');
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
                     discount: CAN_EDIT_DISCOUNT ? cart[idx].discount : 0,
-                    discount_type: (CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE) ? (cart[idx].discount_type || 'fixed') : 'fixed'
+                    discount_type: (CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE) ? (cart[idx].discount_type || 'fixed') : 'fixed',
+                    is_gift: 0,
+                    promotion_id: null,
+                    promotion_rule_id: null,
+                    source_product_id: null,
+                    qualifying_line_key: '',
+                    promotion_name: '',
+                    promotion_text: ''
                 };
                 renderCart();
             }
@@ -848,6 +869,7 @@ $canEditLineDiscount = can('sales.edit_discount');
 
         // Global cart functions
         window.updateQtyInput = function(idx, qty) {
+            if (isPromotionGift(cart[idx])) return;
             qty = parseFloat(qty);
             if (qty < 0.01) qty = 0.01;
             if (qty > cart[idx].stock) {
@@ -860,7 +882,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updatePrice = function(idx, price) {
-            if (!CAN_EDIT_PRICE) return;
+            if (!CAN_EDIT_PRICE || isPromotionGift(cart[idx])) return;
             price = parseFloat(price);
             if (price < 0) price = 0;
             cart[idx].price = price;
@@ -869,7 +891,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updateItemDiscount = function(idx, val) {
-            if (!CAN_EDIT_DISCOUNT) return;
+            if (!CAN_EDIT_DISCOUNT || isPromotionGift(cart[idx])) return;
             let v = parseFloat(val);
             if (isNaN(v) || v < 0) v = 0;
             cart[idx].discount = v;
@@ -878,13 +900,17 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updateItemDiscountType = function(idx, t) {
-            if (!CAN_EDIT_DISCOUNT || !SHOW_DISCOUNT_TYPE) return;
+            if (!CAN_EDIT_DISCOUNT || !SHOW_DISCOUNT_TYPE || isPromotionGift(cart[idx])) return;
             cart[idx].discount_type = (t === 'percentage') ? 'percentage' : 'fixed';
             // Just recalculate totals without re-rendering to preserve focus
             calculateTotals();
         };
 
         window.removeItem = function(idx) {
+            if (isPromotionGift(cart[idx])) {
+                showFormErrors(['Promotion gift items are controlled by the qualifying product. Change the sold quantity instead.']);
+                return;
+            }
             const removedItem = cart.splice(idx, 1)[0];
             showSuccessMessage(`${removedItem.name} ` + <?= json_encode(lang('Sales.removed_from_cart')) ?>);
             renderCart();
@@ -975,7 +1001,9 @@ $canEditLineDiscount = can('sales.edit_discount');
             // Delete key to remove the current row
             else if (e.key === 'Delete') {
                 e.preventDefault();
-                if (confirm('Delete this item?')) {
+                if (isPromotionGift(cart[row])) {
+                    showFormErrors(['Promotion gift items are controlled by the qualifying product. Change the sold quantity instead.']);
+                } else if (confirm('Delete this item?')) {
                     removeItem(row);
                 }
             } else if (e.key === 'F3') {
@@ -1140,7 +1168,14 @@ $canEditLineDiscount = can('sales.edit_discount');
                         barcode: it.barcode || '',
                         carton_size: parseFloat(it.carton_size || 0),
                         discount: parseFloat(it.discount || 0) || 0,
-                        discount_type: it.discount_type || 'fixed'
+                        discount_type: it.discount_type || 'fixed',
+                        is_gift: Number(it.is_gift || 0) === 1 ? 1 : 0,
+                        promotion_id: it.promotion_id || null,
+                        promotion_rule_id: it.promotion_rule_id || null,
+                        source_product_id: it.source_product_id || null,
+                        qualifying_line_key: it.qualifying_line_key || '',
+                        promotion_name: it.promotion_name || '',
+                        promotion_text: it.promotion_text || ''
                     };
                 });
                 $('#discount_type').val(window.__DRAFT_PREFILL__.discountType || 'fixed').trigger('change');

@@ -923,6 +923,10 @@ $canEditLineDiscount = can('sales.edit_discount');
         let skipRefocus = false; // Flag to prevent refocus during manual edits
         let lastAddSource = null; // 'barcode' | 'search' | null
 
+        function isPromotionGift(item) {
+            return Number(item && item.is_gift ? item.is_gift : 0) === 1;
+        }
+
         // Load cart from persistent session (real-time session)
         // No server session prefill
 
@@ -1041,7 +1045,7 @@ $canEditLineDiscount = can('sales.edit_discount');
 
         // Add product to cart
         function addToCart(product) {
-            const existingItem = cart.find(item => item.id == product.id);
+            const existingItem = cart.find(item => !isPromotionGift(item) && item.id == product.id);
 
             if (existingItem) {
                 if (existingItem.quantity < existingItem.stock) {
@@ -1093,6 +1097,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             const showItemDiscountTypeDropdown = CAN_EDIT_DISCOUNT && SHOW_ITEM_DISCOUNT_TYPE;
 
             cart.forEach((item, idx) => {
+                const isGift = isPromotionGift(item);
                 const lineBase = (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
                 let lineDiscount = 0;
                 if (item.discount && parseFloat(item.discount) > 0) {
@@ -1113,10 +1118,14 @@ $canEditLineDiscount = can('sales.edit_discount');
                 const hasCartons = cartonSize > 1;
                 // Do NOT auto-switch display unit; always keep user's chosen unit. Default stays 'pieces'.
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
+                const promoBadge = isGift ? '<span class="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800"><i class="fas fa-gift mr-1 text-[9px]"></i>Gift Item</span>' : '';
+                const promoMeta = isGift ? `<div class="text-[10px] text-amber-700 mt-0.5">${escapeHtml(item.promotion_text || 'Promotion gift item')}</div>` : '';
+                const readonlyPrice = !CAN_EDIT_PRICE || isGift;
+                const readonlyDiscount = !CAN_EDIT_DISCOUNT || isGift;
 
                 const discountTypeControl = showItemDiscountTypeDropdown ? `
                             <select onchange="updateItemDiscountType(${idx}, this.value)"
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                ${readonlyDiscount ? 'disabled tabindex="-1"' : ''}
                                 data-cart-idx="${idx}" class="item-discount-type text-xs border border-gray-300 rounded px-1.5 py-1${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
                                 <option value="fixed" ${ (item.discount_type||'fixed')==='fixed' ? 'selected' : '' }><?= session()->get('currency_symbol') ?></option>
                                 <option value="percentage" ${ (item.discount_type||'fixed')==='percentage' ? 'selected' : '' }>%</option>
@@ -1124,15 +1133,16 @@ $canEditLineDiscount = can('sales.edit_discount');
                         ` : ``;
 
                 tbody += `
-                <tr class="hover:bg-gray-50 transition-colors" data-cart-idx="${idx}">
+                <tr class="${isGift ? 'bg-amber-50/70 hover:bg-amber-50' : 'hover:bg-gray-50'} transition-colors" data-cart-idx="${idx}">
                     <td class="px-2 py-1.5">
                         <div class="flex items-center">
-                            <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center mr-1.5">
-                                <i class="fas fa-box text-blue-600 text-xs"></i>
+                            <div class="w-6 h-6 ${isGift ? 'bg-amber-100' : 'bg-blue-100'} rounded flex items-center justify-center mr-1.5">
+                                <i class="fas ${isGift ? 'fa-gift text-amber-600' : 'fa-box text-blue-600'} text-xs"></i>
                             </div>
                             <div>
-                                <div class="text-xs font-semibold text-gray-900">${escapeHtml(item.name)}</div>
+                                <div class="text-xs font-semibold text-gray-900 flex items-center flex-wrap">${escapeHtml(item.name)}${promoBadge}</div>
                                 <div class="text-xs text-gray-500">${escapeHtml(item.code)}</div>
+                                ${promoMeta}
                             </div>
                         </div>
                     </td>
@@ -1140,17 +1150,17 @@ $canEditLineDiscount = can('sales.edit_discount');
                         <div class="relative">
                             <span class="absolute left-1 top-1/2 -translate-y-1/2 text-gray-500 text-xs"><?= session()->get('currency_symbol') ?></span>
                             <input type="number" min="0" step="0.001" value="${item.price.toFixed(3)}" 
-                                ${CAN_EDIT_PRICE ? '' : 'readonly tabindex="-1"'}
+                                ${readonlyPrice ? 'readonly tabindex="-1"' : ''}
                                 onchange="updatePrice(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
-                                class="cart-price-input w-24 pl-3 pr-1 text-center border border-gray-300 rounded py-1 text-sm font-semibold focus:ring-1 focus:ring-blue-500${CAN_EDIT_PRICE ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                class="cart-price-input w-24 pl-3 pr-1 text-center border border-gray-300 rounded py-1 text-sm font-semibold focus:ring-1 focus:ring-blue-500${readonlyPrice ? ' bg-gray-100 cursor-not-allowed' : ''}">
                         </div>
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <div class="flex items-center justify-center space-x-0.5 mb-1">
                             <button type="button" onclick="decrementQty(${idx})" 
-                                class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors ${item.quantity <= 0.01 ? 'opacity-50 cursor-not-allowed' : ''}"
-                                ${item.quantity <= 0.01 ? 'disabled' : ''}>
+                                class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors ${(item.quantity <= 0.01 || isGift) ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${(item.quantity <= 0.01 || isGift) ? 'disabled' : ''}>
                                 <i class="fas fa-minus text-xs"></i>
                             </button>
                             <input type="number" min="0.01" step="0.01" value="${(function(){
@@ -1158,19 +1168,22 @@ $canEditLineDiscount = can('sales.edit_discount');
                                     if (item.unit === 'cartons' && cs>1) { return (parseFloat(item.quantity)/cs).toFixed(2); }
                                     return parseFloat(item.quantity).toFixed(2);
                                 })()}" 
+                                ${isGift ? 'readonly tabindex="-1"' : ''}
                                 onchange="updateQtyInput(${idx}, this.value)" 
                                 data-cart-idx="${idx}"
-                                class="cart-qty-input w-16 text-center border border-gray-300 rounded py-1 text-sm font-semibold">
+                                class="cart-qty-input w-16 text-center border border-gray-300 rounded py-1 text-sm font-semibold${isGift ? ' bg-gray-100 cursor-not-allowed' : ''}">
                             <button type="button" onclick="incrementQty(${idx})" 
-                                class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
+                                class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors ${isGift ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${isGift ? 'disabled' : ''}>
                                 <i class="fas fa-plus text-xs"></i>
                             </button>
                         </div>
                         ${hasCartons ? `
                         <div class="flex items-center justify-center">
                             <select onchange="changeQtyUnit(${idx}, this.value)" 
+                                ${isGift ? 'disabled tabindex="-1"' : ''}
                                 data-cart-idx="${idx}"
-                                class="cart-unit-selector text-xs border border-gray-300 rounded px-1.5 py-1 focus:ring-1 focus:ring-blue-500 bg-white">
+                                class="cart-unit-selector text-xs border border-gray-300 rounded px-1.5 py-1 focus:ring-1 focus:ring-blue-500 bg-white${isGift ? ' cursor-not-allowed bg-gray-100' : ''}">
                                 <option value="pieces" ${item.unit === 'pieces' ? 'selected' : ''}>Pieces</option>
                                 <option value="cartons" ${item.unit === 'cartons' ? 'selected' : ''}>Cartons (${cartonSize} pcs)</option>
                             </select>
@@ -1181,10 +1194,10 @@ $canEditLineDiscount = can('sales.edit_discount');
                     <td class="px-2 py-1.5 text-center">
                         <div class="flex items-center justify-center gap-1">
                             <input type="number" min="0" step="0.01" value="${(parseFloat(item.discount||0)).toFixed(2)}"
-                                ${CAN_EDIT_DISCOUNT ? '' : 'disabled tabindex="-1"'}
+                                ${readonlyDiscount ? 'disabled tabindex="-1"' : ''}
                                 onchange="updateItemDiscount(${idx}, this.value)"
                                 data-cart-idx="${idx}"
-                                class="item-discount-input w-24 text-center border border-gray-300 rounded py-1 text-sm font-semibold${CAN_EDIT_DISCOUNT ? '' : ' bg-gray-100 cursor-not-allowed'}">
+                                class="item-discount-input w-24 text-center border border-gray-300 rounded py-1 text-sm font-semibold${readonlyDiscount ? ' bg-gray-100 cursor-not-allowed' : ''}">
                             ${discountTypeControl}
                         </div>
                     </td>
@@ -1193,8 +1206,9 @@ $canEditLineDiscount = can('sales.edit_discount');
                     </td>
                     <td class="px-2 py-1.5 text-center">
                         <button type="button" onclick="removeItem(${idx})" 
-                            class="w-6 h-6 rounded bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 flex items-center justify-center transition-colors">
-                            <i class="fas fa-trash text-xs"></i>
+                            class="w-6 h-6 rounded ${isGift ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800'} flex items-center justify-center transition-colors"
+                            ${isGift ? 'disabled title="Promotion gift item"' : ''}>
+                            <i class="fas ${isGift ? 'fa-lock' : 'fa-trash'} text-xs"></i>
                         </button>
                     </td>
                 </tr>
@@ -1397,6 +1411,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         window.incrementQty = function(idx) {
             skipRefocus = true;
             const item = cart[idx];
+            if (isPromotionGift(item)) return;
             const cartonSize = parseFloat(item.carton_size) || 1;
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
@@ -1427,6 +1442,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         window.decrementQty = function(idx) {
             skipRefocus = true;
             const item = cart[idx];
+            if (isPromotionGift(item)) return;
             const cartonSize = parseFloat(item.carton_size) || 1;
             // Get current unit selector value
             const unitSelector = document.querySelector(`select.cart-unit-selector[data-cart-idx="${idx}"]`);
@@ -1478,6 +1494,10 @@ $canEditLineDiscount = can('sales.edit_discount');
                 selectAll: true
             };
             const item = cart[idx];
+            if (isPromotionGift(item)) {
+                renderCart(restoreFocus);
+                return;
+            }
             const cartonSize = parseFloat(item.carton_size) || 1;
             let qty = parseFloat(inputValue) || 0.01;
 
@@ -1505,6 +1525,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         window.changeQtyUnit = function(idx, newUnit) {
             skipRefocus = true;
             const item = cart[idx];
+            if (isPromotionGift(item)) return;
             const cartonSize = parseFloat(item.carton_size) || 1;
 
             // Find the quantity input for this item
@@ -1530,7 +1551,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updatePrice = function(idx, price) {
-            if (!CAN_EDIT_PRICE) return;
+            if (!CAN_EDIT_PRICE || isPromotionGift(cart[idx])) return;
             skipRefocus = true; // Prevent barcode refocus
             const restoreFocus = {
                 idx: idx,
@@ -1544,7 +1565,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updateItemDiscount = function(idx, val) {
-            if (!CAN_EDIT_DISCOUNT) return;
+            if (!CAN_EDIT_DISCOUNT || isPromotionGift(cart[idx])) return;
             skipRefocus = true;
             const restoreFocus = {
                 idx: idx,
@@ -1558,7 +1579,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         };
 
         window.updateItemDiscountType = function(idx, t) {
-            if (!CAN_EDIT_DISCOUNT || !SHOW_ITEM_DISCOUNT_TYPE) return;
+            if (!CAN_EDIT_DISCOUNT || !SHOW_ITEM_DISCOUNT_TYPE || isPromotionGift(cart[idx])) return;
             skipRefocus = true;
             const restoreFocus = {
                 idx: idx,
@@ -1570,6 +1591,10 @@ $canEditLineDiscount = can('sales.edit_discount');
 
         window.removeItem = function(idx) {
             skipRefocus = true; // Prevent barcode refocus
+            if (isPromotionGift(cart[idx])) {
+                showFormErrors(['Promotion gift items are controlled by the qualifying product. Change the sold quantity instead.']);
+                return;
+            }
             const removedItem = cart.splice(idx, 1)[0];
             showSuccessMessage(`${removedItem.name} ${<?= json_encode(lang('Sales.removed_from_cart')) ?>}`);
             renderCart();
@@ -1603,7 +1628,14 @@ $canEditLineDiscount = can('sales.edit_discount');
                         carton_size: parseFloat(it.carton_size || 0),
                         unit: (parseFloat(it.carton_size || 0) > 1 && parseFloat(it.quantity || 0) >= parseFloat(it.carton_size || 0)) ? 'cartons' : 'pieces',
                         discount: parseFloat(it.discount || 0) || 0,
-                        discount_type: it.discount_type || 'fixed'
+                        discount_type: it.discount_type || 'fixed',
+                        is_gift: Number(it.is_gift || 0) === 1 ? 1 : 0,
+                        promotion_id: it.promotion_id || null,
+                        promotion_rule_id: it.promotion_rule_id || null,
+                        source_product_id: it.source_product_id || null,
+                        qualifying_line_key: it.qualifying_line_key || '',
+                        promotion_name: it.promotion_name || '',
+                        promotion_text: it.promotion_text || ''
                     };
                 });
                 // Apply discount type/value

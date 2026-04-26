@@ -14,6 +14,7 @@ use App\Models\RoleModel;
 use App\Models\EmployeesModel;
 use App\Models\SalesReturnModel;
 use App\Models\SettingsModel;
+use App\Services\PromotionService;
 
 class Sales extends BaseController
 {
@@ -25,6 +26,7 @@ class Sales extends BaseController
     protected $roleModel;
     protected $employeeModel;
     protected $salesReturnModel;
+    protected $promotionService;
 
     public function __construct()
     {
@@ -37,6 +39,7 @@ class Sales extends BaseController
         $this->roleModel = new RoleModel();
         $this->employeeModel = new EmployeesModel();
         $this->salesReturnModel = new SalesReturnModel();
+        $this->promotionService = new PromotionService();
     }
 
     public function pos()
@@ -198,6 +201,10 @@ class Sales extends BaseController
         // This prevents users from bypassing the UI by tampering with cart_data.
         $sanitizedItems = [];
         foreach ($items as $line) {
+            if (!empty($line['is_gift'])) {
+                continue;
+            }
+
             $productId = (int) ($line['id'] ?? 0);
             if ($productId <= 0) {
                 $errors[] = 'Invalid product in cart.';
@@ -280,32 +287,22 @@ class Sales extends BaseController
         }
         $items = $sanitizedItems;
 
+        $promotionResult = $this->applyPromotionsToCartItems($items, $sale_date);
+        if (!$promotionResult['ok']) {
+            return redirect()->back()->withInput()->with('error', implode("\n", $promotionResult['errors']));
+        }
+        $items = $promotionResult['items'];
+
+        $stockErrors = $this->validateStockAvailability($items);
+        if ($stockErrors !== []) {
+            return redirect()->back()->withInput()->with('error', implode("\n", $stockErrors));
+        }
+
         // Server-side safeguard: compute subtotal and item-wise discounts from items
         if (is_array($items) && !empty($items)) {
-            $computedSubtotal = 0.0;
-            $itemwiseDiscountSum = 0.0;
-            foreach ($items as $it) {
-                $qty = isset($it['quantity']) ? (float)$it['quantity'] : 0;
-                $price = isset($it['price']) ? (float)$it['price'] : 0;
-                if ($qty > 0 && $price >= 0) {
-                    $lineBase = $qty * $price;
-                    $computedSubtotal += $lineBase;
-                    // compute line discount if provided
-                    $lineDiscount = 0.0;
-                    if (isset($it['discount']) && (float)$it['discount'] > 0) {
-                        $dtype = isset($it['discount_type']) ? strtolower((string)$it['discount_type']) : 'fixed';
-                        if ($dtype === 'percentage') {
-                            $lineDiscount = $lineBase * ((float)$it['discount'] / 100);
-                        } else {
-                            $lineDiscount = (float)$it['discount'];
-                        }
-                        if ($lineDiscount > $lineBase) {
-                            $lineDiscount = $lineBase;
-                        }
-                    }
-                    $itemwiseDiscountSum += $lineDiscount;
-                }
-            }
+            $totals = $this->calculateItemwiseTotals($items);
+            $computedSubtotal = $totals['subtotal'];
+            $itemwiseDiscountSum = $totals['discount'];
             if ($computedSubtotal > 0) {
                 $subtotal = $computedSubtotal;
             }
@@ -531,6 +528,11 @@ class Sales extends BaseController
                             'subtotal' => $netSubtotal,
                             'discount' => isset($item['discount']) ? (float)$item['discount'] : 0,
                             'discount_type' => $dtype,
+                            'is_gift' => !empty($item['is_gift']) ? 1 : 0,
+                            'promotion_id' => $item['promotion_id'] ?? null,
+                            'promotion_rule_id' => $item['promotion_rule_id'] ?? null,
+                            'source_product_id' => $item['source_product_id'] ?? null,
+                            'qualifying_line_key' => $item['qualifying_line_key'] ?? null,
                         ]);
 
                         $productModel->adjustStock($item['id'], $item['quantity'], 'out');
@@ -648,6 +650,11 @@ class Sales extends BaseController
                 'discount' => isset($line['discount']) ? (float)$line['discount'] : 0.0,
                 'discount_type' => isset($line['discount_type']) && strtolower((string)$line['discount_type']) === 'percentage' ? 'percentage' : 'fixed',
                 'carton_size' => isset($product['carton_size']) ? (float)$product['carton_size'] : 0,
+                'is_gift' => !empty($line['is_gift']) ? 1 : 0,
+                'promotion_id' => $line['promotion_id'] ?? null,
+                'promotion_rule_id' => $line['promotion_rule_id'] ?? null,
+                'source_product_id' => $line['source_product_id'] ?? null,
+                'qualifying_line_key' => $line['qualifying_line_key'] ?? ('line_' . count($cartItems)),
             ];
         }
 
@@ -693,6 +700,10 @@ class Sales extends BaseController
 
             if (empty($errors)) {
                 foreach ((array) $cartData as $line) {
+                    if (!empty($line['is_gift'])) {
+                        continue;
+                    }
+
                     $productId = (int) ($line['id'] ?? 0);
                     $quantity = (float) ($line['quantity'] ?? 0);
                     $price = (float) ($line['price'] ?? 0);
@@ -781,6 +792,27 @@ class Sales extends BaseController
             if (!empty($discountLimitErrors)) {
                 $errors = array_merge($errors, $discountLimitErrors);
             }
+
+            if (empty($errors)) {
+                $promotionResult = $this->applyPromotionsToCartItems($validatedItems, $saleDate);
+                if (!$promotionResult['ok']) {
+                    $errors = array_merge($errors, $promotionResult['errors']);
+                } else {
+                    $validatedItems = $promotionResult['items'];
+                }
+            }
+
+            if (empty($errors)) {
+                $stockErrors = $this->validateStockAvailability($validatedItems, $existingQuantities);
+                if ($stockErrors !== []) {
+                    $errors = array_merge($errors, $stockErrors);
+                }
+            }
+
+            $recomputedTotals = $this->calculateItemwiseTotals($validatedItems);
+            $subtotal = $recomputedTotals['subtotal'];
+            $itemwiseDiscountSum = $recomputedTotals['discount'];
+
             // Compute discount strictly from item-wise totals in edit flow
             // Ignore global discount fallback to prevent unintended defaults (e.g., 1)
             $discountAmount = 0.0;
@@ -886,7 +918,19 @@ class Sales extends BaseController
                 foreach ($validatedItems as $lineItem) {
                     $productModel->adjustStock($lineItem['product_id'], $lineItem['quantity'], 'out');
                     // Save net line subtotal after discount
-                    $netSubtotal = max(0.0, ($lineItem['price'] * $lineItem['quantity']) - ($lineItem['line_discount'] ?? 0));
+                    $lineBase = (float) $lineItem['price'] * (float) $lineItem['quantity'];
+                    $lineDiscount = 0.0;
+                    if (isset($lineItem['discount']) && (float) $lineItem['discount'] > 0) {
+                        if (($lineItem['discount_type'] ?? 'fixed') === 'percentage') {
+                            $lineDiscount = $lineBase * ((float) $lineItem['discount'] / 100);
+                        } else {
+                            $lineDiscount = (float) $lineItem['discount'];
+                        }
+                    }
+                    if ($lineDiscount > $lineBase) {
+                        $lineDiscount = $lineBase;
+                    }
+                    $netSubtotal = max(0.0, $lineBase - $lineDiscount);
                     $saleItemsModel->insert([
                         'sale_id' => $saleId,
                         'product_id' => $lineItem['product_id'],
@@ -896,6 +940,11 @@ class Sales extends BaseController
                         'subtotal' => $netSubtotal,
                         'discount' => $lineItem['discount'] ?? 0,
                         'discount_type' => $lineItem['discount_type'] ?? 'fixed',
+                        'is_gift' => !empty($lineItem['is_gift']) ? 1 : 0,
+                        'promotion_id' => $lineItem['promotion_id'] ?? null,
+                        'promotion_rule_id' => $lineItem['promotion_rule_id'] ?? null,
+                        'source_product_id' => $lineItem['source_product_id'] ?? null,
+                        'qualifying_line_key' => $lineItem['qualifying_line_key'] ?? null,
                     ]);
 
                     $inventoryModel->logStockChange(
@@ -1033,6 +1082,127 @@ class Sales extends BaseController
         return false;
     }
 
+    private function applyPromotionsToCartItems(array $items, $saleDate)
+    {
+        $result = $this->promotionService->applyToSale($items, (int) (session('store_id') ?? 0), $saleDate);
+        if (!$result['ok']) {
+            return $result;
+        }
+
+        $mappedItems = [];
+        foreach ($result['items'] as $index => $item) {
+            $discountType = strtolower((string) ($item['discount_type'] ?? 'fixed'));
+            if (!in_array($discountType, ['fixed', 'percentage'], true)) {
+                $discountType = 'fixed';
+            }
+
+            $mappedItems[] = [
+                'id' => (int) ($item['product_id'] ?? $item['id'] ?? 0),
+                'product_id' => (int) ($item['product_id'] ?? $item['id'] ?? 0),
+                'quantity' => (float) ($item['qty'] ?? $item['quantity'] ?? 0),
+                'price' => (float) ($item['unit_price'] ?? $item['price'] ?? 0),
+                'cost_price' => (float) ($item['cost_price'] ?? 0),
+                'discount' => (float) ($item['discount'] ?? 0),
+                'discount_type' => $discountType,
+                'is_gift' => !empty($item['is_gift']) ? 1 : 0,
+                'promotion_id' => $item['promotion_id'] ?? null,
+                'promotion_rule_id' => $item['promotion_rule_id'] ?? null,
+                'source_product_id' => $item['source_product_id'] ?? null,
+                'qualifying_line_key' => $item['qualifying_line_key'] ?? ('line_' . $index),
+                'name' => $item['name'] ?? null,
+                'code' => $item['code'] ?? null,
+                'promotion_name' => $item['promotion_name'] ?? null,
+                'promotion_text' => $item['promotion_text'] ?? null,
+            ];
+        }
+
+        $result['items'] = $mappedItems;
+
+        return $result;
+    }
+
+    private function calculateItemwiseTotals(array $items)
+    {
+        $subtotal = 0.0;
+        $discount = 0.0;
+
+        foreach ($items as $item) {
+            $qty = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['price'] ?? 0);
+            if ($qty <= 0 || $price < 0) {
+                continue;
+            }
+
+            $lineBase = $qty * $price;
+            $subtotal += $lineBase;
+
+            $lineDiscount = 0.0;
+            if (isset($item['discount']) && (float) $item['discount'] > 0) {
+                if (($item['discount_type'] ?? 'fixed') === 'percentage') {
+                    $lineDiscount = $lineBase * ((float) $item['discount'] / 100);
+                } else {
+                    $lineDiscount = (float) $item['discount'];
+                }
+            }
+
+            if ($lineDiscount > $lineBase) {
+                $lineDiscount = $lineBase;
+            }
+
+            $discount += $lineDiscount;
+        }
+
+        return [
+            'subtotal' => round($subtotal, 2),
+            'discount' => round($discount, 2),
+        ];
+    }
+
+    private function validateStockAvailability(array $items, array $existingQuantities = [])
+    {
+        $errors = [];
+        $requiredByProduct = [];
+
+        foreach ($items as $item) {
+            $productId = (int) ($item['id'] ?? $item['product_id'] ?? 0);
+            $qty = (float) ($item['quantity'] ?? 0);
+            if ($productId <= 0 || $qty <= 0) {
+                continue;
+            }
+
+            if (!isset($requiredByProduct[$productId])) {
+                $requiredByProduct[$productId] = 0.0;
+            }
+            $requiredByProduct[$productId] += $qty;
+        }
+
+        foreach ($requiredByProduct as $productId => $requiredQty) {
+            $product = $this->productModel->find($productId);
+            if (!$product) {
+                $errors[] = 'Product not found for sale item.';
+                continue;
+            }
+
+            $isServiceProduct = isset($product['type']) && strtolower((string) $product['type']) === 'service';
+            $isStockTracked = !isset($product['is_stock_tracked']) || (int) $product['is_stock_tracked'] === 1;
+            if ($isServiceProduct || !$isStockTracked) {
+                continue;
+            }
+
+            $availableQty = (float) ($product['quantity'] ?? 0) + (float) ($existingQuantities[$productId] ?? 0);
+            if ($requiredQty - $availableQty > 0.0001) {
+                $errors[] = sprintf(
+                    'Insufficient stock for %s. Required %.2f, available %.2f.',
+                    $product['name'] ?? ('Product #' . $productId),
+                    $requiredQty,
+                    $availableQty
+                );
+            }
+        }
+
+        return $errors;
+    }
+
     public function delete($saleId)
     {
         $salesModel = new M_sales();
@@ -1167,31 +1337,15 @@ class Sales extends BaseController
         $userId = session()->get('user_id');
         $employee_id = $this->request->getPost('employee_id') ?? 0; // Salesman/employee assigned to this sale
 
-        // Compute authoritative subtotal and item-wise discount sum
-        $subtotal = 0.0;
-        $itemwiseDiscountSum = 0.0;
-        foreach ((array)$items as $it) {
-            $qty = isset($it['quantity']) ? (float)$it['quantity'] : 0;
-            $price = isset($it['price']) ? (float)$it['price'] : 0;
-            if ($qty > 0 && $price >= 0) {
-                $lineBase = $qty * $price;
-                $subtotal += $lineBase;
-                // compute line discount if provided
-                $lineDiscount = 0.0;
-                if (isset($it['discount']) && (float)$it['discount'] > 0) {
-                    $dtype = isset($it['discount_type']) ? strtolower((string)$it['discount_type']) : 'fixed';
-                    if ($dtype === 'percentage') {
-                        $lineDiscount = $lineBase * ((float)$it['discount'] / 100);
-                    } else {
-                        $lineDiscount = (float)$it['discount'];
-                    }
-                    if ($lineDiscount > $lineBase) {
-                        $lineDiscount = $lineBase;
-                    }
-                }
-                $itemwiseDiscountSum += $lineDiscount;
-            }
+        $promotionResult = $this->applyPromotionsToCartItems((array) $items, date('Y-m-d H:i:s'));
+        if (!$promotionResult['ok']) {
+            return redirect()->back()->withInput()->with('error', implode("\n", $promotionResult['errors']));
         }
+        $items = $promotionResult['items'];
+
+        $totals = $this->calculateItemwiseTotals($items);
+        $subtotal = $totals['subtotal'];
+        $itemwiseDiscountSum = $totals['discount'];
 
         // Determine total discount preference: item-wise if present else global input
         $totalDiscount = 0.0;
@@ -1311,6 +1465,11 @@ class Sales extends BaseController
                 'subtotal' => $netSubtotal,
                 'discount' => isset($item['discount']) ? (float)$item['discount'] : 0,
                 'discount_type' => $dtype,
+                'is_gift' => !empty($item['is_gift']) ? 1 : 0,
+                'promotion_id' => $item['promotion_id'] ?? null,
+                'promotion_rule_id' => $item['promotion_rule_id'] ?? null,
+                'source_product_id' => $item['source_product_id'] ?? null,
+                'qualifying_line_key' => $item['qualifying_line_key'] ?? null,
             ]);
         }
 
@@ -1429,23 +1588,76 @@ class Sales extends BaseController
             return redirect()->back()->with('error', 'Draft sale not found.');
         }
         $items = $saleItemsModel->where('sale_id', $id)->findAll();
-
-        // Check stock
-        foreach ($items as $item) {
-            $product = $productModel->find($item['product_id']);
-            if (!$product || $product['quantity'] < $item['quantity']) {
-                return redirect()->back()->with('error', 'Insufficient stock for ' . ($product ? $product['name'] : 'Unknown Product'));
+        $baseDraftItems = [];
+        foreach ($items as $index => $item) {
+            if (!empty($item['is_gift'])) {
+                continue;
             }
+
+            $baseDraftItems[] = [
+                'product_id' => (int) ($item['product_id'] ?? 0),
+                'quantity' => (float) ($item['quantity'] ?? 0),
+                'price' => (float) ($item['price'] ?? 0),
+                'cost_price' => (float) ($item['cost_price'] ?? 0),
+                'discount' => (float) ($item['discount'] ?? 0),
+                'discount_type' => strtolower((string) ($item['discount_type'] ?? 'fixed')),
+                'qualifying_line_key' => (string) ($item['qualifying_line_key'] ?? ('draft_' . $index)),
+            ];
+        }
+
+        $promotionResult = $this->applyPromotionsToCartItems($baseDraftItems, $sale['created_at'] ?? date('Y-m-d H:i:s'));
+        if (!$promotionResult['ok']) {
+            return redirect()->back()->with('error', implode("\n", $promotionResult['errors']));
+        }
+
+        $items = $promotionResult['items'];
+
+        $stockErrors = $this->validateStockAvailability($items);
+        if ($stockErrors !== []) {
+            return redirect()->back()->with('error', implode("\n", $stockErrors));
         }
 
         // Generate new invoice number for completed sale
         $newInvoiceNo = $salesModel->generateSalesInvoiceNo();
 
+        $saleItemsModel->where('sale_id', $id)->delete();
+
+        foreach ($items as $item) {
+            $lineBase = ((float) $item['price']) * ((float) $item['quantity']);
+            $lineDiscount = 0.0;
+            if (isset($item['discount']) && (float) $item['discount'] > 0) {
+                if (($item['discount_type'] ?? 'fixed') === 'percentage') {
+                    $lineDiscount = $lineBase * ((float) $item['discount'] / 100);
+                } else {
+                    $lineDiscount = (float) $item['discount'];
+                }
+            }
+            if ($lineDiscount > $lineBase) {
+                $lineDiscount = $lineBase;
+            }
+
+            $saleItemsModel->insert([
+                'sale_id' => $id,
+                'product_id' => $item['id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'cost_price' => $item['cost_price'],
+                'subtotal' => max(0.0, $lineBase - $lineDiscount),
+                'discount' => isset($item['discount']) ? (float) $item['discount'] : 0,
+                'discount_type' => $item['discount_type'] ?? 'fixed',
+                'is_gift' => !empty($item['is_gift']) ? 1 : 0,
+                'promotion_id' => $item['promotion_id'] ?? null,
+                'promotion_rule_id' => $item['promotion_rule_id'] ?? null,
+                'source_product_id' => $item['source_product_id'] ?? null,
+                'qualifying_line_key' => $item['qualifying_line_key'] ?? null,
+            ]);
+        }
+
         // Update stock and inventory
         foreach ($items as $item) {
-            $productModel->adjustStock($item['product_id'], $item['quantity'], 'out');
+            $productModel->adjustStock($item['id'], $item['quantity'], 'out');
             $inventoryModel->logStockChange(
-                $item['product_id'],
+                $item['id'],
                 $sale['user_id'],
                 $item['quantity'],
                 'out',
