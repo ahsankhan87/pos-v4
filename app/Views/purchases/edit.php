@@ -725,11 +725,11 @@
                 </td>
                 <td class="px-4 py-4">
                     <input type="number" class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                        value="${item.cost_price}" min="0" step="0.01">
+                        value="${item.cost_price}" min="0" step="0.0001">
                 </td>
                 <td class="px-4 py-4">
                     <input type="number" class="item-unit-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                        value="${item.unit_price}" min="0" step="0.01">
+                        value="${item.unit_price}" min="0" step="0.0001">
                 </td>
               
                 <td class="px-4 py-4 font-medium">

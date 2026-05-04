@@ -239,7 +239,7 @@ class Purchases extends BaseController
         $purchaseId = $this->purchaseModel->insertPurchase($data, $items);
 
         // Log the purchase creation
-        logAction('purchase_created', 'Created purchase with ID: ' . $purchaseId . ', Invoice No: ' . $data['invoice_no'], ' Supplier ID', $data['supplier_id'], ' Data', json_encode($data));
+        logAction('purchase_created', 'Created purchase with ID: ' . $purchaseId . ', Invoice No: ' . $data['invoice_no'], ['supplier_id' => $data['supplier_id'], 'data' => $data]);
 
         // Redirect to view the created purchase
         if ($purchaseId) {
@@ -516,7 +516,7 @@ class Purchases extends BaseController
         }
 
         //audit log
-        logAction('purchase_updated', 'Updated purchase with ID: ' . $id . ', Invoice No: ' . $purchase['invoice_no'], ' Supplier ID', $data['supplier_id'], ' Data', json_encode($data));
+        logAction('purchase_updated', 'Updated purchase with ID: ' . $id . ', Invoice No: ' . $purchase['invoice_no'], ['supplier_id' => $data['supplier_id'], 'data' => $data]);
 
         return redirect()->to("/purchases/view/$id")->with('message', 'Purchase updated successfully');
     }
@@ -532,7 +532,7 @@ class Purchases extends BaseController
 
         if ($this->purchaseModel->deletePurchase($purchaseId)) {
             //audit log
-            logAction('purchase_deleted', 'Deleted purchase with ID: ' . $purchaseId . ', Invoice No: ' . $purchase['invoice_no'], ' Supplier ID', $purchase['supplier_id']);
+            logAction('purchase_deleted', 'Deleted purchase with ID: ' . $purchaseId . ', Invoice No: ' . $purchase['invoice_no'], ['supplier_id' => $purchase['supplier_id']]);
 
             return redirect()->to('/purchases')->with('message', 'Purchase deleted successfully');
         } else {
@@ -632,7 +632,7 @@ class Purchases extends BaseController
         if ($this->purchaseModel->addPayment($purchaseId, $paymentData)) {
 
             //audit log
-            logAction('payment_added', 'Added payment of ' . $paymentData['amount'] . ' to purchase ID: ' . $purchaseId, ' Payment Data', json_encode($paymentData));
+            logAction('payment_added', 'Added payment of ' . $paymentData['amount'] . ' to purchase ID: ' . $purchaseId, ['payment_data' => $paymentData]);
 
             $this->db->transComplete();
 
@@ -794,7 +794,7 @@ class Purchases extends BaseController
                     );
 
                     // insert audit log
-                    logAction('purchase_return', 'Returned ' . $qty . ' of product ID: ' . $productId . ' from purchase ID: ' . $purchaseId, ' Product ID', $productId, ' Quantity', $qty, ' Purchase ID', $purchaseId);
+                    logAction('purchase_return', 'Returned ' . $qty . ' of product ID: ' . $productId . ' from purchase ID: ' . $purchaseId, ['product_id' => $productId, 'quantity' => $qty, 'purchase_id' => $purchaseId]);
 
                     // 
                     // Log return

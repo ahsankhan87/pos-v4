@@ -232,7 +232,7 @@
 
                             <div>
                                 <label for="paid_amount" class="block text-sm font-medium text-gray-700"><?= lang('Purchases.amount_paid') ?> <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F6</kbd></label>
-                                <input type="number" id="paid_amount" name="paid_amount" value="0" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="number" id="paid_amount" name="paid_amount" value="0" min="0" step="0.0001" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                         </div>
                     </div>
@@ -307,7 +307,7 @@
                                 <div class="flex justify-between">
                                     <span class="font-medium"><?= lang('Purchases.discount') ?>: <kbd class="bg-gray-700 text-white px-1 py-0.5 rounded text-[9px] ml-1">F8</kbd></span>
                                     <div class="flex items-center">
-                                        <input type="number" id="discount" name="discount" value="0" min="0" step="0.01" class="w-20 mr-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <input type="number" id="discount" name="discount" value="0" min="0" step="0.0001" class="w-20 mr-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         <select id="discount_type" name="discount_type" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                             <option value="fixed"><?= session()->get('currency_symbol')  ?? '$' ?></option>
                                             <option value="percentage">%</option>
@@ -316,12 +316,12 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="font-medium"><?= lang('Purchases.tax') ?>:</span>
-                                    <input id="tax_rate" type="number" id="tax_rate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.01"
+                                    <input id="tax_rate" type="number" id="tax_rate" name="tax_rate" value="<?= $taxRate ?>" min="0" max="100" step="0.0001"
                                         class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="font-medium"><?= lang('Purchases.shipping_cost') ?>:</span>
-                                    <input type="number" id="shipping_cost" name="shipping_cost" value="0" min="0" step="0.01" class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input type="number" id="shipping_cost" name="shipping_cost" value="0" min="0" step="0.0001" class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
                             <div class="bg-gray-50 p-4 rounded-md">
@@ -697,11 +697,11 @@
                 </td>
                 <td class="px-4 py-4">
                     <input type="number" class="item-cost-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                        value="${item.cost_price}" min="0" step="0.01">
+                        value="${item.cost_price}" min="0" step="0.0001">
                 </td>
                 <td class="px-4 py-4">
                     <input type="number" class="item-unit-price w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                        value="${item.unit_price}" min="0" step="0.01">
+                        value="${item.unit_price}" min="0" step="0.0001">
                 </td>
               
                 <td class="px-4 py-4 font-medium">
