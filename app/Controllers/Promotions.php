@@ -25,14 +25,48 @@ class Promotions extends BaseController
         $storeId = session('store_id');
 
         $rows = $this->promotionModel
-            ->select('pos_promotions.*, pos_promotion_rules.id AS rule_id, pos_promotion_rules.trigger_product_id, pos_promotion_rules.trigger_qty, pos_promotion_rules.gift_product_id, pos_promotion_rules.gift_qty, pos_promotion_rules.max_applications_per_invoice, pos_promotion_rules.same_product_allowed, trigger_products.name AS trigger_product_name, gift_products.name AS gift_product_name')
-            ->join('pos_promotion_rules', 'pos_promotion_rules.promotion_id = pos_promotions.id', 'left')
-            ->join('pos_products AS trigger_products', 'trigger_products.id = pos_promotion_rules.trigger_product_id', 'left')
-            ->join('pos_products AS gift_products', 'gift_products.id = pos_promotion_rules.gift_product_id', 'left')
             ->where('pos_promotions.store_id', (int) $storeId)
             ->orderBy('pos_promotions.priority', 'DESC')
             ->orderBy('pos_promotions.id', 'DESC')
             ->findAll();
+
+        if (! empty($rows)) {
+            $promotionIds = array_map(function($row) { return (int) ($row['id'] ?? 0); }, $rows);
+
+            $ruleRows = $this->ruleModel
+                ->select('pos_promotion_rules.*, trigger_products.name AS trigger_product_name, gift_products.name AS gift_product_name')
+                ->join('pos_products AS trigger_products', 'trigger_products.id = pos_promotion_rules.trigger_product_id', 'left')
+                ->join('pos_products AS gift_products', 'gift_products.id = pos_promotion_rules.gift_product_id', 'left')
+                ->whereIn('pos_promotion_rules.promotion_id', $promotionIds)
+                ->orderBy('pos_promotion_rules.id', 'ASC')
+                ->findAll();
+
+            $rulesByPromotion = [];
+            foreach ($ruleRows as $ruleRow) {
+                $promotionId = (int) ($ruleRow['promotion_id'] ?? 0);
+                if (! isset($rulesByPromotion[$promotionId])) {
+                    $rulesByPromotion[$promotionId] = [];
+                }
+                $rulesByPromotion[$promotionId][] = $ruleRow;
+            }
+
+            foreach ($rows as &$row) {
+                $promotionId = (int) ($row['id'] ?? 0);
+                $rules = $rulesByPromotion[$promotionId] ?? [];
+
+                $row['rules'] = $rules;
+                $row['trigger_product_names'] = array_values(array_unique(array_filter(array_map(function($rule) { return (string) ($rule['trigger_product_name'] ?? ''); }, $rules))));
+                $row['trigger_product_name'] = $row['trigger_product_names'][0] ?? null;
+                $row['trigger_product_id'] = isset($rules[0]['trigger_product_id']) ? (int) $rules[0]['trigger_product_id'] : null;
+                $row['trigger_qty'] = isset($rules[0]['trigger_qty']) ? (float) $rules[0]['trigger_qty'] : null;
+                $row['gift_product_name'] = $rules[0]['gift_product_name'] ?? null;
+                $row['gift_product_id'] = isset($rules[0]['gift_product_id']) ? (int) $rules[0]['gift_product_id'] : null;
+                $row['gift_qty'] = isset($rules[0]['gift_qty']) ? (float) $rules[0]['gift_qty'] : null;
+                $row['max_applications_per_invoice'] = $rules[0]['max_applications_per_invoice'] ?? null;
+                $row['same_product_allowed'] = isset($rules[0]['same_product_allowed']) ? (int) $rules[0]['same_product_allowed'] : 0;
+            }
+            unset($row);
+        }
 
         return view('promotions/index', [
             'title' => lang('Promotions.title_index'),
@@ -52,29 +86,31 @@ class Promotions extends BaseController
     public function create()
     {
         $payload = $this->buildPayload();
-        if (!$payload['ok']) {
+        if (! $payload['ok']) {
             return redirect()->back()->withInput()->with('error', $payload['message']);
         }
 
         $promotionData = $payload['promotion'];
-        $ruleData = $payload['rule'];
+        $rulesData = $payload['rules'];
 
         $db = db_connect();
         $db->transStart();
 
         try {
             $promotionId = $this->promotionModel->insert($promotionData, true);
-            if (!$promotionId) {
+            if (! $promotionId) {
                 throw new \RuntimeException(lang('Promotions.create_failed'));
             }
 
-            $ruleData['promotion_id'] = (int) $promotionId;
-            if (!$this->ruleModel->insert($ruleData, true)) {
-                throw new \RuntimeException(lang('Promotions.create_failed'));
+            foreach ($rulesData as $ruleData) {
+                $ruleData['promotion_id'] = (int) $promotionId;
+                if (! $this->ruleModel->insert($ruleData, true)) {
+                    throw new \RuntimeException(lang('Promotions.create_failed'));
+                }
             }
 
             $db->transComplete();
-            if (!$db->transStatus()) {
+            if (! $db->transStatus()) {
                 throw new \RuntimeException(lang('Promotions.create_failed'));
             }
 
@@ -90,7 +126,7 @@ class Promotions extends BaseController
     public function edit($id)
     {
         $promotion = $this->findPromotion((int) $id);
-        if (!$promotion) {
+        if (! $promotion) {
             return redirect()->to(site_url('promotions'))->with('error', lang('Promotions.not_found'));
         }
 
@@ -104,12 +140,12 @@ class Promotions extends BaseController
     public function update($id)
     {
         $promotion = $this->findPromotion((int) $id);
-        if (!$promotion) {
+        if (! $promotion) {
             return redirect()->to(site_url('promotions'))->with('error', lang('Promotions.not_found'));
         }
 
         $payload = $this->buildPayload($promotion);
-        if (!$payload['ok']) {
+        if (! $payload['ok']) {
             return redirect()->back()->withInput()->with('error', $payload['message']);
         }
 
@@ -119,11 +155,14 @@ class Promotions extends BaseController
         try {
             $this->promotionModel->update((int) $id, $payload['promotion']);
             $this->ruleModel->where('promotion_id', (int) $id)->delete();
-            $payload['rule']['promotion_id'] = (int) $id;
-            $this->ruleModel->insert($payload['rule'], true);
+
+            foreach ($payload['rules'] as $ruleData) {
+                $ruleData['promotion_id'] = (int) $id;
+                $this->ruleModel->insert($ruleData, true);
+            }
 
             $db->transComplete();
-            if (!$db->transStatus()) {
+            if (! $db->transStatus()) {
                 throw new \RuntimeException(lang('Promotions.update_failed'));
             }
 
@@ -139,7 +178,7 @@ class Promotions extends BaseController
     public function toggle($id)
     {
         $promotion = $this->findPromotion((int) $id);
-        if (!$promotion) {
+        if (! $promotion) {
             return redirect()->to(site_url('promotions'))->with('error', lang('Promotions.not_found'));
         }
 
@@ -157,7 +196,7 @@ class Promotions extends BaseController
     public function delete($id)
     {
         $promotion = $this->findPromotion((int) $id);
-        if (!$promotion) {
+        if (! $promotion) {
             return redirect()->to(site_url('promotions'))->with('error', lang('Promotions.not_found'));
         }
 
@@ -169,7 +208,7 @@ class Promotions extends BaseController
             $this->promotionModel->delete((int) $id);
 
             $db->transComplete();
-            if (!$db->transStatus()) {
+            if (! $db->transStatus()) {
                 throw new \RuntimeException(lang('Promotions.delete_failed'));
             }
 
@@ -184,12 +223,35 @@ class Promotions extends BaseController
 
     protected function findPromotion($id)
     {
-        return $this->promotionModel
-            ->select('pos_promotions.*, pos_promotion_rules.id AS rule_id, pos_promotion_rules.trigger_product_id, pos_promotion_rules.trigger_qty, pos_promotion_rules.gift_product_id, pos_promotion_rules.gift_qty, pos_promotion_rules.max_applications_per_invoice, pos_promotion_rules.same_product_allowed')
-            ->join('pos_promotion_rules', 'pos_promotion_rules.promotion_id = pos_promotions.id', 'left')
+        $promotion = $this->promotionModel
+            ->select('pos_promotions.*')
             ->forStore()
             ->where('pos_promotions.id', (int) $id)
             ->first();
+
+        if (! $promotion) {
+            return null;
+        }
+
+        $rules = $this->ruleModel
+            ->where('promotion_id', (int) $id)
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        $promotion['rules'] = $rules;
+        $promotion['trigger_product_ids'] = array_values(array_unique(array_map(function($rule) { return (int) ($rule['trigger_product_id'] ?? 0); }, $rules)));
+
+        if (! empty($rules)) {
+            $promotion['rule_id'] = $rules[0]['id'] ?? null;
+            $promotion['trigger_product_id'] = $rules[0]['trigger_product_id'] ?? null;
+            $promotion['trigger_qty'] = $rules[0]['trigger_qty'] ?? null;
+            $promotion['gift_product_id'] = $rules[0]['gift_product_id'] ?? null;
+            $promotion['gift_qty'] = $rules[0]['gift_qty'] ?? null;
+            $promotion['max_applications_per_invoice'] = $rules[0]['max_applications_per_invoice'] ?? null;
+            $promotion['same_product_allowed'] = $rules[0]['same_product_allowed'] ?? null;
+        }
+
+        return $promotion;
     }
 
     protected function buildPayload($existing = null)
@@ -200,8 +262,50 @@ class Promotions extends BaseController
         $endDate = trim((string) ($this->request->getPost('end_date') ?? ''));
         $priority = (int) ($this->request->getPost('priority') ?? 100);
         $autoApply = (int) ($this->request->getPost('auto_apply') ?? 1) === 1 ? 1 : 0;
-        $triggerProductId = (int) ($this->request->getPost('trigger_product_id') ?? 0);
-        $triggerQty = (float) ($this->request->getPost('trigger_qty') ?? 0);
+
+        // Handle new form structure with trigger_rules
+        $triggerRulesRaw = $this->request->getPost('trigger_rules');
+        $triggerRules = [];
+
+        if (is_array($triggerRulesRaw)) {
+            foreach ($triggerRulesRaw as $rule) {
+                $triggerProductId = (int) ($rule['trigger_product_id'] ?? 0);
+                $triggerQty = (float) ($rule['trigger_qty'] ?? 0);
+
+                if ($triggerProductId > 0 && $triggerQty > 0) {
+                    $triggerRules[] = [
+                        'trigger_product_id' => $triggerProductId,
+                        'trigger_qty' => $triggerQty,
+                    ];
+                }
+            }
+        }
+
+        // Fallback for old form structure (backward compatibility)
+        if (empty($triggerRules)) {
+            $triggerProductIdsRaw = $this->request->getPost('trigger_product_ids');
+            $triggerProductIds = [];
+            if (is_array($triggerProductIdsRaw)) {
+                $triggerProductIds = array_values(array_unique(array_filter(array_map('intval', $triggerProductIdsRaw))));
+            }
+            if ($triggerProductIds === []) {
+                $fallbackTriggerProductId = (int) ($this->request->getPost('trigger_product_id') ?? 0);
+                if ($fallbackTriggerProductId > 0) {
+                    $triggerProductIds = [$fallbackTriggerProductId];
+                }
+            }
+
+            $triggerQty = (float) ($this->request->getPost('trigger_qty') ?? 0);
+            if ($triggerQty > 0) {
+                foreach ($triggerProductIds as $productId) {
+                    $triggerRules[] = [
+                        'trigger_product_id' => $productId,
+                        'trigger_qty' => $triggerQty,
+                    ];
+                }
+            }
+        }
+
         $giftProductId = (int) ($this->request->getPost('gift_product_id') ?? 0);
         $giftQty = (float) ($this->request->getPost('gift_qty') ?? 0);
         $maxApplications = trim((string) ($this->request->getPost('max_applications_per_invoice') ?? ''));
@@ -210,27 +314,54 @@ class Promotions extends BaseController
         if ($name === '') {
             return ['ok' => false, 'message' => lang('Promotions.validation_name_required')];
         }
-        if (!in_array($status, ['active', 'paused'], true)) {
+        if (! in_array($status, ['active', 'paused'], true)) {
             $status = 'active';
         }
-        if ($triggerProductId <= 0 || $giftProductId <= 0) {
+        if (empty($triggerRules) || $giftProductId <= 0) {
             return ['ok' => false, 'message' => lang('Promotions.validation_products_required')];
         }
-        if ($triggerQty <= 0 || $giftQty <= 0) {
+        if ($giftQty <= 0) {
             return ['ok' => false, 'message' => lang('Promotions.validation_quantities_required')];
         }
         if ($startDate !== '' && $endDate !== '' && strtotime($endDate) < strtotime($startDate)) {
             return ['ok' => false, 'message' => lang('Promotions.validation_dates')];
         }
-        if ($triggerProductId === $giftProductId && $sameProductAllowed !== 1) {
-            return ['ok' => false, 'message' => lang('Promotions.validation_same_product')];
+
+        // Validate all trigger products
+        foreach ($triggerRules as $rule) {
+            if ($rule['trigger_qty'] <= 0) {
+                return ['ok' => false, 'message' => lang('Promotions.validation_quantities_required')];
+            }
+
+            if ($rule['trigger_product_id'] === $giftProductId && $sameProductAllowed !== 1) {
+                return ['ok' => false, 'message' => lang('Promotions.validation_same_product')];
+            }
         }
 
         $storeId = (int) (session('store_id') ?? 0);
-        $triggerProduct = (new M_products())->forStore($storeId)->find($triggerProductId);
         $giftProduct = (new M_products())->forStore($storeId)->find($giftProductId);
-        if (!$triggerProduct || !$giftProduct) {
+        if (! $giftProduct) {
             return ['ok' => false, 'message' => lang('Promotions.validation_product_missing')];
+        }
+
+        foreach ($triggerRules as $rule) {
+            $triggerProduct = (new M_products())->forStore($storeId)->find($rule['trigger_product_id']);
+            if (! $triggerProduct) {
+                return ['ok' => false, 'message' => lang('Promotions.validation_product_missing')];
+            }
+        }
+
+        // Create rules for database storage
+        $rulesData = [];
+        foreach ($triggerRules as $rule) {
+            $rulesData[] = [
+                'trigger_product_id' => $rule['trigger_product_id'],
+                'trigger_qty' => $rule['trigger_qty'],
+                'gift_product_id' => $giftProductId,
+                'gift_qty' => $giftQty,
+                'max_applications_per_invoice' => $maxApplications !== '' ? (int) $maxApplications : null,
+                'same_product_allowed' => $sameProductAllowed,
+            ];
         }
 
         return [
@@ -246,14 +377,7 @@ class Promotions extends BaseController
                 'created_by' => (int) ($existing['created_by'] ?? session('user_id') ?? 0),
                 'updated_by' => (int) (session('user_id') ?? 0),
             ],
-            'rule' => [
-                'trigger_product_id' => $triggerProductId,
-                'trigger_qty' => $triggerQty,
-                'gift_product_id' => $giftProductId,
-                'gift_qty' => $giftQty,
-                'max_applications_per_invoice' => $maxApplications !== '' ? (int) $maxApplications : null,
-                'same_product_allowed' => $sameProductAllowed,
-            ],
+            'rules' => $rulesData,
         ];
     }
 }

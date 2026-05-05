@@ -1,4 +1,4 @@
-<?= $this->extend('templates/header') ?>
+﻿<?= $this->extend('templates/header') ?>
 
 <?= $this->section('content') ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -47,6 +47,14 @@
 
                 <?php foreach ($promotions as $promotion): ?>
                     <?php $status = strtolower((string) ($promotion['status'] ?? 'active')); ?>
+                    <?php
+                    $triggerNames = $promotion['trigger_product_names'] ?? [];
+                    if (!is_array($triggerNames)) {
+                        $triggerNames = [];
+                    }
+                    $triggerNames = array_values(array_filter(array_map('strval', $triggerNames)));
+                    $triggerText = !empty($triggerNames) ? implode(', ', $triggerNames) : ((string) ($promotion['trigger_product_name'] ?? '-'));
+                    ?>
                     <tr>
                         <td>
                             <div class="font-semibold text-gray-800"><?= esc($promotion['name'] ?? '') ?></div>
@@ -56,7 +64,7 @@
                         </td>
                         <td>
                             <div class="text-sm text-gray-800">
-                                <?= esc($promotion['trigger_product_name'] ?? '-') ?>
+                                <?= esc($triggerText) ?>
                                 <span class="text-gray-500">x <?= esc(rtrim(rtrim(number_format((float) ($promotion['trigger_qty'] ?? 0), 2, '.', ''), '0'), '.')) ?></span>
                             </div>
                             <div class="text-xs text-gray-500">

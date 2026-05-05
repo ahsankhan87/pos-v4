@@ -30,12 +30,34 @@ class PromotionRuleModel extends Model
 
         $date = $saleDate ? date('Y-m-d', strtotime((string) $saleDate)) : date('Y-m-d');
 
-        return $this->select('pos_promotion_rules.*, pos_promotions.name AS promotion_name, pos_promotions.priority, pos_promotions.auto_apply, pos_promotions.status AS promotion_status, pos_promotions.start_date, pos_promotions.end_date')
+        $matchingPromotionIds = $this->select('pos_promotion_rules.promotion_id')
             ->join('pos_promotions', 'pos_promotions.id = pos_promotion_rules.promotion_id', 'inner')
             ->where('pos_promotions.store_id', (int) $storeId)
             ->where('pos_promotions.auto_apply', 1)
             ->where('pos_promotions.status', 'active')
             ->whereIn('pos_promotion_rules.trigger_product_id', $productIds)
+            ->groupStart()
+            ->where('pos_promotions.start_date <=', $date)
+            ->orWhere('pos_promotions.start_date', null)
+            ->groupEnd()
+            ->groupStart()
+            ->where('pos_promotions.end_date >=', $date)
+            ->orWhere('pos_promotions.end_date', null)
+            ->groupEnd()
+            ->groupBy('pos_promotion_rules.promotion_id')
+            ->findColumn('promotion_id');
+
+        $matchingPromotionIds = array_values(array_unique(array_filter(array_map('intval', $matchingPromotionIds ?? []))));
+        if ($matchingPromotionIds === []) {
+            return [];
+        }
+
+        return $this->select('pos_promotion_rules.*, pos_promotions.name AS promotion_name, pos_promotions.priority, pos_promotions.auto_apply, pos_promotions.status AS promotion_status, pos_promotions.start_date, pos_promotions.end_date')
+            ->join('pos_promotions', 'pos_promotions.id = pos_promotion_rules.promotion_id', 'inner')
+            ->where('pos_promotions.store_id', (int) $storeId)
+            ->where('pos_promotions.auto_apply', 1)
+            ->where('pos_promotions.status', 'active')
+            ->whereIn('pos_promotion_rules.promotion_id', $matchingPromotionIds)
             ->groupStart()
             ->where('pos_promotions.start_date <=', $date)
             ->orWhere('pos_promotions.start_date', null)
