@@ -57,4 +57,9 @@ return [
     'validation_dates' => 'End date must be on or after start date.',
     'validation_same_product' => 'Enable same product allowed when trigger and gift product are the same.',
     'validation_product_missing' => 'Selected trigger or gift product was not found in this store.',
+    'print' => 'Print',
+    'print_title' => 'Promotions List',
+    'printed_at' => 'Printed at',
+    'to' => 'to',
+    'total_promotions' => 'Total Promotions',
 ];

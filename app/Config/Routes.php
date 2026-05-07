@@ -128,6 +128,7 @@ $routes->group('recurring-invoices', ['filter' => 'auth'], function ($routes) {
 
 $routes->group('promotions', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Promotions::index', ['filter' => 'permission:promotions.view']);
+    $routes->get('print', 'Promotions::printAll', ['filter' => 'permission:promotions.view']);
     $routes->get('new', 'Promotions::new', ['filter' => 'permission:promotions.create']);
     $routes->post('create', 'Promotions::create', ['filter' => 'permission:promotions.create']);
     $routes->get('edit/(:num)', 'Promotions::edit/$1', ['filter' => 'permission:promotions.update']);
@@ -472,6 +473,21 @@ $routes->group('employees', ['filter' => 'auth'], function ($routes) {
     $routes->post('update/(:num)', 'Employees::update/$1', ['filter' => 'permission:employees.update']);
     // Delete
     $routes->delete('delete/(:num)', 'Employees::delete/$1', ['filter' => 'permission:employees.delete']);
+});
+
+$routes->group('employee-targets', ['filter' => 'auth'], function ($routes) {
+    // View
+    $routes->get('/', 'EmployeeTargets::index', ['filter' => 'permission:employee_targets.view']);
+    $routes->get('achievements', 'EmployeeTargets::achievements', ['filter' => 'permission:reports.employee_target_achievement']);
+    $routes->get('achievements/print', 'EmployeeTargets::achievementsPrint', ['filter' => 'permission:reports.employee_target_achievement']);
+    // Create
+    $routes->get('new', 'EmployeeTargets::new', ['filter' => 'permission:employee_targets.create']);
+    $routes->post('create', 'EmployeeTargets::create', ['filter' => 'permission:employee_targets.create']);
+    // Update
+    $routes->get('edit/(:num)', 'EmployeeTargets::edit/$1', ['filter' => 'permission:employee_targets.update']);
+    $routes->post('update/(:num)', 'EmployeeTargets::update/$1', ['filter' => 'permission:employee_targets.update']);
+    // Delete
+    $routes->delete('delete/(:num)', 'EmployeeTargets::delete/$1', ['filter' => 'permission:employee_targets.delete']);
 });
 
 $routes->group('purchase_payments', ['filter' => 'auth'], function ($routes) {

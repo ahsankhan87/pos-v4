@@ -33,6 +33,8 @@ return [
     'category_pivot_sales' => 'Category Pivot Sales',
     'unit_sales' => 'Unit Sales',
     'employee_sales' => 'Employee Sales',
+    'employee_targets' => 'Employee Targets',
+    'employee_target_achievements' => 'Employee Target Achievements',
     'profit_loss' => 'Profit & Loss',
     'expense_report' => 'Expense Report',
     'expense_category_report' => 'Expense Category Report',

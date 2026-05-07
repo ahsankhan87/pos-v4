@@ -31,7 +31,9 @@ class Promotions extends BaseController
             ->findAll();
 
         if (! empty($rows)) {
-            $promotionIds = array_map(function($row) { return (int) ($row['id'] ?? 0); }, $rows);
+            $promotionIds = array_map(function ($row) {
+                return (int) ($row['id'] ?? 0);
+            }, $rows);
 
             $ruleRows = $this->ruleModel
                 ->select('pos_promotion_rules.*, trigger_products.name AS trigger_product_name, gift_products.name AS gift_product_name')
@@ -55,7 +57,9 @@ class Promotions extends BaseController
                 $rules = $rulesByPromotion[$promotionId] ?? [];
 
                 $row['rules'] = $rules;
-                $row['trigger_product_names'] = array_values(array_unique(array_filter(array_map(function($rule) { return (string) ($rule['trigger_product_name'] ?? ''); }, $rules))));
+                $row['trigger_product_names'] = array_values(array_unique(array_filter(array_map(function ($rule) {
+                    return (string) ($rule['trigger_product_name'] ?? '');
+                }, $rules))));
                 $row['trigger_product_name'] = $row['trigger_product_names'][0] ?? null;
                 $row['trigger_product_id'] = isset($rules[0]['trigger_product_id']) ? (int) $rules[0]['trigger_product_id'] : null;
                 $row['trigger_qty'] = isset($rules[0]['trigger_qty']) ? (float) $rules[0]['trigger_qty'] : null;
@@ -193,6 +197,60 @@ class Promotions extends BaseController
         return redirect()->to(site_url('promotions'))->with('success', lang('Promotions.status_updated'));
     }
 
+    public function printAll()
+    {
+        $storeId = session('store_id');
+
+        $rows = $this->promotionModel
+            ->where('pos_promotions.store_id', (int) $storeId)
+            ->orderBy('pos_promotions.priority', 'DESC')
+            ->orderBy('pos_promotions.id', 'DESC')
+            ->findAll();
+
+        if (! empty($rows)) {
+            $promotionIds = array_map(function ($row) {
+                return (int) ($row['id'] ?? 0);
+            }, $rows);
+
+            $ruleRows = $this->ruleModel
+                ->select('pos_promotion_rules.*, trigger_products.name AS trigger_product_name, gift_products.name AS gift_product_name')
+                ->join('pos_products AS trigger_products', 'trigger_products.id = pos_promotion_rules.trigger_product_id', 'left')
+                ->join('pos_products AS gift_products', 'gift_products.id = pos_promotion_rules.gift_product_id', 'left')
+                ->whereIn('pos_promotion_rules.promotion_id', $promotionIds)
+                ->orderBy('pos_promotion_rules.id', 'ASC')
+                ->findAll();
+
+            $rulesByPromotion = [];
+            foreach ($ruleRows as $ruleRow) {
+                $pid = (int) ($ruleRow['promotion_id'] ?? 0);
+                $rulesByPromotion[$pid][] = $ruleRow;
+            }
+
+            foreach ($rows as &$row) {
+                $pid = (int) ($row['id'] ?? 0);
+                $rules = $rulesByPromotion[$pid] ?? [];
+                $row['rules'] = $rules;
+                $row['trigger_product_names'] = array_values(array_unique(array_filter(array_map(function ($r) {
+                    return (string) ($r['trigger_product_name'] ?? '');
+                }, $rules))));
+                $row['trigger_qty_list'] = array_map(function ($r) {
+                    return (float) ($r['trigger_qty'] ?? 0);
+                }, $rules);
+                $row['gift_product_name'] = $rules[0]['gift_product_name'] ?? '-';
+                $row['gift_qty'] = isset($rules[0]['gift_qty']) ? (float) $rules[0]['gift_qty'] : 0;
+                $row['max_applications_per_invoice'] = $rules[0]['max_applications_per_invoice'] ?? null;
+            }
+            unset($row);
+        }
+
+        return view('promotions/print', [
+            'title'      => lang('Promotions.print_title'),
+            'promotions' => $rows ?? [],
+            'printed_at' => date('Y-m-d H:i'),
+            'storeName'  => session('store_name') ?? '',
+        ]);
+    }
+
     public function delete($id)
     {
         $promotion = $this->findPromotion((int) $id);
@@ -239,7 +297,9 @@ class Promotions extends BaseController
             ->findAll();
 
         $promotion['rules'] = $rules;
-        $promotion['trigger_product_ids'] = array_values(array_unique(array_map(function($rule) { return (int) ($rule['trigger_product_id'] ?? 0); }, $rules)));
+        $promotion['trigger_product_ids'] = array_values(array_unique(array_map(function ($rule) {
+            return (int) ($rule['trigger_product_id'] ?? 0);
+        }, $rules)));
 
         if (! empty($rules)) {
             $promotion['rule_id'] = $rules[0]['id'] ?? null;

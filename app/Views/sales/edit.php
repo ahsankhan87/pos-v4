@@ -922,7 +922,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 data: function(params) {
                     return {
                         q: params.term || '',
-                        page: params.page || 1
+                        page: params.page || 1,
+                        context: 'sale'
                     };
                 },
                 processResults: function(data, params) {

@@ -175,6 +175,16 @@ foreach (($products ?? []) as $product) {
                     allowClear: false,
                     closeOnSelect: !isMultiple,
                 });
+
+                // Ensure search input gets focus whenever dropdown opens.
+                $select.off('select2:open.promoFocus').on('select2:open.promoFocus', function() {
+                    setTimeout(function() {
+                        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+                        if (searchField) {
+                            searchField.focus();
+                        }
+                    }, 0);
+                });
             });
         }
 
@@ -233,6 +243,5 @@ foreach (($products ?? []) as $product) {
 
         updateRemoveButtons();
 
-        jQuery('.select2-container--open .select2-search__field').focus();
     })();
 </script>

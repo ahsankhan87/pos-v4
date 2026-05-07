@@ -12,6 +12,11 @@
                 <i class="fas fa-plus-circle"></i> <?= lang('Promotions.new_promotion') ?>
             </a>
         <?php endif; ?>
+        <?php if (can('promotions.view')): ?>
+            <a href="<?= site_url('promotions/print') ?>" target="_blank" class="btn btn-secondary">
+                <i class="fas fa-print"></i> <?= lang('Promotions.print') ?>
+            </a>
+        <?php endif; ?>
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>

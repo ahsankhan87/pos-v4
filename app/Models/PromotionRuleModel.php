@@ -70,4 +70,28 @@ class PromotionRuleModel extends Model
             ->orderBy('pos_promotion_rules.id', 'ASC')
             ->findAll();
     }
+
+    /**
+     * Returns all product IDs configured as gift items in active promotions for the given store.
+     * These products should not be sold as standalone items.
+     */
+    public function getActiveGiftProductIds(int $storeId): array
+    {
+        $date = date('Y-m-d');
+        $ids = $this->select('pos_promotion_rules.gift_product_id')
+            ->join('pos_promotions', 'pos_promotions.id = pos_promotion_rules.promotion_id', 'inner')
+            ->where('pos_promotions.store_id', $storeId)
+            ->where('pos_promotions.status', 'active')
+            ->groupStart()
+            ->where('pos_promotions.start_date <=', $date)
+            ->orWhere('pos_promotions.start_date', null)
+            ->groupEnd()
+            ->groupStart()
+            ->where('pos_promotions.end_date >=', $date)
+            ->orWhere('pos_promotions.end_date', null)
+            ->groupEnd()
+            ->findColumn('gift_product_id');
+
+        return array_values(array_unique(array_filter(array_map('intval', $ids ?? []))));
+    }
 }

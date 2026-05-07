@@ -286,8 +286,20 @@ class Products extends BaseController
         // Get search term from query parameter 'q' or URL segment
         $q = $this->request->getGet('q') ?? $keyword;
         $supplierId = $this->request->getGet('supplier_id');
+        $context = $this->request->getGet('context');
 
         $model = new \App\Models\M_products();
+
+        // In sale context, exclude products that are configured as promotion gift items
+        // (they should only appear in the cart when a promotion rule auto-applies them)
+        $excludeIds = [];
+        if ($context === 'sale') {
+            $storeId = (int) session('store_id');
+            if ($storeId > 0) {
+                $promotionRuleModel = new \App\Models\PromotionRuleModel();
+                $excludeIds = $promotionRuleModel->getActiveGiftProductIds($storeId);
+            }
+        }
 
         // Require minimum 1 character to search (performance optimization for large datasets)
         if (empty($q) || strlen(trim($q)) < 1) {
@@ -295,6 +307,9 @@ class Products extends BaseController
             $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type');
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
+            }
+            if (!empty($excludeIds)) {
+                $model->whereNotIn('id', $excludeIds);
             }
             $products = $model->forStore()
                 ->orderBy('name', 'ASC')
@@ -310,6 +325,9 @@ class Products extends BaseController
             $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type');
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
+            }
+            if (!empty($excludeIds)) {
+                $model->whereNotIn('id', $excludeIds);
             }
             $products = $model->forStore()
                 ->orderBy('name', 'ASC')

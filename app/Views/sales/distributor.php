@@ -671,7 +671,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                             data: function(params) {
                                 return {
                                     q: params.term || '',
-                                    page: params.page || 1
+                                    page: params.page || 1,
+                                    context: 'sale'
                                 };
                             },
                             processResults: function(data) {

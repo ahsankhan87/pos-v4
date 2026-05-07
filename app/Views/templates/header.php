@@ -207,7 +207,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                 <a href="<?= site_url('dashboard') ?>" id="dashboard-menu-link" accesskey="d" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+D'])) ?>" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800">
                                     <i class="fas fa-tachometer-alt mr-2 text-blue-200"></i> <?= lang('Navigation.dashboard') ?>
                                 </a>
-                                <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'products.view', 'products.create', 'customers.view', 'employees.view', 'inventory.view', 'categories.view', 'promotions.view', 'promotions.create', 'promotions.update', 'promotions.delete'])): ?>
+                                <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'products.view', 'products.create', 'customers.view', 'employees.view', 'employee_targets.view', 'inventory.view', 'categories.view', 'promotions.view', 'promotions.create', 'promotions.update', 'promotions.delete'])): ?>
                                     <div class="relative dropdown-menu">
                                         <button class="dropdown-toggle px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-cash-register mr-2 text-blue-200"></i> <?= lang('Navigation.sales') ?>
@@ -268,6 +268,11 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                         <i class="fas fa-user-friends mr-2"></i> <?= lang('Navigation.employees_list') ?>
                                                     </a>
                                                 <?php endif; ?>
+                                                <?php if (can('employee_targets.view')): ?>
+                                                    <a href="<?= site_url('employee-targets') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'employee-targets' && $segment2 !== 'achievements') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                        <i class="fas fa-bullseye mr-2"></i> <?= lang('Navigation.employee_targets') ?>
+                                                    </a>
+                                                <?php endif; ?>
 
                                                 <?php if (can('inventory.view')): ?>
                                                     <a href="<?= site_url('inventory') ?>" accesskey="i" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+I'])) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
@@ -324,7 +329,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                 <?php endif; ?>
 
                                 <!-- Reports Dropdown -->
-                                <?php if (canAny(['reports.sales_dashboard', 'analytics.view', 'reports.daily_sales', 'reports.product_sales', 'reports.customer_sales', 'reports.category_sales', 'reports.unit_sales', 'reports.employee_commission_report', 'reports.inactive_customers', 'reports.profit_loss', 'reports.purchases_dashboard', 'reports.purchase_report', 'reports.inventory_dashboard', 'reports.debtors', 'reports.creditors', 'reports.expense_report', 'reports.expense_category_report', 'reports.tax_report', 'customers.view', 'purchases.view'])): ?>
+                                <?php if (canAny(['reports.sales_dashboard', 'analytics.view', 'reports.daily_sales', 'reports.product_sales', 'reports.customer_sales', 'reports.category_sales', 'reports.unit_sales', 'reports.employee_commission_report', 'reports.employee_target_achievement', 'reports.inactive_customers', 'reports.profit_loss', 'reports.purchases_dashboard', 'reports.purchase_report', 'reports.inventory_dashboard', 'reports.debtors', 'reports.creditors', 'reports.expense_report', 'reports.expense_category_report', 'reports.tax_report', 'customers.view', 'purchases.view'])): ?>
                                     <div class="relative dropdown-menu">
                                         <button class="dropdown-toggle px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center transition-slow focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-chart-bar mr-2 text-blue-200"></i> <?= lang('Navigation.reports') ?>
@@ -385,6 +390,11 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                             <?php if (can('reports.employee_commission_report')): ?>
                                                                 <a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                                     <i class="fas fa-user-friends mr-2"></i> <?= lang('Navigation.employee_sales') ?>
+                                                                </a>
+                                                            <?php endif; ?>
+                                                            <?php if (can('reports.employee_target_achievement')): ?>
+                                                                <a href="<?= site_url('employee-targets/achievements') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'employee-targets' && $segment2 == 'achievements') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
+                                                                    <i class="fas fa-bullseye mr-2"></i> <?= lang('Navigation.employee_target_achievements') ?>
                                                                 </a>
                                                             <?php endif; ?>
                                                             <?php if (can('reports.inactive_customers')): ?>
@@ -597,7 +607,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                         </a>
 
                         <!-- Mobile Sales Dropdown -->
-                        <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'promotions.view', 'promotions.create', 'promotions.update', 'promotions.delete'])): ?>
+                        <?php if (canAny(['sales.create', 'sales.view', 'sales_order.view', 'promotions.view', 'promotions.create', 'promotions.update', 'promotions.delete', 'employee_targets.view'])): ?>
                             <div>
                                 <button class="mobile-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600">
                                     <span class="flex items-center">
@@ -635,6 +645,11 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                     <?php if (can('sales_order.view')): ?>
                                         <a href="<?= site_url('sales-orders') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'sales-orders') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
                                             <i class="fas fa-clipboard-list mr-2"></i> <?= lang('Navigation.sales_order') ?>
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if (can('employee_targets.view')): ?>
+                                        <a href="<?= site_url('employee-targets') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'employee-targets' && $segment2 !== 'achievements') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
+                                            <i class="fas fa-bullseye mr-2"></i> <?= lang('Navigation.employee_targets') ?>
                                         </a>
                                     <?php endif; ?>
                                 </div>
@@ -686,6 +701,11 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                         <?php if (can('employees.view')): ?>
                             <a href="<?= site_url('employees') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
                                 <i class="fas fa-user-friends mr-2"></i> <?= lang('Navigation.employees') ?>
+                            </a>
+                        <?php endif; ?>
+                        <?php if (can('employee_targets.view')): ?>
+                            <a href="<?= site_url('employee-targets') ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-bullseye mr-2"></i> <?= lang('Navigation.employee_targets') ?>
                             </a>
                         <?php endif; ?>
 
@@ -758,6 +778,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                         <?php if (can('reports.unit_sales')): ?><a href="<?= site_url('sales/unit-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-ruler mr-2"></i> <?= lang('Navigation.unit_sales') ?></a><?php endif; ?>
                                         <?php if (can('reports.customer_sales')): ?><a href="<?= site_url('sales/gift-issued-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'sales' && $segment2 == 'gift-issued-report') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center"><i class="fas fa-gift mr-2"></i> <?= lang('Navigation.gift_issued_report') ?></a><?php endif; ?>
                                         <?php if (can('reports.employee_commission_report')): ?><a href="<?= site_url('sales/employee-commission-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-user-friends mr-2"></i> <?= lang('Navigation.employee_sales') ?></a><?php endif; ?>
+                                        <?php if (can('reports.employee_target_achievement')): ?><a href="<?= site_url('employee-targets/achievements') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'employee-targets' && $segment2 == 'achievements') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center"><i class="fas fa-bullseye mr-2"></i> <?= lang('Navigation.employee_target_achievements') ?></a><?php endif; ?>
                                         <?php if (can('reports.inactive_customers')): ?>
                                             <a href="<?= site_url('sales/inactive-customers-report?days=30') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-user-clock mr-2"></i> <?= lang('Navigation.inactive_customers_30') ?></a>
                                         <?php endif; ?>
