@@ -28,25 +28,26 @@
                 <div class="md:col-span-5 flex gap-2 md:justify-end">
                     <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700"><?= lang('EmployeeTargets.apply_filters') ?></button>
                     <a href="<?= site_url('employee-targets/achievements') ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-100 text-sm text-gray-700 hover:bg-gray-200"><?= lang('EmployeeTargets.reset_filters') ?></a>
-                    <a href="<?= site_url('employee-targets/achievements/print?month=' . urlencode($selectedMonth) . ($selectedEmployeeId > 0 ? '&employee_id=' . (int) $selectedEmployeeId : '')) ?>" target="_blank" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800"><?= lang('Reports.print') ?></a>
+                    <a href="<?= site_url('employee-targets/achievements/print?month=' . urlencode($selectedMonth) . ($selectedEmployeeId > 0 ? '&employee_id=' . (int) $selectedEmployeeId : '')) ?>" target="_blank" rel="noopener noreferrer" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800"><?= lang('Reports.print') ?></a>
                 </div>
             </form>
         </div>
     </div>
 
+    <?php $currency = (string) (session('currency_symbol') ?? ''); ?>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
             <div class="text-gray-500 text-sm"><?= lang('EmployeeTargets.total_targets') ?></div>
-            <div class="text-2xl font-semibold"><?= number_format((float) ($totals['target_amount'] ?? 0), 2) ?></div>
+            <div class="text-2xl font-semibold"><?= $currency . number_format((float) ($totals['target_amount'] ?? 0), 2) ?></div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="text-gray-500 text-sm"><?= lang('EmployeeTargets.total_achieved') ?></div>
-            <div class="text-2xl font-semibold text-green-700"><?= number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></div>
+            <div class="text-2xl font-semibold text-green-700"><?= $currency . number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="text-gray-500 text-sm"><?= lang('EmployeeTargets.total_variance') ?></div>
             <?php $variance = (float) ($totals['variance_amount'] ?? 0); ?>
-            <div class="text-2xl font-semibold <?= $variance >= 0 ? 'text-green-700' : 'text-red-700' ?>"><?= number_format($variance, 2) ?></div>
+            <div class="text-2xl font-semibold <?= $variance >= 0 ? 'text-green-700' : 'text-red-700' ?>"><?= $currency . number_format($variance, 2) ?></div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="text-gray-500 text-sm"><?= lang('EmployeeTargets.overall_achievement') ?></div>
@@ -54,7 +55,7 @@
         </div>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -76,26 +77,27 @@
                     <?php foreach ($rows as $row): ?>
                         <?php
                         $tier = (string) ($row['tier'] ?? lang('EmployeeTargets.tier_none'));
+                        $achievementPercent = (float) ($row['achievement_percent'] ?? 0);
                         $tierClass = 'bg-gray-100 text-gray-700';
-                        if ($tier === lang('EmployeeTargets.tier_gold')) {
+                        if ($achievementPercent >= 120) {
                             $tierClass = 'bg-amber-100 text-amber-800';
-                        } elseif ($tier === lang('EmployeeTargets.tier_silver')) {
+                        } elseif ($achievementPercent >= 100) {
                             $tierClass = 'bg-slate-100 text-slate-700';
-                        } elseif ($tier === lang('EmployeeTargets.tier_bronze')) {
+                        } elseif ($achievementPercent >= 80) {
                             $tierClass = 'bg-orange-100 text-orange-700';
                         }
                         ?>
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($row['employee_name']) ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= session('currency_symbol') . number_format((float) $row['target_amount'], 2) ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= session('currency_symbol') . number_format((float) $row['achieved_amount'], 2) ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= $currency . number_format((float) $row['target_amount'], 2) ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= $currency . number_format((float) $row['achieved_amount'], 2) ?></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= number_format((float) $row['achievement_percent'], 2) ?>%</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm <?= ((float) $row['variance_amount']) >= 0 ? 'text-green-700' : 'text-red-700' ?>"><?= session('currency_symbol') . number_format((float) $row['variance_amount'], 2) ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm <?= ((float) $row['variance_amount']) >= 0 ? 'text-green-700' : 'text-red-700' ?>"><?= $currency . number_format((float) $row['variance_amount'], 2) ?></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold <?= $tierClass ?>"><?= esc($tier) ?></span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold <?= $row['status'] === lang('EmployeeTargets.status_achieved') ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' ?>"><?= esc($row['status']) ?></span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold <?= $achievementPercent >= 100 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' ?>"><?= esc($row['status']) ?></span>
                             </td>
                         </tr>
                     <?php endforeach; ?>

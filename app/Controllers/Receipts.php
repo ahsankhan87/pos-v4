@@ -340,7 +340,7 @@ class Receipts extends BaseController
 
             // Show pieces only in item line
             // to show full carton + pieces breakdown, modify here as needed
-            $qtyDisplay = $this->formatQuantity($quantity, $cartonSize, true);
+            $qtyDisplay = $this->formatQuantity($quantity, $cartonSize, false);
 
             $unitPrice = (float)($item['price'] ?? 0);
             $lineBase = $unitPrice * $quantity;

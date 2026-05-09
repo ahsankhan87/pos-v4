@@ -17,6 +17,8 @@ Kasbook POS v4 is a modern Point-of-Sale & basic ERP style inventory management 
 - Sales drafts (recently refactored: session/cart persistence removed for simplicity – cart now in-memory)
 - Barcode & product search (AJAX endpoints) optimized for quick scan + Enter workflow
 - Purchase workflow with carton-aware quantity and cost updates
+- Multi-tenants and multi store management
+- Product promotions
 
 ## 🛠 Tech Stack
 
