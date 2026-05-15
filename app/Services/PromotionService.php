@@ -75,35 +75,41 @@ class PromotionService
             $cartProductQties[$productId] += (float) $item['qty'];
         }
 
-        // Track which rules have been applied to avoid duplicate applications
-        $appliedRuleIds = [];
-
-        // Process each promotion's rules together
+        // First pass: collect all qualifying promotions
+        $qualifyingPromotions = [];
         foreach ($rulesByPromotion as $promotionId => $promotionRules) {
-            // Get all unique trigger products for this promotion
-            $triggerProductIds = [];
-            foreach ($promotionRules as $rule) {
-                $triggerProductIds[] = (int) ($rule['trigger_product_id'] ?? 0);
-            }
-            $triggerProductIds = array_values(array_unique(array_filter($triggerProductIds)));
+            $triggerProductIds = array_values(array_unique(array_filter(array_map(function ($r) {
+                return (int) ($r['trigger_product_id'] ?? 0);
+            }, $promotionRules))));
 
             if (empty($triggerProductIds)) {
                 continue;
             }
 
-            // Check if ALL trigger products are present in cart with required quantities
             $allTriggersMetDetails = $this->checkAllTriggersMet($triggerProductIds, $promotionRules, $cartProductQties);
-            if (!$allTriggersMetDetails['met']) {
+            if (!$allTriggersMetDetails['met'] || $allTriggersMetDetails['applications'] <= 0) {
                 continue;
             }
 
-            // Apply gifts for this promotion
-            $applicationsCount = $allTriggersMetDetails['applications'];
-            if ($applicationsCount <= 0) {
-                continue;
-            }
+            $qualifyingPromotions[$promotionId] = [
+                'rules'               => $promotionRules,
+                'applications'        => $allTriggersMetDetails['applications'],
+                'trigger_product_ids' => $triggerProductIds,
+                'priority'            => (int) ($promotionRules[0]['priority'] ?? 100),
+            ];
+        }
 
-            // Use the first rule to get gift details (all rules in a promotion have the same gift)
+        // For each trigger set, keep only the promotion with the highest trigger_qty threshold met.
+        // This prevents lower-threshold promotions from firing when a higher one is already satisfied.
+        $filteredPromotions = $this->filterToHighestThreshold($qualifyingPromotions);
+
+        // Second pass: apply gifts for the filtered qualifying promotions ONLY
+        foreach ($filteredPromotions as $promotionId => $promotionData) {
+            $promotionRules     = $promotionData['rules'];
+            $applicationsCount  = $promotionData['applications'];
+            $triggerProductIds  = $promotionData['trigger_product_ids'];
+
+            // Use the first rule to get gift details (all rules in a promotion share the same gift)
             $firstRule = $promotionRules[0];
             $giftProductId = (int) ($firstRule['gift_product_id'] ?? 0);
             $giftQty = (float) ($firstRule['gift_qty'] ?? 0);
@@ -212,6 +218,149 @@ class PromotionService
 
         return $normalized;
     }
+
+    /**
+     * Filter qualifying promotions to fire only the most specific/highest-tier one per trigger context.
+     *
+     * Two suppression rules are applied:
+     * 1. Same trigger set, tiered qty: if promotions A and B share the same set of trigger products
+     *    but B requires higher quantities, only B fires (highest tier wins). If both have the same
+     *    trigger qty for all products, the one with higher priority fires (lower numeric priority value = higher priority).
+     * 2. Subset suppression: if promotion A's trigger products are a strict subset of promotion B's,
+     *    A is suppressed when B also qualifies (the more specific multi-product rule wins).
+     * Completely unrelated promotions (no shared trigger products) fire independently.
+     *
+     * @param  array $qualifyingPromotions  [promotionId => ['rules', 'applications', 'trigger_product_ids', 'priority']]
+     * @return array Filtered subset with the same structure
+     */
+    protected function filterToHighestThreshold(array $qualifyingPromotions): array
+    {
+        if (count($qualifyingPromotions) <= 1) {
+            return $qualifyingPromotions;
+        }
+
+        // Build trigger qty maps for all qualifying promotions (single pass)
+        $promoQtyMaps     = [];
+        $triggerSetGroups = [];
+        foreach ($qualifyingPromotions as $promotionId => $promotionData) {
+            $qtyMap = $this->buildTriggerQtyMap($promotionData['rules'] ?? []);
+            if ($qtyMap === []) {
+                continue;
+            }
+            $triggerIds = array_keys($qtyMap);
+            sort($triggerIds, SORT_NUMERIC);
+            $triggerKey = implode(',', $triggerIds);
+            $triggerSetGroups[$triggerKey][$promotionId] = $qtyMap;
+            $promoQtyMaps[$promotionId] = $qtyMap;
+        }
+
+        // Rule 1: Same trigger set → keep only the highest-quantity tier(s), with priority tie-breaking
+        $highestOnly = [];
+        foreach ($triggerSetGroups as $promos) {
+            $maxQtyMap = [];
+            foreach ($promos as $qtyMap) {
+                foreach ($qtyMap as $pid => $qty) {
+                    if (!isset($maxQtyMap[$pid]) || $qty > $maxQtyMap[$pid]) {
+                        $maxQtyMap[$pid] = $qty;
+                    }
+                }
+            }
+            // Collect all promotions matching max qty tier
+            $candidatesForTier = [];
+            foreach ($promos as $promotionId => $qtyMap) {
+                $isMax = true;
+                foreach ($maxQtyMap as $pid => $maxQty) {
+                    if (!isset($qtyMap[$pid]) || $qtyMap[$pid] < $maxQty) {
+                        $isMax = false;
+                        break;
+                    }
+                }
+                if ($isMax) {
+                    $candidatesForTier[$promotionId] = $qualifyingPromotions[$promotionId];
+                }
+            }
+            // If multiple promotions at max tier, use priority (lower number = higher priority)
+            if (count($candidatesForTier) > 1) {
+                uasort($candidatesForTier, function ($a, $b) {
+                    $priorityA = (int) ($a['priority'] ?? 100);
+                    $priorityB = (int) ($b['priority'] ?? 100);
+                    return $priorityA - $priorityB;
+                });
+                // Keep only the first (highest priority) from this tier group
+                $highestOnly[array_key_first($candidatesForTier)] = reset($candidatesForTier);
+            } else {
+                // Preserve numeric promotion IDs as keys; array_merge() reindexes numeric keys.
+                foreach ($candidatesForTier as $promotionId => $promotionData) {
+                    $highestOnly[$promotionId] = $promotionData;
+                }
+            }
+        }
+
+        // Rule 2: Subset suppression — suppress A if B's trigger set is a strict superset of A's.
+        // IMPORTANT: use $promoQtyMaps[$idA] / $promoQtyMaps[$idB] here, NOT the $highestOnly values
+        // (which are promotion data arrays, not qty maps).
+        $suppressed = [];
+        foreach ($highestOnly as $idA => $dataA) {
+            $qtyMapA = $promoQtyMaps[$idA] ?? [];
+            if (empty($qtyMapA)) {
+                continue;
+            }
+            foreach ($highestOnly as $idB => $dataB) {
+                if ($idA === $idB) {
+                    continue;
+                }
+                $qtyMapB = $promoQtyMaps[$idB] ?? [];
+                if (empty($qtyMapB)) {
+                    continue;
+                }
+                // B must have strictly more trigger products than A to be a superset
+                if (count($qtyMapB) <= count($qtyMapA)) {
+                    continue;
+                }
+                // Every trigger product in A must exist in B with qty >= A's qty
+                $isSuperset = true;
+                foreach ($qtyMapA as $pid => $qtyA) {
+                    if (!isset($qtyMapB[$pid]) || $qtyMapB[$pid] < $qtyA) {
+                        $isSuperset = false;
+                        break;
+                    }
+                }
+                if ($isSuperset) {
+                    $suppressed[$idA] = true;
+                    break;
+                }
+            }
+        }
+
+        $filtered = [];
+        foreach ($highestOnly as $promotionId => $promotionData) {
+            if (!isset($suppressed[$promotionId])) {
+                $filtered[$promotionId] = $promotionData;
+            }
+        }
+
+        return $filtered;
+    }
+
+    protected function buildTriggerQtyMap(array $rules): array
+    {
+        $qtyMap = [];
+
+        foreach ($rules as $rule) {
+            $productId = (int) ($rule['trigger_product_id'] ?? 0);
+            $qty = (float) ($rule['trigger_qty'] ?? 0);
+            if ($productId <= 0 || $qty <= 0) {
+                continue;
+            }
+
+            if (! isset($qtyMap[$productId]) || $qty > $qtyMap[$productId]) {
+                $qtyMap[$productId] = $qty;
+            }
+        }
+
+        return $qtyMap;
+    }
+
 
     /**
      * Check if all trigger products for a promotion are present with required quantities

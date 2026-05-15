@@ -231,11 +231,6 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                         <i class="fas fa-rotate mr-2"></i> <?= lang('Navigation.recurring_invoices') ?>
                                                     </a>
                                                 <?php endif; ?>
-                                                <?php if (can('promotions.create')): ?>
-                                                    <a href="<?= site_url('promotions/new') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'promotions' && $segment2 == 'new') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
-                                                        <i class="fas fa-plus-circle mr-2"></i> <?= lang('Promotions.new_promotion') ?>
-                                                    </a>
-                                                <?php endif; ?>
                                                 <?php if (can('promotions.view')): ?>
                                                     <a href="<?= site_url('promotions') ?>" class="block px-4 py-2 text-sm <?= ($segment1 == 'promotions' && $segment2 !== 'new') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' ?>">
                                                         <i class="fas fa-gift mr-2"></i> <?= lang('Navigation.promotions') ?>
@@ -630,11 +625,6 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                         </a>
                                         <a href="<?= site_url('recurring-invoices') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'recurring-invoices') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
                                             <i class="fas fa-rotate mr-2"></i> <?= lang('Navigation.recurring_invoices') ?>
-                                        </a>
-                                    <?php endif; ?>
-                                    <?php if (can('promotions.create')): ?>
-                                        <a href="<?= site_url('promotions/new') ?>" class="block px-3 py-2 rounded-md text-sm font-medium <?= ($segment1 == 'promotions' && $segment2 == 'new') ? 'text-white bg-blue-600' : 'text-blue-200 hover:text-white hover:bg-blue-600' ?> flex items-center">
-                                            <i class="fas fa-plus-circle mr-2"></i> <?= lang('Promotions.new_promotion') ?>
                                         </a>
                                     <?php endif; ?>
                                     <?php if (can('promotions.view')): ?>

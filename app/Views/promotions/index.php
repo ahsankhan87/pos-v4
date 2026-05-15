@@ -19,6 +19,71 @@
         <?php endif; ?>
     </div>
 
+    <!-- How it works panel -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg mb-6">
+        <button type="button" id="toggle-how-it-works" class="w-full flex items-center justify-between px-4 py-3 text-left" aria-expanded="false" aria-controls="how-it-works-body">
+            <span class="flex items-center gap-2 text-sm font-semibold text-blue-800">
+                <i class="fas fa-circle-info text-blue-500" aria-hidden="true"></i>
+                <?= lang('Promotions.how_it_works_title') ?>
+            </span>
+            <i id="toggle-how-it-works-icon" class="fas fa-chevron-down text-blue-400 transition-transform duration-200" aria-hidden="true"></i>
+        </button>
+        <div id="how-it-works-body" class="hidden px-4 pb-4">
+            <ol class="space-y-3 mt-1">
+                <li class="flex gap-3">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">1</span>
+                    <div>
+                        <p class="text-sm font-semibold text-blue-900"><?= lang('Promotions.flow_step1_title') ?></p>
+                        <p class="text-xs text-blue-700 mt-0.5"><?= lang('Promotions.flow_step1_desc') ?></p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">2</span>
+                    <div>
+                        <p class="text-sm font-semibold text-blue-900"><?= lang('Promotions.flow_step2_title') ?></p>
+                        <p class="text-xs text-blue-700 mt-0.5"><?= lang('Promotions.flow_step2_desc') ?></p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">3</span>
+                    <div>
+                        <p class="text-sm font-semibold text-blue-900"><?= lang('Promotions.flow_step3_title') ?></p>
+                        <p class="text-xs text-blue-700 mt-0.5"><?= lang('Promotions.flow_step3_desc') ?></p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">4</span>
+                    <div>
+                        <p class="text-sm font-semibold text-blue-900"><?= lang('Promotions.flow_step4_title') ?></p>
+                        <p class="text-xs text-blue-700 mt-0.5"><?= lang('Promotions.flow_step4_desc') ?></p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">!</span>
+                    <div>
+                        <p class="text-sm font-semibold text-amber-800"><?= lang('Promotions.flow_rule_highest_title') ?></p>
+                        <p class="text-xs text-amber-700 mt-0.5"><?= lang('Promotions.flow_rule_highest_desc') ?></p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <script>
+        (function() {
+            var btn = document.getElementById('toggle-how-it-works');
+            var body = document.getElementById('how-it-works-body');
+            var icon = document.getElementById('toggle-how-it-works-icon');
+            if (btn && body && icon) {
+                btn.addEventListener('click', function() {
+                    var open = !body.classList.contains('hidden');
+                    body.classList.toggle('hidden', open);
+                    icon.style.transform = open ? '' : 'rotate(180deg)';
+                    btn.setAttribute('aria-expanded', String(!open));
+                });
+            }
+        })();
+    </script>
+
     <?php if (session()->getFlashdata('success')): ?>
         <div class="rounded-md bg-green-50 p-4 mb-4">
             <p class="text-sm font-medium text-green-800"><?= esc(session()->getFlashdata('success')) ?></p>

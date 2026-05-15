@@ -113,6 +113,41 @@ foreach (($products ?? []) as $product) {
     </div>
 
     <div class="xl:col-span-1 space-y-4">
+        <!-- How it works help dropdown -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg">
+            <button type="button" id="toggle-form-how-it-works" class="w-full flex items-center justify-between px-4 py-3 text-left" aria-expanded="false" aria-controls="form-how-it-works-body">
+                <span class="text-xs font-bold text-blue-800 uppercase tracking-wide flex items-center gap-1">
+                    <i class="fas fa-circle-info" aria-hidden="true"></i>
+                    <?= lang('Promotions.how_it_works_title') ?>
+                </span>
+                <i id="toggle-form-how-it-works-icon" class="fas fa-chevron-down text-blue-400 transition-transform duration-200" aria-hidden="true"></i>
+            </button>
+            <div id="form-how-it-works-body" class="hidden px-4 pb-4 space-y-3">
+                <ol class="space-y-2">
+                    <li class="flex gap-2 text-xs text-blue-700">
+                        <span class="flex-shrink-0 font-bold text-blue-600">1.</span>
+                        <span><?= lang('Promotions.flow_step1_desc') ?></span>
+                    </li>
+                    <li class="flex gap-2 text-xs text-blue-700">
+                        <span class="flex-shrink-0 font-bold text-blue-600">2.</span>
+                        <span><?= lang('Promotions.flow_step2_desc') ?></span>
+                    </li>
+                    <li class="flex gap-2 text-xs text-blue-700">
+                        <span class="flex-shrink-0 font-bold text-blue-600">3.</span>
+                        <span><?= lang('Promotions.flow_step3_desc') ?></span>
+                    </li>
+                    <li class="flex gap-2 text-xs text-blue-700">
+                        <span class="flex-shrink-0 font-bold text-blue-600">4.</span>
+                        <span><?= lang('Promotions.flow_step4_desc') ?></span>
+                    </li>
+                </ol>
+                <div class="bg-amber-50 border border-amber-200 rounded p-2">
+                    <p class="text-xs font-semibold text-amber-800\"><?= lang('Promotions.flow_rule_highest_title') ?></p>
+                    <p class="text-xs text-amber-700 mt-0.5\"><?= lang('Promotions.flow_rule_highest_desc') ?></p>
+                </div>
+            </div>
+        </div>
+
         <div class="table-card p-4 md:p-5 space-y-3">
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Promotions.status') ?></label>
@@ -156,6 +191,18 @@ foreach (($products ?? []) as $product) {
 <script src="<?= base_url() ?>assets/js/select2/select2.min.js"></script>
 <script>
     (function() {
+        var helpToggleBtn = document.getElementById('toggle-form-how-it-works');
+        var helpToggleBody = document.getElementById('form-how-it-works-body');
+        var helpToggleIcon = document.getElementById('toggle-form-how-it-works-icon');
+        if (helpToggleBtn && helpToggleBody && helpToggleIcon) {
+            helpToggleBtn.addEventListener('click', function() {
+                var open = !helpToggleBody.classList.contains('hidden');
+                helpToggleBody.classList.toggle('hidden', open);
+                helpToggleIcon.style.transform = open ? '' : 'rotate(180deg)';
+                helpToggleBtn.setAttribute('aria-expanded', String(!open));
+            });
+        }
+
         if (typeof jQuery === 'undefined' || typeof jQuery.fn.select2 === 'undefined') {
             return;
         }

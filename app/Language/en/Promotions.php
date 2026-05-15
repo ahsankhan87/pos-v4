@@ -62,4 +62,17 @@ return [
     'printed_at' => 'Printed at',
     'to' => 'to',
     'total_promotions' => 'Total Promotions',
+
+    // How it works flow
+    'how_it_works_title'        => 'How Promotions Work',
+    'flow_step1_title'          => 'Set Trigger Products & Quantities',
+    'flow_step1_desc'           => 'Add one or more trigger products with their minimum required quantities. All trigger products must be in the cart together for the promotion to fire.',
+    'flow_step2_title'          => 'Set the Gift',
+    'flow_step2_desc'           => 'Choose the gift product and its quantity. It will be added as a zero-price line automatically when the trigger conditions are met.',
+    'flow_step3_title'          => 'Sale Entry Checks the Cart',
+    'flow_step3_desc'           => 'When a sale is being entered, the system checks every active promotion against the cart. If all trigger products are present at the required quantities, the gift is applied automatically.',
+    'flow_step4_title'          => 'Priority Controls Order',
+    'flow_step4_desc'           => 'When multiple promotions qualify, the one with the highest priority number is evaluated first. Set higher numbers for more important promotions.',
+    'flow_rule_highest_title'   => 'Highest Threshold Wins',
+    'flow_rule_highest_desc'    => 'If the same trigger product appears in multiple promotions at different quantity thresholds (e.g. A×5→Gift-A and A×10→Gift-B) and both are met, only the promotion with the highest threshold fires. Lower thresholds are suppressed.',
 ];
