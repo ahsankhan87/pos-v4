@@ -4,17 +4,20 @@ namespace App\Controllers;
 
 use App\Models\EmployeeSalesTargetModel;
 use App\Models\EmployeesModel;
+use App\Models\CategoriesModel;
 
 class EmployeeTargets extends BaseController
 {
     protected $targetModel;
     protected $employeeModel;
+    protected $categoryModel;
 
     public function __construct()
     {
         helper(['audit', 'form', 'permission']);
         $this->targetModel = new EmployeeSalesTargetModel();
         $this->employeeModel = new EmployeesModel();
+        $this->categoryModel = new CategoriesModel();
     }
 
     public function index()
@@ -311,6 +314,52 @@ class EmployeeTargets extends BaseController
         ]);
     }
 
+    public function achievementsCategories()
+    {
+        $storeId = (int) (session('store_id') ?? 0);
+        $selectedMonth = trim((string) ($this->request->getGet('month') ?? date('Y-m')));
+        if (! preg_match('/^\\d{4}-(0[1-9]|1[0-2])$/', $selectedMonth)) {
+            $selectedMonth = date('Y-m');
+        }
+
+        $selectedEmployeeId = (int) ($this->request->getGet('employee_id') ?? 0);
+        $report = $this->buildCategoryAchievementReport($storeId, $selectedMonth, $selectedEmployeeId);
+
+        return view('employee_targets/achievements_categories', [
+            'title' => lang('EmployeeTargets.title_achievements_categories'),
+            'rows' => $report['rows'],
+            'categories' => $report['categories'],
+            'totals' => $report['totals'],
+            'categoryTotalsPercent' => $report['categoryTotalsPercent'],
+            'employees' => $this->getEmployeesForStore($storeId),
+            'selectedMonth' => $selectedMonth,
+            'selectedEmployeeId' => $selectedEmployeeId,
+        ]);
+    }
+
+    public function achievementsCategoriesPrint()
+    {
+        $storeId = (int) (session('store_id') ?? 0);
+        $selectedMonth = trim((string) ($this->request->getGet('month') ?? date('Y-m')));
+        if (! preg_match('/^\\d{4}-(0[1-9]|1[0-2])$/', $selectedMonth)) {
+            $selectedMonth = date('Y-m');
+        }
+
+        $selectedEmployeeId = (int) ($this->request->getGet('employee_id') ?? 0);
+        $report = $this->buildCategoryAchievementReport($storeId, $selectedMonth, $selectedEmployeeId);
+        $storeName = session('store_name') ?? '';
+
+        return view('employee_targets/achievements_categories_print', [
+            'title' => lang('EmployeeTargets.title_achievements_categories'),
+            'rows' => $report['rows'],
+            'categories' => $report['categories'],
+            'totals' => $report['totals'],
+            'categoryTotalsPercent' => $report['categoryTotalsPercent'],
+            'selectedMonth' => $selectedMonth,
+            'storeName' => $storeName,
+        ]);
+    }
+
     protected function buildPayload($existing = null)
     {
         $storeId = (int) (session('store_id') ?? 0);
@@ -407,6 +456,119 @@ class EmployeeTargets extends BaseController
         return lang('EmployeeTargets.tier_none');
     }
 
+    protected function buildCategoryAchievementReport(int $storeId, string $selectedMonth, int $selectedEmployeeId = 0): array
+    {
+        $targetsBuilder = $this->targetModel
+            ->select('pos_employee_sales_targets.*, pos_employees.name AS employee_name')
+            ->join('pos_employees', 'pos_employees.id = pos_employee_sales_targets.employee_id', 'left')
+            ->where('pos_employee_sales_targets.store_id', $storeId)
+            ->where('pos_employee_sales_targets.target_month', $selectedMonth)
+            ->orderBy('pos_employees.name', 'ASC');
+
+        if ($selectedEmployeeId > 0) {
+            $targetsBuilder->where('pos_employee_sales_targets.employee_id', $selectedEmployeeId);
+        }
+
+        $targetRows = $targetsBuilder->findAll();
+        $categoryMetrics = $this->getMonthPerformanceByEmployeeCategory($storeId, $selectedMonth, $selectedEmployeeId);
+
+        $categoryMeta = [];
+        $categoryRows = $this->categoryModel->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+        foreach ($categoryRows as $categoryRow) {
+            $categoryId = (int) ($categoryRow['id'] ?? 0);
+            if ($categoryId <= 0) {
+                continue;
+            }
+            $categoryMeta[$categoryId] = [
+                'id' => $categoryId,
+                'name' => (string) ($categoryRow['name'] ?? lang('Reports.uncategorized')),
+            ];
+        }
+
+        foreach (($categoryMetrics['categoryNames'] ?? []) as $categoryId => $categoryName) {
+            $cid = (int) $categoryId;
+            if (isset($categoryMeta[$cid])) {
+                continue;
+            }
+            $categoryMeta[$cid] = [
+                'id' => $cid,
+                'name' => (string) $categoryName,
+            ];
+        }
+
+        $categories = array_values($categoryMeta);
+        usort($categories, static function ($a, $b) use ($categoryMetrics) {
+            $ac = (int) ($a['id'] ?? 0);
+            $bc = (int) ($b['id'] ?? 0);
+            $at = (float) ($categoryMetrics['categoryTotals'][$ac] ?? 0);
+            $bt = (float) ($categoryMetrics['categoryTotals'][$bc] ?? 0);
+            if ($at === $bt) {
+                return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+            }
+            return ($at < $bt) ? 1 : -1;
+        });
+
+        $rows = [];
+        $totals = [
+            'target_amount' => 0.0,
+            'achieved_amount' => 0.0,
+            'variance_amount' => 0.0,
+            'employee_count' => 0,
+        ];
+        $categoryTotalsAchieved = [];
+
+        foreach ($targetRows as $targetRow) {
+            $employeeId = (int) ($targetRow['employee_id'] ?? 0);
+            $byCategory = $categoryMetrics['byEmployee'][$employeeId] ?? [];
+            $targetAmount = (float) ($targetRow['target_amount'] ?? 0);
+            $achievedAmount = (float) array_sum($byCategory);
+            $achievementPercent = $targetAmount > 0 ? (($achievedAmount / $targetAmount) * 100) : 0;
+            $varianceAmount = $achievedAmount - $targetAmount;
+
+            $categoryPercents = [];
+            foreach ($categories as $category) {
+                $categoryId = (int) ($category['id'] ?? 0);
+                $categoryAchieved = (float) ($byCategory[$categoryId] ?? 0);
+                $categoryPercents[$categoryId] = $targetAmount > 0 ? (($categoryAchieved / $targetAmount) * 100) : 0;
+                $categoryTotalsAchieved[$categoryId] = (float) ($categoryTotalsAchieved[$categoryId] ?? 0) + $categoryAchieved;
+            }
+
+            $rows[] = [
+                'employee_name' => $targetRow['employee_name'] ?? lang('Reports.unassigned'),
+                'target_amount' => $targetAmount,
+                'achieved_amount' => $achievedAmount,
+                'achievement_percent' => round($achievementPercent, 2),
+                'category_percents' => $categoryPercents,
+                'tier' => $this->resolveTier($achievementPercent),
+                'status' => $achievementPercent >= 100 ? lang('EmployeeTargets.status_achieved') : lang('EmployeeTargets.status_pending'),
+            ];
+
+            $totals['target_amount'] += $targetAmount;
+            $totals['achieved_amount'] += $achievedAmount;
+            $totals['variance_amount'] += $varianceAmount;
+            $totals['employee_count']++;
+        }
+
+        $totals['achievement_percent'] = $totals['target_amount'] > 0
+            ? round(($totals['achieved_amount'] / $totals['target_amount']) * 100, 2)
+            : 0;
+
+        $categoryTotalsPercent = [];
+        foreach ($categories as $category) {
+            $categoryId = (int) ($category['id'] ?? 0);
+            $categoryTotalsPercent[$categoryId] = $totals['target_amount'] > 0
+                ? round((((float) ($categoryTotalsAchieved[$categoryId] ?? 0)) / $totals['target_amount']) * 100, 2)
+                : 0.0;
+        }
+
+        return [
+            'rows' => $rows,
+            'categories' => $categories,
+            'totals' => $totals,
+            'categoryTotalsPercent' => $categoryTotalsPercent,
+        ];
+    }
+
     protected function getMonthPerformanceByEmployee(int $storeId, string $month, int $employeeId = 0): array
     {
         $from = $month . '-01 00:00:00';
@@ -471,5 +633,94 @@ class EmployeeTargets extends BaseController
         }
 
         return $result;
+    }
+
+    protected function getMonthPerformanceByEmployeeCategory(int $storeId, string $month, int $employeeId = 0): array
+    {
+        $from = $month . '-01 00:00:00';
+        $to = date('Y-m-t', strtotime($month . '-01')) . ' 23:59:59';
+        $db = db_connect();
+
+        $salesBuilder = $db->table('pos_sale_items')
+            ->select('pos_sales.employee_id, COALESCE(pos_products.category_id, 0) AS category_id, pos_categories.name AS category_name, SUM(pos_sale_items.subtotal) AS gross_total')
+            ->join('pos_sales', 'pos_sales.id = pos_sale_items.sale_id', 'inner')
+            ->join('pos_products', 'pos_products.id = pos_sale_items.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.created_at >=', $from)
+            ->where('pos_sales.created_at <=', $to)
+            ->where('pos_sales.employee_id >', 0)
+            ->groupBy('pos_sales.employee_id, COALESCE(pos_products.category_id, 0), pos_categories.name');
+
+        if ($employeeId > 0) {
+            $salesBuilder->where('pos_sales.employee_id', $employeeId);
+        }
+
+        $salesRows = $salesBuilder->get()->getResultArray();
+
+        $returnsBuilder = $db->table('pos_sales_returns')
+            ->select('pos_sales.employee_id, COALESCE(pos_products.category_id, 0) AS category_id, pos_categories.name AS category_name, SUM(pos_sales_returns.return_amount) AS returns_total')
+            ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'inner')
+            ->join('pos_products', 'pos_products.id = pos_sales_returns.product_id', 'left')
+            ->join('pos_categories', 'pos_categories.id = pos_products.category_id', 'left')
+            ->where('pos_sales.store_id', $storeId)
+            ->where('pos_sales.created_at >=', $from)
+            ->where('pos_sales.created_at <=', $to)
+            ->where('pos_sales.employee_id >', 0)
+            ->groupBy('pos_sales.employee_id, COALESCE(pos_products.category_id, 0), pos_categories.name');
+
+        if ($employeeId > 0) {
+            $returnsBuilder->where('pos_sales.employee_id', $employeeId);
+        }
+
+        $returnRows = $returnsBuilder->get()->getResultArray();
+
+        $result = [];
+        $categoryTotals = [];
+        $categoryNames = [];
+
+        foreach ($salesRows as $row) {
+            $eid = (int) ($row['employee_id'] ?? 0);
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            $amount = (float) ($row['gross_total'] ?? 0);
+
+            $result[$eid][$categoryId] = (float) ($result[$eid][$categoryId] ?? 0) + $amount;
+            $categoryTotals[$categoryId] = (float) ($categoryTotals[$categoryId] ?? 0) + $amount;
+            if (! isset($categoryNames[$categoryId])) {
+                $name = trim((string) ($row['category_name'] ?? ''));
+                $categoryNames[$categoryId] = $name !== '' ? $name : lang('Reports.uncategorized');
+            }
+        }
+
+        foreach ($returnRows as $row) {
+            $eid = (int) ($row['employee_id'] ?? 0);
+            $categoryId = (int) ($row['category_id'] ?? 0);
+            $returns = (float) ($row['returns_total'] ?? 0);
+
+            $result[$eid][$categoryId] = (float) ($result[$eid][$categoryId] ?? 0) - $returns;
+            $categoryTotals[$categoryId] = (float) ($categoryTotals[$categoryId] ?? 0) - $returns;
+            if (! isset($categoryNames[$categoryId])) {
+                $name = trim((string) ($row['category_name'] ?? ''));
+                $categoryNames[$categoryId] = $name !== '' ? $name : lang('Reports.uncategorized');
+            }
+        }
+
+        $knownCategoryRows = $this->categoryModel->forStore($storeId)->select('id, name')->findAll();
+        foreach ($knownCategoryRows as $categoryRow) {
+            $cid = (int) ($categoryRow['id'] ?? 0);
+            if ($cid <= 0) {
+                continue;
+            }
+            $name = trim((string) ($categoryRow['name'] ?? ''));
+            if ($name !== '') {
+                $categoryNames[$cid] = $name;
+            }
+        }
+
+        return [
+            'byEmployee' => $result,
+            'categoryTotals' => $categoryTotals,
+            'categoryNames' => $categoryNames,
+        ];
     }
 }

@@ -13,6 +13,10 @@
                     <i class="fas fa-chart-line"></i>
                     <span><?= lang('EmployeeTargets.achievements_report') ?></span>
                 </a>
+                <a href="<?= site_url('employee-targets/achievements/categories') ?>" class="btn btn-muted">
+                    <i class="fas fa-table"></i>
+                    <span><?= lang('EmployeeTargets.achievements_categories_report') ?></span>
+                </a>
             <?php endif; ?>
             <?php if (can('employee_targets.create')): ?>
                 <a href="<?= site_url('employee-targets/new') ?>" class="btn btn-primary">

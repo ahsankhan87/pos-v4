@@ -480,6 +480,8 @@ $routes->group('employee-targets', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'EmployeeTargets::index', ['filter' => 'permission:employee_targets.view']);
     $routes->get('achievements', 'EmployeeTargets::achievements', ['filter' => 'permission:reports.employee_target_achievement']);
     $routes->get('achievements/print', 'EmployeeTargets::achievementsPrint', ['filter' => 'permission:reports.employee_target_achievement']);
+    $routes->get('achievements/categories', 'EmployeeTargets::achievementsCategories', ['filter' => 'permission:reports.employee_target_achievement']);
+    $routes->get('achievements/categories/print', 'EmployeeTargets::achievementsCategoriesPrint', ['filter' => 'permission:reports.employee_target_achievement']);
     // Create
     $routes->get('new', 'EmployeeTargets::new', ['filter' => 'permission:employee_targets.create']);
     $routes->post('create', 'EmployeeTargets::create', ['filter' => 'permission:employee_targets.create']);
