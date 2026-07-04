@@ -384,9 +384,11 @@ $routes->group('products', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Products::index', ['filter' => 'permission:products.view']);
     $routes->get('datatable', 'Products::datatable', ['filter' => 'permission:products.view']);
     $routes->get('export', 'Products::export', ['filter' => 'permission:products.view']);
+    $routes->get('imei-inventory', 'Products::imeiInventory', ['filter' => 'permission:products.view']);
     $routes->get('generate-barcode', 'Products::generateBarcode', ['filter' => 'permission:products.create']);
     $routes->get('(:num)', 'Products::show/$1', ['filter' => 'permission:products.view']);
     $routes->get('stock-movement-history/(:num)', 'Products::stockMovementHistory/$1', ['filter' => 'permission:products.view']);
+    $routes->get('available-imeis/(:num)', 'Products::availableImeis/$1', ['filter' => 'permission:sales.create,businessFeature:imei_tracking']);
     $routes->get('barcode_image/(:any)', 'Products::barcode_image/$1'); // Public barcode image endpoint
     $routes->get('printLabels6025', 'Products::printLabels6025', ['filter' => 'permission:products.view ']);
 
@@ -504,6 +506,9 @@ $routes->get('api/products/search', 'Products::search'); // AJAX endpoint for pr
 $routes->get('api/products/search/(:any)', 'Products::search/$1'); // AJAX endpoint for product search with keyword
 $routes->get('api/products/barcode/(:any)', 'Products::barcode/$1'); // AJAX endpoint for product barcode
 $routes->get('api/products/barcode', 'Products::barcode'); // AJAX endpoint for product barcode
+$routes->group('api/products', ['filter' => 'auth'], function ($routes) {
+    $routes->get('available-imeis/(:num)', 'Products::availableImeis/$1', ['filter' => 'permission:sales.create,businessFeature:imei_tracking']);
+});
 $routes->get('products/barcode_image/(:any)', 'Products::barcode_image/$1');
 $routes->get('products/barcode/(:alphanum)(/:any)', 'Products::barcode/$1/$2');
 $routes->get('products/print-barcodes', 'Products::printBarcodes');

@@ -85,7 +85,8 @@ class Auth extends BaseController
                     'store_address' => $defaultStore['address'],
                     'store_phone' => $defaultStore['phone'],
                     'currency_code' => $defaultStore['currency_code'],
-                    'currency_symbol' => $defaultStore['currency_symbol']
+                    'currency_symbol' => $defaultStore['currency_symbol'],
+                    'business_type' => $defaultStore['business_type'] ?? 'general',
                 ]);
                 logAction('login', 'User logged in: ' . $user['username'] . ' to default store: ' . $defaultStore['name']);
                 return redirect()->to('/');
@@ -100,7 +101,8 @@ class Auth extends BaseController
                     'store_address' => $store['address'],
                     'store_phone' => $store['phone'],
                     'currency_code' => $store['currency_code'],
-                    'currency_symbol' => $store['currency_symbol']
+                    'currency_symbol' => $store['currency_symbol'],
+                    'business_type' => $store['business_type'] ?? 'general',
                 ]);
                 // Log the login action
                 logAction('login', 'User logged in: ' . $user['username'] . ' to store: ' . $store['name']);
@@ -124,6 +126,9 @@ class Auth extends BaseController
     public function register()
     {
         if ($this->request->getMethod() === 'POST') {
+            helper('business_feature');
+            $businessTypes = array_keys(business_type_options());
+            $businessTypeRule = 'required|in_list[' . implode(',', $businessTypes) . ']';
 
             $rules = [
                 'username' => 'required|min_length[3]|max_length[50]|is_unique[pos_users.username]',
@@ -133,7 +138,8 @@ class Auth extends BaseController
                 'name' => 'required|min_length[3]',
                 'company_name' => 'required|min_length[2]|max_length[191]',
                 'company_slug' => 'required|min_length[3]|max_length[50]|alpha_dash',
-                'tenant_base_url' => 'required|valid_url|max_length[255]'
+                'tenant_base_url' => 'required|valid_url|max_length[255]',
+                'business_type' => $businessTypeRule,
             ];
 
             if (!$this->validate($rules)) {
@@ -152,6 +158,7 @@ class Auth extends BaseController
             $companyName = trim((string) $this->request->getPost('company_name'));
             $companySlug = trim((string) $this->request->getPost('company_slug'));
             $tenantBaseUrl = $this->normalizeTenantBaseUrl((string) $this->request->getPost('tenant_base_url'));
+            $businessType = trim((string) $this->request->getPost('business_type'));
 
             if ($tenantBaseUrl === '') {
                 return redirect()->back()->withInput()->with('error', 'Tenant base URL is invalid');
@@ -181,6 +188,7 @@ class Auth extends BaseController
                 'currency_symbol' => 'Rs',
                 'timezone' => 'Asia/Karachi',
                 'website_url' => $tenantBaseUrl . '/' . $companySlug,
+                'business_type' => $businessType,
             ], true);
 
             if (!$storeId) {

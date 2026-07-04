@@ -31,6 +31,7 @@ class M_products extends Model
         'supplier_id',
         'type',
         'is_stock_tracked',
+        'requires_imei',
     ]; // adjust fields as per your table
 
     public function getProducts($productID = false)

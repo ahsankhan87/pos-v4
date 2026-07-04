@@ -642,6 +642,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                 errors.push('Please select a payment method.');
             }
             errors = errors.concat(validateProductDiscountLimits());
+            errors = errors.concat(validateImeiSelections());
             // Cash validation: ensure tendered >= total for cash payments
             // const payMethod = $('select[name="payment_method"]').val();
             // const payType = $('#payment_type').val();
@@ -681,6 +682,56 @@ $canEditLineDiscount = can('sales.edit_discount');
                 if (enteredDiscount - allowedDiscount > 0.0001) {
                     const limitLabel = limitType === 'percentage' ? `${limitValue}%` : `<?= session()->get('currency_symbol') ?>${limitValue.toFixed(2)}`;
                     errors.push(`Discount for ${item.name} exceeds product limit (${limitLabel}).`);
+                }
+            });
+
+            return errors;
+        }
+
+        function normalizeImeiList(input) {
+            if (Array.isArray(input)) {
+                return input.map(v => String(v || '').trim()).filter(v => v.length > 0);
+            }
+
+            return String(input || '')
+                .split(/\r?\n|,/)
+                .map(v => v.trim())
+                .filter(v => v.length > 0);
+        }
+
+        function isImeiRequired(value) {
+            if (value === 1 || value === '1' || value === true) {
+                return true;
+            }
+
+            const normalized = String(value || '').trim().toLowerCase();
+            return normalized === 'true' || normalized === 'yes';
+        }
+
+        function validateImeiSelections() {
+            const errors = [];
+
+            cart.forEach((item) => {
+                if (isPromotionGift(item) || !isImeiRequired(item.requires_imei)) {
+                    return;
+                }
+
+                const qty = parseFloat(item.quantity || 0);
+                const qtyInt = Math.round(qty);
+                if (Math.abs(qty - qtyInt) > 0.0001 || qtyInt <= 0) {
+                    errors.push(`IMEI product ${item.name} must have whole quantity.`);
+                    return;
+                }
+
+                const imeis = normalizeImeiList(item.selected_imeis || []);
+                const uniqueImeis = [...new Set(imeis.map(v => v.toLowerCase()))];
+                if (imeis.length !== uniqueImeis.length) {
+                    errors.push(`Duplicate IMEI selected for ${item.name}.`);
+                    return;
+                }
+
+                if (imeis.length !== qtyInt) {
+                    errors.push(`Select exactly ${qtyInt} IMEI(s) for ${item.name}.`);
                 }
             });
 
@@ -836,7 +887,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                             cost_price: product.cost_price,
                             carton_size: product.carton_size,
                             max_discount_value: product.max_discount_value,
-                            max_discount_type: product.max_discount_type
+                            max_discount_type: product.max_discount_type,
+                            requires_imei: isImeiRequired(product.requires_imei)
                         })),
                         pagination: {
                             more: false
@@ -1068,6 +1120,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                     cost_price: product.cost_price || 0,
                     max_discount_value: parseFloat(product.max_discount_value || 0),
                     max_discount_type: product.max_discount_type || 'fixed',
+                    requires_imei: isImeiRequired(product.requires_imei),
                     // Default quantity in pieces; if product has cartons, start at one full carton worth (in pieces)
                     // Start every new item at exactly 1 piece (not a full carton)
                     quantity: 1,
@@ -1075,7 +1128,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     carton_size: parseFloat(product.carton_size) || 0,
                     unit: 'pieces', // forced default display unit
                     discount: 0,
-                    discount_type: 'fixed'
+                    discount_type: 'fixed',
+                    selected_imeis: []
                 });
                 //showSuccessMessage(`${product.name} added to cart`);
                 // } else {
@@ -1121,6 +1175,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                 const stockDisplay = hasCartons ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
                 const promoBadge = isGift ? '<span class="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800"><i class="fas fa-gift mr-1 text-[9px]"></i>Gift Item</span>' : '';
                 const promoMeta = isGift ? `<div class="text-[10px] text-amber-700 mt-0.5">${escapeHtml(item.promotion_text || 'Promotion gift item')}</div>` : '';
+                const imeiSelector = (!isGift && isImeiRequired(item.requires_imei)) ? `
+                        <div class="mt-1.5 max-w-xs">
+                            <label class="text-[10px] font-semibold text-gray-600">IMEI</label>
+                            <select multiple data-cart-idx="${idx}" data-product-id="${item.id}" class="item-imei-select w-full text-xs"></select>
+                            <div class="text-[10px] text-gray-500 mt-0.5">Selected: ${(Array.isArray(item.selected_imeis) ? item.selected_imeis.length : 0)}</div>
+                        </div>
+                    ` : '';
                 const readonlyPrice = !CAN_EDIT_PRICE || isGift;
                 const readonlyDiscount = !CAN_EDIT_DISCOUNT || isGift;
 
@@ -1144,6 +1205,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                                 <div class="text-xs font-semibold text-gray-900 flex items-center flex-wrap">${escapeHtml(item.name)}${promoBadge}</div>
                                 <div class="text-xs text-gray-500">${escapeHtml(item.code)}</div>
                                 ${promoMeta}
+                                ${imeiSelector}
                             </div>
                         </div>
                     </td>
@@ -1220,6 +1282,7 @@ $canEditLineDiscount = can('sales.edit_discount');
             if (cart.length > 0) {
                 $('#empty-cart').hide();
                 $('#cart-items').html(tbody).show();
+                initImeiSelectors();
             } else {
                 $('#empty-cart').show();
                 $('#cart-items').hide();
@@ -1355,6 +1418,91 @@ $canEditLineDiscount = can('sales.edit_discount');
             $('#taxAmount').text('<?= session()->get('currency_symbol') ?>' + taxAmount.toFixed(2));
             $('#cart-total').text('<?= session()->get('currency_symbol') ?>' + grandTotal.toFixed(2));
             updatePaymentSummaries();
+        }
+
+        function initImeiSelectors() {
+            $('.item-imei-select').each(function() {
+                const $select = $(this);
+                const idx = parseInt($select.data('cart-idx'), 10);
+                const productId = parseInt($select.data('product-id'), 10);
+                const item = cart[idx];
+
+                if (!item || !isImeiRequired(item.requires_imei) || !productId) {
+                    return;
+                }
+
+                if ($select.data('select2')) {
+                    $select.off('change.imei').select2('destroy');
+                }
+
+                const imeiUrl = '<?= site_url('api/products/available-imeis') ?>/' + productId;
+                const selectedImeis = normalizeImeiList(item.selected_imeis || []);
+                $select.select2({
+                    width: '100%',
+                    multiple: true,
+                    closeOnSelect: true,
+                    placeholder: 'Select IMEI',
+                    ajax: {
+                        url: imeiUrl,
+                        dataType: 'json',
+                        delay: 200,
+                        data: function(params) {
+                            return {
+                                q: params.term || ''
+                            };
+                        },
+                        processResults: function(data) {
+                            const rows = (data && Array.isArray(data.results)) ? data.results : [];
+                            return {
+                                results: rows
+                            };
+                        },
+                        cache: false
+                    },
+                    minimumInputLength: 0,
+                    dropdownAutoWidth: true
+                });
+
+                $.getJSON(imeiUrl)
+                    .done(function(response) {
+                        const rows = (response && Array.isArray(response.results)) ? response.results : [];
+                        const selectedLookup = new Set(selectedImeis.map(value => String(value).toLowerCase()));
+
+                        $select.empty();
+                        rows.forEach(function(row) {
+                            const imei = String(row.id || row.text || '').trim();
+                            if (!imei) {
+                                return;
+                            }
+
+                            const option = new Option(imei, imei, false, selectedLookup.has(imei.toLowerCase()));
+                            $select.append(option);
+                        });
+
+                        selectedImeis.forEach(function(imei) {
+                            const exists = $select.find('option').filter(function() {
+                                return String(this.value) === imei;
+                            }).length > 0;
+
+                            if (!exists) {
+                                $select.append(new Option(imei, imei, true, true));
+                            }
+                        });
+
+                        $select.val(selectedImeis).trigger('change.select2');
+                    })
+                    .fail(function() {
+                        $select.val(selectedImeis).trigger('change.select2');
+                    });
+
+                $select.off('change.imei').on('change.imei', function() {
+                    const values = $select.val() || [];
+                    if (cart[idx]) {
+                        cart[idx].selected_imeis = normalizeImeiList(values);
+                        calculateTotals();
+                    }
+                });
+            });
         }
 
         // Update totals when discount or tax changes
@@ -1623,6 +1771,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                         cost_price: parseFloat(it.cost_price || 0),
                         max_discount_value: parseFloat(it.max_discount_value || 0),
                         max_discount_type: it.max_discount_type || 'fixed',
+                        requires_imei: isImeiRequired(it.requires_imei),
                         quantity: parseFloat(it.quantity || 0),
                         stock: parseFloat(it.stock || 0),
                         barcode: it.barcode || '',
@@ -1630,6 +1779,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                         unit: (parseFloat(it.carton_size || 0) > 1 && parseFloat(it.quantity || 0) >= parseFloat(it.carton_size || 0)) ? 'cartons' : 'pieces',
                         discount: parseFloat(it.discount || 0) || 0,
                         discount_type: it.discount_type || 'fixed',
+                        selected_imeis: normalizeImeiList(it.selected_imeis || []),
                         is_gift: Number(it.is_gift || 0) === 1 ? 1 : 0,
                         promotion_id: it.promotion_id || null,
                         promotion_rule_id: it.promotion_rule_id || null,

@@ -435,6 +435,46 @@ $canEditLineDiscount = can('sales.edit_discount');
             return errors;
         }
 
+        function normalizeImeiList(input) {
+            if (Array.isArray(input)) {
+                return input.map(v => String(v || '').trim()).filter(v => v.length > 0);
+            }
+
+            return String(input || '')
+                .split(/\r?\n|,/)
+                .map(v => v.trim())
+                .filter(v => v.length > 0);
+        }
+
+        function validateImeiSelections(items) {
+            const errors = [];
+            (items || []).forEach((item) => {
+                if (isPromotionGift(item) || parseInt(item.requires_imei || 0, 10) !== 1) {
+                    return;
+                }
+
+                const qty = parseFloat(item.quantity || 0);
+                const qtyInt = Math.round(qty);
+                if (qtyInt <= 0 || Math.abs(qty - qtyInt) > 0.0001) {
+                    errors.push(`IMEI product ${item.name} must have whole quantity.`);
+                    return;
+                }
+
+                const imeis = normalizeImeiList(item.selected_imeis || []);
+                const uniqueImeis = [...new Set(imeis.map(v => v.toLowerCase()))];
+                if (imeis.length !== uniqueImeis.length) {
+                    errors.push(`Duplicate IMEI selected for ${item.name}.`);
+                    return;
+                }
+
+                if (imeis.length !== qtyInt) {
+                    errors.push(`Select exactly ${qtyInt} IMEI(s) for ${item.name}.`);
+                }
+            });
+
+            return errors;
+        }
+
         // ============================================
         // Help Modal
         // ============================================
@@ -514,7 +554,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                 stock: 0, // High number to not restrict editing
                 carton_size: 0,
                 discount: 0,
-                discount_type: 'fixed'
+                discount_type: 'fixed',
+                selected_imeis: []
             };
 
             const newRowIndex = cart.length; // Store the index before adding
@@ -549,11 +590,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                     cost_price: product.cost_price || 0,
                     max_discount_value: parseFloat(product.max_discount_value || 0),
                     max_discount_type: product.max_discount_type || 'fixed',
+                    requires_imei: parseInt(product.requires_imei || 0, 10) || 0,
                     quantity: 1,
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
                     discount: 0,
-                    discount_type: 'fixed'
+                    discount_type: 'fixed',
+                    selected_imeis: []
                 });
             }
 
@@ -587,6 +630,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                 const cartonSize = parseFloat(item.carton_size) || 0;
                 const stockDisplay = cartonSize > 1 ? formatQuantity(item.stock, cartonSize) : item.stock + ' pcs';
                 const promoMeta = isGift ? `<div class="text-xs text-amber-700 mt-1">${escapeHtml(item.promotion_text || 'Promotion gift item')}</div>` : '';
+                const imeiSelector = (!isGift && parseInt(item.requires_imei || 0, 10) === 1) ? `
+                        <div class="mt-2 max-w-sm">
+                            <label class="text-[10px] font-semibold text-gray-600">IMEI</label>
+                            <select multiple data-cart-idx="${idx}" data-product-id="${item.id}" class="item-imei-select w-full text-xs"></select>
+                            <div class="text-[10px] text-gray-500 mt-0.5">Selected: ${(Array.isArray(item.selected_imeis) ? item.selected_imeis.length : 0)}</div>
+                        </div>
+                    ` : '';
                 const readonlyPrice = !CAN_EDIT_PRICE || isGift;
                 const readonlyDiscount = !CAN_EDIT_DISCOUNT || isGift;
 
@@ -608,6 +658,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                         </select>
                         <div class="text-xs text-gray-500 mt-1"><?= lang('Sales.code') ?>: ${escapeHtml(item.code || <?= json_encode(lang('Sales.na')) ?>)} • <?= lang('Sales.stock_label') ?>: ${stockDisplay}${isGift ? ' • Promotion gift' : ''}</div>
                         ${promoMeta}
+                        ${imeiSelector}
                     </td>
                     <td class="px-3 py-3 text-center">
                         <input type="number" value="${item.quantity}" min="0.01" step="0.01" 
@@ -688,7 +739,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                                         quantity: product.quantity,
                                         carton_size: product.carton_size,
                                         max_discount_value: product.max_discount_value,
-                                        max_discount_type: product.max_discount_type
+                                        max_discount_type: product.max_discount_type,
+                                        requires_imei: product.requires_imei
                                     }))
                                 };
                             },
@@ -735,6 +787,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                         }, 100);
                     });
                 });
+
+                initImeiSelectors();
             } else {
                 $('#empty-cart').show();
                 $('#cart-items').hide();
@@ -758,11 +812,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                     cost_price: product.cost_price || 0,
                     max_discount_value: parseFloat(product.max_discount_value || 0),
                     max_discount_type: product.max_discount_type || 'fixed',
+                    requires_imei: parseInt(product.requires_imei || 0, 10) || 0,
                     quantity: cart[idx].quantity, // Keep the edited quantity
                     stock: parseInt(product.quantity || 0),
                     carton_size: parseFloat(product.carton_size) || 0,
                     discount: CAN_EDIT_DISCOUNT ? cart[idx].discount : 0,
                     discount_type: (CAN_EDIT_DISCOUNT && SHOW_DISCOUNT_TYPE) ? (cart[idx].discount_type || 'fixed') : 'fixed',
+                    selected_imeis: [],
                     is_gift: 0,
                     promotion_id: null,
                     promotion_rule_id: null,
@@ -824,6 +880,56 @@ $canEditLineDiscount = can('sales.edit_discount');
             $('#taxAmount').text('<?= session()->get('currency_symbol') ?>' + taxAmount.toFixed(2));
             $('#cart-total').text('<?= session()->get('currency_symbol') ?>' + grandTotal.toFixed(2));
             updatePaymentSummaries();
+        }
+
+        function initImeiSelectors() {
+            $('.item-imei-select').each(function() {
+                const $select = $(this);
+                const idx = parseInt($select.data('cart-idx'), 10);
+                const productId = parseInt($select.data('product-id'), 10);
+                const item = cart[idx];
+                if (!item || parseInt(item.requires_imei || 0, 10) !== 1 || !productId) {
+                    return;
+                }
+
+                const selectedImeis = normalizeImeiList(item.selected_imeis || []);
+                selectedImeis.forEach(function(imei) {
+                    const opt = new Option(imei, imei, true, true);
+                    $select.append(opt);
+                });
+
+                $select.select2({
+                    width: '100%',
+                    multiple: true,
+                    closeOnSelect: true,
+                    placeholder: 'Select IMEI',
+                    ajax: {
+                        url: '<?= site_url('api/products/available-imeis') ?>/' + productId,
+                        dataType: 'json',
+                        delay: 200,
+                        data: function(params) {
+                            return {
+                                q: params.term || ''
+                            };
+                        },
+                        processResults: function(data) {
+                            const rows = (data && Array.isArray(data.results)) ? data.results : [];
+                            return {
+                                results: rows
+                            };
+                        },
+                        cache: false
+                    }
+                });
+
+                $select.off('change.imei').on('change.imei', function() {
+                    const values = $select.val() || [];
+                    if (cart[idx]) {
+                        cart[idx].selected_imeis = normalizeImeiList(values);
+                        calculateTotals();
+                    }
+                });
+            });
         }
 
         function updatePaymentSummaries() {
@@ -946,9 +1052,11 @@ $canEditLineDiscount = can('sales.edit_discount');
                 return false;
             }
             const limitErrors = validateProductDiscountLimits(validItems);
-            if (limitErrors.length > 0) {
+            const imeiErrors = validateImeiSelections(validItems);
+            const allErrors = limitErrors.concat(imeiErrors);
+            if (allErrors.length > 0) {
                 e.preventDefault();
-                showFormErrors(limitErrors);
+                showFormErrors(allErrors);
                 return false;
             }
             if (!SHOW_DISCOUNT_TYPE) {
@@ -1017,8 +1125,10 @@ $canEditLineDiscount = can('sales.edit_discount');
                 e.preventDefault();
                 const validItems = getValidCartItems();
                 const limitErrors = validateProductDiscountLimits(validItems);
-                if (limitErrors.length > 0) {
-                    showFormErrors(limitErrors);
+                const imeiErrors = validateImeiSelections(validItems);
+                const allErrors = limitErrors.concat(imeiErrors);
+                if (allErrors.length > 0) {
+                    showFormErrors(allErrors);
                     return false;
                 }
                 if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
@@ -1138,8 +1248,10 @@ $canEditLineDiscount = can('sales.edit_discount');
                 e.preventDefault();
                 const validItems = getValidCartItems();
                 const limitErrors = validateProductDiscountLimits(validItems);
-                if (limitErrors.length > 0) {
-                    showFormErrors(limitErrors);
+                const imeiErrors = validateImeiSelections(validItems);
+                const allErrors = limitErrors.concat(imeiErrors);
+                if (allErrors.length > 0) {
+                    showFormErrors(allErrors);
                     return false;
                 }
                 if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
@@ -1164,12 +1276,14 @@ $canEditLineDiscount = can('sales.edit_discount');
                         cost_price: parseFloat(it.cost_price || 0),
                         max_discount_value: parseFloat(it.max_discount_value || 0),
                         max_discount_type: it.max_discount_type || 'fixed',
+                        requires_imei: parseInt(it.requires_imei || 0, 10) || 0,
                         quantity: parseFloat(it.quantity || 0),
                         stock: parseFloat(it.stock || 0),
                         barcode: it.barcode || '',
                         carton_size: parseFloat(it.carton_size || 0),
                         discount: parseFloat(it.discount || 0) || 0,
                         discount_type: it.discount_type || 'fixed',
+                        selected_imeis: normalizeImeiList(it.selected_imeis || []),
                         is_gift: Number(it.is_gift || 0) === 1 ? 1 : 0,
                         promotion_id: it.promotion_id || null,
                         promotion_rule_id: it.promotion_rule_id || null,

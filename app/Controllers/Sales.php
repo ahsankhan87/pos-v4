@@ -14,6 +14,7 @@ use App\Models\RoleModel;
 use App\Models\EmployeesModel;
 use App\Models\SalesReturnModel;
 use App\Models\SettingsModel;
+use App\Models\ProductImeiModel;
 use App\Services\PromotionService;
 
 class Sales extends BaseController
@@ -30,7 +31,7 @@ class Sales extends BaseController
 
     public function __construct()
     {
-        helper('audit');
+        helper(['audit', 'business_feature']);
         $this->cartModel = new CartModel();
         $this->productModel = new M_products();
         $this->customerModel = new M_customers();
@@ -176,6 +177,7 @@ class Sales extends BaseController
         // Normalize optional employee and payment fields
         $employee_id = (int) ($this->request->getPost('employee_id') !== null && $this->request->getPost('employee_id') !== '' ? $this->request->getPost('employee_id') : 0); // Salesman/employee assigned to this sale
         $payment_type = $this->request->getPost('payment_type') ?: 'cash'; // 'cash' or 'credit'
+        $storeId = (int) (session('store_id') ?? 0);
 
         // Validation
         $errors = [];
@@ -276,8 +278,38 @@ class Sales extends BaseController
             $line['quantity'] = $qty;
             $line['discount'] = $effectiveDiscount;
             $line['discount_type'] = $effectiveDiscountType;
+            $line['requires_imei'] = (int) ($product['requires_imei'] ?? 0);
             if (!isset($line['cost_price'])) {
                 $line['cost_price'] = (float) ($product['cost_price'] ?? 0);
+            }
+
+            if ((int) $line['requires_imei'] === 1 && function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+                $qtyInt = (int) round($qty);
+                if ($qtyInt <= 0 || abs($qty - $qtyInt) > 0.0001) {
+                    $errors[] = 'IMEI product quantity must be a whole number.';
+                    continue;
+                }
+
+                $selectedImeis = $this->normalizeImeiInput($line['selected_imeis'] ?? ($line['imei_list'] ?? []));
+                if (count($selectedImeis) !== $qtyInt) {
+                    $errors[] = 'IMEI count must match quantity for product: ' . ($product['name'] ?? ('#' . $productId));
+                    continue;
+                }
+
+                $line['selected_imeis'] = $selectedImeis;
+
+                $db = \Config\Database::connect();
+                $availableCount = $db->table('pos_product_imeis')
+                    ->where('store_id', $storeId)
+                    ->where('product_id', $productId)
+                    ->where('status', 'available')
+                    ->whereIn('imei', $selectedImeis)
+                    ->countAllResults();
+
+                if ($availableCount !== count($selectedImeis)) {
+                    $errors[] = 'One or more selected IMEIs are no longer available for product: ' . ($product['name'] ?? ('#' . $productId));
+                    continue;
+                }
             }
 
             $sanitizedItems[] = $line;
@@ -501,7 +533,7 @@ class Sales extends BaseController
 
                 // Insert items and adjust inventory
                 foreach ($items as $item) {
-                    $product = $productModel->find($item['id']);
+                    $product = $productModel->forStore()->find($item['id']);
                     if ($product) { //&& $product['quantity'] >= $item['quantity']
                         // compute net subtotal after line discount if provided
                         $lineBase = ((float)$item['price']) * ((float)$item['quantity']);
@@ -534,6 +566,12 @@ class Sales extends BaseController
                             'source_product_id' => $item['source_product_id'] ?? null,
                             'qualifying_line_key' => $item['qualifying_line_key'] ?? null,
                         ]);
+                        $saleItemId = (int) $saleItemsModel->insertID();
+
+                        if ((int) ($item['requires_imei'] ?? 0) === 1 && function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+                            $selectedImeis = $this->normalizeImeiInput($item['selected_imeis'] ?? []);
+                            $this->markImeisAsSold((int) $sale_id, $saleItemId, (int) $item['id'], $selectedImeis, $sale_date, $storeId);
+                        }
 
                         $productModel->adjustStock($item['id'], $item['quantity'], 'out');
                         $inventoryModel->logStockChange(
@@ -631,6 +669,30 @@ class Sales extends BaseController
             $existingQuantities[$line['product_id']] = ($existingQuantities[$line['product_id']] ?? 0) + $line['quantity'];
         }
 
+        $imeiSelectionsByItem = [];
+        if (function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+            $imeiRows = \Config\Database::connect()
+                ->table('pos_product_imeis')
+                ->select('sale_item_id, imei')
+                ->where('sale_id', (int) $saleId)
+                ->where('status', 'sold')
+                ->where('sale_item_id IS NOT NULL', null, false)
+                ->get()
+                ->getResultArray();
+
+            foreach ($imeiRows as $imeiRow) {
+                $saleItemId = (int) ($imeiRow['sale_item_id'] ?? 0);
+                $imei = trim((string) ($imeiRow['imei'] ?? ''));
+                if ($saleItemId <= 0 || $imei === '') {
+                    continue;
+                }
+                if (!isset($imeiSelectionsByItem[$saleItemId])) {
+                    $imeiSelectionsByItem[$saleItemId] = [];
+                }
+                $imeiSelectionsByItem[$saleItemId][] = $imei;
+            }
+        }
+
         $cartItems = [];
         foreach ($items as $line) {
             $product = $productLookup[$line['product_id']] ?? null;
@@ -644,11 +706,13 @@ class Sales extends BaseController
                 'cost_price' => isset($line['cost_price']) ? (float) $line['cost_price'] : (float) ($product['cost_price'] ?? 0),
                 'max_discount_value' => isset($product['max_discount_value']) ? (float) $product['max_discount_value'] : 0.0,
                 'max_discount_type' => isset($product['max_discount_type']) && strtolower((string) $product['max_discount_type']) === 'percentage' ? 'percentage' : 'fixed',
+                'requires_imei' => isset($product['requires_imei']) ? (int) $product['requires_imei'] : 0,
                 'quantity' => (float) $line['quantity'],
                 'stock' => $currentStock + (float) $line['quantity'],
                 'barcode' => $product['barcode'] ?? '',
                 'discount' => isset($line['discount']) ? (float)$line['discount'] : 0.0,
                 'discount_type' => isset($line['discount_type']) && strtolower((string)$line['discount_type']) === 'percentage' ? 'percentage' : 'fixed',
+                'selected_imeis' => $imeiSelectionsByItem[(int) ($line['id'] ?? 0)] ?? [],
                 'carton_size' => isset($product['carton_size']) ? (float)$product['carton_size'] : 0,
                 'is_gift' => !empty($line['is_gift']) ? 1 : 0,
                 'promotion_id' => $line['promotion_id'] ?? null,
@@ -697,6 +761,8 @@ class Sales extends BaseController
             $validatedItems = [];
             $subtotal = 0.0; // gross subtotal
             $itemwiseDiscountSum = 0.0;
+            $activeStoreId = (int) (session('store_id') ?? 0);
+            $dbConn = \Config\Database::connect();
 
             if (empty($errors)) {
                 foreach ((array) $cartData as $line) {
@@ -777,6 +843,40 @@ class Sales extends BaseController
                     }
                     $itemwiseDiscountSum += $lineDiscount;
 
+                    $requiresImei = (int) ($product['requires_imei'] ?? 0);
+                    $selectedImeis = [];
+                    if ($requiresImei === 1 && function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+                        $quantityInt = (int) round($quantity);
+                        if ($quantityInt <= 0 || abs($quantity - $quantityInt) > 0.0001) {
+                            $errors[] = 'IMEI product quantity must be a whole number.';
+                            break;
+                        }
+
+                        $selectedImeis = $this->normalizeImeiInput($line['selected_imeis'] ?? ($line['imei_list'] ?? []));
+                        if (count($selectedImeis) !== $quantityInt) {
+                            $errors[] = 'IMEI count must match quantity for product: ' . ($product['name'] ?? ('#' . $productId));
+                            break;
+                        }
+
+                        $availableCount = $dbConn->table('pos_product_imeis')
+                            ->where('store_id', $activeStoreId)
+                            ->where('product_id', $productId)
+                            ->whereIn('imei', $selectedImeis)
+                            ->groupStart()
+                            ->where('status', 'available')
+                            ->orGroupStart()
+                            ->where('status', 'sold')
+                            ->where('sale_id', (int) $saleId)
+                            ->groupEnd()
+                            ->groupEnd()
+                            ->countAllResults();
+
+                        if ($availableCount !== count($selectedImeis)) {
+                            $errors[] = 'One or more selected IMEIs are not available for product: ' . ($product['name'] ?? ('#' . $productId));
+                            break;
+                        }
+                    }
+
                     $validatedItems[] = [
                         'product_id' => $productId,
                         'quantity' => $quantity,
@@ -786,6 +886,8 @@ class Sales extends BaseController
                         'line_discount' => $lineDiscount,
                         'discount' => $discountRaw,
                         'discount_type' => $dtype,
+                        'requires_imei' => $requiresImei,
+                        'selected_imeis' => $selectedImeis,
                     ];
                 }
             }
@@ -915,6 +1017,20 @@ class Sales extends BaseController
             }
 
             try {
+                if (function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+                    \Config\Database::connect()->table('pos_product_imeis')
+                        ->where('store_id', (int) $storeId)
+                        ->where('sale_id', (int) $saleId)
+                        ->where('status', 'sold')
+                        ->update([
+                            'status' => 'available',
+                            'sale_id' => null,
+                            'sale_item_id' => null,
+                            'sold_at' => null,
+                            'updated_at' => date('Y-m-d H:i:s'),
+                        ]);
+                }
+
                 foreach ($validatedItems as $lineItem) {
                     $productModel->adjustStock($lineItem['product_id'], $lineItem['quantity'], 'out');
                     // Save net line subtotal after discount
@@ -946,6 +1062,12 @@ class Sales extends BaseController
                         'source_product_id' => $lineItem['source_product_id'] ?? null,
                         'qualifying_line_key' => $lineItem['qualifying_line_key'] ?? null,
                     ]);
+                    $saleItemId = (int) $saleItemsModel->insertID();
+
+                    if ((int) ($lineItem['requires_imei'] ?? 0) === 1 && function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+                        $selectedImeis = $this->normalizeImeiInput($lineItem['selected_imeis'] ?? []);
+                        $this->markImeisAsSold((int) $saleId, $saleItemId, (int) $lineItem['product_id'], $selectedImeis, $saleDate, (int) $storeId);
+                    }
 
                     $inventoryModel->logStockChange(
                         $lineItem['product_id'],
@@ -1084,6 +1206,32 @@ class Sales extends BaseController
 
     private function applyPromotionsToCartItems(array $items, $saleDate)
     {
+        $inputMetaByLineKey = [];
+        $inputMetaQueueByProductId = [];
+
+        foreach ($items as $index => $sourceItem) {
+            $sourceProductId = (int) ($sourceItem['product_id'] ?? $sourceItem['id'] ?? 0);
+            if ($sourceProductId <= 0) {
+                continue;
+            }
+
+            $sourceLineKey = (string) ($sourceItem['qualifying_line_key'] ?? ('line_' . $index));
+            $sourceImeis = $this->normalizeImeiInput($sourceItem['selected_imeis'] ?? ($sourceItem['imei_list'] ?? []));
+            $sourceRequiresImei = (int) ($sourceItem['requires_imei'] ?? 0);
+
+            $meta = [
+                'selected_imeis' => $sourceImeis,
+                'requires_imei' => $sourceRequiresImei,
+            ];
+
+            $inputMetaByLineKey[$sourceLineKey] = $meta;
+
+            if (!isset($inputMetaQueueByProductId[$sourceProductId])) {
+                $inputMetaQueueByProductId[$sourceProductId] = [];
+            }
+            $inputMetaQueueByProductId[$sourceProductId][] = $meta;
+        }
+
         $result = $this->promotionService->applyToSale($items, (int) (session('store_id') ?? 0), $saleDate);
         if (!$result['ok']) {
             return $result;
@@ -1096,19 +1244,43 @@ class Sales extends BaseController
                 $discountType = 'fixed';
             }
 
+            $mappedProductId = (int) ($item['product_id'] ?? $item['id'] ?? 0);
+            $mappedLineKey = (string) ($item['qualifying_line_key'] ?? ('line_' . $index));
+
+            $mappedImeis = $this->normalizeImeiInput($item['selected_imeis'] ?? []);
+            $mappedRequiresImei = (int) ($item['requires_imei'] ?? 0);
+
+            if (empty($mappedImeis) || $mappedRequiresImei === 0) {
+                $sourceMeta = $inputMetaByLineKey[$mappedLineKey] ?? null;
+                if (!$sourceMeta && isset($inputMetaQueueByProductId[$mappedProductId]) && $inputMetaQueueByProductId[$mappedProductId] !== []) {
+                    $sourceMeta = array_shift($inputMetaQueueByProductId[$mappedProductId]);
+                }
+
+                if ($sourceMeta) {
+                    if (empty($mappedImeis)) {
+                        $mappedImeis = $this->normalizeImeiInput($sourceMeta['selected_imeis'] ?? []);
+                    }
+                    if ($mappedRequiresImei === 0) {
+                        $mappedRequiresImei = (int) ($sourceMeta['requires_imei'] ?? 0);
+                    }
+                }
+            }
+
             $mappedItems[] = [
-                'id' => (int) ($item['product_id'] ?? $item['id'] ?? 0),
-                'product_id' => (int) ($item['product_id'] ?? $item['id'] ?? 0),
+                'id' => $mappedProductId,
+                'product_id' => $mappedProductId,
                 'quantity' => (float) ($item['qty'] ?? $item['quantity'] ?? 0),
                 'price' => (float) ($item['unit_price'] ?? $item['price'] ?? 0),
                 'cost_price' => (float) ($item['cost_price'] ?? 0),
                 'discount' => (float) ($item['discount'] ?? 0),
                 'discount_type' => $discountType,
+                'requires_imei' => $mappedRequiresImei,
+                'selected_imeis' => $mappedImeis,
                 'is_gift' => !empty($item['is_gift']) ? 1 : 0,
                 'promotion_id' => $item['promotion_id'] ?? null,
                 'promotion_rule_id' => $item['promotion_rule_id'] ?? null,
                 'source_product_id' => $item['source_product_id'] ?? null,
-                'qualifying_line_key' => $item['qualifying_line_key'] ?? ('line_' . $index),
+                'qualifying_line_key' => $mappedLineKey,
                 'name' => $item['name'] ?? null,
                 'code' => $item['code'] ?? null,
                 'promotion_name' => $item['promotion_name'] ?? null,
@@ -1535,6 +1707,7 @@ class Sales extends BaseController
                 'stock' => $stock,
                 'carton_size' => $cartonSize,
                 'barcode' => $prod['barcode'] ?? '',
+                'requires_imei' => isset($prod['requires_imei']) ? (int) $prod['requires_imei'] : 0,
                 'discount' => isset($line['discount']) ? (float)$line['discount'] : 0.0,
                 'discount_type' => (isset($line['discount_type']) && strtolower((string)$line['discount_type']) === 'percentage') ? 'percentage' : 'fixed',
             ];
@@ -1583,7 +1756,7 @@ class Sales extends BaseController
         $productModel = new M_products();
         $inventoryModel = new M_inventory();
 
-        $sale = $salesModel->find($id);
+        $sale = $salesModel->forStore()->find($id);
         if (!$sale || $sale['status'] !== 'draft') {
             return redirect()->back()->with('error', 'Draft sale not found.');
         }
@@ -1611,6 +1784,20 @@ class Sales extends BaseController
         }
 
         $items = $promotionResult['items'];
+
+        if (function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+            foreach ($items as $draftLine) {
+                $draftProductId = (int) ($draftLine['id'] ?? $draftLine['product_id'] ?? 0);
+                if ($draftProductId <= 0) {
+                    continue;
+                }
+
+                $draftProduct = $productModel->forStore()->find($draftProductId);
+                if ($draftProduct && (int) ($draftProduct['requires_imei'] ?? 0) === 1) {
+                    return redirect()->back()->with('error', 'This draft includes IMEI-tracked products. Please resume draft from POS and select IMEIs before completing.');
+                }
+            }
+        }
 
         $stockErrors = $this->validateStockAvailability($items);
         if ($stockErrors !== []) {
@@ -1727,6 +1914,7 @@ class Sales extends BaseController
         $productModel = new \App\Models\M_products();
         $returnModel = new \App\Models\SalesReturnModel();
         $inventoryModel = new \App\Models\M_inventory();
+        $imeiModel = new ProductImeiModel();
 
         $returnItems = $this->request->getPost('return_items'); // [product_id => quantity]
         $reason = $this->request->getPost('reason');
@@ -1764,6 +1952,8 @@ class Sales extends BaseController
                     $alreadyReturned = $returned[$productId] ?? 0;
                     $maxReturnable = $item['quantity'] - $alreadyReturned;
                     if ($item && $qty <= $maxReturnable) {
+                        $product = $productModel->forStore()->find((int) $productId);
+
                         // Update product stock
                         $productModel->adjustStock($productId, $qty, 'in');
                         // Log inventory change
@@ -1830,6 +2020,29 @@ class Sales extends BaseController
                             'created_at' => $returnTimestamp,
                             'store_id' => $store_id,
                         ]);
+
+                        if ($product && (int) ($product['requires_imei'] ?? 0) === 1 && function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
+                            $soldImeis = $imeiModel->forStore()
+                                ->where('sale_id', (int) $saleId)
+                                ->where('product_id', (int) $productId)
+                                ->where('status', 'sold')
+                                ->orderBy('id', 'DESC')
+                                ->limit((int) $qty)
+                                ->findAll();
+
+                            if (count($soldImeis) < (int) $qty) {
+                                throw new \RuntimeException('Insufficient sold IMEI records to return for product ID ' . (int) $productId);
+                            }
+
+                            foreach ($soldImeis as $imeiRow) {
+                                $imeiModel->update((int) $imeiRow['id'], [
+                                    'status' => 'available',
+                                    'sale_id' => null,
+                                    'sale_item_id' => null,
+                                    'sold_at' => null,
+                                ]);
+                            }
+                        }
                     }
                 }
             }
@@ -2437,5 +2650,84 @@ class Sales extends BaseController
                 'message' => 'Error: ' . $e->getMessage()
             ]);
         }
+    }
+
+    private function normalizeImeiInput($input)
+    {
+        $parts = is_array($input) ? $input : preg_split('/[\r\n,]+/', (string) $input);
+        if (!is_array($parts)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($parts as $part) {
+            $imei = trim((string) $part);
+            if ($imei === '') {
+                continue;
+            }
+            $normalized[] = $imei;
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    private function markImeisAsSold(int $saleId, int $saleItemId, int $productId, array $selectedImeis, string $soldAt, int $storeId): void
+    {
+        $selectedImeis = $this->normalizeImeiInput($selectedImeis);
+        if ($selectedImeis === []) {
+            return;
+        }
+
+        $db = \Config\Database::connect();
+        $imeiRows = $db->table('pos_product_imeis')
+            ->where('store_id', $storeId)
+            ->where('product_id', $productId)
+            ->whereIn('imei', $selectedImeis)
+            ->get()
+            ->getResultArray();
+
+        $rowsByImei = [];
+        foreach ($imeiRows as $imeiRow) {
+            $imei = trim((string) ($imeiRow['imei'] ?? ''));
+            if ($imei !== '') {
+                $rowsByImei[strtolower($imei)] = $imeiRow;
+            }
+        }
+
+        foreach ($selectedImeis as $selectedImei) {
+            $lookupKey = strtolower($selectedImei);
+            $imeiRow = $rowsByImei[$lookupKey] ?? null;
+            if (!$imeiRow) {
+                throw new \RuntimeException('IMEI ' . $selectedImei . ' was not found for product ID ' . $productId . '.');
+            }
+
+            $currentStatus = strtolower((string) ($imeiRow['status'] ?? ''));
+            $currentSaleId = (int) ($imeiRow['sale_id'] ?? 0);
+            $currentSaleItemId = (int) ($imeiRow['sale_item_id'] ?? 0);
+            $isIdempotentUpdate = $currentSaleId === $saleId && $currentSaleItemId === $saleItemId && $currentStatus === 'sold';
+
+            if ($currentStatus !== 'available' && !$isIdempotentUpdate) {
+                throw new \RuntimeException('IMEI ' . $selectedImei . ' is no longer available for product ID ' . $productId . '.');
+            }
+
+            $updated = $db->table('pos_product_imeis')
+                ->where('id', (int) $imeiRow['id'])
+                ->update([
+                    'status' => 'sold',
+                    'sale_id' => $saleId,
+                    'sale_item_id' => $saleItemId,
+                    'sold_at' => $soldAt,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+
+            if (!$updated || $db->affectedRows() !== 1) {
+                throw new \RuntimeException('Failed to update sale info for IMEI ' . $selectedImei . '.');
+            }
+        }
+
+        logAction(
+            'imei_sold',
+            'Sale ID: ' . $saleId . ', Sale Item ID: ' . $saleItemId . ', Product ID: ' . $productId . ', IMEIs: ' . implode(', ', $selectedImeis)
+        );
     }
 }

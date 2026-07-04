@@ -15,6 +15,8 @@ return [
     'phoneOptional' => 'الهاتف (اختياري)',
     'passwordMin' => 'كلمة المرور (6 أحرف على الأقل)',
     'confirmPassword' => 'تأكيد كلمة المرور',
+    'business_type' => 'نوع النشاط',
+    'business_type_help' => 'اختر فئة نشاطك لتحميل ميزات افتراضية مناسبة.',
     'register' => 'تسجيل',
     'alreadyHaveAccount' => 'هل لديك حساب بالفعل؟',
     'loginHere' => 'سجّل الدخول من هنا',

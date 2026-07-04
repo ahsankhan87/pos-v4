@@ -55,6 +55,36 @@ class M_sales extends Model
             ->get()
             ->getResultArray();
 
+        $imeiRows = $this->db->table('pos_product_imeis')
+            ->select('sale_item_id, imei')
+            ->where('sale_id', (int) $saleId)
+            ->where('status', 'sold')
+            ->where('sale_item_id IS NOT NULL', null, false)
+            ->orderBy('id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $imeiSelectionsByItem = [];
+        foreach ($imeiRows as $imeiRow) {
+            $saleItemId = (int) ($imeiRow['sale_item_id'] ?? 0);
+            $imei = trim((string) ($imeiRow['imei'] ?? ''));
+            if ($saleItemId <= 0 || $imei === '') {
+                continue;
+            }
+
+            if (!isset($imeiSelectionsByItem[$saleItemId])) {
+                $imeiSelectionsByItem[$saleItemId] = [];
+            }
+
+            $imeiSelectionsByItem[$saleItemId][] = $imei;
+        }
+
+        foreach ($sale['items'] as &$item) {
+            $saleItemId = (int) ($item['id'] ?? 0);
+            $item['selected_imeis'] = $imeiSelectionsByItem[$saleItemId] ?? [];
+        }
+        unset($item);
+
         return $sale;
     }
     /**

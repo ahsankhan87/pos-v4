@@ -152,6 +152,11 @@
                 <?= session()->getFlashdata('success') ?>
             </div>
         <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                <?= esc((string) session()->getFlashdata('error')) ?>
+            </div>
+        <?php endif; ?>
         <?php $errors = session()->getFlashdata('errors'); ?>
         <?php if (! empty($errors)) : ?>
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
@@ -280,6 +285,11 @@
                         </div>
 
                         <div class="overflow-x-auto">
+                            <?php if (! empty($imeiTrackingEnabled)) : ?>
+                                <div class="mb-3 p-3 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-sm">
+                                    <strong>IMEI note:</strong> For IMEI-tracked products, paste IMEI numbers in the IMEI box under the product name, one IMEI per line.
+                                </div>
+                            <?php endif; ?>
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -416,7 +426,12 @@
             pleaseSelectSupplierForPurchase: <?= json_encode(lang('Purchases.please_select_supplier_for_purchase')) ?>,
             saveThisPurchase: <?= json_encode(lang('Purchases.save_this_purchase')) ?>,
             clearAllItemsFromPurchase: <?= json_encode(lang('Purchases.clear_all_items_from_purchase')) ?>,
+            imeiRequiredMismatch: <?= json_encode('IMEI count must match quantity for IMEI-tracked products.') ?>,
+            imeiQuantityMustBeWhole: <?= json_encode('Quantity must be a whole number for IMEI-tracked products.') ?>,
+            imeiTextareaPlaceholder: <?= json_encode('Enter one IMEI per line') ?>,
         };
+
+        const imeiTrackingEnabled = <?= !empty($imeiTrackingEnabled) ? 'true' : 'false' ?>;
 
         // Hidden items input
         const $itemsInput = $('#items');
@@ -464,7 +479,8 @@
                                 price: product.price,
                                 quantity: product.quantity,
                                 tax_id: product.tax_id || 0,
-                                carton_size: product.carton_size
+                                carton_size: product.carton_size,
+                                requires_imei: isImeiRequired(product.requires_imei)
                             })),
                             pagination: {
                                 more: false
@@ -617,6 +633,15 @@
             // For now, we'll leave it empty for new purchases
         }
 
+        function isImeiRequired(value) {
+            if (value === 1 || value === '1' || value === true) {
+                return true;
+            }
+
+            const normalized = String(value ?? '').trim().toLowerCase();
+            return normalized === 'true' || normalized === 'yes';
+        }
+
         // Add product from barcode or search
         function addProduct(product) {
             if (!product || !product.id) {
@@ -650,7 +675,9 @@
                     expiry_date: '',
                     batch_number: '',
                     carton_size: parseFloat(product.carton_size) || 0,
-                    stock: parseFloat(product.quantity) || 0
+                    stock: parseFloat(product.quantity) || 0,
+                    requires_imei: isImeiRequired(product.requires_imei),
+                    imei_list: ''
                 };
 
                 // Calculate initial values
@@ -679,6 +706,12 @@
                         <div class="ml-4">
                             <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
                             <div class="text-xs text-gray-400">${i18n.stock}: ${stockDisplay}</div>
+                            ${item.requires_imei ? `
+                            <div class="mt-2">
+                                <label class="block text-xs font-semibold text-amber-700 mb-1">IMEI (paste one per line)</label>
+                                <textarea class="item-imeis w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs" rows="3" placeholder="${escapeHtml(i18n.imeiTextareaPlaceholder)}">${escapeHtml(item.imei_list || '')}</textarea>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
                     <input type="hidden" name="items[${item.product_id}][product_id]" value="${item.product_id}">
@@ -686,7 +719,7 @@
                 <td class="px-4 py-4">
                     <div class="space-y-1">
                         <input type="number" class="item-quantity w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
-                            value="${item.quantity.toFixed(2)}" min="0.01" step="0.01" data-carton-size="${cartonSize}">
+                            value="${item.quantity.toFixed(2)}" min="${item.requires_imei ? '1' : '0.01'}" step="${item.requires_imei ? '1' : '0.01'}" data-carton-size="${cartonSize}">
                         ${hasCartons ? `
                         <select class="item-unit-selector w-full text-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
                             <option value="pieces" selected>${i18n.pieces}</option>
@@ -726,6 +759,10 @@
             });
 
             $row.find('.item-unit-price').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            $row.find('.item-imeis').on('change input', function() {
                 updateItemFromRow($row, item);
             });
 
@@ -786,6 +823,9 @@
                 if (!$row.find('.item-cost-price').is(activeElement)) {
                     $row.find('.item-cost-price').val(item.cost_price.toFixed(2));
                 }
+                if (!$row.find('.item-imeis').is(activeElement)) {
+                    $row.find('.item-imeis').val(item.imei_list || '');
+                }
                 $row.find('.item-discount').val(item.discount);
                 $row.find('.item-discount-type').val(item.discount_type);
                 $row.find('.item-tax').text(item.tax_amount.toFixed(2));
@@ -813,6 +853,7 @@
             item.cost_price = parseFloat($row.find('.item-cost-price').val()) || 0;
             item.discount = parseFloat($row.find('.item-discount').val()) || 0;
             item.discount_type = $row.find('.item-discount-type').val();
+            item.imei_list = $row.find('.item-imeis').val() || '';
 
             calculateItemTotals(item);
             updateItemRow(item);
@@ -931,7 +972,8 @@
                 subtotal: item.subtotal,
                 update_cost: item.update_cost,
                 expiry_date: item.expiry_date,
-                batch_number: item.batch_number
+                batch_number: item.batch_number,
+                imei_list: item.imei_list || ''
             }));
 
             $itemsInput.val(JSON.stringify(itemsData));
@@ -943,6 +985,10 @@
             // Validate form
             if (purchaseItems.length === 0) {
                 alert(i18n.pleaseAddAtLeastOneItem);
+                return;
+            }
+
+            if (!validateImeiItems()) {
                 return;
             }
 
@@ -961,6 +1007,10 @@
                 return;
             }
 
+            if (!validateImeiItems()) {
+                return;
+            }
+
             // Update items input
             updateItemsInput();
 
@@ -974,6 +1024,40 @@
             // Submit form
             $purchaseForm.off('submit'); // Prevent duplicate submission
             $purchaseForm.submit();
+        }
+
+        function parseImeiList(raw) {
+            return String(raw || '')
+                .split(/\r?\n|,/)
+                .map(v => v.trim())
+                .filter(v => v.length > 0);
+        }
+
+        function validateImeiItems() {
+            if (!imeiTrackingEnabled) {
+                return true;
+            }
+
+            for (const item of purchaseItems) {
+                if (!item.requires_imei) {
+                    continue;
+                }
+
+                const qty = parseFloat(item.quantity || 0);
+                const wholeQty = Math.round(qty);
+                if (Math.abs(qty - wholeQty) > 0.0001) {
+                    alert(i18n.imeiQuantityMustBeWhole + ' [' + (item.name || item.product_id) + ']');
+                    return false;
+                }
+
+                const imeis = parseImeiList(item.imei_list || '');
+                if (imeis.length !== wholeQty) {
+                    alert(i18n.imeiRequiredMismatch + ' [' + (item.name || item.product_id) + ']');
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         // Helper functions

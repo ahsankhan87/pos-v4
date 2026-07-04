@@ -13,6 +13,7 @@ class Users extends BaseController
 
     public function __construct()
     {
+        helper(['audit']);
         $this->userModel = new UserModel();
         $this->roleModel = new RoleModel();
     }
@@ -50,12 +51,34 @@ class Users extends BaseController
     public function updatePermissions()
     {
         $rolePermModel = model('RolePermissionModel');
-        $permissions = $this->request->getPost('permissions'); // [role_id => [permission_id, ...]]
+        $selectedRoleId = (int) ($this->request->getPost('selected_role_id') ?? 0);
+        $permissions = $this->request->getPost('permissions');
 
-        foreach ($permissions as $roleId => $permIds) {
-            $rolePermModel->setRolePermissions($roleId, $permIds);
+        if ($selectedRoleId <= 0) {
+            return redirect()->to('/users/permissions')->with('error', lang('Users.permissions_invalid_role'));
         }
-        return redirect()->to('/users/permissions')->with('message', 'Permissions updated!');
+
+        $selectedPermIds = [];
+        if (is_array($permissions) && isset($permissions[$selectedRoleId]) && is_array($permissions[$selectedRoleId])) {
+            $selectedPermIds = array_values(array_unique(array_filter(array_map('intval', $permissions[$selectedRoleId]), static function ($value) {
+                return $value > 0;
+            })));
+        }
+
+        $updated = $rolePermModel->setRolePermissions($selectedRoleId, $selectedPermIds);
+        if ($updated === false) {
+            return redirect()->to('/users/permissions')->with('error', lang('Users.permissions_updated_error'));
+        }
+
+        $role = $this->roleModel->find($selectedRoleId);
+        $roleName = (string) ($role['name'] ?? ('ID ' . $selectedRoleId));
+
+        logAction(
+            'role_permissions_updated',
+            'Role ID: ' . $selectedRoleId . ', Role: ' . $roleName . ', Permissions Count: ' . count($selectedPermIds)
+        );
+
+        return redirect()->to('/users/permissions')->with('success', lang('Users.permissions_updated_success', [$roleName]));
     }
 
     public function new()

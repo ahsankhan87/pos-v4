@@ -39,6 +39,7 @@ class Filters extends BaseFilters
         'store' => \App\Filters\StoreFilter::class,
         'subscription' => \App\Filters\RequireSubscription::class,
         'feature' => \App\Filters\RequireFeature::class,
+        'businessFeature' => \App\Filters\RequireBusinessFeature::class,
 
     ];
 

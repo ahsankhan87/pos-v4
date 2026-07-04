@@ -706,6 +706,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 errors.push('Please select a payment method.');
             }
             errors = errors.concat(validateProductDiscountLimits());
+            errors = errors.concat(validateImeiSelections());
             // Cash validation: ensure tendered >= total for cash payments
             // const payMethod = $('select[name="payment_method"]').val();
             // const payType = $('#payment_type').val();
@@ -745,6 +746,46 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 if (enteredDiscount - allowedDiscount > 0.0001) {
                     const limitLabel = limitType === 'percentage' ? `${limitValue}%` : `<?= session()->get('currency_symbol') ?>${limitValue.toFixed(2)}`;
                     errors.push(`Discount for ${item.name} exceeds product limit (${limitLabel}).`);
+                }
+            });
+
+            return errors;
+        }
+
+        function normalizeImeiList(input) {
+            if (Array.isArray(input)) {
+                return input.map(v => String(v || '').trim()).filter(v => v.length > 0);
+            }
+
+            return String(input || '')
+                .split(/\r?\n|,/)
+                .map(v => v.trim())
+                .filter(v => v.length > 0);
+        }
+
+        function validateImeiSelections() {
+            const errors = [];
+            cart.forEach((item) => {
+                if (isPromotionGift(item) || parseInt(item.requires_imei || 0, 10) !== 1) {
+                    return;
+                }
+
+                const qty = parseFloat(item.quantity || 0);
+                const qtyInt = Math.round(qty);
+                if (qtyInt <= 0 || Math.abs(qty - qtyInt) > 0.0001) {
+                    errors.push(`IMEI product ${item.name} must have whole quantity.`);
+                    return;
+                }
+
+                const imeis = normalizeImeiList(item.selected_imeis || []);
+                const uniqueImeis = [...new Set(imeis.map(v => v.toLowerCase()))];
+                if (imeis.length !== uniqueImeis.length) {
+                    errors.push(`Duplicate IMEI selected for ${item.name}.`);
+                    return;
+                }
+
+                if (imeis.length !== qtyInt) {
+                    errors.push(`Select exactly ${qtyInt} IMEI(s) for ${item.name}.`);
                 }
             });
 
@@ -839,6 +880,12 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                     } else {
                         cart[idx].discount_type = 'fixed';
                     }
+                }
+
+                const imeiSelect = row.querySelector('.item-imei-select');
+                if (imeiSelect && parseInt(cart[idx].requires_imei || 0, 10) === 1) {
+                    const selected = $(imeiSelect).val() || [];
+                    cart[idx].selected_imeis = normalizeImeiList(selected);
                 }
             });
 
@@ -943,7 +990,8 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                             cost_price: product.cost_price,
                             carton_size: product.carton_size,
                             max_discount_value: product.max_discount_value,
-                            max_discount_type: product.max_discount_type
+                            max_discount_type: product.max_discount_type,
+                            requires_imei: product.requires_imei
                         })),
                         pagination: {
                             more: false
@@ -1028,12 +1076,14 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 cost_price: Number(item.cost_price ?? 0),
                 max_discount_value: Number(item.max_discount_value ?? 0),
                 max_discount_type: (item.max_discount_type === 'percentage') ? 'percentage' : 'fixed',
+                requires_imei: Number(item.requires_imei ?? 0) === 1 ? 1 : 0,
                 quantity: quantity > 0 ? quantity : 1,
                 stock: stock > 0 ? stock : (quantity > 0 ? quantity : 1),
                 barcode: item.barcode || '',
                 carton_size: Number(item.carton_size ?? 0),
                 discount: Number(item.discount ?? 0) || 0,
                 discount_type: (item.discount_type === 'percentage') ? 'percentage' : 'fixed',
+                selected_imeis: Array.isArray(item.selected_imeis) ? item.selected_imeis : [],
                 is_gift: Number(item.is_gift ?? 0) === 1 ? 1 : 0,
                 promotion_id: item.promotion_id ?? null,
                 promotion_rule_id: item.promotion_rule_id ?? null,
@@ -1163,9 +1213,11 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                         cost_price: product.cost_price || 0,
                         max_discount_value: parseFloat(product.max_discount_value || 0),
                         max_discount_type: product.max_discount_type || 'fixed',
+                        requires_imei: parseInt(product.requires_imei || 0, 10) || 0,
                         quantity: 1,
                         stock: parseInt(product.quantity || 0),
-                        carton_size: parseFloat(product.carton_size || 0)
+                        carton_size: parseFloat(product.carton_size || 0),
+                        selected_imeis: []
                     });
                     //showSuccessMessage(`${product.name} added to cart`);
                 } else {
@@ -1256,6 +1308,13 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                 const promoMeta = isGift ?
                     `<div class="text-[10px] text-amber-700 mt-0.5">${escapeHtml(item.promotion_text || 'Promotion gift item')}</div>` :
                     '';
+                const imeiSelector = (!isGift && parseInt(item.requires_imei || 0, 10) === 1) ?
+                    `<div class="mt-1.5 max-w-xs">
+                        <label class="text-[10px] font-semibold text-gray-600">IMEI</label>
+                        <select multiple data-cart-idx="${idx}" data-product-id="${item.id}" class="item-imei-select w-full text-xs"></select>
+                        <div class="text-[10px] text-gray-500 mt-0.5">Selected: ${(Array.isArray(item.selected_imeis) ? item.selected_imeis.length : 0)}</div>
+                    </div>` :
+                    '';
                 const readonlyPrice = !CAN_EDIT_PRICE || isGift;
                 const readonlyDiscount = !CAN_EDIT_DISCOUNT || isGift;
                 const disableQtyControls = isGift;
@@ -1280,6 +1339,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                                 <div class="text-xs font-semibold text-gray-900 flex items-center flex-wrap">${escapeHtml(item.name)}${promoBadge}</div>
                                 <div class="text-xs text-gray-500">${escapeHtml(item.code)}</div>
                                 ${promoMeta}
+                                ${imeiSelector}
                             </div>
                         </div>
                     </td>
@@ -1351,6 +1411,7 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             if (cart.length > 0) {
                 $('#empty-cart').hide();
                 $('#cart-items').html(tbody).show();
+                initImeiSelectors();
             } else {
                 $('#empty-cart').show();
                 $('#cart-items').hide();
@@ -1472,6 +1533,57 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
             $('#taxAmount').text('<?= session()->get('currency_symbol') ?>' + taxAmount.toFixed(2));
             $('#cart-total').text('<?= session()->get('currency_symbol') ?>' + grandTotal.toFixed(2));
             updatePaymentSummaries();
+        }
+
+        function initImeiSelectors() {
+            $('.item-imei-select').each(function() {
+                const $select = $(this);
+                const idx = parseInt($select.data('cart-idx'), 10);
+                const productId = parseInt($select.data('product-id'), 10);
+                const item = cart[idx];
+                if (!item || parseInt(item.requires_imei || 0, 10) !== 1 || !productId) {
+                    return;
+                }
+
+                const selectedImeis = normalizeImeiList(item.selected_imeis || []);
+                selectedImeis.forEach(function(imei) {
+                    const opt = new Option(imei, imei, true, true);
+                    $select.append(opt);
+                });
+
+                $select.select2({
+                    width: '100%',
+                    multiple: true,
+                    closeOnSelect: true,
+                    placeholder: 'Select IMEI',
+                    ajax: {
+                        url: '<?= site_url('api/products/available-imeis') ?>/' + productId,
+                        dataType: 'json',
+                        delay: 200,
+                        data: function(params) {
+                            return {
+                                q: params.term || ''
+                            };
+                        },
+                        processResults: function(data) {
+                            const rows = (data && Array.isArray(data.results)) ? data.results : [];
+                            return {
+                                results: rows
+                            };
+                        },
+                        cache: false
+                    }
+                });
+
+                $select.off('change.imei').on('change.imei', function() {
+                    const values = $select.val() || [];
+                    if (cart[idx]) {
+                        cart[idx].selected_imeis = normalizeImeiList(values);
+                        calculateTotals();
+                        syncHiddenFormData();
+                    }
+                });
+            });
         }
 
         // Update totals when discount or tax changes

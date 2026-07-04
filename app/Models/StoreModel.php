@@ -22,6 +22,7 @@ class StoreModel extends Model
         'currency_symbol',
         'timezone',
         'website_url',
+        'business_type',
     ];
     protected $useTimestamps = true;
 

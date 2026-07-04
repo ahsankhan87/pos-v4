@@ -1,6 +1,8 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <div class="container mx-auto p-4">
+    <?php helper('business_feature'); ?>
+    <?php $businessTypes = business_type_options(); ?>
     <h1 class="text-2xl font-bold mb-4"><?= lang('Stores.add_new_store') ?></h1>
 
     <form action="<?= base_url('stores/create') ?>" method="post" enctype="multipart/form-data" class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
@@ -69,6 +71,25 @@
                     <option value="<?= esc($tz) ?>" <?= $selTz === $tz ? 'selected' : '' ?>><?= esc($tz) ?></option>
                 <?php endforeach; ?>
             </select>
+        </div>
+        <div class="mb-6">
+            <label class="block font-semibold mb-1"><?= lang('Stores.business_type') ?></label>
+            <?php $selectedBusinessType = old('business_type', 'general'); ?>
+            <select name="business_type" class="w-full border rounded px-3 py-2" required>
+                <?php foreach ($businessTypes as $typeKey => $typeLabel): ?>
+                    <option value="<?= esc($typeKey) ?>" <?= $selectedBusinessType === $typeKey ? 'selected' : '' ?>><?= esc($typeLabel) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="mb-6">
+            <label class="block font-semibold mb-1"><?= lang('Stores.imei_tracking_mode') ?></label>
+            <?php $imeiMode = old('imei_tracking_mode', $imeiTrackingMode ?? 'inherit'); ?>
+            <select name="imei_tracking_mode" class="w-full border rounded px-3 py-2">
+                <option value="inherit" <?= $imeiMode === 'inherit' ? 'selected' : '' ?>><?= lang('Stores.imei_tracking_inherit') ?></option>
+                <option value="enabled" <?= $imeiMode === 'enabled' ? 'selected' : '' ?>><?= lang('Stores.imei_tracking_enabled') ?></option>
+                <option value="disabled" <?= $imeiMode === 'disabled' ? 'selected' : '' ?>><?= lang('Stores.imei_tracking_disabled') ?></option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500"><?= lang('Stores.imei_tracking_help') ?></p>
         </div>
         <div class="mb-6">
             <label class="inline-flex items-center">

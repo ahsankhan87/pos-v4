@@ -44,6 +44,13 @@
             <label class="block font-semibold mb-1"><?= lang('Stores.default_store') ?></label>
             <p class="text-gray-800 text-lg"><?= $store['is_default'] ? lang('Stores.yes') : lang('Stores.no') ?></p>
         </div>
+        <div class="mb-6">
+            <label class="block font-semibold mb-1"><?= lang('Stores.business_type') ?></label>
+            <?php helper('business_feature'); ?>
+            <?php $businessTypes = business_type_options(); ?>
+            <?php $typeLabel = $businessTypes[$store['business_type'] ?? 'general'] ?? ($businessTypes['general'] ?? 'General Store'); ?>
+            <p class="text-gray-800 text-lg"><?= esc($typeLabel) ?></p>
+        </div>
         <div class="flex items-center justify-between">
             <a href="<?= base_url('stores/edit/' . $store['id']) ?>" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                 <?= lang('Stores.edit_store') ?>

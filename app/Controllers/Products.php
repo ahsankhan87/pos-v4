@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\M_inventory;
 use App\Models\M_products;
+use App\Models\ProductImeiModel;
 use App\Models\UnitModel;
 use App\Models\CategoriesModel;
 
@@ -14,7 +15,7 @@ class Products extends BaseController
      */
     public function __construct()
     {
-        helper('audit');
+        helper(['audit', 'business_feature']);
     }
 
     /**
@@ -75,6 +76,7 @@ class Products extends BaseController
             'units' => $units,
             'categories' => $categories,
             'suppliers' => $suppliers,
+            'imeiTrackingEnabled' => $this->isImeiFeatureEnabled(),
         ]);
     }
 
@@ -104,6 +106,7 @@ class Products extends BaseController
             'updated_at' => 'permit_empty',
             'type' => 'permit_empty',
             'is_stock_tracked' => 'permit_empty',
+            'requires_imei' => 'permit_empty|in_list[0,1]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -141,6 +144,11 @@ class Products extends BaseController
             'is_stock_tracked' => $post['is_stock_tracked'] ?? 1,
 
         ];
+
+        if ($this->supportsRequiresImeiColumn()) {
+            $requiresImei = $this->isImeiFeatureEnabled() ? (int) ($this->request->getPost('requires_imei') ?? 0) : 0;
+            $data['requires_imei'] = (($data['type'] ?? 'product') === 'service') ? 0 : ($requiresImei ? 1 : 0);
+        }
 
         // Handle initial quantity
         $initialQty = (float) ($this->request->getPost('initial_quantity') ?? 0);
@@ -195,6 +203,7 @@ class Products extends BaseController
         $data['suppliers'] = $suppliersModel->forStore()->orderBy('name', 'ASC')->findAll();
         $data['product'] = $model->find($id);
         $data['title'] = 'Edit Product';
+        $data['imeiTrackingEnabled'] = $this->isImeiFeatureEnabled();
         // Check if the product exists before rendering the view.
         if (!$data['product']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Product not found');
@@ -224,11 +233,17 @@ class Products extends BaseController
             'updated_at' => 'permit_empty',
             'type' => 'permit_empty',
             'is_stock_tracked' => 'permit_empty',
+            'requires_imei' => 'permit_empty|in_list[0,1]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
         $post = $this->validator->getValidated();
+        if ($this->supportsRequiresImeiColumn()) {
+            $currentType = $post['type'] ?? 'product';
+            $requiresImei = $this->isImeiFeatureEnabled() ? (int) ($this->request->getPost('requires_imei') ?? 0) : 0;
+            $post['requires_imei'] = ($currentType === 'service') ? 0 : ($requiresImei ? 1 : 0);
+        }
         if (($post['max_discount_type'] ?? 'fixed') === 'percentage' && (float) ($post['max_discount_value'] ?? 0) > 100) {
             return redirect()->back()->withInput()->with('error', 'Product discount limit percentage cannot exceed 100.');
         }
@@ -304,7 +319,11 @@ class Products extends BaseController
         // Require minimum 1 character to search (performance optimization for large datasets)
         if (empty($q) || strlen(trim($q)) < 1) {
             // Return empty array or top 20 products
-            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type');
+            $selectFields = 'id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type';
+            if ($this->supportsRequiresImeiColumn()) {
+                $selectFields .= ', requires_imei';
+            }
+            $model->select($selectFields);
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
             }
@@ -322,7 +341,11 @@ class Products extends BaseController
                 ->orLike('code', $q)
                 ->orLike('barcode', $q)
                 ->groupEnd();
-            $model->select('id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type');
+            $selectFields = 'id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type';
+            if ($this->supportsRequiresImeiColumn()) {
+                $selectFields .= ', requires_imei';
+            }
+            $model->select($selectFields);
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
             }
@@ -349,6 +372,7 @@ class Products extends BaseController
                 'max_discount_type' => $p['max_discount_type'] ?? 'fixed',
                 'quantity' => $p['quantity'],
                 'carton_size' => $p['carton_size'] ?? null,
+                'requires_imei' => isset($p['requires_imei']) ? (int) $p['requires_imei'] : 0,
             ];
         }
         return $this->response->setJSON($results);
@@ -359,10 +383,111 @@ class Products extends BaseController
         $barcode = $this->request->getGet('barcode');
         $model = new \App\Models\M_products();
         $product = $model->where('barcode', $barcode)
-            ->select('id, name, code, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type')
+            ->select($this->supportsRequiresImeiColumn()
+                ? 'id, name, code, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type, requires_imei'
+                : 'id, name, code, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type')
             ->forStore()
             ->first();
         return $this->response->setJSON($product ?? []);
+    }
+
+    public function availableImeis($productId = 0)
+    {
+        if (! $this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid request']);
+        }
+
+        if (! $this->isImeiFeatureEnabled()) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Feature disabled']);
+        }
+
+        $productId = (int) $productId;
+        if ($productId <= 0) {
+            return $this->response->setJSON(['results' => []]);
+        }
+
+        $product = (new M_products())->forStore()->find($productId);
+        if (! $product || (int) ($product['requires_imei'] ?? 0) !== 1) {
+            return $this->response->setJSON(['results' => []]);
+        }
+
+        $db = \Config\Database::connect();
+        if (! $db->tableExists('pos_product_imeis')) {
+            return $this->response->setJSON(['results' => []]);
+        }
+
+        $imeiModel = new ProductImeiModel();
+        $rows = $imeiModel->availableForProduct($productId, 500);
+
+        $results = [];
+        foreach ($rows as $row) {
+            $imei = trim((string) ($row['imei'] ?? ''));
+            if ($imei === '') {
+                continue;
+            }
+            $results[] = [
+                'id' => $imei,
+                'text' => $imei,
+            ];
+        }
+
+        return $this->response->setJSON(['results' => $results]);
+    }
+
+    public function imeiInventory()
+    {
+        if (! $this->isImeiFeatureEnabled()) {
+            return redirect()->to(site_url('products'))->with('error', lang('Products.imei_tracking_disabled'));
+        }
+
+        $storeId = (int) (session('store_id') ?? 0);
+        $productId = (int) ($this->request->getGet('product_id') ?? 0);
+        $db = \Config\Database::connect();
+        $selectedProduct = null;
+
+        if (! $db->tableExists('pos_product_imeis')) {
+            return redirect()->to(site_url('products'))->with('error', lang('Products.imei_table_missing'));
+        }
+
+        if ($productId > 0) {
+            $selectedProduct = (new M_products())->forStore()->find($productId);
+            if (! $selectedProduct) {
+                return redirect()->to(site_url('products'))->with('error', lang('Products.product_not_found'));
+            }
+        }
+
+        $builder = $db->table('pos_products p')
+            ->select([
+                'p.id AS product_id',
+                'p.name AS product_name',
+                'IFNULL(p.code, "") AS product_code',
+                'IFNULL(p.barcode, "") AS product_barcode',
+                'SUM(CASE WHEN pi.status = "available" THEN 1 ELSE 0 END) AS available_count',
+                'SUM(CASE WHEN pi.status = "sold" THEN 1 ELSE 0 END) AS sold_count',
+                'SUM(CASE WHEN pi.status = "returned" THEN 1 ELSE 0 END) AS returned_count',
+                'GROUP_CONCAT(CASE WHEN pi.status = "available" THEN pi.imei END ORDER BY pi.id DESC SEPARATOR ", ") AS available_imeis',
+                'GROUP_CONCAT(CASE WHEN pi.status = "sold" THEN pi.imei END ORDER BY pi.id DESC SEPARATOR ", ") AS sold_imeis',
+                'GROUP_CONCAT(CASE WHEN pi.status = "returned" THEN pi.imei END ORDER BY pi.id DESC SEPARATOR ", ") AS returned_imeis',
+            ])
+            ->join('pos_product_imeis pi', 'pi.product_id = p.id AND pi.store_id = p.store_id', 'left')
+            ->where('p.store_id', $storeId)
+            ->where('IFNULL(p.requires_imei, 0) =', 1);
+
+        if ($productId > 0) {
+            $builder->where('p.id', $productId);
+        }
+
+        $rows = $builder
+            ->groupBy('p.id, p.name, p.code, p.barcode')
+            ->orderBy('p.name', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        return view('products/imei_inventory', [
+            'title' => lang('Products.imei_inventory_title'),
+            'rows' => $rows,
+            'selectedProduct' => $selectedProduct,
+        ]);
     }
 
     public function datatable()
@@ -422,6 +547,7 @@ class Products extends BaseController
             'pos_products.barcode',
             'pos_products.type',
             'pos_products.is_stock_tracked',
+            'IFNULL(pos_products.requires_imei, 0) as requires_imei',
             'IFNULL(pos_categories.name, "") as category_name',
         ];
 
@@ -1221,5 +1347,23 @@ class Products extends BaseController
             return $cartons . ' ctns + ' . number_format($remaining, 2) . ' pcs';
         }
         return $cartons . ' ctns';
+    }
+
+    private function isImeiFeatureEnabled()
+    {
+        return business_feature_enabled('imei_tracking');
+    }
+
+    private function supportsRequiresImeiColumn()
+    {
+        static $hasColumn = null;
+        if ($hasColumn !== null) {
+            return $hasColumn;
+        }
+
+        $db = \Config\Database::connect();
+        $hasColumn = $db->fieldExists('requires_imei', 'pos_products');
+
+        return $hasColumn;
     }
 }

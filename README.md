@@ -58,6 +58,9 @@ Kasbook POS v4 is a modern Point-of-Sale & basic ERP style inventory management 
    ```powershell
    php spark migrate
    ```
+   For the combined IMEI/business-type client upgrade, run the SQL script:
+   - File: `docs/imei_schema_update.sql`
+   - Execute it in phpMyAdmin, MySQL CLI, or your database tool of choice.
 6. (Optional) Import sample receipt templates:
    - File: `writable/sample_receipt_templates.sql`
    - Use phpMyAdmin or `mysql` CLI.

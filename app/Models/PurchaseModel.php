@@ -35,6 +35,7 @@ class PurchaseModel extends Model
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
+    protected $lastErrorMessage = '';
 
     protected $validationRules = [
         'supplier_id' => 'required|numeric',
@@ -127,19 +128,35 @@ class PurchaseModel extends Model
         return $purchase;
     }
 
-    public function insertPurchase(array $data)
+    public function insertPurchase(array $data, array $items = [])
     {
         $productModel = new \App\Models\M_products();
         $itemModel = new \App\Models\PurchaseItemModel();
         $supplierLedgerModel = new \App\Models\SupplierLedgerModel();
+        $imeiModel = new \App\Models\ProductImeiModel();
+        $this->lastErrorMessage = '';
+
+        if (!empty($items) && empty($data['items'])) {
+            $data['items'] = $items;
+        }
+
+        if (! $this->validateImeiPayloadForItems($data['items'] ?? [])) {
+            return false;
+        }
+
         $this->db->transStart();
 
         // Insert purchase header
-        $this->insert($data);
+        if (!$this->insert($data)) {
+            $this->lastErrorMessage = 'Failed to create purchase header.';
+            $this->db->transRollback();
+            return false;
+        }
         $purchaseId = $this->db->insertID();
 
         // Check if insertion was successful
         if (!$purchaseId) {
+            $this->lastErrorMessage = 'Failed to create purchase header.';
             $this->db->transRollback();
             return false; // Insertion failed
         }
@@ -166,7 +183,17 @@ class PurchaseModel extends Model
                     'batch_number' => $item['batch_number'] ?? null
                 ];
 
-                $itemModel->insert($itemData);
+                if (!$itemModel->insert($itemData)) {
+                    $this->lastErrorMessage = 'Failed to save purchase item.';
+                    $this->db->transRollback();
+                    return false;
+                }
+                $purchaseItemId = (int) $itemModel->insertID();
+
+                if (! $this->syncPurchaseItemImeis($purchaseId, $purchaseItemId, $item, $imeiModel)) {
+                    $this->db->transRollback();
+                    return false;
+                }
 
                 // Update product cost price based on weighted average cost
                 $product = $productModel->find($item['product_id']);
@@ -225,7 +252,7 @@ class PurchaseModel extends Model
         $creditAmount = $data['grand_total'];
         $newBalance = $currentBalance + $creditAmount;
 
-        $supplierLedgerModel->insert([
+        if (!$supplierLedgerModel->insert([
             'supplier_id' => $data['supplier_id'],
             'purchase_id' => $purchaseId,
             'payment_id' => null,
@@ -236,7 +263,11 @@ class PurchaseModel extends Model
             'balance' => $newBalance,
             'created_at' => date('Y-m-d H:i:s'),
             'ref_no' => $data['invoice_no'] ?? '',
-        ]);
+        ])) {
+            $this->lastErrorMessage = 'Failed to create supplier ledger entry.';
+            $this->db->transRollback();
+            return false;
+        }
 
         // Insert initial payment if exists
         if ($data['paid_amount'] > 0) {
@@ -249,7 +280,11 @@ class PurchaseModel extends Model
                 'created_by' => session()->get('user_id') ?? 0,
                 'created_at' => date('Y-m-d H:i:s')
             ];
-            $this->db->table('pos_purchase_payments')->insert($paymentData);
+            if (!$this->db->table('pos_purchase_payments')->insert($paymentData)) {
+                $this->lastErrorMessage = 'Failed to save initial payment.';
+                $this->db->transRollback();
+                return false;
+            }
             $paymentId = $this->db->insertID();
 
             // Create supplier ledger entry for initial payment (DEBIT - liability decrease - we paid)
@@ -257,7 +292,7 @@ class PurchaseModel extends Model
             $debitAmount = $data['paid_amount'];
             $newBalance = $currentBalance - $debitAmount;
 
-            $supplierLedgerModel->insert([
+            if (!$supplierLedgerModel->insert([
                 'supplier_id' => $data['supplier_id'],
                 'purchase_id' => $purchaseId,
                 'payment_id' => $paymentId,
@@ -268,10 +303,21 @@ class PurchaseModel extends Model
                 'balance' => $newBalance,
                 'created_at' => date('Y-m-d H:i:s'),
                 'ref_no' => $data['invoice_no'] ?? '',
-            ]);
+            ])) {
+                $this->lastErrorMessage = 'Failed to create initial payment ledger entry.';
+                $this->db->transRollback();
+                return false;
+            }
         }
 
         $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            if ($this->lastErrorMessage === '') {
+                $this->lastErrorMessage = 'Purchase transaction failed.';
+            }
+            return false;
+        }
 
         return $purchaseId;
     }
@@ -284,6 +330,12 @@ class PurchaseModel extends Model
         $itemModel = new \App\Models\PurchaseItemModel();
         $inventoryModel = new \App\Models\M_inventory();
         $supplierLedgerModel = new \App\Models\SupplierLedgerModel();
+        $imeiModel = new \App\Models\ProductImeiModel();
+        $this->lastErrorMessage = '';
+
+        if (! $this->validateImeiPayloadForItems($items, (int) $id)) {
+            return false;
+        }
 
         $this->db->transStart();
 
@@ -322,6 +374,7 @@ class PurchaseModel extends Model
 
         // Delete old items
         $this->db->table('pos_purchase_items')->where('purchase_id', $id)->delete();
+        $imeiModel->forStore()->where('purchase_id', $id)->delete();
 
         // Update ledger if supplier or grand_total has changed
         $supplierChanged = $oldPurchase['supplier_id'] != $data['supplier_id'];
@@ -444,6 +497,12 @@ class PurchaseModel extends Model
             ];
 
             $itemModel->insert($itemData);
+            $purchaseItemId = (int) $itemModel->insertID();
+
+            if (! $this->syncPurchaseItemImeis($id, $purchaseItemId, $item, $imeiModel)) {
+                $this->db->transRollback();
+                return false;
+            }
 
             // Update product cost price based on weighted average cost
             $product = $productModel->find($item['product_id']);
@@ -505,6 +564,8 @@ class PurchaseModel extends Model
         $productModel = new \App\Models\M_products();
         $inventoryModel = new \App\Models\M_inventory();
         $supplierLedgerModel = new \App\Models\SupplierLedgerModel();
+        $imeiModel = new \App\Models\ProductImeiModel();
+        $this->lastErrorMessage = '';
 
         $this->db->transStart();
 
@@ -551,6 +612,9 @@ class PurchaseModel extends Model
 
         // Delete purchase returns
         $this->db->table('pos_purchase_returns')->where('purchase_id', $id)->delete();
+
+        // Delete IMEI rows added through this purchase
+        $imeiModel->forStore()->where('purchase_id', $id)->delete();
 
         // Delete payment records
         $this->db->table('pos_purchase_payments')->where('purchase_id', $id)->delete();
@@ -658,5 +722,137 @@ class PurchaseModel extends Model
         }
         $this->where('store_id', $storeId);
         return $this;
+    }
+
+    public function getLastErrorMessage()
+    {
+        return (string) $this->lastErrorMessage;
+    }
+
+    protected function validateImeiPayloadForItems(array $items, $ignorePurchaseId = 0)
+    {
+        helper('business_feature');
+
+        if (!function_exists('business_feature_enabled') || !business_feature_enabled('imei_tracking')) {
+            return true;
+        }
+
+        $productModel = new \App\Models\M_products();
+        $storeId = (int) (session('store_id') ?? 0);
+        $seenInPayload = [];
+
+        foreach ($items as $item) {
+            $productId = (int) ($item['product_id'] ?? 0);
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $product = $productModel->forStore()->find($productId);
+            if (!$product || (int) ($product['requires_imei'] ?? 0) !== 1) {
+                continue;
+            }
+
+            $qty = (float) ($item['quantity'] ?? 0);
+            $qtyInt = (int) round($qty);
+            if ($qtyInt <= 0 || abs($qty - $qtyInt) > 0.0001) {
+                $this->lastErrorMessage = 'IMEI product quantity must be a positive whole number.';
+                return false;
+            }
+
+            $imeiList = $this->normalizeImeiList($item['imei_list'] ?? ($item['imeis'] ?? ''));
+            if (count($imeiList) !== $qtyInt) {
+                $this->lastErrorMessage = 'IMEI count must match quantity for IMEI-tracked products.';
+                return false;
+            }
+
+            foreach ($imeiList as $imei) {
+                $key = strtolower($imei);
+                if (isset($seenInPayload[$key])) {
+                    $this->lastErrorMessage = 'Duplicate IMEI found in purchase payload: ' . $imei;
+                    return false;
+                }
+                $seenInPayload[$key] = true;
+
+                $existsBuilder = $this->db->table('pos_product_imeis')
+                    ->where('store_id', $storeId)
+                    ->where('imei', $imei);
+
+                if ((int) $ignorePurchaseId > 0) {
+                    $existsBuilder->groupStart()
+                        ->where('purchase_id !=', (int) $ignorePurchaseId)
+                        ->orWhere('purchase_id IS NULL', null, false)
+                        ->groupEnd();
+                }
+
+                $exists = $existsBuilder->countAllResults();
+                if ($exists > 0) {
+                    $this->lastErrorMessage = 'IMEI already exists in this store: ' . $imei;
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    protected function syncPurchaseItemImeis($purchaseId, $purchaseItemId, array $item, \App\Models\ProductImeiModel $imeiModel)
+    {
+        helper('business_feature');
+
+        if (!function_exists('business_feature_enabled') || !business_feature_enabled('imei_tracking')) {
+            return true;
+        }
+
+        $productId = (int) ($item['product_id'] ?? 0);
+        if ($productId <= 0) {
+            return true;
+        }
+
+        $productModel = new \App\Models\M_products();
+        $product = $productModel->forStore()->find($productId);
+        if (!$product || (int) ($product['requires_imei'] ?? 0) !== 1) {
+            return true;
+        }
+
+        $imeiList = $this->normalizeImeiList($item['imei_list'] ?? ($item['imeis'] ?? ''));
+        $storeId = (int) (session('store_id') ?? 0);
+
+        foreach ($imeiList as $imei) {
+            $inserted = $imeiModel->insert([
+                'store_id' => $storeId,
+                'product_id' => $productId,
+                'imei' => $imei,
+                'status' => 'available',
+                'purchase_id' => (int) $purchaseId,
+                'purchase_item_id' => (int) $purchaseItemId,
+            ]);
+
+            if (!$inserted) {
+                $this->lastErrorMessage = 'Failed to save IMEI: ' . $imei;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function normalizeImeiList($raw)
+    {
+        if (is_array($raw)) {
+            $parts = $raw;
+        } else {
+            $parts = preg_split('/[\r\n,]+/', (string) $raw) ?: [];
+        }
+
+        $out = [];
+        foreach ($parts as $part) {
+            $imei = trim((string) $part);
+            if ($imei === '') {
+                continue;
+            }
+            $out[] = $imei;
+        }
+
+        return array_values(array_unique($out));
     }
 }

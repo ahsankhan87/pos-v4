@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\StoreModel;
-use CodeIgniter\Validation\StrictRules\Rules;
+use App\Models\StoreFeatureOverrideModel;
 
 class Stores extends BaseController
 {
@@ -11,6 +11,7 @@ class Stores extends BaseController
 
     public function __construct()
     {
+        helper(['audit', 'business_feature']);
         $this->storeModel = new StoreModel();
     }
     public function index()
@@ -91,7 +92,10 @@ class Stores extends BaseController
 
     public function new()
     {
-        return view('stores/new', ['title' => 'Add New Store / Branch']);
+        return view('stores/new', [
+            'title' => 'Add New Store / Branch',
+            'imeiTrackingMode' => old('imei_tracking_mode', 'inherit'),
+        ]);
     }
     public function show($id)
     {
@@ -117,7 +121,9 @@ class Stores extends BaseController
             'logo' => 'permit_empty|is_image[logo]|max_size[logo,2048]', // 2MB max size
             'currency_code' => 'permit_empty',
             'currency_symbol' => 'permit_empty',
-            'timezone' => 'permit_empty'
+            'timezone' => 'permit_empty',
+            'business_type' => $this->getBusinessTypeRule(),
+            'imei_tracking_mode' => 'permit_empty|in_list[inherit,enabled,disabled]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -140,18 +146,40 @@ class Stores extends BaseController
             'currency_code' => $this->request->getPost('currency_code'),
             'currency_symbol' => $this->request->getPost('currency_symbol'),
             'timezone' => $this->request->getPost('timezone'),
+            'business_type' => $this->normalizeBusinessType((string) $this->request->getPost('business_type')),
             'created_at' => date('Y-m-d H:i:s')
         ];
 
-        $this->storeModel->save($newData);
+        $storeId = (int) $this->storeModel->insert($newData, true);
+        if ($storeId <= 0) {
+            return redirect()->back()->withInput()->with('error', 'Unable to create store.');
+        }
+
+        $imeiMode = trim((string) $this->request->getPost('imei_tracking_mode'));
+        $this->persistFeatureOverride($storeId, 'imei_tracking', $imeiMode);
+
+        logAction('store_created', 'Store ID: ' . $storeId . ', Name: ' . $newData['name']);
         return redirect()->to('/stores')->with('message', 'Store created!');
     }
 
     public function edit($id)
     {
+        $store = $this->storeModel->find($id);
+        if (!$store) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Cannot find the store: ' . $id);
+        }
+
+        $overrideModel = new StoreFeatureOverrideModel();
+        $override = $overrideModel->getOverride((int) $id, 'imei_tracking');
+        $imeiTrackingMode = 'inherit';
+        if (is_array($override)) {
+            $imeiTrackingMode = ((int) ($override['is_enabled'] ?? 0) === 1) ? 'enabled' : 'disabled';
+        }
+
         $data = [
             'title' => 'Edit Store / Branch',
-            'store' => $this->storeModel->find($id)
+            'store' => $store,
+            'imeiTrackingMode' => old('imei_tracking_mode', $imeiTrackingMode),
         ];
         return view('stores/edit', $data);
     }
@@ -174,7 +202,9 @@ class Stores extends BaseController
             'logo' => 'permit_empty|is_image[logo]|max_size[logo,2048]', // 2MB max size
             'currency_code' => 'permit_empty',
             'currency_symbol' => 'permit_empty',
-            'timezone' => 'permit_empty'
+            'timezone' => 'permit_empty',
+            'business_type' => $this->getBusinessTypeRule(),
+            'imei_tracking_mode' => 'permit_empty|in_list[inherit,enabled,disabled]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -196,10 +226,20 @@ class Stores extends BaseController
             'currency_code' => $this->request->getPost('currency_code'),
             'currency_symbol' => $this->request->getPost('currency_symbol'),
             'timezone' => $this->request->getPost('timezone'),
+            'business_type' => $this->normalizeBusinessType((string) $this->request->getPost('business_type')),
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
         $this->storeModel->update($id, $data);
+        $imeiMode = trim((string) $this->request->getPost('imei_tracking_mode'));
+        $this->persistFeatureOverride((int) $id, 'imei_tracking', $imeiMode);
+
+        logAction('store_updated', 'Store ID: ' . (int) $id . ', Name: ' . $data['name']);
+
+        if ((int) session('store_id') === (int) $id) {
+            session()->set('business_type', $data['business_type']);
+        }
+
         return redirect()->to('/stores')->with('message', 'Store updated!');
     }
 
@@ -216,12 +256,16 @@ class Stores extends BaseController
         // Unset default for all other stores
         $this->storeModel->where('id !=', $id)->set(['is_default' => 0])->update();
 
+        logAction('store_default_changed', 'Store ID: ' . (int) $id . ' set as default');
+
         return redirect()->to('/stores')->with('message', 'Store set as default successfully!');
     }
 
     public function delete($id)
     {
+        $store = $this->storeModel->find($id);
         $this->storeModel->delete($id);
+        logAction('store_deleted', 'Store ID: ' . (int) $id . ', Name: ' . ($store['name'] ?? ''));
         return redirect()->to('/stores')->with('message', 'Store deleted!');
     }
 
@@ -263,8 +307,60 @@ class Stores extends BaseController
             'currency_code' => $store['currency_code'] ?? (session()->get('currency_code') ?? 'USD'),
             'currency_symbol' => $store['currency_symbol'] ?? (session()->get('currency_symbol') ?? '$'),
             'timezone' => $store['timezone'] ?? (session()->get('timezone') ?? 'UTC'),
+            'business_type' => $store['business_type'] ?? 'general',
         ]);
 
         return redirect()->to('/');
+    }
+
+    private function getBusinessTypeRule(): string
+    {
+        $types = array_keys(business_type_options());
+        if (empty($types)) {
+            return 'permit_empty';
+        }
+
+        return 'required|in_list[' . implode(',', $types) . ']';
+    }
+
+    private function normalizeBusinessType(string $businessType): string
+    {
+        $businessType = trim($businessType);
+        $validTypes = array_keys(business_type_options());
+        if (! in_array($businessType, $validTypes, true)) {
+            return 'general';
+        }
+
+        return $businessType;
+    }
+
+    private function persistFeatureOverride(int $storeId, string $featureKey, string $mode): void
+    {
+        if ($storeId <= 0 || trim($featureKey) === '') {
+            return;
+        }
+
+        $mode = trim($mode);
+        $overrideModel = new StoreFeatureOverrideModel();
+        $existing = $overrideModel->getOverride($storeId, $featureKey);
+
+        if ($mode === 'inherit' || $mode === '') {
+            if (is_array($existing)) {
+                $overrideModel->delete((int) $existing['id']);
+            }
+            return;
+        }
+
+        $isEnabled = ($mode === 'enabled') ? 1 : 0;
+        if (is_array($existing)) {
+            $overrideModel->update((int) $existing['id'], ['is_enabled' => $isEnabled]);
+            return;
+        }
+
+        $overrideModel->insert([
+            'store_id' => $storeId,
+            'feature_key' => $featureKey,
+            'is_enabled' => $isEnabled,
+        ]);
     }
 }

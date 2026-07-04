@@ -24,7 +24,7 @@ class Purchases extends BaseController
         $this->storeModel = new StoreModel();
         //$this->taxModel = new TaxModel();
 
-        helper(['number', 'audit']);
+        helper(['number', 'audit', 'business_feature']);
     }
 
     public function index()
@@ -149,6 +149,7 @@ class Purchases extends BaseController
             'invoice_no' => $this->purchaseModel->generatePurchaseInvoiceNo(), //['data']['invoice_no'],
             'today' => date('Y-m-d H:i:s'),
             'taxRate' => $settingModel->first()['tax_rate'] ?? 0,
+            'imeiTrackingEnabled' => function_exists('business_feature_enabled') ? business_feature_enabled('imei_tracking') : false,
         ];
 
         return view('purchases/create', $data);
@@ -183,6 +184,9 @@ class Purchases extends BaseController
         }
 
         $items = json_decode($this->request->getPost('items'), true);
+        if (!is_array($items) || $items === []) {
+            return redirect()->back()->withInput()->with('error', 'No items provided');
+        }
         $totals = $this->calculateTotals($items);
 
         // Handle invoice image upload
@@ -236,16 +240,19 @@ class Purchases extends BaseController
         ];
 
         // Insert purchase header
-        $purchaseId = $this->purchaseModel->insertPurchase($data, $items);
+        $purchaseId = $this->purchaseModel->insertPurchase($data);
 
         // Log the purchase creation
-        logAction('purchase_created', 'Created purchase with ID: ' . $purchaseId . ', Invoice No: ' . $data['invoice_no'], ['supplier_id' => $data['supplier_id'], 'data' => $data]);
+        if ($purchaseId) {
+            logAction('purchase_created', 'Created purchase with ID: ' . $purchaseId . ', Invoice No: ' . $data['invoice_no'], ['supplier_id' => $data['supplier_id'], 'data' => $data]);
+        }
 
         // Redirect to view the created purchase
         if ($purchaseId) {
             return redirect()->to("/purchases/view/$purchaseId")->with('message', 'Purchase created successfully');
         } else {
-            return redirect()->back()->withInput()->with('error', 'Failed to create purchase');
+            $errorMessage = method_exists($this->purchaseModel, 'getLastErrorMessage') ? (string) $this->purchaseModel->getLastErrorMessage() : '';
+            return redirect()->back()->withInput()->with('error', $errorMessage !== '' ? $errorMessage : 'Failed to create purchase');
         }
     }
 
@@ -412,7 +419,8 @@ class Purchases extends BaseController
                 'discount_type' => $discountType,
                 'tax_rate' => 0,
                 'tax_amount' => 0,
-                'subtotal' => $itemSubtotal
+                'subtotal' => $itemSubtotal,
+                'imei_list' => $item['imei_list'] ?? ($item['imeis'] ?? ''),
             ];
 
             $subtotal += $itemSubtotal;
@@ -512,7 +520,8 @@ class Purchases extends BaseController
 
             log_message('error', $errorMsg);
 
-            return redirect()->back()->withInput()->with('error', 'Failed to update purchase. Check logs for details.');
+            $errorMessage = method_exists($this->purchaseModel, 'getLastErrorMessage') ? (string) $this->purchaseModel->getLastErrorMessage() : '';
+            return redirect()->back()->withInput()->with('error', $errorMessage !== '' ? $errorMessage : 'Failed to update purchase. Check logs for details.');
         }
 
         //audit log

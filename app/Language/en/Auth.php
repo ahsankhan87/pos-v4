@@ -15,6 +15,8 @@ return [
     'phoneOptional' => 'Phone (optional)',
     'passwordMin' => 'Password (min 6 characters)',
     'confirmPassword' => 'Confirm Password',
+    'business_type' => 'Business Type',
+    'business_type_help' => 'Select your business category to load suitable default features.',
     'register' => 'Register',
     'alreadyHaveAccount' => 'Already have an account?',
     'loginHere' => 'Login here',

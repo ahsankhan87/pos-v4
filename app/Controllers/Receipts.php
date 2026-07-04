@@ -360,6 +360,16 @@ class Receipts extends BaseController
             }
             $lineNet = $lineBase - $lineDiscount;
 
+            $selectedImeis = [];
+            if (!empty($item['selected_imeis']) && is_array($item['selected_imeis'])) {
+                foreach ($item['selected_imeis'] as $imei) {
+                    $imei = trim((string) $imei);
+                    if ($imei !== '') {
+                        $selectedImeis[] = htmlspecialchars($imei, ENT_QUOTES, 'UTF-8');
+                    }
+                }
+            }
+
             $html .= '<tr>';
             $html .= '<td>' . htmlspecialchars((string)$item['name']) . '</td>';
             $html .= '<td style="text-align: center;">' . $qtyDisplay . '</td>';
@@ -367,6 +377,14 @@ class Receipts extends BaseController
             $html .= '<td style="text-align: right;">' . number_format($lineDiscount, 2) . '</td>';
             $html .= '<td style="text-align: right;">' . number_format($lineNet, 2) . '</td>';
             $html .= '</tr>';
+
+            if ($selectedImeis !== []) {
+                $html .= '<tr>';
+                $html .= '<td colspan="5" style="font-size: 10px; color: #555; padding-top: 0; padding-bottom: 4px;">';
+                $html .= '<strong>IMEI:</strong> ' . implode(', ', $selectedImeis);
+                $html .= '</td>';
+                $html .= '</tr>';
+            }
         }
         return $html;
     }

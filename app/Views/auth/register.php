@@ -129,12 +129,25 @@ $tenantPreviewUrl = rtrim((string) $tenantBaseUrl, '/') . '/' . ($companySlug !=
 
                             <div class="border-t border-slate-200 pt-5">
                                 <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Company Workspace</h3>
+                                <?php helper('business_feature'); ?>
+                                <?php $businessTypes = business_type_options(); ?>
+                                <?php $selectedBusinessType = old('business_type', 'general'); ?>
                                 <div class="grid gap-3 md:grid-cols-2">
                                     <label class="block md:col-span-2">
                                         <span class="mb-1.5 block text-sm font-medium text-slate-700">Company Name</span>
                                         <input id="company_name" name="company_name" type="text" required value="<?= old('company_name') ?>"
                                             class="block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-2 focus:ring-slate-200"
                                             placeholder="Your company or store name">
+                                    </label>
+                                    <label class="block md:col-span-2">
+                                        <span class="mb-1.5 block text-sm font-medium text-slate-700"><?= lang('Auth.business_type') ?></span>
+                                        <select id="business_type" name="business_type" required
+                                            class="block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-2 focus:ring-slate-200">
+                                            <?php foreach ($businessTypes as $typeKey => $typeLabel): ?>
+                                                <option value="<?= esc($typeKey) ?>" <?= $selectedBusinessType === $typeKey ? 'selected' : '' ?>><?= esc($typeLabel) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <p class="mt-2 text-xs text-slate-500"><?= lang('Auth.business_type_help') ?></p>
                                     </label>
                                     <label class="block md:col-span-2">
                                         <span class="mb-1.5 block text-sm font-medium text-slate-700">Business Base URL</span>

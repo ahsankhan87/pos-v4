@@ -167,7 +167,8 @@
             enterValidNumber: <?= json_encode(lang('Products.enter_valid_number'), JSON_UNESCAPED_UNICODE) ?>,
             bulkAdjustDefaultReason: <?= json_encode(lang('Products.bulk_adjust_default_reason'), JSON_UNESCAPED_UNICODE) ?>,
             bulkAdjustResult: <?= json_encode(lang('Products.bulk_adjust_result'), JSON_UNESCAPED_UNICODE) ?>,
-            bulkAdjustFailed: <?= json_encode(lang('Products.bulk_adjust_failed'), JSON_UNESCAPED_UNICODE) ?>
+            bulkAdjustFailed: <?= json_encode(lang('Products.bulk_adjust_failed'), JSON_UNESCAPED_UNICODE) ?>,
+            imeiInventory: <?= json_encode(lang('Products.imei_inventory'), JSON_UNESCAPED_UNICODE) ?>
         };
 
         const csrfName = <?= json_encode(csrf_token()) ?>;
@@ -362,12 +363,14 @@
 
         function buildActions(row) {
             const isService = (row.type === 'service') || (parseInt(row.is_stock_tracked ?? 1, 10) === 0);
+            const isImeiEnabled = parseInt(row.requires_imei ?? 0, 10) === 1;
             const routes = {
                 view: <?= json_encode(site_url('products/show')) ?> + '/' + row.id,
                 history: <?= json_encode(site_url('products/stock-movement-history')) ?> + '/' + row.id,
                 edit: <?= json_encode(site_url('products/edit')) ?> + '/' + row.id,
                 adjust: <?= json_encode(site_url('inventory/adjust')) ?> + '/' + row.id,
                 barcode: <?= json_encode(site_url('products/print-barcodes')) ?> + '/' + row.id,
+                imeiInventory: <?= json_encode(site_url('products/imei-inventory')) ?> + '?product_id=' + row.id,
                 delete: <?= json_encode(site_url('products/delete')) ?> + '/' + row.id,
             };
 
@@ -393,6 +396,14 @@
                             <span>${productTexts.printBarcodeLabels}</span>
                         </a>
                     `;
+                    if (isImeiEnabled) {
+                        menuItems += `
+                            <a href="${routes.imeiInventory}" class="actions-link actions-link--info">
+                                <i class="fas fa-sim-card"></i>
+                                <span>${productTexts.imeiInventory}</span>
+                            </a>
+                        `;
+                    }
                 }
             }
             if (permissions.update) {
