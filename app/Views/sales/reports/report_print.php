@@ -81,7 +81,8 @@
     <table>
         <thead>
             <tr>
-                <th>ID</th>
+                <!-- <th>ID</th> -->
+                <th><?= lang('Reports.invoice') ?></th>
                 <th><?= lang('Reports.customer') ?></th>
                 <th><?= lang('Reports.payment') ?></th>
                 <th><?= lang('Reports.date') ?></th>
@@ -94,7 +95,8 @@
         <tbody>
             <?php foreach (($sales ?? []) as $sale): ?>
                 <tr>
-                    <td>#<?= (int)$sale['id'] ?></td>
+                    <!-- <td>#<?= (int)$sale['id'] ?></td> -->
+                    <td><?= esc($sale['invoice_no']) ?></td>
                     <td><?= esc($sale['customer_name']) ?></td>
                     <td><?= esc($sale['payment_method']) ?></td>
                     <td><?= esc($sale['created_at']) ?></td>

@@ -222,6 +222,7 @@ function money_fmt($v)
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.id') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inv #</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.customer') ?></th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.payment') ?></th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.date') ?></th>
@@ -235,6 +236,7 @@ function money_fmt($v)
                     <?php foreach ($sales as $sale): ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-3 text-sm text-gray-900">#<?= (int)$sale['id'] ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['invoice_no']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['customer_name']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['payment_method']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-500"><?= esc($sale['created_at']) ?></td>

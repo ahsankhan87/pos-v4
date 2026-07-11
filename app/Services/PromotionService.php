@@ -65,15 +65,8 @@ class PromotionService
         $appliedPromotions = [];
         $finalItems = $baseItems;
 
-        // Create a map of product quantities for easier lookup
-        $cartProductQties = [];
-        foreach ($baseItems as $item) {
-            $productId = (int) $item['product_id'];
-            if (!isset($cartProductQties[$productId])) {
-                $cartProductQties[$productId] = 0;
-            }
-            $cartProductQties[$productId] += (float) $item['qty'];
-        }
+        // Only undiscounted trigger quantities should qualify for auto-added gifts.
+        $eligibleTriggerQties = $this->buildEligibleTriggerQuantities($baseItems);
 
         // First pass: collect all qualifying promotions
         $qualifyingPromotions = [];
@@ -86,7 +79,7 @@ class PromotionService
                 continue;
             }
 
-            $allTriggersMetDetails = $this->checkAllTriggersMet($triggerProductIds, $promotionRules, $cartProductQties);
+            $allTriggersMetDetails = $this->checkAllTriggersMet($triggerProductIds, $promotionRules, $eligibleTriggerQties);
             if (!$allTriggersMetDetails['met'] || $allTriggersMetDetails['applications'] <= 0) {
                 continue;
             }
@@ -359,6 +352,36 @@ class PromotionService
         }
 
         return $qtyMap;
+    }
+
+    protected function buildEligibleTriggerQuantities(array $baseItems): array
+    {
+        $eligibleTriggerQties = [];
+
+        foreach ($baseItems as $item) {
+            if ($this->isDiscountedTriggerItem($item)) {
+                continue;
+            }
+
+            $productId = (int) ($item['product_id'] ?? 0);
+            $qty = (float) ($item['qty'] ?? 0);
+            if ($productId <= 0 || $qty <= 0) {
+                continue;
+            }
+
+            if (! isset($eligibleTriggerQties[$productId])) {
+                $eligibleTriggerQties[$productId] = 0.0;
+            }
+
+            $eligibleTriggerQties[$productId] += $qty;
+        }
+
+        return $eligibleTriggerQties;
+    }
+
+    protected function isDiscountedTriggerItem(array $item): bool
+    {
+        return (float) ($item['discount'] ?? 0) > 0;
     }
 
 

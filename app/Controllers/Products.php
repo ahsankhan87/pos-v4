@@ -305,10 +305,14 @@ class Products extends BaseController
 
         $model = new \App\Models\M_products();
 
-        // In sale context, exclude products that are configured as promotion gift items
-        // (they should only appear in the cart when a promotion rule auto-applies them)
+        // In sale context, exclude active promotion gift products for non-admin users.
+        // Admin users can still manually add those products to the cart.
         $excludeIds = [];
-        if ($context === 'sale') {
+        $roleId = (int) (session('role_id') ?? 0);
+        $roleName = strtolower((string) (session('role_name') ?? session('user_role') ?? ''));
+        $isAdminUser = ($roleId === 1) || ($roleName === 'admin');
+
+        if ($context === 'sale' && ! $isAdminUser) {
             $storeId = (int) session('store_id');
             if ($storeId > 0) {
                 $promotionRuleModel = new \App\Models\PromotionRuleModel();

@@ -2161,7 +2161,8 @@ class Sales extends BaseController
         $totalRecords = (clone $baseBuilder)->countAllResults();
 
         $filteredBuilder = $db->table('pos_sales ps')
-            ->join('pos_customers c', 'c.id = ps.customer_id', 'left');
+            ->join('pos_customers c', 'c.id = ps.customer_id', 'left')
+            ->join('pos_employees e', 'e.id = ps.employee_id', 'left');
 
         if ($storeId !== null) {
             $filteredBuilder->where('ps.store_id', $storeId);
@@ -2204,7 +2205,8 @@ class Sales extends BaseController
                 'COALESCE(r.total_return, 0) AS return_total, ' .
                 '(ps.total - COALESCE(r.total_return, 0)) AS net_total, ' .
                 'ps.created_at, ps.payment_type, ps.payment_status, ps.due_amount, ' .
-                'ps.customer_id, COALESCE(c.name, "Walk-in Customer") AS customer_name'
+                'ps.customer_id, COALESCE(c.name, "Walk-in Customer") AS customer_name, ' .
+                'COALESCE(e.name, "N/A") as employee_name'
         );
 
         if ($orderRequest) {

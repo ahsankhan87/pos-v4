@@ -14,6 +14,8 @@ return [
     'invoice_no' => 'Invoice #',
     'invoice' => 'Invoice',
     'customer' => 'Customer',
+    'sold_by' => 'Sold By',
+    'not_applicable' => 'N/A',
     'gross_total' => 'Gross Total',
     'returns' => 'Returns',
     'net_total' => 'Net Total',

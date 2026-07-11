@@ -80,6 +80,7 @@
                         <th scope="col"><?= lang('Sales.id') ?></th>
                         <th scope="col"><?= lang('Sales.invoice_no') ?></th>
                         <th scope="col"><?= lang('Sales.customer') ?></th>
+                        <th scope="col"><?= lang('Sales.sold_by') ?></th>
                         <th scope="col"><?= lang('Sales.gross_total') ?></th>
                         <th scope="col"><?= lang('Sales.returns') ?></th>
                         <th scope="col"><?= lang('Sales.net_total') ?></th>
@@ -255,6 +256,8 @@
 
 <script>
     const salesI18n = {
+        soldBy: <?= json_encode(lang('Sales.sold_by')) ?>,
+        notApplicable: <?= json_encode(lang('Sales.not_applicable')) ?>,
         loadingPayments: <?= json_encode(lang('Sales.loading_payments')) ?>,
         walkIn: <?= json_encode(lang('Sales.walk_in')) ?>,
         cash: <?= json_encode(lang('Sales.cash')) ?>,
@@ -634,6 +637,13 @@
                                 <i class="fas fa-book text-xs"></i>
                             </a>
                         `;
+                    }
+                },
+                {
+                    data: 'employee_name',
+                    title: salesI18n.soldBy,
+                    render: function(data, type, row) {
+                        return escapeHtml(data || salesI18n.notApplicable);
                     }
                 },
                 {

@@ -241,40 +241,40 @@ $routes->group('analytics', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Analytics::index', ['filter' => 'permission:analytics.view,feature:analytics']);
     $routes->get('comparative', 'Analytics::comparative', ['filter' => 'permission:analytics.view,feature:analytics']);
     $routes->get('comparative-data', 'Analytics::getComparativeAnalysis', ['filter' => 'permission:analytics.view,feature:analytics']);
-    $routes->get('summary', 'Reports\Sales::summary', ['filter' => 'permission:any:reports.sale_summary|analytics.view,feature:analytics']);
+    $routes->get('summary', 'Reports\Sales::summary', ['filter' => 'permission:any|reports.sale_summary|analytics.view,feature:analytics']);
 });
 $routes->group('reports/sales', ['filter' => 'auth'], function ($routes) {
-    $routes->get('/', 'Reports\Sales::index', ['filter' => 'permission:any:reports.sales_dashboard|analytics.view']);
-    $routes->get('summary', 'Reports\Sales::summary', ['filter' => 'permission:any:reports.sale_summary|analytics.view,feature:analytics']);
-    $routes->get('timeseries', 'Reports\Sales::timeseries', ['filter' => 'permission:any:reports.sale_timeseries|analytics.view']);
-    $routes->get('payment-mix', 'Reports\Sales::paymentMix', ['filter' => 'permission:any:reports.sale_payment_mix|analytics.view,feature:analytics']);
-    $routes->get('top-products', 'Reports\Sales::topProducts', ['filter' => 'permission:any:reports.sale_top_products|analytics.view']);
-    $routes->get('by-employee', 'Reports\Sales::byEmployee', ['filter' => 'permission:any:reports.sale_by_employee|analytics.view,feature:analytics']);
-    $routes->get('category-mix', 'Reports\Sales::categoryMix', ['filter' => 'permission:any:reports.sale_category_mix|analytics.view']);
-    $routes->get('hourly', 'Reports\Sales::hourly', ['filter' => 'permission:any:reports.sale_hourly|analytics.view,feature:analytics']);
-    $routes->get('discounts-trend', 'Reports\Sales::discountsTrend', ['filter' => 'permission:any:reports.sale_discounts_trend|analytics.view,feature:analytics']);
-    $routes->get('growth', 'Reports\Sales::growth', ['filter' => 'permission:any:reports.sale_growth|analytics.view']);
-    $routes->get('margin', 'Reports\Sales::margin', ['filter' => 'permission:any:reports.sale_margin|analytics.view']);
-    $routes->get('returns-summary', 'Reports\Sales::returnsSummary', ['filter' => 'permission:any:reports.sale_returns_summary|analytics.view']);
-    $routes->get('top-customers', 'Reports\Sales::topCustomers', ['filter' => 'permission:any:reports.sale_top_customers|analytics.view,feature:analytics']);
+    $routes->get('/', 'Reports\Sales::index', ['filter' => 'permission:any|reports.sales_dashboard|analytics.view']);
+    $routes->get('summary', 'Reports\Sales::summary', ['filter' => 'permission:any|reports.sale_summary|analytics.view,feature:analytics']);
+    $routes->get('timeseries', 'Reports\Sales::timeseries', ['filter' => 'permission:any|reports.sale_timeseries|analytics.view']);
+    $routes->get('payment-mix', 'Reports\Sales::paymentMix', ['filter' => 'permission:any|reports.sale_payment_mix|analytics.view,feature:analytics']);
+    $routes->get('top-products', 'Reports\Sales::topProducts', ['filter' => 'permission:any|reports.sale_top_products|analytics.view']);
+    $routes->get('by-employee', 'Reports\Sales::byEmployee', ['filter' => 'permission:any|reports.sale_by_employee|analytics.view,feature:analytics']);
+    $routes->get('category-mix', 'Reports\Sales::categoryMix', ['filter' => 'permission:any|reports.sale_category_mix|analytics.view']);
+    $routes->get('hourly', 'Reports\Sales::hourly', ['filter' => 'permission:any|reports.sale_hourly|analytics.view,feature:analytics']);
+    $routes->get('discounts-trend', 'Reports\Sales::discountsTrend', ['filter' => 'permission:any|reports.sale_discounts_trend|analytics.view,feature:analytics']);
+    $routes->get('growth', 'Reports\Sales::growth', ['filter' => 'permission:any|reports.sale_growth|analytics.view']);
+    $routes->get('margin', 'Reports\Sales::margin', ['filter' => 'permission:any|reports.sale_margin|analytics.view']);
+    $routes->get('returns-summary', 'Reports\Sales::returnsSummary', ['filter' => 'permission:any|reports.sale_returns_summary|analytics.view']);
+    $routes->get('top-customers', 'Reports\Sales::topCustomers', ['filter' => 'permission:any|reports.sale_top_customers|analytics.view,feature:analytics']);
 });
 
 $routes->group('reports/purchases', ['filter' => 'auth'], function ($routes) {
-    $routes->get('/', 'Reports\Purchases::index', ['filter' => 'permission:any:reports.purchases_dashboard|analytics.view']);
-    $routes->get('summary', 'Reports\Purchases::summary', ['filter' => 'permission:any:reports.purchase_summary|analytics.view,feature:analytics']);
-    $routes->get('timeseries', 'Reports\Purchases::timeseries', ['filter' => 'permission:any:reports.purchase_timeseries|analytics.view']);
-    $routes->get('payment-mix', 'Reports\Purchases::paymentMix', ['filter' => 'permission:any:reports.purchase_payment_mix|analytics.view,feature:analytics']);
-    $routes->get('top-suppliers', 'Reports\Purchases::topSuppliers', ['filter' => 'permission:any:reports.purchase_top_suppliers|analytics.view']);
-    $routes->get('top-items', 'Reports\Purchases::topItems', ['filter' => 'permission:any:reports.purchase_top_items|analytics.view']);
-    $routes->get('returns-summary', 'Reports\Purchases::returnsSummary', ['filter' => 'permission:any:reports.purchase_returns_summary|analytics.view']);
+    $routes->get('/', 'Reports\Purchases::index', ['filter' => 'permission:any|reports.purchases_dashboard|analytics.view']);
+    $routes->get('summary', 'Reports\Purchases::summary', ['filter' => 'permission:any|reports.purchase_summary|analytics.view,feature:analytics']);
+    $routes->get('timeseries', 'Reports\Purchases::timeseries', ['filter' => 'permission:any|reports.purchase_timeseries|analytics.view']);
+    $routes->get('payment-mix', 'Reports\Purchases::paymentMix', ['filter' => 'permission:any|reports.purchase_payment_mix|analytics.view,feature:analytics']);
+    $routes->get('top-suppliers', 'Reports\Purchases::topSuppliers', ['filter' => 'permission:any|reports.purchase_top_suppliers|analytics.view']);
+    $routes->get('top-items', 'Reports\Purchases::topItems', ['filter' => 'permission:any|reports.purchase_top_items|analytics.view']);
+    $routes->get('returns-summary', 'Reports\Purchases::returnsSummary', ['filter' => 'permission:any|reports.purchase_returns_summary|analytics.view']);
 });
 
 $routes->group('reports/inventory', ['filter' => 'auth'], function ($routes) {
-    $routes->get('/', 'Reports\Inventory::index', ['filter' => 'permission:any:reports.inventory_dashboard|analytics.view']);
-    $routes->get('valuation', 'Reports\Inventory::valuation', ['filter' => 'permission:any:reports.inventory_valuation|analytics.view']);
-    $routes->get('low-stock', 'Reports\Inventory::lowStock', ['filter' => 'permission:any:reports.inventory_low_stock|analytics.view']);
-    $routes->get('movement', 'Reports\Inventory::movement', ['filter' => 'permission:any:reports.inventory_movement|analytics.view']);
-    $routes->get('slow-movers', 'Reports\Inventory::slowMovers', ['filter' => 'permission:any:reports.inventory_slow_movers|analytics.view']);
+    $routes->get('/', 'Reports\Inventory::index', ['filter' => 'permission:any|reports.inventory_dashboard|analytics.view']);
+    $routes->get('valuation', 'Reports\Inventory::valuation', ['filter' => 'permission:any|reports.inventory_valuation|analytics.view']);
+    $routes->get('low-stock', 'Reports\Inventory::lowStock', ['filter' => 'permission:any|reports.inventory_low_stock|analytics.view']);
+    $routes->get('movement', 'Reports\Inventory::movement', ['filter' => 'permission:any|reports.inventory_movement|analytics.view']);
+    $routes->get('slow-movers', 'Reports\Inventory::slowMovers', ['filter' => 'permission:any|reports.inventory_slow_movers|analytics.view']);
 });
 
 $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:receipts.view,feature:whatsapp']);
@@ -415,7 +415,7 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->get('datatable', 'Purchases::datatable', ['filter' => 'permission:purchases.view']);
     $routes->get('view/(:num)', 'Purchases::view/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('print/(:num)', 'Purchases::print/$1', ['filter' => 'permission:purchases.view']);
-    $routes->get('report', 'Purchases::purchaseReport', ['filter' => 'permission:any:reports.purchase_report|purchases.view']);
+    $routes->get('report', 'Purchases::purchaseReport', ['filter' => 'permission:any|reports.purchase_report|purchases.view']);
     // Create
     $routes->get('create', 'Purchases::create', ['filter' => 'permission:purchases.create']);
     $routes->post('store', 'Purchases::store', ['filter' => 'permission:purchases.create']);
@@ -454,10 +454,10 @@ $routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
 
 // Accounts Reports: Debtors & Creditors
 $routes->group('reports', ['filter' => 'auth'], function ($routes) {
-    $routes->get('debtors', 'Reports\Accounts::debtors', ['filter' => 'permission:any:reports.debtors|customers.view']);
-    $routes->get('debtors/data', 'Reports\Accounts::debtorsData', ['filter' => 'permission:any:reports.debtors|customers.view']);
-    $routes->get('creditors', 'Reports\Accounts::creditors', ['filter' => 'permission:any:reports.creditors|purchases.view']);
-    $routes->get('creditors/data', 'Reports\Accounts::creditorsData', ['filter' => 'permission:any:reports.creditors|purchases.view']);
+    $routes->get('debtors', 'Reports\Accounts::debtors', ['filter' => 'permission:any|reports.debtors|customers.view']);
+    $routes->get('debtors/data', 'Reports\Accounts::debtorsData', ['filter' => 'permission:any|reports.debtors|customers.view']);
+    $routes->get('creditors', 'Reports\Accounts::creditors', ['filter' => 'permission:any|reports.creditors|purchases.view']);
+    $routes->get('creditors/data', 'Reports\Accounts::creditorsData', ['filter' => 'permission:any|reports.creditors|purchases.view']);
 });
 
 $routes->get('logs/datatable', 'AuditLogs::datatable', ['filter' => 'auth']);

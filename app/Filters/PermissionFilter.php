@@ -29,7 +29,8 @@ class PermissionFilter implements FilterInterface
         // Check required permissions (non-admins)
         // Supports:
         // - "perm.name" (required)
-        // - "any:perm.a|perm.b|perm.c" (any-of)
+        // - "any|perm.a|perm.b|perm.c" (any-of)
+        // - "any:perm.a|perm.b|perm.c" (legacy any-of)
         foreach ($arguments as $arg) {
             $arg = trim((string) $arg);
             if ($arg === '') {
@@ -38,7 +39,7 @@ class PermissionFilter implements FilterInterface
 
             $allowed = false;
 
-            if (strpos($arg, 'any:') === 0) {
+            if (strpos($arg, 'any|') === 0 || strpos($arg, 'any:') === 0) {
                 $list = trim(substr($arg, 4));
                 $candidates = array_values(array_filter(array_map('trim', explode('|', $list))));
                 foreach ($candidates as $permission) {
