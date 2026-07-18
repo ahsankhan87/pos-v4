@@ -31,6 +31,7 @@ $shortCategoryLabel = static function ($label, int $max = 12): string {
                 <div>
                     <h2 class="text-xl font-bold text-gray-900"><?= esc($title) ?></h2>
                     <p class="text-sm text-gray-500 mt-1"><?= lang('EmployeeTargets.target_month') ?>: <span class="font-medium text-gray-700"><?= esc($selectedMonth) ?></span></p>
+                    <p class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block mt-2"><?= lang('EmployeeTargets.category_targets_hint') ?></p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a href="<?= site_url('employee-targets/achievements') ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-100 text-sm text-gray-700 hover:bg-gray-200"><?= lang('EmployeeTargets.achievements_report') ?></a>
@@ -71,51 +72,116 @@ $shortCategoryLabel = static function ($label, int $max = 12): string {
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.s_no') ?></th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('EmployeeTargets.employee') ?></th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('EmployeeTargets.category') ?></th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('EmployeeTargets.target_amount') ?></th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('EmployeeTargets.achieved_amount') ?></th>
-                        <?php foreach ($categories as $category): ?>
-                            <?php $categoryName = (string) ($category['name'] ?? lang('Reports.uncategorized')); ?>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" title="<?= esc($categoryName, 'attr') ?>\"><?= esc($shortCategoryLabel($categoryName)) ?></th>
-                        <?php endforeach; ?>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('EmployeeTargets.achievement_percent') ?></th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     <?php if (empty($rows)): ?>
                         <tr>
-                            <td colspan="<?= 5 + count($categories) ?>" class="px-4 py-6 text-center text-sm text-gray-500"><?= lang('EmployeeTargets.no_achievement_rows') ?></td>
+                            <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500"><?= lang('EmployeeTargets.no_achievement_rows') ?></td>
+                        </tr>
+                    <?php elseif ((int) ($selectedEmployeeId ?? 0) === 0): ?>
+                        <!-- All Employees Section -->
+                        <tr class="bg-gradient-to-r from-blue-50 to-blue-25 border-l-4 border-blue-600">
+                            <td colspan="4" class="px-4 py-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-bold"><?= lang('EmployeeTargets.all_employees') ?></span>
+                                        <h4 class="text-sm font-semibold text-gray-900"><?= lang('Reports.showing') ?> <?= number_format(count($rows)) ?> <?= lang('Reports.employees') ?></h4>
+                                    </div>
+                                    <div class="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded inline-block">
+                                        Overall: <?= number_format((float) ($totals['achievement_percent'] ?? 0), 1) ?>%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Category rows for all employees combined -->
+                        <?php foreach ($categories as $category): ?>
+                            <?php
+                            $categoryId = (int) ($category['id'] ?? 0);
+                            $categoryName = (string) ($category['name'] ?? lang('Reports.uncategorized'));
+                            $categoryTarget = 0.0;
+                            $categoryAchieved = 0.0;
+
+                            // Sum up all category totals across all employees
+                            foreach ($rows as $row) {
+                                $breakdown = $row['category_breakdown'][$categoryId] ?? [];
+                                $categoryTarget += (float) ($breakdown['target'] ?? 0);
+                                $categoryAchieved += (float) ($breakdown['achieved'] ?? 0);
+                            }
+
+                            $categoryPercent = $categoryTarget > 0 ? (($categoryAchieved / $categoryTarget) * 100) : 0;
+                            ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-700"><?= esc($categoryName) ?></td>
+                                <td class="px-4 py-3 text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format($categoryTarget, 2) ?></td>
+                                <td class="px-4 py-3 text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format($categoryAchieved, 2) ?></td>
+                                <td class="px-4 py-3 text-sm text-right font-semibold <?= $categoryPercent >= 100 ? 'text-green-700' : 'text-amber-700' ?>"><?= number_format($categoryPercent, 2) ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <!-- Totals row for all employees -->
+                        <tr class="bg-blue-50 font-semibold border-b-2 border-gray-200">
+                            <td class="px-4 py-3 text-sm text-blue-900"><?= lang('EmployeeTargets.total') ?></td>
+                            <td class="px-4 py-3 text-sm text-right text-blue-900"><?= esc($currency) . ' ' . number_format((float) ($totals['target_amount'] ?? 0), 2) ?></td>
+                            <td class="px-4 py-3 text-sm text-right text-blue-900"><?= esc($currency) . ' ' . number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></td>
+                            <td class="px-4 py-3 text-sm text-right <?= ((float) ($totals['achievement_percent'] ?? 0)) >= 100 ? 'text-green-700' : 'text-amber-700' ?>"><?= number_format((float) ($totals['achievement_percent'] ?? 0), 2) ?>%</td>
                         </tr>
                     <?php else: ?>
+                        <!-- Individual Employee Sections -->
                         <?php foreach ($rows as $idx => $row): ?>
                             <?php $achievementPercent = (float) ($row['achievement_percent'] ?? 0); ?>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-sm text-gray-900"><?= (int) $idx + 1 ?></td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><?= esc($row['employee_name'] ?? '-') ?></td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format((float) ($row['target_amount'] ?? 0), 2) ?></td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format((float) ($row['achieved_amount'] ?? 0), 2) ?></td>
-                                <?php foreach ($categories as $category): ?>
-                                    <?php $categoryId = (int) ($category['id'] ?? 0); ?>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900"><?= number_format((float) ($row['category_percents'][$categoryId] ?? 0), 2) ?>%</td>
-                                <?php endforeach; ?>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-right <?= $achievementPercent >= 100 ? 'text-green-700' : 'text-amber-700' ?>"><?= number_format($achievementPercent, 2) ?>%</td>
+                            <?php $categoryCount = count($categories); ?>
+                            <!-- Employee Header Row -->
+                            <tr class="bg-gradient-to-r from-blue-50 to-blue-25 border-l-4 border-blue-600">
+                                <td colspan="4" class="px-4 py-3">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold"><?= (int) $idx + 1 ?></span>
+                                            <h4 class="text-sm font-semibold text-gray-900"><?= esc($row['employee_name'] ?? '-') ?></h4>
+                                        </div>
+                                        <div class="text-xs font-medium <?= $achievementPercent >= 100 ? 'text-green-700 bg-green-50' : 'text-amber-700 bg-amber-50' ?> px-2 py-1 rounded inline-block">
+                                            Overall: <?= number_format($achievementPercent, 1) ?>%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Category Rows -->
+                            <?php foreach ($categories as $catIdx => $category): ?>
+                                <?php
+                                $categoryId = (int) ($category['id'] ?? 0);
+                                $breakdown = $row['category_breakdown'][$categoryId] ?? [];
+                                $categoryTarget = (float) ($breakdown['target'] ?? 0);
+                                $categoryAchieved = (float) ($breakdown['achieved'] ?? 0);
+                                $categoryPercent = (float) ($breakdown['percent'] ?? 0);
+                                $categoryName = (string) ($category['name'] ?? lang('Reports.uncategorized'));
+                                ?>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm text-gray-700"><?= esc($categoryName) ?></td>
+                                    <td class="px-4 py-3 text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format($categoryTarget, 2) ?></td>
+                                    <td class="px-4 py-3 text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format($categoryAchieved, 2) ?></td>
+                                    <td class="px-4 py-3 text-sm text-right font-semibold <?= $categoryPercent >= 100 ? 'text-green-700' : 'text-amber-700' ?>"><?= number_format($categoryPercent, 2) ?>%</td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <!-- Totals row for each employee -->
+                            <tr class="bg-blue-50 font-semibold border-b-2 border-gray-200">
+                                <td class="px-4 py-3 text-sm text-blue-900"><?= lang('EmployeeTargets.total') ?></td>
+                                <td class="px-4 py-3 text-sm text-right text-blue-900"><?= esc($currency) . ' ' . number_format((float) ($row['target_amount'] ?? 0), 2) ?></td>
+                                <td class="px-4 py-3 text-sm text-right text-blue-900"><?= esc($currency) . ' ' . number_format((float) ($row['achieved_amount'] ?? 0), 2) ?></td>
+                                <td class="px-4 py-3 text-sm text-right <?= $achievementPercent >= 100 ? 'text-green-700' : 'text-amber-700' ?>"><?= number_format($achievementPercent, 2) ?>%</td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
-                <?php if (! empty($rows)): ?>
-                    <tfoot class="bg-gray-50">
-                        <tr>
-                            <td class="px-4 py-3"></td>
-                            <td class="px-4 py-3 text-sm font-semibold text-gray-700 text-right"><?= lang('EmployeeTargets.totals') ?></td>
-                            <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . number_format((float) ($totals['target_amount'] ?? 0), 2) ?></td>
-                            <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></td>
-                            <?php foreach ($categories as $category): ?>
-                                <?php $categoryId = (int) ($category['id'] ?? 0); ?>
-                                <td class="px-4 py-3 text-sm font-semibold text-right text-gray-900"><?= number_format((float) ($categoryTotalsPercent[$categoryId] ?? 0), 2) ?>%</td>
-                            <?php endforeach; ?>
-                            <td class="px-4 py-3 text-sm font-semibold text-right text-gray-900"><?= number_format((float) ($totals['achievement_percent'] ?? 0), 2) ?>%</td>
+                <?php if (! empty($rows) && (int) ($selectedEmployeeId ?? 0) === 0): ?>
+                    <tfoot class="bg-gray-100">
+                        <tr class="font-bold">
+                            <td class="px-4 py-3 text-sm text-gray-900"><?= lang('EmployeeTargets.grand_totals') ?></td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format((float) ($totals['target_amount'] ?? 0), 2) ?></td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900"><?= esc($currency) . ' ' . number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900"><?= number_format((float) ($totals['achievement_percent'] ?? 0), 2) ?>%</td>
                         </tr>
                     </tfoot>
                 <?php endif; ?>

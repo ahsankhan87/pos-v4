@@ -56,4 +56,11 @@ return [
     'error_target_amount_required' => 'Target amount must be greater than zero.',
     'error_duplicate_target' => 'A target already exists for this employee and month.',
     'error_locked_month' => 'Only admin can modify targets for current or past months.',
+    'error_no_categories' => 'No categories available. Please create categories before setting targets.',
+    'category_targets' => 'Category-wise Targets',
+    'category_targets_hint' => 'Set target amount for each category. The sum will be the total target.',
+    'category' => 'Category',
+    'total' => 'Total',
+    'totals' => 'Totals',
+    'grand_totals' => 'Grand Totals',
 ];

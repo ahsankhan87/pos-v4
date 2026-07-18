@@ -5,7 +5,10 @@
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-4 border-b border-gray-100 space-y-3">
             <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <h1 class="text-xl font-bold text-gray-900"><?= esc($title) ?></h1>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900"><?= esc($title) ?></h1>
+                    <p class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block mt-2"><?= lang('EmployeeTargets.category_targets_hint') ?></p>
+                </div>
                 <div class="flex items-center gap-2">
                     <a href="<?= site_url('employee-targets/achievements/categories') ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-indigo-600 text-sm text-white hover:bg-indigo-700"><?= lang('EmployeeTargets.achievements_categories_report') ?></a>
                     <a href="<?= site_url('employee-targets') ?>" class="text-sm text-blue-600 hover:text-blue-700"><?= lang('EmployeeTargets.back_to_targets') ?></a>

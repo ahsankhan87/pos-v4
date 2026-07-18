@@ -6,6 +6,7 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><?= esc($title) ?></h1>
             <p class="mt-1 text-sm text-gray-500"><?= lang('EmployeeTargets.subtitle') ?></p>
+            <p class="mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block"><?= lang('EmployeeTargets.category_targets_hint') ?></p>
         </div>
         <div class="flex items-center gap-2">
             <?php if (can('reports.employee_target_achievement')): ?>

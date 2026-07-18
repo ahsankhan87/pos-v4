@@ -107,53 +107,110 @@
         <?php endif; ?>
         <h2><?= esc($title) ?></h2>
         <p><?= lang('EmployeeTargets.target_month') ?>: <?= esc($selectedMonth) ?></p>
+        <p><?= lang('EmployeeTargets.category_targets_hint') ?></p>
         <p><?= lang('Reports.printed_on') ?? 'Printed on' ?>: <?= date('Y-m-d H:i') ?></p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th><?= lang('Reports.s_no') ?></th>
-                <th><?= lang('EmployeeTargets.employee') ?></th>
+                <th><?= lang('EmployeeTargets.category') ?></th>
                 <th><?= lang('EmployeeTargets.target_amount') ?></th>
                 <th><?= lang('EmployeeTargets.achieved_amount') ?></th>
-                <?php foreach ($categories as $category): ?>
-                    <?php $categoryName = (string) ($category['name'] ?? lang('Reports.uncategorized')); ?>
-                    <th title="<?= esc($categoryName, 'attr') ?>\"><?= esc($shortCategoryLabel($categoryName)) ?></th>
-                <?php endforeach; ?>
                 <th><?= lang('EmployeeTargets.achievement_percent') ?></th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($rows)): ?>
                 <tr>
-                    <td colspan="<?= 5 + count($categories) ?>"><?= lang('EmployeeTargets.no_achievement_rows') ?></td>
+                    <td colspan="4"><?= lang('EmployeeTargets.no_achievement_rows') ?></td>
                 </tr>
-            <?php else: ?>
-                <?php foreach ($rows as $idx => $row): ?>
+            <?php elseif ((int) ($selectedEmployeeId ?? 0) === 0): ?>
+                <!-- All Employees Section -->
+                <tr style="background:#dbeafe;border-left:4px solid #2563eb;">
+                    <td colspan="4" style="padding:0.75rem;font-weight:bold;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="display:inline-block;padding:2px 8px;border-radius:9999px;background:#2563eb;color:white;font-size:10px;font-weight:bold;"><?= lang('EmployeeTargets.all_employees') ?></span>
+                                <span style="font-size:11px;color:#1e40af;"><?= lang('Reports.showing') ?> <?= number_format(count($rows)) ?> <?= lang('Reports.employees') ?></span>
+                            </div>
+                            <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:4px;">Overall: <?= number_format((float) ($totals['achievement_percent'] ?? 0), 1) ?>%</span>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Category rows for all employees combined -->
+                <?php foreach ($categories as $category): ?>
+                    <?php
+                    $categoryId = (int) ($category['id'] ?? 0);
+                    $categoryName = (string) ($category['name'] ?? lang('Reports.uncategorized'));
+                    $categoryTarget = 0.0;
+                    $categoryAchieved = 0.0;
+
+                    // Sum up all category totals across all employees
+                    foreach ($rows as $row) {
+                        $breakdown = $row['category_breakdown'][$categoryId] ?? [];
+                        $categoryTarget += (float) ($breakdown['target'] ?? 0);
+                        $categoryAchieved += (float) ($breakdown['achieved'] ?? 0);
+                    }
+
+                    $categoryPercent = $categoryTarget > 0 ? (($categoryAchieved / $categoryTarget) * 100) : 0;
+                    ?>
                     <tr>
-                        <td><?= (int) $idx + 1 ?></td>
-                        <td><?= esc($row['employee_name'] ?? '-') ?></td>
-                        <td><?= esc($currency) . ' ' . number_format((float) ($row['target_amount'] ?? 0), 2) ?></td>
-                        <td><?= esc($currency) . ' ' . number_format((float) ($row['achieved_amount'] ?? 0), 2) ?></td>
-                        <?php foreach ($categories as $category): ?>
-                            <?php $categoryId = (int) ($category['id'] ?? 0); ?>
-                            <td><?= number_format((float) ($row['category_percents'][$categoryId] ?? 0), 2) ?>%</td>
-                        <?php endforeach; ?>
-                        <td><?= number_format((float) ($row['achievement_percent'] ?? 0), 2) ?>%</td>
+                        <td><?= esc($categoryName) ?></td>
+                        <td style="text-align:right;"><?= esc($currency) . ' ' . number_format($categoryTarget, 2) ?></td>
+                        <td style="text-align:right;"><?= esc($currency) . ' ' . number_format($categoryAchieved, 2) ?></td>
+                        <td style="text-align:right;font-weight:bold;color:<?= $categoryPercent >= 100 ? '#15803d' : '#b45309' ?>;"><?= number_format($categoryPercent, 2) ?>%</td>
                     </tr>
                 <?php endforeach; ?>
-                <tr class="total-row">
-                    <td></td>
-                    <td><?= lang('EmployeeTargets.totals') ?></td>
-                    <td><?= esc($currency) . ' ' . number_format((float) ($totals['target_amount'] ?? 0), 2) ?></td>
-                    <td><?= esc($currency) . ' ' . number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></td>
-                    <?php foreach ($categories as $category): ?>
-                        <?php $categoryId = (int) ($category['id'] ?? 0); ?>
-                        <td><?= number_format((float) ($categoryTotalsPercent[$categoryId] ?? 0), 2) ?>%</td>
-                    <?php endforeach; ?>
-                    <td><?= number_format((float) ($totals['achievement_percent'] ?? 0), 2) ?>%</td>
+                <!-- Totals row for all employees -->
+                <tr style="background:#dbeafe;font-weight:bold;border-bottom:2px solid #9ca3af;">
+                    <td style="color:#1e40af;"><?= lang('EmployeeTargets.total') ?></td>
+                    <td style="text-align:right;color:#1e40af;"><?= esc($currency) . ' ' . number_format((float) ($totals['target_amount'] ?? 0), 2) ?></td>
+                    <td style="text-align:right;color:#1e40af;"><?= esc($currency) . ' ' . number_format((float) ($totals['achieved_amount'] ?? 0), 2) ?></td>
+                    <td style="text-align:right;color:<?= ((float) ($totals['achievement_percent'] ?? 0)) >= 100 ? '#15803d' : '#b45309' ?>;"><?= number_format((float) ($totals['achievement_percent'] ?? 0), 2) ?>%</td>
                 </tr>
+            <?php else: ?>
+                <!-- Individual Employee Sections -->
+                <?php foreach ($rows as $idx => $row): ?>
+                    <?php $achievementPercent = (float) ($row['achievement_percent'] ?? 0); ?>
+                    <?php $categoryCount = count($categories); ?>
+                    <!-- Employee Header Row -->
+                    <tr style="background:#dbeafe;border-left:4px solid #2563eb;">
+                        <td colspan="4" style="padding:0.75rem;font-weight:bold;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;justify-content:space-between;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span style="display:inline-block;width:20px;height:20px;background:#2563eb;color:white;text-align:center;line-height:20px;border-radius:50%;font-size:10px;font-weight:bold;"><?= (int) $idx + 1 ?></span>
+                                    <span style="font-size:12px;color:#1e40af;"><?= esc($row['employee_name'] ?? '-') ?></span>
+                                </div>
+                                <span style="font-size:10px;background:<?= $achievementPercent >= 100 ? '#dcfce7' : '#fef3c7' ?>;color:<?= $achievementPercent >= 100 ? '#15803d' : '#b45309' ?>;padding:2px 6px;border-radius:4px;">Overall: <?= number_format($achievementPercent, 1) ?>%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Category Rows -->
+                    <?php foreach ($categories as $catIdx => $category): ?>
+                        <?php
+                        $categoryId = (int) ($category['id'] ?? 0);
+                        $breakdown = $row['category_breakdown'][$categoryId] ?? [];
+                        $categoryTarget = (float) ($breakdown['target'] ?? 0);
+                        $categoryAchieved = (float) ($breakdown['achieved'] ?? 0);
+                        $categoryPercent = (float) ($breakdown['percent'] ?? 0);
+                        $categoryName = (string) ($category['name'] ?? lang('Reports.uncategorized'));
+                        ?>
+                        <tr>
+                            <td><?= esc($categoryName) ?></td>
+                            <td style="text-align:right;"><?= esc($currency) . ' ' . number_format($categoryTarget, 2) ?></td>
+                            <td style="text-align:right;"><?= esc($currency) . ' ' . number_format($categoryAchieved, 2) ?></td>
+                            <td style="text-align:right;font-weight:bold;color:<?= $categoryPercent >= 100 ? '#15803d' : '#b45309' ?>;"><?= number_format($categoryPercent, 2) ?>%</td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <!-- Totals row for each employee -->
+                    <tr style="background:#dbeafe;font-weight:bold;border-bottom:2px solid #9ca3af;">
+                        <td style="color:#1e40af;"><?= lang('EmployeeTargets.total') ?></td>
+                        <td style="text-align:right;color:#1e40af;"><?= esc($currency) . ' ' . number_format((float) ($row['target_amount'] ?? 0), 2) ?></td>
+                        <td style="text-align:right;color:#1e40af;"><?= esc($currency) . ' ' . number_format((float) ($row['achieved_amount'] ?? 0), 2) ?></td>
+                        <td style="text-align:right;color:<?= $achievementPercent >= 100 ? '#15803d' : '#b45309' ?>;"><?= number_format($achievementPercent, 2) ?>%</td>
+                    </tr>
+                <?php endforeach; ?>
             <?php endif; ?>
         </tbody>
     </table>

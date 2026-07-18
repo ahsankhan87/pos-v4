@@ -150,6 +150,7 @@
         <?php endif; ?>
         <h2><?= esc($title) ?></h2>
         <p><?= lang('EmployeeTargets.target_month') ?>: <?= esc($selectedMonth) ?></p>
+        <p><?= lang('EmployeeTargets.category_targets_hint') ?></p>
         <p><?= lang('Reports.printed_on') ?? 'Printed on' ?>: <?= date('Y-m-d H:i') ?></p>
     </div>
 
