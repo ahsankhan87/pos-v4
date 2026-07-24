@@ -1945,6 +1945,15 @@ class Sales extends BaseController
 
             $totalReturnAmountCreditSale = 0.0; // Sum of return amounts to reduce due for credit sales
 
+            // Proportional tax multiplier: only apply if tax is present on the sale.
+            // If tax is 0, no multiplier needed. Otherwise multiply return amounts to include tax.
+            $saleTaxAmount = (float)($sale['total_tax'] ?? 0);
+            $taxMultiplier = 1.0;
+            if ($saleTaxAmount > 0.001) {
+                $saleNetPreTax = (float)$sale['total'] - $saleTaxAmount;
+                $taxMultiplier = ($saleNetPreTax > 0.001) ? ((float)$sale['total'] / $saleNetPreTax) : 1.0;
+            }
+
             foreach ($returnItems as $productId => $qty) {
                 $qty = (int)$qty;
                 if ($qty > 0) {
@@ -1982,7 +1991,7 @@ class Sales extends BaseController
                             } else {
                                 $unitNet = (float)$item['price'];
                             }
-                            $returnAmount = round($qty * $unitNet, 2);
+                            $returnAmount = round($qty * $unitNet * $taxMultiplier, 2);
                             $newBalance = $currentBalance - $returnAmount;
                             $totalReturnAmountCreditSale += $returnAmount; // Track amount to offset due
 
@@ -2014,7 +2023,7 @@ class Sales extends BaseController
                             'sale_id' => (int)$saleId,
                             'product_id' => $productId,
                             'quantity' => $qty,
-                            'return_amount' => round($qty * $unitNetForRow, 2),
+                            'return_amount' => round($qty * $unitNetForRow * $taxMultiplier, 2),
                             'reason' => $reason,
                             'user_id' => $userId,
                             'created_at' => $returnTimestamp,

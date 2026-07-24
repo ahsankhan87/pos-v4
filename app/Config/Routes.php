@@ -32,6 +32,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('profit-loss-report', 'Reports\Sales::profitLossReport', ['filter' => 'permission:reports.profit_loss']);
     $routes->get('report', 'Reports\Sales::report', ['filter' => 'permission:reports.daily_sales']);
     $routes->get('report/items', 'Reports\Sales::saleItemsReport', ['filter' => 'permission:reports.sale_items']);
+    $routes->get('returns-report', 'Reports\Sales::salesReturnReport', ['filter' => 'permission:reports.daily_sales']);
     $routes->get('product-report', 'Reports\Sales::productReport', ['filter' => 'permission:reports.product_sales']);
     $routes->get('customer-report', 'Reports\Sales::customerReport', ['filter' => 'permission:reports.customer_sales']);
     $routes->get('gift-issued-report', 'Reports\Sales::giftIssuedReport', ['filter' => 'permission:reports.customer_sales']);

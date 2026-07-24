@@ -353,6 +353,9 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                                 <a href="<?= site_url('sales/report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                                     <i class="fas fa-calendar-day mr-2"></i> <?= lang('Navigation.daily_sales') ?>
                                                                 </a>
+                                                                <a href="<?= site_url('sales/returns-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                                    <i class="fas fa-undo-alt mr-2"></i> <?= lang('Navigation.sales_returns_report') ?>
+                                                                </a>
                                                             <?php endif; ?>
                                                             <?php if (can('reports.product_sales')): ?>
                                                                 <a href="<?= site_url('sales/product-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">

@@ -796,6 +796,7 @@ class Sales extends BaseController
 
         $storeId = session('store_id');
         $employeeId = $this->request->getGet('employee_id');
+        $paymentType = $this->request->getGet('payment_type');
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
@@ -805,11 +806,15 @@ class Sales extends BaseController
             $to = $temp;
         }
 
+        $allowedTypes = ['cash', 'credit'];
         $salesBuilder = $salesModel->forStore($storeId)
             ->where('created_at >=', $from . ' 00:00:00')
             ->where('created_at <=', $to . ' 23:59:59');
         if (!empty($employeeId)) {
             $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        if (!empty($paymentType) && in_array($paymentType, $allowedTypes, true)) {
+            $salesBuilder->where('payment_type', $paymentType);
         }
         $sales = $salesBuilder->orderBy('created_at', 'DESC')->findAll();
 
@@ -836,6 +841,7 @@ class Sales extends BaseController
             'to' => $to,
             'employees' => $employees,
             'employee_id' => $employeeId,
+            'payment_type' => $paymentType,
         ]);
     }
 
@@ -896,6 +902,7 @@ class Sales extends BaseController
         $salesModel = new \App\Models\M_sales();
         $storeId = session('store_id');
         $employeeId = $this->request->getGet('employee_id');
+        $paymentType = $this->request->getGet('payment_type');
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
@@ -905,11 +912,15 @@ class Sales extends BaseController
             $to = $temp;
         }
 
+        $allowedTypes = ['cash', 'credit'];
         $salesBuilder = $salesModel->forStore($storeId)
             ->where('created_at >=', $from . ' 00:00:00')
             ->where('created_at <=', $to . ' 23:59:59');
         if (!empty($employeeId)) {
             $salesBuilder->where('employee_id', (int)$employeeId);
+        }
+        if (!empty($paymentType) && in_array($paymentType, $allowedTypes, true)) {
+            $salesBuilder->where('payment_type', $paymentType);
         }
         $sales = $salesBuilder->orderBy('created_at', 'DESC')->findAll();
 
@@ -973,6 +984,58 @@ class Sales extends BaseController
             'to' => $to,
             'employees' => $employees,
             'employee_id' => $employeeId,
+            'payment_type' => $paymentType,
+        ]);
+    }
+
+    public function salesReturnReport()
+    {
+        $db = \Config\Database::connect();
+        $storeId = session('store_id');
+        $employeeId = $this->request->getGet('employee_id');
+        $dateParam = $this->request->getGet('date');
+        $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
+        $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
+        if ($from > $to) {
+            [$from, $to] = [$to, $from];
+        }
+
+        $builder = $db->table('pos_sales_returns r')
+            ->select('r.id, r.sale_id, r.product_id, r.quantity, r.return_amount, r.reason, r.created_at,
+                      s.invoice_no, s.employee_id,
+                      c.name AS customer_name,
+                      p.name AS product_name, p.code AS product_code')
+            ->join('pos_sales s', 's.id = r.sale_id', 'left')
+            ->join('pos_customers c', 'c.id = s.customer_id', 'left')
+            ->join('pos_products p', 'p.id = r.product_id', 'left')
+            ->where('r.created_at >=', $from . ' 00:00:00')
+            ->where('r.created_at <=', $to . ' 23:59:59')
+            ->where('r.store_id', $storeId);
+
+        if (!empty($employeeId)) {
+            $builder->where('s.employee_id', (int)$employeeId);
+        }
+
+        $returns = $builder->orderBy('r.created_at', 'DESC')->get()->getResultArray();
+
+        $totQty = 0;
+        $totAmount = 0;
+        foreach ($returns as $row) {
+            $totQty += (float)$row['quantity'];
+            $totAmount += (float)$row['return_amount'];
+        }
+
+        $employees = (new \App\Models\EmployeesModel())->forStore($storeId)->orderBy('name', 'ASC')->findAll();
+
+        return view('sales/reports/return_sales_report', [
+            'title'       => lang('Reports.return_sales_report'),
+            'returns'     => $returns,
+            'from'        => $from,
+            'to'          => $to,
+            'employees'   => $employees,
+            'employee_id' => $employeeId,
+            'totQty'      => $totQty,
+            'totAmount'   => $totAmount,
         ]);
     }
 

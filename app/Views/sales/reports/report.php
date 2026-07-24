@@ -4,6 +4,8 @@
 // Normalize incoming variables for backward compatibility
 $from = isset($from) ? $from : (isset($date) ? $date : date('Y-m-d'));
 $to = isset($to) ? $to : (isset($date) ? $date : date('Y-m-d'));
+$payment_method = isset($payment_method) ? $payment_method : '';
+$payment_type = isset($payment_type) ? $payment_type : '';
 
 // Compute quick aggregates locally for display
 $currency = session()->get('currency_symbol') ?? '$';
@@ -149,17 +151,25 @@ function money_fmt($v)
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= lang('Reports.payment_type') ?></label>
+                    <select name="payment_type" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
+                        <option value=""><?= lang('Reports.all_types') ?></option>
+                        <option value="cash" <?= $payment_type === 'cash' ? 'selected' : '' ?>><?= lang('Sales.cash') ?></option>
+                        <option value="credit" <?= $payment_type === 'credit' ? 'selected' : '' ?>><?= lang('Sales.credit') ?></option>
+                    </select>
+                </div>
+                <div class="md:col-span-3 flex flex-col sm:flex-row gap-2 md:justify-end">
                     <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 shadow-soft">
                         <i class="fas fa-filter mr-2"></i> <?= lang('Reports.apply') ?>
                     </button>
                     <?php if (can('reports.sale_items')): ?>
-                        <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-indigo-600 text-sm text-white hover:bg-indigo-700 shadow-soft">
+                        <a href="<?= site_url('sales/report/items?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '') . (!empty($payment_type) ? ('&payment_type=' . urlencode($payment_type)) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-indigo-600 text-sm text-white hover:bg-indigo-700 shadow-soft">
                             <i class="fas fa-list mr-2"></i> <?= lang('Reports.items') ?>
                         </a>
                     <?php endif; ?>
                     <?php if (can('reports.daily_sales')): ?>
-                        <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '')) ?>" target="_blank" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800 shadow-soft">
+                        <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '') . (!empty($payment_type) ? ('&payment_type=' . urlencode($payment_type)) : '')) ?>" target="_blank" rel="noopener noreferrer" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800 shadow-soft">
                             <i class="fas fa-print mr-2"></i> <?= lang('Reports.print_sales_report') ?>
                         </a>
                     <?php endif; ?>
@@ -238,7 +248,7 @@ function money_fmt($v)
                             <td class="px-6 py-3 text-sm text-gray-900">#<?= (int)$sale['id'] ?></td>
                             <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['invoice_no']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['customer_name']) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['payment_method']) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['payment_type']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-500"><?= esc($sale['created_at']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($sale['total'] ?? 0) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($sale['total_discount'] ?? 0) ?></td>
@@ -249,7 +259,7 @@ function money_fmt($v)
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="4" class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
+                        <td colspan="5" class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></td>

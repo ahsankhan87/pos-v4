@@ -4,6 +4,8 @@
 $currency = session()->get('currency_symbol') ?? '$';
 $from = isset($from) ? $from : date('Y-m-d');
 $to = isset($to) ? $to : date('Y-m-d');
+$payment_method = isset($payment_method) ? $payment_method : '';
+$payment_type = isset($payment_type) ? $payment_type : '';
 function mf($v)
 {
     return number_format((float)$v, 2);
@@ -58,9 +60,17 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="md:col-span-5 flex flex-col sm:flex-row gap-2 md:justify-end">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-1"><?= esc(lang('Reports.payment_type')) ?></label>
+                    <select name="payment_type" class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2 text-sm">
+                        <option value=""><?= esc(lang('Reports.all_types')) ?></option>
+                        <option value="cash" <?= $payment_type === 'cash' ? 'selected' : '' ?>><?= esc(lang('Sales.cash')) ?></option>
+                        <option value="credit" <?= $payment_type === 'credit' ? 'selected' : '' ?>><?= esc(lang('Sales.credit')) ?></option>
+                    </select>
+                </div>
+                <div class="md:col-span-3 flex flex-col sm:flex-row gap-2 md:justify-end">
                     <button type="submit" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-700 shadow-soft"><i class="fas fa-filter mr-2"></i> <?= esc(lang('Reports.apply')) ?></button>
-                    <a href="<?= site_url('sales/report?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? '&employee_id=' . urlencode($employee_id) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-200 text-sm text-gray-800 hover:bg-gray-300 shadow-soft"><i class="fas fa-arrow-left mr-2"></i> <?= esc(lang('Reports.back')) ?></a>
+                    <a href="<?= site_url('sales/report?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? '&employee_id=' . urlencode($employee_id) : '') . (!empty($payment_type) ? '&payment_type=' . urlencode($payment_type) : '')) ?>" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-200 text-sm text-gray-800 hover:bg-gray-300 shadow-soft"><i class="fas fa-arrow-left mr-2"></i> <?= esc(lang('Reports.back')) ?></a>
                 </div>
                 <div class="md:col-span-12 pt-0.5 flex flex-wrap gap-2 text-xs">
                     <button type="button" data-range="today" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= esc(lang('Reports.today')) ?></button>
@@ -69,28 +79,6 @@ foreach (($saleItemsBySale ?? []) as $sid => $items) {
                     <button type="button" data-range="month" class="px-2.5 py-1 rounded-full border border-gray-300 hover:border-blue-500 hover:text-blue-600"><?= esc(lang('Reports.this_month')) ?></button>
                 </div>
             </form>
-        </div>
-        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
-                <div class="text-xs text-indigo-700"><?= esc(lang('Reports.lines')) ?></div>
-                <div class="mt-1 text-lg font-semibold text-indigo-900"><?= number_format($totQty, 2) ?></div>
-            </div>
-            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                <div class="text-xs text-blue-700"><?= esc(lang('Reports.gross')) ?></div>
-                <div class="mt-1 text-lg font-semibold text-blue-900"><?= esc($currency) . ' ' . mf($totGross) ?></div>
-            </div>
-            <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                <div class="text-xs text-amber-700"><?= esc(lang('Reports.discount')) ?></div>
-                <div class="mt-1 text-lg font-semibold text-amber-900">-<?= esc($currency) . ' ' . mf($totDiscount) ?></div>
-            </div>
-            <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                <div class="text-xs text-emerald-700"><?= esc(lang('Reports.net')) ?></div>
-                <div class="mt-1 text-lg font-semibold text-emerald-900"><?= esc($currency) . ' ' . mf($totNet) ?></div>
-            </div>
-            <div class="bg-rose-50 border border-rose-100 rounded-lg p-4">
-                <div class="text-xs text-rose-700"><?= esc(lang('Reports.cost')) ?></div>
-                <div class="mt-1 text-lg font-semibold text-rose-900"><?= esc($currency) . ' ' . mf($totCost) ?></div>
-            </div>
         </div>
     </div>
 

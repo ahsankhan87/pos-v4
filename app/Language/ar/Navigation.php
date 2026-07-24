@@ -26,6 +26,7 @@ return [
     'sales_summary' => 'ملخص المبيعات',
     'sales_analytics' => 'تحليلات المبيعات',
     'daily_sales' => 'المبيعات اليومية',
+    'sales_returns_report' => 'مرتجعات المبيعات',
     'product_sales' => 'مبيعات المنتجات',
     'customer_sales' => 'مبيعات العملاء',
     'gift_issued_report' => 'تقرير الهدايا المصدرة',

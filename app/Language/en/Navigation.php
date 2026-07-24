@@ -26,6 +26,7 @@ return [
     'sales_summary' => 'Sales Summary',
     'sales_analytics' => 'Sales Analytics',
     'daily_sales' => 'Daily Sales',
+    'sales_returns_report' => 'Sales Returns',
     'product_sales' => 'Product Sales',
     'customer_sales' => 'Customer Sales',
     'gift_issued_report' => 'Gift Issued Report',
