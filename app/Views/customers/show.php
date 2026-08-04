@@ -1,5 +1,7 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
+<?php $isZatcaEnabled = !empty($isZatcaEnabled); ?>
+<?php $storeProfile = is_array($storeProfile ?? null) ? $storeProfile : []; ?>
 <div class="min-h-screen bg-slate-100">
     <!-- Top Bar -->
     <div class="bg-white shadow-sm border-b border-gray-200">
@@ -39,6 +41,12 @@
                             <div class="text-xs text-gray-500"><?= lang('Customers.phone') ?></div>
                             <div class="font-semibold"><?= esc($customer['phone']) ?></div>
                         </div>
+                        <?php if ($isZatcaEnabled): ?>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.vat_number') ?></div>
+                                <div class="font-semibold"><?= esc($customer['vat_number'] ?? '') ?: '-' ?></div>
+                            </div>
+                        <?php endif; ?>
                         <div>
                             <div class="text-xs text-gray-500"><?= lang('Customers.area') ?></div>
                             <div class="font-semibold">
@@ -66,6 +74,96 @@
                     </div>
                 </div>
             </div>
+
+            <?php if ($isZatcaEnabled): ?>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-file-invoice text-emerald-600"></i> <?= lang('Customers.zatca_customer_profile') ?></h3>
+                    </div>
+                    <div class="p-4 text-sm text-gray-800">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_registration_name') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_registration_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_cr_number') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_cr_number'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_street_name') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_street_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_building_number') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_building_number'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_city_subdivision_name') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_city_subdivision_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_city_name') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_city_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_postal_code') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_postal_code'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_country_code') ?></div>
+                                <div class="font-semibold"><?= esc($customer['zatca_country_code'] ?? 'SA') ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="fas fa-building text-blue-600"></i> <?= lang('Customers.zatca_company_profile') ?></h3>
+                    </div>
+                    <div class="p-4 text-sm text-gray-800">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.company_name') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.vat_number') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_seller_vat_number'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_registration_name') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_seller_legal_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_street_name') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_street_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_building_number') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_building_number'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_city_subdivision_name') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_city_subdivision_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_city_name') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_city_name'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_postal_code') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_postal_code'] ?? '') ?: '-' ?></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500"><?= lang('Customers.zatca_country_code') ?></div>
+                                <div class="font-semibold"><?= esc($storeProfile['zatca_country_code'] ?? 'SA') ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-gray-200">

@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\M_customers;
+use App\Models\SettingsModel;
+use App\Models\StoreModel;
 
 class Customers extends BaseController
 {
@@ -157,12 +159,23 @@ class Customers extends BaseController
     public function show($id = null)
     {
         $model = new M_customers();
+        $settingsModel = new SettingsModel();
+        $storeModel = new StoreModel();
+
         $data['customer'] = $model->forStore()
             ->find($id);
         $data['title'] = 'Customer Details';
         if (!$data['customer']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Customer not found');
         }
+
+        $settings = $settingsModel->getZatcaSettings();
+        $isZatcaEnabled = !empty($settings['einvoicing_enabled'])
+            && strtoupper((string) ($settings['einvoicing_country'] ?? 'SA')) === 'SA';
+
+        $data['isZatcaEnabled'] = $isZatcaEnabled;
+        $data['storeProfile'] = $storeModel->find((int) (session('store_id') ?? 0)) ?? [];
+
         return view('customers/show', $data);
     }
 
@@ -186,8 +199,17 @@ class Customers extends BaseController
             'name' => 'required',
             'email' => 'permit_empty|valid_email',
             'phone' => 'permit_empty',
+            'vat_number' => 'permit_empty|regex_match[/^\d{15}$/]',
             'area' => 'permit_empty',
             'address' => 'permit_empty',
+            'zatca_street_name' => 'permit_empty|max_length[255]',
+            'zatca_building_number' => 'permit_empty|max_length[20]',
+            'zatca_city_subdivision_name' => 'permit_empty|max_length[255]',
+            'zatca_city_name' => 'permit_empty|max_length[255]',
+            'zatca_postal_code' => 'permit_empty|max_length[20]',
+            'zatca_country_code' => 'permit_empty|alpha|max_length[2]',
+            'zatca_registration_name' => 'permit_empty|max_length[255]',
+            'zatca_cr_number' => 'permit_empty|max_length[100]',
             'opening_balance' => 'permit_empty|decimal',
             'credit_limit' => 'permit_empty|decimal',
             'store_id' => 'permit_empty',
@@ -205,8 +227,17 @@ class Customers extends BaseController
             'name' => $post['name'],
             'email' => $post['email'],
             'phone' => $post['phone'],
+            'vat_number' => trim((string) ($post['vat_number'] ?? '')),
             'area' => $post['area'] ?? '',
             'address' => $post['address'],
+            'zatca_street_name' => trim((string) ($post['zatca_street_name'] ?? '')),
+            'zatca_building_number' => trim((string) ($post['zatca_building_number'] ?? '')),
+            'zatca_city_subdivision_name' => trim((string) ($post['zatca_city_subdivision_name'] ?? '')),
+            'zatca_city_name' => trim((string) ($post['zatca_city_name'] ?? '')),
+            'zatca_postal_code' => trim((string) ($post['zatca_postal_code'] ?? '')),
+            'zatca_country_code' => strtoupper(trim((string) ($post['zatca_country_code'] ?? 'SA'))),
+            'zatca_registration_name' => trim((string) ($post['zatca_registration_name'] ?? '')),
+            'zatca_cr_number' => trim((string) ($post['zatca_cr_number'] ?? '')),
             'opening_balance' => $post['opening_balance'] ?? 0.00,
             'credit_limit' => $post['credit_limit'] ?? 0.00,
             'created_at' => date('Y-m-d H:i:s'), // Add created_at timestamp
@@ -231,7 +262,7 @@ class Customers extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Customer not found');
         }
         $model = new M_customers();
-        $data['customer'] = $model->find($id);
+        $data['customer'] = $model->forStore()->find($id);
         $data['title'] = 'Edit Customer';
         if (!$data['customer']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Customer not found');
@@ -242,8 +273,55 @@ class Customers extends BaseController
     public function update($id = null)
     {
         $model = new M_customers();
-        $data = $this->request->getPost();
-        $model->update($id, $data);
+        $existing = $model->forStore()->find($id);
+        if (!$existing) {
+            return redirect()->to(site_url('customers'))->with('error', 'Customer not found');
+        }
+
+        $rules = [
+            'name' => 'required',
+            'email' => 'permit_empty|valid_email',
+            'phone' => 'permit_empty',
+            'vat_number' => 'permit_empty|regex_match[/^\d{15}$/]',
+            'area' => 'permit_empty',
+            'address' => 'permit_empty',
+            'zatca_street_name' => 'permit_empty|max_length[255]',
+            'zatca_building_number' => 'permit_empty|max_length[20]',
+            'zatca_city_subdivision_name' => 'permit_empty|max_length[255]',
+            'zatca_city_name' => 'permit_empty|max_length[255]',
+            'zatca_postal_code' => 'permit_empty|max_length[20]',
+            'zatca_country_code' => 'permit_empty|alpha|max_length[2]',
+            'zatca_registration_name' => 'permit_empty|max_length[255]',
+            'zatca_cr_number' => 'permit_empty|max_length[100]',
+            'opening_balance' => 'permit_empty|decimal',
+            'credit_limit' => 'permit_empty|decimal',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $post = $this->validator->getValidated();
+        $data = [
+            'name' => trim((string) ($post['name'] ?? '')),
+            'email' => trim((string) ($post['email'] ?? '')),
+            'phone' => trim((string) ($post['phone'] ?? '')),
+            'vat_number' => trim((string) ($post['vat_number'] ?? '')),
+            'area' => trim((string) ($post['area'] ?? '')),
+            'address' => trim((string) ($post['address'] ?? '')),
+            'zatca_street_name' => trim((string) ($post['zatca_street_name'] ?? '')),
+            'zatca_building_number' => trim((string) ($post['zatca_building_number'] ?? '')),
+            'zatca_city_subdivision_name' => trim((string) ($post['zatca_city_subdivision_name'] ?? '')),
+            'zatca_city_name' => trim((string) ($post['zatca_city_name'] ?? '')),
+            'zatca_postal_code' => trim((string) ($post['zatca_postal_code'] ?? '')),
+            'zatca_country_code' => strtoupper(trim((string) ($post['zatca_country_code'] ?? 'SA'))),
+            'zatca_registration_name' => trim((string) ($post['zatca_registration_name'] ?? '')),
+            'zatca_cr_number' => trim((string) ($post['zatca_cr_number'] ?? '')),
+            'opening_balance' => (float) ($post['opening_balance'] ?? 0),
+            'credit_limit' => (float) ($post['credit_limit'] ?? 0),
+        ];
+
+        $model->forStore()->update($id, $data);
         // Log the action
         logAction('customer_updated', 'Customer ID: ' . $id . ', Name: ' . $data['name']);
         // Redirect to the customers list after update.

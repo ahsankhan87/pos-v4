@@ -117,6 +117,14 @@ class Stores extends BaseController
             'name' => 'required|min_length[3]|max_length[200]',
             'address' => 'required|min_length[3]|max_length[255]',
             'phone' => 'required|min_length[5]|max_length[200]',
+            'zatca_seller_vat_number' => 'permit_empty|regex_match[/^\d{15}$/]',
+            'zatca_seller_legal_name' => 'permit_empty|max_length[191]',
+            'zatca_street_name' => 'permit_empty|max_length[255]',
+            'zatca_building_number' => 'permit_empty|regex_match[/^\d{4}$/]',
+            'zatca_city_subdivision_name' => 'permit_empty|max_length[255]',
+            'zatca_city_name' => 'permit_empty|max_length[100]',
+            'zatca_postal_code' => 'permit_empty|max_length[20]',
+            'zatca_country_code' => 'permit_empty|exact_length[2]',
             'is_active' => 'permit_empty|in_list[0,1]',
             'logo' => 'permit_empty|is_image[logo]|max_size[logo,2048]', // 2MB max size
             'currency_code' => 'permit_empty',
@@ -147,6 +155,14 @@ class Stores extends BaseController
             'currency_symbol' => $this->request->getPost('currency_symbol'),
             'timezone' => $this->request->getPost('timezone'),
             'business_type' => $this->normalizeBusinessType((string) $this->request->getPost('business_type')),
+            'zatca_seller_vat_number' => trim((string) $this->request->getPost('zatca_seller_vat_number')),
+            'zatca_seller_legal_name' => trim((string) $this->request->getPost('zatca_seller_legal_name')),
+            'zatca_street_name' => trim((string) $this->request->getPost('zatca_street_name')),
+            'zatca_building_number' => trim((string) $this->request->getPost('zatca_building_number')),
+            'zatca_city_subdivision_name' => trim((string) $this->request->getPost('zatca_city_subdivision_name')),
+            'zatca_city_name' => trim((string) $this->request->getPost('zatca_city_name')),
+            'zatca_postal_code' => trim((string) $this->request->getPost('zatca_postal_code')),
+            'zatca_country_code' => strtoupper(trim((string) ($this->request->getPost('zatca_country_code') ?: 'SA'))),
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -198,6 +214,14 @@ class Stores extends BaseController
             'name' => 'required|min_length[3]|max_length[200]',
             'address' => 'required|min_length[3]|max_length[255]',
             'phone' => 'required|min_length[5]|max_length[200]',
+            'zatca_seller_vat_number' => 'permit_empty|regex_match[/^\d{15}$/]',
+            'zatca_seller_legal_name' => 'permit_empty|max_length[191]',
+            'zatca_street_name' => 'permit_empty|max_length[255]',
+            'zatca_building_number' => 'permit_empty|regex_match[/^\d{4}$/]',
+            'zatca_city_subdivision_name' => 'permit_empty|max_length[255]',
+            'zatca_city_name' => 'permit_empty|max_length[100]',
+            'zatca_postal_code' => 'permit_empty|max_length[20]',
+            'zatca_country_code' => 'permit_empty|exact_length[2]',
             'is_active' => 'permit_empty|in_list[0,1]',
             'logo' => 'permit_empty|is_image[logo]|max_size[logo,2048]', // 2MB max size
             'currency_code' => 'permit_empty',
@@ -227,6 +251,14 @@ class Stores extends BaseController
             'currency_symbol' => $this->request->getPost('currency_symbol'),
             'timezone' => $this->request->getPost('timezone'),
             'business_type' => $this->normalizeBusinessType((string) $this->request->getPost('business_type')),
+            'zatca_seller_vat_number' => trim((string) $this->request->getPost('zatca_seller_vat_number')),
+            'zatca_seller_legal_name' => trim((string) $this->request->getPost('zatca_seller_legal_name')),
+            'zatca_street_name' => trim((string) $this->request->getPost('zatca_street_name')),
+            'zatca_building_number' => trim((string) $this->request->getPost('zatca_building_number')),
+            'zatca_city_subdivision_name' => trim((string) $this->request->getPost('zatca_city_subdivision_name')),
+            'zatca_city_name' => trim((string) $this->request->getPost('zatca_city_name')),
+            'zatca_postal_code' => trim((string) $this->request->getPost('zatca_postal_code')),
+            'zatca_country_code' => strtoupper(trim((string) ($this->request->getPost('zatca_country_code') ?: 'SA'))),
             'updated_at' => date('Y-m-d H:i:s')
         ];
 

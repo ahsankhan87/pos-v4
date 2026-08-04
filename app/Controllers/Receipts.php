@@ -11,6 +11,7 @@ class Receipts extends BaseController
 {
     protected $templateModel;
     protected $websiteQrPdfMarker = '__WEBSITE_QR_PDF__';
+    protected $zatcaQrPdfMarker = '__ZATCA_QR_PDF__';
 
     // QR rendering tuning (helps thermal printers + phone cameras scan reliably)
     protected $websiteQrQuietZoneModules = 4; // standard quiet zone
@@ -94,8 +95,16 @@ class Receipts extends BaseController
 
         $websiteUrl = $this->normalizeWebsiteUrl((string)($loggedInStore['website_url'] ?? ($loggedInStore['website'] ?? env('COMPANY_WEBSITE', ''))));
         $isPdfOutput = $this->request->getGet('output') === 'pdf';
+        $downloadPdf = $this->request->getGet('download') === '1';
         $websiteQrReplacement = $websiteUrl !== ''
             ? ($isPdfOutput ? $this->websiteQrPdfMarker : $this->buildWebsiteQrHtml($websiteUrl))
+            : '';
+        $zatcaQrCode = trim((string) ($sale['zatca_qr_code'] ?? ''));
+        $zatcaQrReplacement = $zatcaQrCode !== ''
+            ? ($isPdfOutput ? $this->zatcaQrPdfMarker : $this->buildZatcaQrHtml($zatcaQrCode))
+            : '';
+        $zatcaLabelReplacement = $zatcaQrCode !== ''
+            ? '<div style="font-size:10px;font-weight:bold;text-align:center;margin-top:4px;">ZATCA Compliant Invoice</div>'
             : '';
 
         $replacements = [
@@ -107,6 +116,8 @@ class Receipts extends BaseController
             '{{store_logo_img}}' => $logoUrl ? ('<img src="' . $logoUrl . '" alt="Logo" style="height:48px; max-width:220px; object-fit:contain;">') : '',
             '{{company_website}}' => $websiteUrl,
             '{{website_qr}}' => $websiteQrReplacement,
+            '{{zatca_qr}}' => $zatcaQrReplacement,
+            '{{zatca_compliance_label}}' => $zatcaLabelReplacement,
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
@@ -151,9 +162,23 @@ class Receipts extends BaseController
             }
         }
 
+        if ($zatcaQrCode !== '') {
+            $zatcaBlock = '<div style="margin-top:10px;text-align:center;">'
+                . $zatcaLabelReplacement
+                . $this->buildZatcaQrHtml($zatcaQrCode)
+                . '</div>';
+            if (strpos($receiptHtml, '{{zatca_qr}}') === false && strpos($receiptHtml, '{{zatca_compliance_label}}') === false) {
+                if (stripos($receiptHtml, '</body>') !== false) {
+                    $receiptHtml = preg_replace('/<\/body>/i', $zatcaBlock . '</body>', $receiptHtml, 1);
+                } else {
+                    $receiptHtml .= $zatcaBlock;
+                }
+            }
+        }
+
         // Return as PDF or wrapped HTML view
         if ($isPdfOutput) {
-            return $this->generatePdf($receiptHtml, $websiteUrl);
+            return $this->generatePdf($receiptHtml, $websiteUrl, $zatcaQrCode, $downloadPdf);
         }
 
         // Wrap inside a view with actions (back, print, pdf)
@@ -235,6 +260,11 @@ class Receipts extends BaseController
         $websiteUrl = $this->normalizeWebsiteUrl((string)($loggedInStore['website_url'] ?? ($loggedInStore['website'] ?? env('COMPANY_WEBSITE', ''))));
         // WhatsApp always generates a PDF
         $websiteQrReplacement = $websiteUrl !== '' ? $this->websiteQrPdfMarker : '';
+        $zatcaQrCode = trim((string) ($sale['zatca_qr_code'] ?? ''));
+        $zatcaQrReplacement = $zatcaQrCode !== '' ? $this->zatcaQrPdfMarker : '';
+        $zatcaLabelReplacement = $zatcaQrCode !== ''
+            ? '<div style="font-size:10px;font-weight:bold;text-align:center;margin-top:4px;">ZATCA Compliant Invoice</div>'
+            : '';
 
         $replacements = [
             '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
@@ -245,6 +275,8 @@ class Receipts extends BaseController
             '{{store_logo_img}}' => $logoUrl ? ('<img src="' . $logoUrl . '" alt="Logo" style="height:48px; max-width:220px; object-fit:contain;">') : '',
             '{{company_website}}' => $websiteUrl,
             '{{website_qr}}' => $websiteQrReplacement,
+            '{{zatca_qr}}' => $zatcaQrReplacement,
+            '{{zatca_compliance_label}}' => $zatcaLabelReplacement,
             '{{receipt_number}}' => $sale['invoice_no'],
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
@@ -286,6 +318,20 @@ class Receipts extends BaseController
             }
         }
 
+        if ($zatcaQrCode !== '') {
+            $zatcaBlock = '<div style="margin-top:10px;text-align:center;">'
+                . $zatcaLabelReplacement
+                . $this->buildZatcaQrHtml($zatcaQrCode)
+                . '</div>';
+            if (strpos($receiptHtml, '{{zatca_qr}}') === false && strpos($receiptHtml, '{{zatca_compliance_label}}') === false) {
+                if (stripos($receiptHtml, '</body>') !== false) {
+                    $receiptHtml = preg_replace('/<\/body>/i', $zatcaBlock . '</body>', $receiptHtml, 1);
+                } else {
+                    $receiptHtml .= $zatcaBlock;
+                }
+            }
+        }
+
         // Ensure output directory exists: public/uploads/receipts
         $saveDir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'receipts';
         if (!is_dir($saveDir)) {
@@ -298,7 +344,7 @@ class Receipts extends BaseController
         $savePath = $saveDir . DIRECTORY_SEPARATOR . $filename;
 
         // Generate PDF to file
-        $ok = $this->generatePdfToFile($receiptHtml, $savePath, $websiteUrl);
+        $ok = $this->generatePdfToFile($receiptHtml, $savePath, $websiteUrl, $zatcaQrCode);
         if (!$ok) {
             return $this->response->setJSON(['success' => false, 'error' => 'Failed to generate PDF'])->setStatusCode(500);
         }
@@ -408,7 +454,7 @@ class Receipts extends BaseController
         return $cartons . ' ctns';
     }
 
-    protected function generatePdf($html, string $websiteUrl = '')
+    protected function generatePdf($html, string $websiteUrl = '', string $zatcaQrCode = '', bool $download = false)
     {
         // For manual installation without composer, you can use direct TCPDF download
         // Download TCPDF from https://tcpdf.org/ and place in app/ThirdParty/tcpdf
@@ -435,6 +481,9 @@ class Receipts extends BaseController
         if ($websiteUrl !== '' && strpos($html, $this->websiteQrPdfMarker) !== false) {
             $html = str_replace($this->websiteQrPdfMarker, $this->buildWebsiteQrTcpdfTag($pdf, $websiteUrl), $html);
         }
+        if (strpos($html, $this->zatcaQrPdfMarker) !== false) {
+            $html = str_replace($this->zatcaQrPdfMarker, $this->buildZatcaQrTcpdfTag($pdf, $zatcaQrCode), $html);
+        }
 
         // Minimal stylesheet to improve readability in PDF
         $style = '<style>
@@ -448,14 +497,14 @@ class Receipts extends BaseController
         $pdf->AddPage();
         $pdf->writeHTML($style . $html, true, false, true, false, '');
 
-        return $pdf->Output('receipt.pdf', 'I');
+        return $pdf->Output('receipt.pdf', $download ? 'D' : 'I');
     }
 
     /**
      * Generate and save the receipt PDF to a file path.
      * Returns true on success.
      */
-    protected function generatePdfToFile($html, $filePath, string $websiteUrl = '')
+    protected function generatePdfToFile($html, $filePath, string $websiteUrl = '', string $zatcaQrCode = '')
     {
         if (!defined('K_TCPDF_CALLS_IN_HTML')) {
             define('K_TCPDF_CALLS_IN_HTML', true);
@@ -476,6 +525,9 @@ class Receipts extends BaseController
 
         if ($websiteUrl !== '' && strpos($html, $this->websiteQrPdfMarker) !== false) {
             $html = str_replace($this->websiteQrPdfMarker, $this->buildWebsiteQrTcpdfTag($pdf, $websiteUrl), $html);
+        }
+        if (strpos($html, $this->zatcaQrPdfMarker) !== false) {
+            $html = str_replace($this->zatcaQrPdfMarker, $this->buildZatcaQrTcpdfTag($pdf, $zatcaQrCode), $html);
         }
 
         $style = '<style>
@@ -648,6 +700,134 @@ class Receipts extends BaseController
             return '';
         } catch (\Throwable $e) {
             log_message('warning', 'QR generation failed: {exception}', ['exception' => $e]);
+            return '';
+        }
+    }
+
+    protected function buildZatcaQrHtml(string $tlvBase64): string
+    {
+        $tlvBase64 = trim($tlvBase64);
+        if ($tlvBase64 === '') {
+            return '';
+        }
+
+        $qrMarkup = $this->buildZatcaQrInlineSvg($tlvBase64);
+        if ($qrMarkup === '') {
+            $dataUri = $this->buildZatcaQrDataUri($tlvBase64);
+            $qrMarkup = $dataUri !== ''
+                ? ('<img src="' . $dataUri . '" alt="ZATCA QR" style="width:74px; height:74px;">')
+                : '';
+        }
+
+        return '<div style="text-align:center; margin-top:6px;">' . $qrMarkup . '</div>';
+    }
+
+    protected function buildZatcaQrInlineSvg(string $payload): string
+    {
+        if ($payload === '') {
+            return '';
+        }
+
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf_barcodes_2d.php';
+        try {
+            $barcode = new \TCPDF2DBarcode($payload, 'QRCODE,H');
+            $arr = $barcode->getBarcodeArray();
+            if (empty($arr) || empty($arr['bcode']) || empty($arr['num_cols']) || empty($arr['num_rows'])) {
+                return '';
+            }
+
+            $cols = (int) $arr['num_cols'];
+            $rows = (int) $arr['num_rows'];
+            $quiet = (int) $this->websiteQrQuietZoneModules;
+
+            $totalCols = $cols + ($quiet * 2);
+            $totalRows = $rows + ($quiet * 2);
+            $module = (int) floor(((int) $this->websiteQrTargetPx) / max(1, $totalCols));
+            if ($module < 2) {
+                $module = 2;
+            }
+
+            $w = $totalCols * $module;
+            $h = $totalRows * $module;
+
+            $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $w . '" height="' . $h . '" viewBox="0 0 ' . $w . ' ' . $h . '"'
+                . ' style="width:' . $w . 'px;height:' . $h . 'px;image-rendering:pixelated;">';
+            $svg .= '<rect width="100%" height="100%" fill="#fff"/>';
+            $svg .= '<g fill="#000" stroke="none">';
+            for ($r = 0; $r < $rows; $r++) {
+                for ($c = 0; $c < $cols; $c++) {
+                    if ((int) $arr['bcode'][$r][$c] === 1) {
+                        $x = ($c + $quiet) * $module;
+                        $y = ($r + $quiet) * $module;
+                        $svg .= '<rect x="' . $x . '" y="' . $y . '" width="' . $module . '" height="' . $module . '"/>';
+                    }
+                }
+            }
+            $svg .= '</g></svg>';
+            return $svg;
+        } catch (\Throwable $e) {
+            log_message('warning', 'ZATCA QR SVG generation failed: {exception}', ['exception' => $e]);
+            return '';
+        }
+    }
+
+    protected function buildZatcaQrTcpdfTag(\TCPDF $pdf, string $payload): string
+    {
+        $payload = trim($payload);
+        if ($payload === '') {
+            return '';
+        }
+
+        $style = [
+            'border' => 0,
+            'padding' => 1,
+            'fgcolor' => [0, 0, 0],
+            'bgcolor' => false,
+        ];
+
+        $data = $pdf->serializeTCPDFtag('write2DBarcode', [
+            $payload,
+            'QRCODE,H',
+            null,
+            null,
+            28,
+            28,
+            $style,
+            'C',
+            false,
+        ]);
+
+        return '<div style="text-align:center; margin-top:6px;">'
+            . '<tcpdf data="' . htmlspecialchars($data, ENT_QUOTES, 'UTF-8') . '" />'
+            . '</div>';
+    }
+
+    protected function buildZatcaQrDataUri(string $payload): string
+    {
+        if ($payload === '') {
+            return '';
+        }
+
+        require_once APPPATH . 'Libraries/tcpdf/tcpdf_barcodes_2d.php';
+        try {
+            $barcode = new \TCPDF2DBarcode($payload, 'QRCODE,H');
+            $pngData = $barcode->getBarcodePngData(3, 3, [0, 0, 0]);
+
+            if (is_string($pngData) && $pngData !== '') {
+                return 'data:image/png;base64,' . base64_encode($pngData);
+            }
+
+            if (is_object($pngData) && class_exists('Imagick') && is_a($pngData, 'Imagick')) {
+                $pngData->setImageFormat('png');
+                $blob = $pngData->getImageBlob();
+                if (is_string($blob) && $blob !== '') {
+                    return 'data:image/png;base64,' . base64_encode($blob);
+                }
+            }
+
+            return '';
+        } catch (\Throwable $e) {
+            log_message('warning', 'ZATCA QR generation failed: {exception}', ['exception' => $e]);
             return '';
         }
     }

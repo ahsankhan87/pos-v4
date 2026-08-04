@@ -24,7 +24,14 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     // View
     $routes->get('/', 'Sales::index', ['filter' => 'permission:sales.view']);
     $routes->get('datatable', 'Sales::datatable', ['filter' => 'permission:sales.view']);
+    $routes->get('zatca-invoices', 'Sales::zatcaIndex', ['filter' => 'permission:sales.view']);
+    $routes->get('zatca-datatable', 'Sales::zatcaDatatable', ['filter' => 'permission:sales.view']);
     $routes->get('receipt/(:num)', 'Sales::receipt/$1', ['filter' => 'permission:sales.view']);
+    $routes->get('invoice-pdf/(:num)', 'Sales::downloadInvoicePdf/$1', ['filter' => 'permission:sales.view']);
+    $routes->get('invoice-xml/(:num)', 'Sales::downloadInvoiceXml/$1', ['filter' => 'permission:sales.view']);
+    $routes->post('sign-zatca/(:num)', 'Sales::signZatca/$1', ['filter' => 'permission:sales.update']);
+    $routes->post('resend-zatca/(:num)', 'Sales::resendZatca/$1', ['filter' => 'permission:sales.update']);
+    $routes->post('compliance-check/(:num)', 'Sales::complianceCheck/$1', ['filter' => 'permission:sales.update']);
     $routes->get('payment-history/(:num)', 'Sales::paymentHistory/$1', ['filter' => 'permission:sales.view']);
     $routes->get('drafts', 'Sales::drafts', ['filter' => 'permission:sales.view']);
 
@@ -230,6 +237,16 @@ $routes->group('settings', ['filter' => 'auth'], function ($routes) {
     $routes->get('restore', 'Settings::restoreDatabase', ['filter' => 'permission:settings.update']);
 });
 
+// ZATCA E-Invoicing Onboarding (Phase 3)
+$routes->group('zatca', ['filter' => 'auth'], function ($routes) {
+    $routes->get('onboarding', 'ZatcaOnboarding::index', ['filter' => 'permission:settings.update']);
+    $routes->post('onboarding/generate-csr', 'ZatcaOnboarding::generateCsr', ['filter' => 'permission:settings.update']);
+    $routes->post('onboarding/request-compliance-csid', 'ZatcaOnboarding::requestComplianceCsid', ['filter' => 'permission:settings.update']);
+    $routes->post('onboarding/run-compliance-checks', 'ZatcaOnboarding::runComplianceChecks', ['filter' => 'permission:settings.update']);
+    $routes->post('onboarding/request-production-csid', 'ZatcaOnboarding::requestProductionCsid', ['filter' => 'permission:settings.update']);
+    $routes->post('onboarding/import-certificate', 'ZatcaOnboarding::importCertificate', ['filter' => 'permission:settings.update']);
+});
+
 $routes->get('backup', 'Backup::index');
 $routes->get('backup/download', 'Backup::download');
 
@@ -281,8 +298,8 @@ $routes->group('reports/inventory', ['filter' => 'auth'], function ($routes) {
 $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:receipts.view,feature:whatsapp']);
 
 $routes->group('receipts', ['filter' => 'auth'], function ($routes) {
-    $routes->get('generate/(:num)', 'Receipts::generate/$1', ['filter' => 'permission:receipts.view']);
-    $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:receipts.view']);
+    $routes->get('generate/(:num)', 'Receipts::generate/$1', ['filter' => 'permission:sales.view']);
+    $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:sales.view']);
     $routes->get('restore', 'Settings::restoreDatabase', ['filter' => 'permission:settings.update,feature:backups']);
     // Template Management
     $routes->get('templates', 'Receipts::templates', ['filter' => 'permission:settings.view']);

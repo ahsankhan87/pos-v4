@@ -33,6 +33,16 @@ class M_sales extends Model
         'payment_status',
         'payment_type',
         'due_amount',
+        'zatca_invoice_type',
+        'zatca_uuid',
+        'zatca_invoice_hash',
+        'zatca_previous_invoice_hash',
+        'zatca_icv',
+        'zatca_qr_code',
+        'zatca_xml_path',
+        'zatca_status',
+        'zatca_response',
+        'zatca_submitted_at',
     ];
 
     public function getSaleData($saleId)

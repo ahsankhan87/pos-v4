@@ -23,6 +23,14 @@ class StoreModel extends Model
         'timezone',
         'website_url',
         'business_type',
+        'zatca_seller_vat_number',
+        'zatca_seller_legal_name',
+        'zatca_street_name',
+        'zatca_building_number',
+        'zatca_city_subdivision_name',
+        'zatca_city_name',
+        'zatca_postal_code',
+        'zatca_country_code',
     ];
     protected $useTimestamps = true;
 

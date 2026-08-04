@@ -1,6 +1,7 @@
 <?= $this->extend('templates/header') ?>
 
 <?= $this->section('content') ?>
+<?php $showZatcaColumns = false; ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -9,6 +10,11 @@
             <p class="mt-1 text-sm text-gray-500"><?= lang('Sales.records_subtitle') ?></p>
         </div>
         <div class="mt-4 sm:mt-0">
+            <?php if (can('sales.view')): ?>
+                <a href="<?= site_url('sales/zatca-invoices') ?>" class="btn btn-muted mr-2">
+                    <i class="fas fa-file-invoice"></i> ZATCA E-Invoices
+                </a>
+            <?php endif; ?>
             <?php if (can('sales.view')): ?>
                 <a href="<?= site_url('sales/drafts') ?> " class="btn btn-secondary mr-2">
                     <i class="fas fa-file-alt"></i> <?= lang('Sales.draft_sales') ?>
@@ -94,6 +100,11 @@
                         <th scope="col">
                             <?= lang('Sales.due') ?>
                         </th>
+                        <?php if ($showZatcaColumns): ?>
+                            <th scope="col"><?= lang('Sales.zatca_invoice_type') ?></th>
+                            <th scope="col"><?= lang('Sales.zatca_status') ?></th>
+                            <th scope="col"><?= lang('Sales.zatca_submitted_at') ?></th>
+                        <?php endif; ?>
                         <th scope="col" class="text-right">
                             <?= lang('Sales.actions') ?>
                         </th>
@@ -105,6 +116,30 @@
 
     </div>
 </div>
+
+<?php if ($showZatcaColumns): ?>
+    <div id="zatcaDetailsModal" class="fixed z-50 inset-0 hidden" role="dialog" aria-modal="true" aria-labelledby="zatcaDetailsTitle">
+        <div id="zatcaDetailsOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 relative z-10">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl transform transition-all duration-200 scale-95 opacity-0 zatca-modal-content overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white">
+                    <h3 id="zatcaDetailsTitle" class="text-lg font-semibold leading-tight"><?= lang('Sales.zatca_details') ?></h3>
+                    <button type="button" onclick="closeZatcaDetails()" class="h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center focus:outline-none focus:ring-2 focus:ring-white/60" aria-label="<?= lang('Sales.close') ?>">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-3">
+                    <div id="zatcaMeta" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm"></div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1"><?= lang('Sales.zatca_response') ?></label>
+                        <textarea id="zatcaResponseBody" rows="14" class="w-full border border-gray-300 rounded px-3 py-2 text-xs font-mono" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
 <!-- Payment History Modal -->
 <div id="paymentHistoryModal" class="fixed z-50 inset-0 hidden" role="dialog" aria-modal="true" aria-labelledby="paymentHistoryTitle">
     <!-- Overlay -->
@@ -282,6 +317,11 @@
         returnSale: <?= json_encode(lang('Sales.return_sale')) ?>,
         edit: <?= json_encode(lang('Sales.edit')) ?>,
         viewReceipt: <?= json_encode(lang('Sales.view_receipt')) ?>,
+        downloadPdf: <?= json_encode(lang('Sales.download_pdf')) ?>,
+        downloadXml: <?= json_encode(lang('Sales.download_xml')) ?>,
+        resendZatca: <?= json_encode(lang('Sales.resend_zatca')) ?>,
+        signZatca: <?= json_encode(lang('Sales.sign_zatca')) ?>,
+        submitZatca: <?= json_encode(lang('Sales.submit_zatca')) ?>,
         viewLedger: <?= json_encode(lang('Sales.view_ledger')) ?>,
         delete: <?= json_encode(lang('Sales.delete')) ?>,
         noActions: <?= json_encode(lang('Sales.no_actions')) ?>,
@@ -294,6 +334,20 @@
         date: <?= json_encode(lang('Sales.date')) ?>,
         paymentType: <?= json_encode(lang('Sales.payment_type')) ?>,
         status: <?= json_encode(lang('Sales.status')) ?>,
+        zatcaStatus: <?= json_encode(lang('Sales.zatca_status')) ?>,
+        zatcaInvoiceType: <?= json_encode(lang('Sales.zatca_invoice_type')) ?>,
+        zatcaSubmittedAt: <?= json_encode(lang('Sales.zatca_submitted_at')) ?>,
+        zatcaResponse: <?= json_encode(lang('Sales.zatca_response')) ?>,
+        zatcaDetails: <?= json_encode(lang('Sales.zatca_details')) ?>,
+        zatcaUuid: <?= json_encode(lang('Sales.zatca_uuid')) ?>,
+        zatcaIcv: <?= json_encode(lang('Sales.zatca_icv')) ?>,
+        zatcaNotAvailable: <?= json_encode(lang('Sales.zatca_not_available')) ?>,
+        standardInvoice: <?= json_encode(lang('Sales.zatca_invoice_type_standard')) ?>,
+        simplifiedInvoice: <?= json_encode(lang('Sales.zatca_invoice_type_simplified')) ?>,
+        reported: <?= json_encode(lang('Sales.reported')) ?>,
+        cleared: <?= json_encode(lang('Sales.cleared')) ?>,
+        signed: <?= json_encode(lang('Sales.signed')) ?>,
+        pending: <?= json_encode(lang('Sales.pending')) ?>,
         gross: <?= json_encode(lang('Sales.gross')) ?>,
         returns: <?= json_encode(lang('Sales.returns')) ?>,
         netTotal: <?= json_encode(lang('Sales.net_total')) ?>,
@@ -503,11 +557,12 @@
 
     $(document).ready(function() {
         const currencySymbol = <?= json_encode(session()->get('currency_symbol') ?? '$') ?>;
+        const showZatcaColumns = <?= $showZatcaColumns ? 'true' : 'false' ?>;
         const permissions = {
             view: <?= can('sales.view') ? 'true' : 'false' ?>,
             update: <?= can('sales.update') ? 'true' : 'false' ?>,
             delete: <?= can('sales.delete') ? 'true' : 'false' ?>,
-            receiptsView: <?= can('receipts.view') ? 'true' : 'false' ?>,
+            receiptsView: <?= can('sales.view') ? 'true' : 'false' ?>,
         };
 
         const routes = {
@@ -516,9 +571,154 @@
             receivePayment: <?= json_encode(site_url('sales/receive-payment')) ?>,
             returnSale: <?= json_encode(site_url('sales/return')) ?>,
             receipt: <?= json_encode(site_url('receipts/generate')) ?>,
+            invoicePdf: <?= json_encode(site_url('sales/invoice-pdf')) ?>,
+            invoiceXml: <?= json_encode(site_url('sales/invoice-xml')) ?>,
+            zatcaSign: <?= json_encode(site_url('sales/sign-zatca')) ?>,
+            zatcaResend: <?= json_encode(site_url('sales/resend-zatca')) ?>,
             edit: <?= json_encode(site_url('sales/edit')) ?>,
             delete: <?= json_encode(site_url('sales/delete')) ?>
         };
+
+        function buildColumns() {
+            const columns = [{
+                    data: 'id',
+                    name: 'id',
+                    render: function(data) {
+                        return '#' + data;
+                    }
+                },
+                {
+                    data: 'invoice_no',
+                    name: 'invoice_no',
+                    render: function(data, type, row) {
+                        return `
+                            <a href="${routes.receipt}/${row.id}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                            ${escapeHtml(data)}
+                            </a>
+                        `;
+                    }
+                },
+                {
+                    data: 'customer_name',
+                    name: 'customer_name',
+                    render: function(data, type, row) {
+                        if (!permissions.view) {
+                            return escapeHtml(data || salesI18n.walkIn);
+                        }
+
+                        const customerId = parseInt(row.customer_id, 10);
+                        if (!customerId) {
+                            return '<span class="text-gray-400">' + salesI18n.walkIn + '</span>';
+                        }
+
+                        const ledgerUrl = routes.ledgerBase + '/' + customerId;
+                        return `
+                            <a href="${ledgerUrl}" class="text-blue-600 hover:underline" title="${salesI18n.viewLedger}">
+                                ${escapeHtml(data)}
+                                <i class="fas fa-book text-xs"></i>
+                            </a>
+                        `;
+                    }
+                },
+                {
+                    data: 'employee_name',
+                    title: salesI18n.soldBy,
+                    render: function(data) {
+                        return escapeHtml(data || salesI18n.notApplicable);
+                    }
+                },
+                {
+                    data: 'total',
+                    name: 'total',
+                    render: function(data) {
+                        return '<span class="text-gray-700 font-medium">' + currencySymbol + formatNumber(data) + '</span>';
+                    }
+                },
+                {
+                    data: 'return_total',
+                    name: 'return_total',
+                    render: function(data) {
+                        const amount = parseFloat(data ?? 0);
+                        if (amount <= 0) {
+                            return '<span class="text-gray-400">-</span>';
+                        }
+                        return '<span class="text-red-600">' + currencySymbol + formatNumber(amount) + '</span>';
+                    }
+                },
+                {
+                    data: 'net_total',
+                    name: 'net_total',
+                    render: function(data) {
+                        const net = parseFloat(data ?? 0);
+                        return '<span class="' + (net < 0 ? 'text-red-700' : 'text-green-700') + ' font-semibold">' + currencySymbol + formatNumber(net) + '</span>';
+                    }
+                },
+                {
+                    data: 'created_at',
+                    name: 'created_at',
+                    render: function(data) {
+                        return formatDateTime(data);
+                    }
+                },
+                {
+                    data: 'payment_type',
+                    name: 'payment_type',
+                    render: function(data) {
+                        return escapeHtml(capitalize(data || salesI18n.cash));
+                    }
+                },
+                {
+                    data: 'payment_status',
+                    name: 'payment_status',
+                    render: function(data) {
+                        return formatStatusBadge(data);
+                    }
+                },
+                {
+                    data: 'due_amount',
+                    name: 'due_amount',
+                    render: function(data) {
+                        const amount = parseFloat(data ?? 0);
+                        return amount > 0 ? currencySymbol + formatNumber(amount) : '-';
+                    }
+                }
+            ];
+
+            if (showZatcaColumns) {
+                columns.push({
+                    data: 'zatca_invoice_type',
+                    name: 'zatca_invoice_type',
+                    render: function(data) {
+                        return formatZatcaInvoiceTypeBadge(data);
+                    }
+                });
+                columns.push({
+                    data: 'zatca_status',
+                    name: 'zatca_status',
+                    render: function(data) {
+                        return formatZatcaStatusBadge(data);
+                    }
+                });
+                columns.push({
+                    data: 'zatca_submitted_at',
+                    name: 'zatca_submitted_at',
+                    render: function(data) {
+                        return data ? formatDateTime(data) : '<span class="text-gray-400">-</span>';
+                    }
+                });
+            }
+
+            columns.push({
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function(row) {
+                    return buildActions(row);
+                }
+            });
+
+            return columns;
+        }
 
         const allowedStatuses = ['paid', 'partial', 'due'];
         const urlParams = new URLSearchParams(window.location.search);
@@ -535,6 +735,7 @@
                 type: 'GET',
                 data: function(d) {
                     d.status = currentStatus || '';
+                    d.include_zatca = showZatcaColumns ? 1 : 0;
                 }
             },
             dom: '<"datatable-controls flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"flB>rt<"datatable-footer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"ip>',
@@ -596,120 +797,9 @@
             lengthMenu: [25, 50, 100, 200],
             pageLength: 25,
             order: [
-                [6, 'desc'] // Date column index after adding Returns and Net
+                [7, 'desc']
             ],
-            columns: [{
-                    data: 'id',
-                    name: 'id',
-                    render: function(data) {
-                        return '#' + data;
-                    }
-                },
-                {
-                    data: 'invoice_no',
-                    name: 'invoice_no',
-                    render: function(data, type, row) {
-                        return `
-                            <a href="${routes.receipt}/${row.id}" target="_blank" class="text-blue-600 hover:underline">
-                            ${escapeHtml(data)}
-                            </a>
-                        `;
-
-                    }
-                },
-                {
-                    data: 'customer_name',
-                    name: 'customer_name',
-                    render: function(data, type, row) {
-                        if (!permissions.view) {
-                            return escapeHtml(data || salesI18n.walkIn);
-                        }
-
-                        const customerId = parseInt(row.customer_id, 10);
-                        if (!customerId) {
-                            return '<span class="text-gray-400">' + salesI18n.walkIn + '</span>';
-                        }
-
-                        const ledgerUrl = routes.ledgerBase + '/' + customerId;
-                        return `
-                            <a href="${ledgerUrl}" class="text-blue-600 hover:underline" title="${salesI18n.viewLedger}">
-                                ${escapeHtml(data)}
-                                <i class="fas fa-book text-xs"></i>
-                            </a>
-                        `;
-                    }
-                },
-                {
-                    data: 'employee_name',
-                    title: salesI18n.soldBy,
-                    render: function(data, type, row) {
-                        return escapeHtml(data || salesI18n.notApplicable);
-                    }
-                },
-                {
-                    data: 'total',
-                    name: 'total',
-                    render: function(data) {
-                        return '<span class="text-gray-700 font-medium">' + currencySymbol + formatNumber(data) + '</span>';
-                    }
-                },
-                {
-                    data: 'return_total',
-                    name: 'return_total',
-                    render: function(data) {
-                        const amount = parseFloat(data ?? 0);
-                        if (amount <= 0) {
-                            return '<span class="text-gray-400">-</span>';
-                        }
-                        return '<span class="text-red-600">' + currencySymbol + formatNumber(amount) + '</span>';
-                    }
-                },
-                {
-                    data: 'net_total',
-                    name: 'net_total',
-                    render: function(data, type, row) {
-                        const net = parseFloat(data ?? 0);
-                        return '<span class="' + (net < 0 ? 'text-red-700' : 'text-green-700') + ' font-semibold">' + currencySymbol + formatNumber(net) + '</span>';
-                    }
-                },
-                {
-                    data: 'created_at',
-                    name: 'created_at',
-                    render: function(data) {
-                        return formatDateTime(data);
-                    }
-                },
-                {
-                    data: 'payment_type',
-                    name: 'payment_type',
-                    render: function(data) {
-                        return escapeHtml(capitalize(data || salesI18n.cash));
-                    }
-                },
-                {
-                    data: 'payment_status',
-                    name: 'payment_status',
-                    render: function(data) {
-                        return formatStatusBadge(data);
-                    }
-                },
-                {
-                    data: 'due_amount',
-                    name: 'due_amount',
-                    render: function(data) {
-                        const amount = parseFloat(data ?? 0);
-                        return amount > 0 ? currencySymbol + formatNumber(amount) : '-';
-                    }
-                },
-                {
-                    data: null,
-                    orderable: false,
-                    searchable: false,
-                    render: function(row) {
-                        return buildActions(row);
-                    }
-                }
-            ],
+            columns: buildColumns(),
             createdRow: function(row, data) {
                 const due = parseFloat(data.due_amount ?? 0);
                 if (due > 0) {
@@ -820,6 +910,99 @@
             `;
         }
 
+        function formatZatcaStatusBadge(status) {
+            const normalized = (status || '').toLowerCase();
+            if (!normalized) {
+                return '<span class="text-gray-400">-</span>';
+            }
+
+            const map = {
+                reported: {
+                    variant: 'success',
+                    icon: 'fa-check-circle',
+                    label: salesI18n.reported
+                },
+                cleared: {
+                    variant: 'info',
+                    icon: 'fa-shield-halved',
+                    label: salesI18n.cleared
+                },
+                pending: {
+                    variant: 'warning',
+                    icon: 'fa-clock',
+                    label: salesI18n.pending
+                },
+                signed: {
+                    variant: 'secondary',
+                    icon: 'fa-signature',
+                    label: salesI18n.signed
+                }
+            };
+
+            const meta = map[normalized] || map.pending;
+            return `
+                <span class="badge badge--${meta.variant}">
+                    <i class="fas ${meta.icon}"></i>
+                    ${escapeHtml(meta.label)}
+                </span>
+            `;
+        }
+
+        function formatZatcaInvoiceTypeBadge(invoiceType) {
+            const normalized = (invoiceType || '').toLowerCase();
+            if (!normalized) {
+                return '<span class="text-gray-400">-</span>';
+            }
+
+            if (normalized === 'standard') {
+                return '<span class="badge badge--info"><i class="fas fa-file-invoice"></i> ' + escapeHtml(salesI18n.standardInvoice) + '</span>';
+            }
+
+            return '<span class="badge badge--success"><i class="fas fa-receipt"></i> ' + escapeHtml(salesI18n.simplifiedInvoice) + '</span>';
+        }
+
+        function openZatcaDetails(row) {
+            if (!showZatcaColumns) {
+                return;
+            }
+
+            const metaItems = [
+                [salesI18n.saleId, '#' + (row.id || '-')],
+                [salesI18n.invoice, row.invoice_no || '-'],
+                [salesI18n.zatcaInvoiceType, row.zatca_invoice_type || '-'],
+                [salesI18n.zatcaStatus, row.zatca_status || '-'],
+                [salesI18n.zatcaUuid, row.zatca_uuid || '-'],
+                [salesI18n.zatcaIcv, row.zatca_icv || '-'],
+                [salesI18n.zatcaSubmittedAt, row.zatca_submitted_at ? formatDateTime(row.zatca_submitted_at) : '-']
+            ];
+
+            $('#zatcaMeta').html(metaItems.map(function(item) {
+                return '<div class="rounded border border-gray-200 p-2"><p class="text-[11px] text-gray-500 mb-0.5">' + escapeHtml(item[0]) + '</p><p class="text-sm font-medium text-gray-900 break-all">' + escapeHtml(String(item[1])) + '</p></div>';
+            }).join(''));
+
+            let responseText = salesI18n.zatcaNotAvailable;
+            if (row.zatca_response) {
+                try {
+                    const parsed = JSON.parse(row.zatca_response);
+                    responseText = JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    responseText = String(row.zatca_response);
+                }
+            }
+
+            $('#zatcaResponseBody').val(responseText);
+            $('#zatcaDetailsModal').removeClass('hidden');
+            $('.zatca-modal-content').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
+            $('#zatcaDetailsOverlay').off('click').on('click', closeZatcaDetails);
+        }
+
+        window.closeZatcaDetails = function() {
+            $('.zatca-modal-content').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
+            setTimeout(function() {
+                $('#zatcaDetailsModal').addClass('hidden');
+            }, 200);
+        };
+
         function buildActions(row) {
             let menuItems = '';
 
@@ -858,10 +1041,66 @@
 
             if (permissions.receiptsView) {
                 menuItems += `
-                    <a href="${routes.receipt}/${row.id}" target="_blank" class="actions-link actions-link--info">
+                    <a href="${routes.receipt}/${row.id}" target="_blank" rel="noopener noreferrer" class="actions-link actions-link--info">
                         <i class="fas fa-receipt"></i>
                         <span>${salesI18n.viewReceipt}</span>
                     </a>
+                    <a href="${routes.invoicePdf}/${row.id}" target="_blank" rel="noopener noreferrer" class="actions-link actions-link--primary">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>${salesI18n.downloadPdf}</span>
+                    </a>
+                `;
+            }
+
+            if ((row.zatca_xml_path || '') !== '') {
+                menuItems += `
+                    <a href="${routes.invoiceXml}/${row.id}" class="actions-link actions-link--secondary">
+                        <i class="fas fa-file-code"></i>
+                        <span>${salesI18n.downloadXml}</span>
+                    </a>
+                `;
+            }
+
+            if (showZatcaColumns) {
+                menuItems += `
+                    <a href="#" data-sale-id="${row.id}" class="zatca-details-link actions-link actions-link--secondary">
+                        <i class="fas fa-circle-info"></i>
+                        <span>${salesI18n.zatcaDetails}</span>
+                    </a>
+                `;
+            }
+
+            if (permissions.update && (row.zatca_status || '').toLowerCase() === 'pending') {
+                menuItems += `
+                    <form action="${routes.zatcaSign}/${row.id}" method="POST" class="inline">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="actions-link actions-link--secondary">
+                            <i class="fas fa-signature"></i>
+                            <span>${salesI18n.signZatca}</span>
+                        </button>
+                    </form>
+                `;
+
+                menuItems += `
+                    <form action="${routes.zatcaResend}/${row.id}" method="POST" class="inline">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="actions-link actions-link--warning">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>${salesI18n.resendZatca}</span>
+                        </button>
+                    </form>
+                `;
+            }
+
+            if (permissions.update && (row.zatca_status || '').toLowerCase() === 'signed') {
+                menuItems += `
+                    <form action="${routes.zatcaResend}/${row.id}" method="POST" class="inline">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="actions-link actions-link--success">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>${salesI18n.submitZatca}</span>
+                        </button>
+                    </form>
                 `;
             }
 
@@ -977,6 +1216,15 @@
             // Retrieve row meta from DataTable
             const rowMeta = table.row($(this).closest('tr')).data();
             showPaymentHistory(saleId, rowMeta);
+        });
+
+        $(document).on('click', '.zatca-details-link', function(e) {
+            e.preventDefault();
+            const rowMeta = table.row($(this).closest('tr')).data();
+            if (!rowMeta) {
+                return;
+            }
+            openZatcaDetails(rowMeta);
         });
     });
 </script>

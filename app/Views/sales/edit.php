@@ -395,6 +395,33 @@ $initialDue = (float) old('due_amount', $sale['due_amount'] ?? 0);
                                 placeholder="<?= esc(lang('Sales.optional_invoice_notes')) ?>"><?= esc(old('description', $sale['description'] ?? '')) ?></textarea>
                         </div>
 
+                        <?php if (!empty($zatcaEnabled)): ?>
+                            <?php
+                            $selectedZatcaInvoiceType = strtolower((string) old('zatca_invoice_type', $sale['zatca_invoice_type'] ?? ($zatcaDefaultInvoiceType ?? 'simplified')));
+                            if (!in_array($selectedZatcaInvoiceType, ['simplified', 'standard'], true)) {
+                                $selectedZatcaInvoiceType = 'simplified';
+                            }
+                            ?>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5" for="zatca_invoice_type"><?= lang('Sales.zatca_invoice_type') ?></label>
+                                <select name="zatca_invoice_type" id="zatca_invoice_type" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
+                                    <option value="simplified" <?= $selectedZatcaInvoiceType === 'simplified' ? 'selected' : '' ?>><?= lang('Sales.zatca_invoice_type_simplified') ?></option>
+                                    <option value="standard" <?= $selectedZatcaInvoiceType === 'standard' ? 'selected' : '' ?>><?= lang('Sales.zatca_invoice_type_standard') ?></option>
+                                </select>
+                            </div>
+
+                            <div class="rounded border border-blue-200 bg-blue-50 p-2 text-xs space-y-1">
+                                <div><span class="font-semibold"><?= lang('Sales.zatca_status') ?>:</span> <?= esc((string) ($sale['zatca_status'] ?? '-')) ?></div>
+                                <div><span class="font-semibold"><?= lang('Sales.zatca_uuid') ?>:</span> <?= esc((string) ($sale['zatca_uuid'] ?? '-')) ?></div>
+                                <div><span class="font-semibold"><?= lang('Sales.zatca_icv') ?>:</span> <?= esc((string) ($sale['zatca_icv'] ?? '-')) ?></div>
+                                <div><span class="font-semibold"><?= lang('Sales.zatca_submitted_at') ?>:</span> <?= esc((string) ($sale['zatca_submitted_at'] ?? '-')) ?></div>
+                                <div>
+                                    <label class="block font-semibold text-gray-700 mb-0.5" for="zatca_response_debug"><?= lang('Sales.zatca_response') ?></label>
+                                    <textarea id="zatca_response_debug" class="w-full border border-gray-300 rounded px-2 py-1 text-[11px] bg-white" rows="5" readonly><?= esc((string) ($sale['zatca_response'] ?? '')) ?></textarea>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.pay_type') ?></label>

@@ -14,8 +14,11 @@ use App\Models\RoleModel;
 use App\Models\EmployeesModel;
 use App\Models\SalesReturnModel;
 use App\Models\SettingsModel;
+use App\Models\StoreModel;
+use App\Models\ZatcaCertificatesModel;
 use App\Models\ProductImeiModel;
 use App\Services\PromotionService;
+use App\Services\ZatcaInvoiceService;
 
 class Sales extends BaseController
 {
@@ -28,10 +31,11 @@ class Sales extends BaseController
     protected $employeeModel;
     protected $salesReturnModel;
     protected $promotionService;
+    protected $zatcaInvoiceService;
 
     public function __construct()
     {
-        helper(['audit', 'business_feature']);
+        helper(['audit', 'business_feature', 'zatca_helper']);
         $this->cartModel = new CartModel();
         $this->productModel = new M_products();
         $this->customerModel = new M_customers();
@@ -41,6 +45,7 @@ class Sales extends BaseController
         $this->employeeModel = new EmployeesModel();
         $this->salesReturnModel = new SalesReturnModel();
         $this->promotionService = new PromotionService();
+        $this->zatcaInvoiceService = new ZatcaInvoiceService();
     }
 
     public function pos()
@@ -73,6 +78,21 @@ class Sales extends BaseController
         return view('sales/index', $data);
     }
 
+    public function zatcaIndex()
+    {
+        $salesModel = new M_sales();
+        $totalDueRow = $salesModel->selectSum('due_amount', 'due_total')
+            ->forStore()
+            ->first();
+
+        $data = [
+            'title' => 'ZATCA E-Invoices',
+            'totalDue' => (float) ($totalDueRow['due_total'] ?? 0),
+        ];
+
+        return view('sales/zatca_index', $data);
+    }
+
     public function distributor()
     {
         helper('form');
@@ -94,6 +114,8 @@ class Sales extends BaseController
         $settingsRow = $settingModel->first() ?? [];
         $data['taxRate'] = $settingsRow['tax_rate'] ?? 0;
         $data['salesShowDiscountType'] = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
+        $data['zatcaEnabled'] = $this->isZatcaEnabledForStore((int) (session('store_id') ?? 0), $settingsRow);
+        $data['zatcaDefaultInvoiceType'] = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
 
         // No session-based prefill; cart is managed in-memory on the client now
 
@@ -121,6 +143,8 @@ class Sales extends BaseController
         $settingsRow = $settingModel->first() ?? [];
         $data['taxRate'] = $settingsRow['tax_rate'] ?? 0;
         $data['salesShowDiscountType'] = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
+        $data['zatcaEnabled'] = $this->isZatcaEnabledForStore((int) (session('store_id') ?? 0), $settingsRow);
+        $data['zatcaDefaultInvoiceType'] = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
 
         // No session-based prefill; cart is managed in-memory on the client now
 
@@ -178,6 +202,11 @@ class Sales extends BaseController
         $employee_id = (int) ($this->request->getPost('employee_id') !== null && $this->request->getPost('employee_id') !== '' ? $this->request->getPost('employee_id') : 0); // Salesman/employee assigned to this sale
         $payment_type = $this->request->getPost('payment_type') ?: 'cash'; // 'cash' or 'credit'
         $storeId = (int) (session('store_id') ?? 0);
+        $settingsRow = (new SettingsModel())->getSettings() ?? [];
+        $zatcaEnabledForSale = $this->isZatcaEnabledForStore($storeId, $settingsRow);
+        $postedZatcaInvoiceType = $this->normalizeZatcaInvoiceType((string) ($this->request->getPost('zatca_invoice_type') ?? ''));
+        $defaultZatcaInvoiceType = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
+        $saleZatcaInvoiceType = $zatcaEnabledForSale ? ($postedZatcaInvoiceType ?: $defaultZatcaInvoiceType) : null;
 
         // Validation
         $errors = [];
@@ -194,6 +223,9 @@ class Sales extends BaseController
                     break;
                 }
             }
+        }
+        if ($zatcaEnabledForSale && $saleZatcaInvoiceType === '') {
+            $errors[] = 'Please select ZATCA invoice type.';
         }
         if (!empty($errors)) {
             return redirect()->back()->withInput()->with('error', implode("\n", $errors));
@@ -460,6 +492,7 @@ class Sales extends BaseController
                         'user_id' => $userId,
                         'status' => 'completed',
                         'invoice_no' => $effectiveInvoiceNo,
+                        'zatca_invoice_type' => $saleZatcaInvoiceType,
                         'updated_at' => date('Y-m-d H:i:s'),
                     ];
                     $salesModel->update($draftId, $saleData);
@@ -486,6 +519,7 @@ class Sales extends BaseController
                         'payment_type' => $payment_type,
                         'payment_status' => $payment_status,
                         'due_amount' => $due_amount ?? 0,
+                        'zatca_invoice_type' => $saleZatcaInvoiceType,
 
                     ];
                     $sale_id = $salesModel->insert($saleData);
@@ -606,6 +640,30 @@ class Sales extends BaseController
                     // Non-fatal: do not block sale on loyalty update failure
                     log_message('warning', 'Failed updating loyalty points for customer ' . $customer_id . ': ' . $e->getMessage());
                 }
+
+                // Generate signed ZATCA invoice artifacts after sale lines are persisted.
+                // This is intentionally non-blocking so POS checkout continues on local failures.
+                try {
+                    $storeIdForZatca = (int) (session('store_id') ?? 0);
+                    if ($storeIdForZatca > 0 && $zatcaEnabledForSale) {
+                        $country = strtoupper(trim((string) ($settingsRow['einvoicing_country'] ?? '')));
+                        if ($country === 'SA') {
+                            $zatcaResult = $this->zatcaInvoiceService->generateAndAttachToSale((int) $sale_id);
+                            if (!empty($zatcaResult['success']) && empty($zatcaResult['skipped'])) {
+                                $submissionStatus = (string) ($zatcaResult['submission_status'] ?? 'signed');
+                                if (in_array($submissionStatus, ['reported', 'cleared', 'signed'], true)) {
+                                    logAction('zatca_invoice_' . $submissionStatus, 'Sale ID: ' . (int) $sale_id . ', UUID: ' . ($zatcaResult['uuid'] ?? '-') . ', ICV: ' . (int) ($zatcaResult['icv'] ?? 0));
+                                } else {
+                                    logAction('zatca_invoice_signed', 'Sale ID: ' . (int) $sale_id . ', UUID: ' . ($zatcaResult['uuid'] ?? '-') . ', ICV: ' . (int) ($zatcaResult['icv'] ?? 0));
+                                }
+                            } elseif (empty($zatcaResult['success'])) {
+                                log_message('warning', 'ZATCA generation failed for sale ' . (int) $sale_id . ': ' . ($zatcaResult['message'] ?? 'Unknown error'));
+                            }
+                        }
+                    }
+                } catch (\Throwable $zatcaError) {
+                    log_message('error', 'ZATCA generation exception for sale ' . (int) $sale_id . ': ' . $zatcaError->getMessage());
+                }
             } catch (\Throwable $e) {
                 $db->transRollback();
                 return redirect()->back()->with('error', 'Failed to create sale. ' . $e->getMessage());
@@ -635,6 +693,10 @@ class Sales extends BaseController
         $customerModel = new M_customers();
         $inventoryModel = new M_inventory();
         $settingModel = new \App\Models\SettingsModel();
+        $settingsRow = $settingModel->first() ?? [];
+        $storeId = (int) (session('store_id') ?? 0);
+        $zatcaEnabled = $this->isZatcaEnabledForStore($storeId, $settingsRow);
+        $defaultZatcaInvoiceType = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
 
         $sale = $salesModel->forStore()->find($saleId);
         if (!$sale) {
@@ -746,6 +808,10 @@ class Sales extends BaseController
             $employeeId = (int) ($this->request->getPost('employee_id') ?: 0);
             $customerId = (int) ($this->request->getPost('customer_id') ?: 0);
             $description = trim((string) ($this->request->getPost('description') ?? ''));
+            $postedZatcaInvoiceType = $this->normalizeZatcaInvoiceType((string) ($this->request->getPost('zatca_invoice_type') ?? ''));
+            $saleZatcaInvoiceType = $zatcaEnabled
+                ? ($postedZatcaInvoiceType ?: $this->normalizeZatcaInvoiceType((string) ($sale['zatca_invoice_type'] ?? $defaultZatcaInvoiceType)))
+                : null;
             $isAdminOverrideUser = $this->isAdminUser();
             $adminOverrideMessages = [];
 
@@ -1100,6 +1166,7 @@ class Sales extends BaseController
                     'employee_id' => $employeeId,
                     'commission_amount' => $commissionAmount,
                     'user_id' => $userId,
+                    'zatca_invoice_type' => $saleZatcaInvoiceType,
                     'updated_at' => date('Y-m-d H:i:s'),
                 ];
 
@@ -1168,7 +1235,6 @@ class Sales extends BaseController
 
         $employees = $this->employeeModel->forStore()->findAll();
         $userRole = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
-        $settingsRow = $settingModel->first() ?? [];
         $salesShowDiscountType = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
 
         return view('sales/edit', [
@@ -1181,6 +1247,8 @@ class Sales extends BaseController
             'title' => 'Edit Sale',
             'cartItems' => $cartItems,
             'salesShowDiscountType' => $salesShowDiscountType,
+            'zatcaEnabled' => $zatcaEnabled,
+            'zatcaDefaultInvoiceType' => $defaultZatcaInvoiceType,
         ]);
     }
 
@@ -1491,12 +1559,198 @@ class Sales extends BaseController
         return view('sales/receipt', $data);
     }
 
+    public function downloadInvoicePdf($id = null)
+    {
+        $sale = (new M_sales())->forStore()->find($id);
+        if (!$sale) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Sale not found');
+        }
+
+        return redirect()->to(site_url('receipts/generate/' . (int) $id . '?output=pdf&download=1'));
+    }
+
+    public function downloadInvoiceXml($id = null)
+    {
+        $salesModel = new M_sales();
+        $sale = $salesModel->forStore()->find($id);
+        if (!$sale) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Sale not found');
+        }
+
+        $xmlPath = $this->resolveZatcaXmlPath((string) ($sale['zatca_xml_path'] ?? ''));
+        if ($xmlPath === '' || !is_file($xmlPath)) {
+            return redirect()->back()->with('error', 'Signed invoice XML not found for this sale.');
+        }
+
+        $downloadName = preg_replace('/[^A-Za-z0-9\-_]/', '_', (string) ($sale['invoice_no'] ?? ('SALE_' . $id))) . '.xml';
+        return $this->response->download($downloadName, file_get_contents($xmlPath));
+    }
+
+    public function resendZatca($id = null)
+    {
+        $salesModel = new M_sales();
+        $sale = $salesModel->forStore()->find($id);
+        if (!$sale) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Sale not found');
+        }
+
+        $result = $this->zatcaInvoiceService->submitSaleToZatca((int) $id);
+        if (!empty($result['success']) && in_array((string) ($result['status'] ?? ''), ['reported', 'cleared'], true)) {
+            logAction('zatca_invoice_' . $result['status'], 'Sale ID: ' . (int) $id . ', invoice_no: ' . ($sale['invoice_no'] ?? ''));
+            $flashType = (!empty($result['has_warnings']) && empty($result['has_errors'])) ? 'warning' : 'success';
+            $message = (string) ($result['message'] ?? 'ZATCA invoice submitted successfully.');
+            return redirect()->back()->with($flashType, $message);
+        }
+
+        return redirect()->back()->with('error', 'ZATCA submission pending: ' . (string) ($result['message'] ?? 'Unknown error'));
+    }
+
+    public function signZatca($id = null)
+    {
+        $salesModel = new M_sales();
+        $sale = $salesModel->forStore()->find($id);
+        if (!$sale) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Sale not found');
+        }
+
+        $result = $this->zatcaInvoiceService->generateAndAttachToSale((int) $id, false);
+        if (!empty($result['success'])) {
+            logAction('zatca_invoice_signed', 'Sale ID: ' . (int) $id . ', invoice_no: ' . ($sale['invoice_no'] ?? ''));
+            return redirect()->back()->with('success', 'ZATCA invoice signed successfully.');
+        }
+
+        return redirect()->back()->with('error', 'ZATCA signing failed: ' . (string) ($result['message'] ?? 'Unknown error'));
+    }
+
+    /**
+     * Run ZATCA compliance checks on a sale's actual signed invoice XML
+     */
+    public function complianceCheck($id = null)
+    {
+        if (!$this->request->is('post')) {
+            throw \CodeIgniter\Exceptions\HTTPException::forMethodNotAllowed();
+        }
+
+        $salesModel = new M_sales();
+        $sale = $salesModel->forStore()->find($id);
+        if (!$sale) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Sale not found');
+        }
+
+        // Check if sale has a signed XML
+        $xmlPath = trim((string) ($sale['zatca_xml_path'] ?? ''));
+        if ($xmlPath === '') {
+            return redirect()->back()->with('error', 'This sale does not have a signed ZATCA invoice XML yet.');
+        }
+
+        $absolutePath = $this->resolveZatcaXmlPath($xmlPath);
+        if ($absolutePath === '' || !is_file($absolutePath)) {
+            return redirect()->back()->with('error', 'Signed invoice XML file not found on disk.');
+        }
+
+        try {
+            $signedXml = (string) file_get_contents($absolutePath);
+            if ($signedXml === '') {
+                return redirect()->back()->with('error', 'Signed invoice XML file is empty.');
+            }
+
+            // Prepare invoice payload and submit to ZATCA compliance endpoint for validation
+            $invoicePayload = $this->zatcaInvoiceService->prepareInvoicePayloadForApi($signedXml);
+
+            // Get certificate and settings for submission
+            $storeId = (int) ($sale['store_id'] ?? 0);
+            $certModel = new ZatcaCertificatesModel();
+            $settings = (new SettingsModel())->getSettings() ?? [];
+            $environment = strtolower(trim((string) ($settings['zatca_environment'] ?? 'sandbox')));
+
+            // Fetch the Compliance certificate for validation (requires binary_security_token + secret)
+            $certificate = $certModel->where('store_id', $storeId)
+                ->where('environment', $environment)
+                ->whereIn('status', ['compliance', 'production'])  // Try both statuses
+                ->orderBy('status', 'ASC')  // Prefer compliance (comes first alphabetically), fallback to production
+                ->first();
+
+            if (!$certificate) {
+                return redirect()->back()->with('error', 'ZATCA certificate not found for this store.');
+            }
+
+            // Validate that compliance credentials are present
+            $complianceToken = trim((string) ($certificate['binary_security_token'] ?? ''));
+            $complianceSecret = trim((string) ($certificate['secret'] ?? ''));
+            if ($complianceToken === '' || $complianceSecret === '') {
+                return redirect()->back()->with(
+                    'error',
+                    'Compliance CSID credentials are missing. Complete ZATCA Onboarding Step 2 first to obtain Compliance Certificate credentials.'
+                );
+            }
+
+            // Use the API client to validate the actual invoice XML
+            $validationResponse = $this->zatcaInvoiceService->validateInvoiceXml($invoicePayload, $certificate, $settings, $sale);
+
+            // Log the compliance check
+            logAction('zatca_compliance_check', 'Sale ID: ' . (int) $id . ', invoice_no: ' . ($sale['invoice_no'] ?? ''));
+
+            // Build detailed message from validation response
+            $messageLines = [];
+            $messageLines[] = 'Compliance check completed for Invoice #' . ($sale['invoice_no'] ?? $id);
+
+            if (isset($validationResponse['error_messages']) && !empty($validationResponse['error_messages'])) {
+                $messageLines[] = 'Errors: ' . implode(' | ', $validationResponse['error_messages']);
+            }
+            if (isset($validationResponse['warning_messages']) && !empty($validationResponse['warning_messages'])) {
+                $messageLines[] = 'Warnings: ' . implode(' | ', $validationResponse['warning_messages']);
+            }
+            if (isset($validationResponse['info_messages']) && !empty($validationResponse['info_messages'])) {
+                $messageLines[] = 'Info: ' . implode(' | ', $validationResponse['info_messages']);
+            }
+            if (isset($validationResponse['status'])) {
+                $messageLines[] = 'Status: ' . $validationResponse['status'];
+            }
+            if (isset($validationResponse['full_response'])) {
+                $messageLines[] = 'ZATCA Response: ' . ($validationResponse['full_response'] ?? '');
+            }
+
+            $detailedMessage = implode("\n", $messageLines);
+
+            // Store full results in session for detailed display
+            $resultsJson = json_encode([
+                'sale_id' => $id,
+                'invoice_no' => $sale['invoice_no'] ?? '',
+                'checked_at' => date('Y-m-d H:i:s'),
+                'uuid' => $sale['zatca_uuid'] ?? '',
+                'invoice_hash' => $sale['zatca_invoice_hash'] ?? '',
+                'icv' => $sale['zatca_icv'] ?? '',
+                'validation_response' => $validationResponse,
+            ]);
+
+            // Determine flash type based on validation result
+            $flashType = 'success';
+            if (isset($validationResponse['has_errors']) && $validationResponse['has_errors']) {
+                $flashType = 'error';
+            } elseif (isset($validationResponse['has_warnings']) && $validationResponse['has_warnings']) {
+                $flashType = 'warning';
+            }
+
+            return redirect()->back()->with($flashType, $detailedMessage)
+                ->with('compliance_results', $resultsJson);
+        } catch (\Throwable $e) {
+            log_message('error', 'ZATCA compliance check failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Compliance check failed: ' . $e->getMessage());
+        }
+    }
+
     // Save a sale as draft
     public function saveDraft()
     {
         $salesModel = new M_sales();
         $saleItemsModel = new M_sale_items();
         $productModel = new M_products();
+        $settingsRow = (new SettingsModel())->getSettings() ?? [];
+        $storeId = (int) (session('store_id') ?? 0);
+        $zatcaEnabledForSale = $this->isZatcaEnabledForStore($storeId, $settingsRow);
+        $postedZatcaInvoiceType = $this->normalizeZatcaInvoiceType((string) ($this->request->getPost('zatca_invoice_type') ?? ''));
+        $defaultZatcaInvoiceType = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
+        $saleZatcaInvoiceType = $zatcaEnabledForSale ? ($postedZatcaInvoiceType ?: $defaultZatcaInvoiceType) : null;
 
         $customer_id = $this->request->getPost('customer_id');
         $description = trim((string) ($this->request->getPost('description') ?? ''));
@@ -1565,6 +1819,9 @@ class Sales extends BaseController
                 }
             }
         }
+        if ($zatcaEnabledForSale && $saleZatcaInvoiceType === '') {
+            $errors[] = 'Please select ZATCA invoice type.';
+        }
         if (!empty($errors)) {
             return redirect()->back()->withInput()->with('error', implode("\n", $errors));
         }
@@ -1607,6 +1864,7 @@ class Sales extends BaseController
             'total_tax' => $total_tax,
             'employee_id' => $employee_id,
             'commission_amount' => $commission_amount,
+            'zatca_invoice_type' => $saleZatcaInvoiceType,
             'status' => 'draft',
         ];
         $sale_id = $salesModel->insert($saleData);
@@ -1726,6 +1984,9 @@ class Sales extends BaseController
         $employees = $this->employeeModel->forStore()->findAll();
         $userRole = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
         $customers = $customerModel->forStore()->findAll();
+        $allSettings = $settingModel->getSettings() ?? [];
+        $isZatcaEnabled = $this->isZatcaEnabledForStore((int) (session('store_id') ?? 0), $allSettings);
+        $draftInvoiceType = (string) ($sale['zatca_invoice_type'] ?? ($allSettings['zatca_invoice_type'] ?? 'both'));
 
         return view('sales/new', [
             'title' => 'Resume Draft',
@@ -1745,6 +2006,8 @@ class Sales extends BaseController
             'prefillEmployeeId' => (int)($sale['employee_id'] ?? 0),
             'prefillPaymentMethod' => $sale['payment_method'] ?? 'cash',
             'prefillDescription' => $sale['description'] ?? '',
+            'zatcaEnabled' => $isZatcaEnabled,
+            'zatcaDefaultInvoiceType' => $this->resolveZatcaSaleDefaultInvoiceType($draftInvoiceType),
         ]);
     }
 
@@ -1880,6 +2143,25 @@ class Sales extends BaseController
             }
         } catch (\Throwable $e) {
             log_message('warning', 'Failed updating loyalty points for completed draft sale ' . $id . ': ' . $e->getMessage());
+        }
+
+        // Generate and submit ZATCA invoice artifacts for completed drafts as non-blocking task.
+        try {
+            $storeIdForZatca = (int) ($sale['store_id'] ?? session('store_id') ?? 0);
+            $settingsRow = (new SettingsModel())->getSettings() ?? [];
+            if ($this->isZatcaEnabledForStore($storeIdForZatca, $settingsRow)) {
+                $zatcaResult = $this->zatcaInvoiceService->generateAndAttachToSale((int) $id);
+                if (!empty($zatcaResult['success']) && empty($zatcaResult['skipped'])) {
+                    $submissionStatus = (string) ($zatcaResult['submission_status'] ?? 'pending');
+                    if (in_array($submissionStatus, ['reported', 'cleared'], true)) {
+                        logAction('zatca_invoice_' . $submissionStatus, 'Sale ID: ' . (int) $id . ', UUID: ' . ($zatcaResult['uuid'] ?? '-') . ', ICV: ' . (int) ($zatcaResult['icv'] ?? 0));
+                    } else {
+                        logAction('zatca_invoice_pending', 'Sale ID: ' . (int) $id . ', UUID: ' . ($zatcaResult['uuid'] ?? '-') . ', ICV: ' . (int) ($zatcaResult['icv'] ?? 0));
+                    }
+                }
+            }
+        } catch (\Throwable $zatcaError) {
+            log_message('error', 'ZATCA generation exception for completed draft sale ' . (int) $id . ': ' . $zatcaError->getMessage());
         }
 
         return redirect()->to(site_url('sales/receipt/' . $id))->with('success', 'Draft sale completed.');
@@ -2132,6 +2414,16 @@ class Sales extends BaseController
 
     public function datatable()
     {
+        return $this->buildSalesDatatableResponse(false);
+    }
+
+    public function zatcaDatatable()
+    {
+        return $this->buildSalesDatatableResponse(true);
+    }
+
+    private function buildSalesDatatableResponse(bool $onlyZatca = false)
+    {
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid request.']);
         }
@@ -2143,6 +2435,7 @@ class Sales extends BaseController
 
         $search = $this->request->getVar('search')['value'] ?? '';
         $statusFilter = trim((string) ($this->request->getVar('status') ?? ''));
+        $includeZatcaColumns = $onlyZatca || ((int) ($this->request->getVar('include_zatca') ?? 0) === 1);
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
         $columns = [
@@ -2158,12 +2451,25 @@ class Sales extends BaseController
             'ps.due_amount',
         ];
 
+        if ($includeZatcaColumns) {
+            $columns[] = 'ps.zatca_invoice_type';
+            $columns[] = 'ps.zatca_status';
+            $columns[] = 'ps.zatca_submitted_at';
+        }
+
         $db = \Config\Database::connect();
         $storeId = session('store_id');
 
         $baseBuilder = $db->table('pos_sales');
         if ($storeId !== null) {
             $baseBuilder->where('store_id', $storeId);
+        }
+        if ($onlyZatca) {
+            $baseBuilder->groupStart()
+                ->where('zatca_uuid IS NOT NULL', null, false)
+                ->orWhere('zatca_status IS NOT NULL', null, false)
+                ->orWhere('zatca_xml_path IS NOT NULL', null, false)
+                ->groupEnd();
         }
         //$baseBuilder->where('status', 'draft');
 
@@ -2177,6 +2483,13 @@ class Sales extends BaseController
             $filteredBuilder->where('ps.store_id', $storeId);
         }
         $filteredBuilder->where('ps.status !=', 'draft');
+        if ($onlyZatca) {
+            $filteredBuilder->groupStart()
+                ->where('ps.zatca_uuid IS NOT NULL', null, false)
+                ->orWhere('ps.zatca_status IS NOT NULL', null, false)
+                ->orWhere('ps.zatca_xml_path IS NOT NULL', null, false)
+                ->groupEnd();
+        }
 
         if ($search !== '') {
             $filteredBuilder->groupStart()
@@ -2209,14 +2522,18 @@ class Sales extends BaseController
 
         $filteredBuilder->join($returnsSubquery, 'r.sale_id = ps.id', 'left', false);
 
-        $filteredBuilder->select(
-            'ps.id, ps.invoice_no, ps.total, ' .
-                'COALESCE(r.total_return, 0) AS return_total, ' .
-                '(ps.total - COALESCE(r.total_return, 0)) AS net_total, ' .
-                'ps.created_at, ps.payment_type, ps.payment_status, ps.due_amount, ' .
-                'ps.customer_id, COALESCE(c.name, "Walk-in Customer") AS customer_name, ' .
-                'COALESCE(e.name, "N/A") as employee_name'
-        );
+        $select = 'ps.id, ps.invoice_no, ps.total, '
+            . 'COALESCE(r.total_return, 0) AS return_total, '
+            . '(ps.total - COALESCE(r.total_return, 0)) AS net_total, '
+            . 'ps.created_at, ps.payment_type, ps.payment_status, ps.due_amount, '
+            . 'ps.customer_id, COALESCE(c.name, "Walk-in Customer") AS customer_name, '
+            . 'COALESCE(e.name, "N/A") as employee_name';
+
+        if ($includeZatcaColumns) {
+            $select .= ', ps.zatca_invoice_type, ps.zatca_status, ps.zatca_xml_path, ps.zatca_uuid, ps.zatca_icv, ps.zatca_submitted_at, ps.zatca_response';
+        }
+
+        $filteredBuilder->select($select);
 
         if ($orderRequest) {
             $orderColumnIndex = (int) ($orderRequest['column'] ?? 0);
@@ -2246,6 +2563,25 @@ class Sales extends BaseController
         $payments = $ledgerModel->getPaymentHistory($saleId);
 
         return $this->response->setJSON($payments);
+    }
+
+    protected function resolveZatcaXmlPath(string $relativePath): string
+    {
+        $relativePath = trim($relativePath);
+        if ($relativePath === '') {
+            return '';
+        }
+
+        if (preg_match('#^(?:/|[A-Za-z]:\\\\)#', $relativePath)) {
+            return $relativePath;
+        }
+
+        $relativePath = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath), DIRECTORY_SEPARATOR);
+        if (stripos($relativePath, 'writable' . DIRECTORY_SEPARATOR) === 0) {
+            $relativePath = substr($relativePath, strlen('writable' . DIRECTORY_SEPARATOR));
+        }
+
+        return WRITEPATH . $relativePath;
     }
 
     /**
@@ -2680,6 +3016,58 @@ class Sales extends BaseController
         }
 
         return array_values(array_unique($normalized));
+    }
+
+    private function normalizeZatcaInvoiceType(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        if ($normalized === 'standard') {
+            return 'standard';
+        }
+
+        if ($normalized === 'simplified') {
+            return 'simplified';
+        }
+
+        return '';
+    }
+
+    private function resolveZatcaSaleDefaultInvoiceType(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        if (in_array($normalized, ['standard', 'simplified'], true)) {
+            return $normalized;
+        }
+
+        // 'both' means the user must choose in the sale form.
+        return '';
+    }
+
+    private function isZatcaEnabledForStore(int $storeId, array $settings): bool
+    {
+        if ($storeId <= 0) {
+            return false;
+        }
+
+        if (empty($settings['einvoicing_enabled'])) {
+            return false;
+        }
+
+        if (strtoupper(trim((string) ($settings['einvoicing_country'] ?? ''))) !== 'SA') {
+            return false;
+        }
+
+        $enabledStoresJson = trim((string) ($settings['zatca_enabled_store_ids'] ?? ''));
+        if ($enabledStoresJson === '') {
+            return true;
+        }
+
+        $enabledStoreIds = json_decode($enabledStoresJson, true);
+        if (!is_array($enabledStoreIds)) {
+            return false;
+        }
+
+        return in_array($storeId, array_map('intval', $enabledStoreIds), true);
     }
 
     private function markImeisAsSold(int $saleId, int $saleItemId, int $productId, array $selectedImeis, string $soldAt, int $storeId): void

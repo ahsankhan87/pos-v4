@@ -96,8 +96,9 @@ class CreateEmployeeCategoryTargetsTable extends Migration
         if ($this->tableExists($table)) {
             $indexList = $this->db->query("SHOW INDEXES FROM {$table} WHERE Key_name = '{$indexName}'")->getResultArray();
             if (empty($indexList)) {
-                $this->forge->addUniqueKey($fields, $indexName);
-                $this->forge->processAlteredTable($table);
+                // Use raw SQL to add unique index after table creation
+                $fieldsList = implode(', ', $fields);
+                $this->db->query("ALTER TABLE {$table} ADD UNIQUE KEY {$indexName} ({$fieldsList})");
             }
         }
     }

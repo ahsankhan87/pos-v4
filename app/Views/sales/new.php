@@ -228,7 +228,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     customerId: <?= json_encode($prefillCustomerId ?? 0) ?>,
                     employeeId: <?= json_encode($prefillEmployeeId ?? 0) ?>,
                     paymentMethod: <?= json_encode($prefillPaymentMethod ?? 'cash') ?>,
-                    description: <?= json_encode($prefillDescription ?? '') ?>
+                    description: <?= json_encode($prefillDescription ?? '') ?>,
+                    zatcaInvoiceType: <?= json_encode($zatcaDefaultInvoiceType ?? 'simplified') ?>
                 };
             </script>
         <?php elseif (!empty($oldCartData)): ?>
@@ -240,7 +241,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     customerId: <?= json_encode((int) old('customer_id', 0)) ?>,
                     employeeId: <?= json_encode((int) old('employee_id', 0)) ?>,
                     paymentMethod: <?= json_encode(old('payment_method', 'cash')) ?>,
-                    description: <?= json_encode((string) old('description', '')) ?>
+                    description: <?= json_encode((string) old('description', '')) ?>,
+                    zatcaInvoiceType: <?= json_encode(old('zatca_invoice_type', $zatcaDefaultInvoiceType ?? 'simplified')) ?>
                 };
             </script>
         <?php endif; ?>
@@ -385,6 +387,23 @@ $canEditLineDiscount = can('sales.edit_discount');
                                 class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500"
                                 placeholder="<?= esc(lang('Sales.optional_invoice_notes')) ?>"><?= esc(old('description', $prefillDescription ?? '')) ?></textarea>
                         </div>
+
+                        <?php if (!empty($zatcaEnabled)): ?>
+                            <?php
+                            $selectedZatcaInvoiceType = strtolower((string) old('zatca_invoice_type', $zatcaDefaultInvoiceType ?? ''));
+                            if (!in_array($selectedZatcaInvoiceType, ['simplified', 'standard'], true)) {
+                                $selectedZatcaInvoiceType = '';
+                            }
+                            ?>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.zatca_invoice_type') ?></label>
+                                <select name="zatca_invoice_type" id="zatca_invoice_type" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
+                                    <option value="" <?= $selectedZatcaInvoiceType === '' ? 'selected' : '' ?>><?= lang('Sales.select_invoice_type') ?></option>
+                                    <option value="simplified" <?= $selectedZatcaInvoiceType === 'simplified' ? 'selected' : '' ?>><?= lang('Sales.zatca_invoice_type_simplified') ?></option>
+                                    <option value="standard" <?= $selectedZatcaInvoiceType === 'standard' ? 'selected' : '' ?>><?= lang('Sales.zatca_invoice_type_standard') ?></option>
+                                </select>
+                            </div>
+                        <?php endif; ?>
 
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
@@ -1804,6 +1823,9 @@ $canEditLineDiscount = can('sales.edit_discount');
                 }
                 if (typeof window.__DRAFT_PREFILL__.description === 'string') {
                     $('#sale_description').val(window.__DRAFT_PREFILL__.description);
+                }
+                if (window.__DRAFT_PREFILL__.zatcaInvoiceType) {
+                    $('#zatca_invoice_type').val(String(window.__DRAFT_PREFILL__.zatcaInvoiceType)).trigger('change');
                 }
             } catch (e) {
                 console.warn('Draft prefill failed', e);
