@@ -66,13 +66,17 @@ class Sales extends BaseController
     public function index()
     {
         $salesModel = new M_sales();
+        $storeId = (int) (session('store_id') ?? 0);
         $totalDueRow = $salesModel->selectSum('due_amount', 'due_total')
             ->forStore()
             ->first();
+        $settingsRow = (new SettingsModel())->getSettings() ?? [];
+        $isZatcaEnabled = $this->isZatcaEnabledForStore($storeId, $settingsRow);
 
         $data = [
             'title' => 'Sales List',
             'totalDue' => (float) ($totalDueRow['due_total'] ?? 0),
+            'zatcaEnabled' => $isZatcaEnabled,
         ];
 
         return view('sales/index', $data);
@@ -81,13 +85,21 @@ class Sales extends BaseController
     public function zatcaIndex()
     {
         $salesModel = new M_sales();
+        $storeId = (int) (session('store_id') ?? 0);
         $totalDueRow = $salesModel->selectSum('due_amount', 'due_total')
             ->forStore()
             ->first();
+        $settingsRow = (new SettingsModel())->getSettings() ?? [];
+        $isZatcaEnabled = $this->isZatcaEnabledForStore($storeId, $settingsRow);
+
+        if (!$isZatcaEnabled) {
+            return redirect()->to(site_url('sales'))->with('error', lang('Zatca.feature_disabled'));
+        }
 
         $data = [
             'title' => 'ZATCA E-Invoices',
             'totalDue' => (float) ($totalDueRow['due_total'] ?? 0),
+            'zatcaEnabled' => $isZatcaEnabled,
         ];
 
         return view('sales/zatca_index', $data);
@@ -1628,7 +1640,7 @@ class Sales extends BaseController
     public function complianceCheck($id = null)
     {
         if (!$this->request->is('post')) {
-            throw \CodeIgniter\Exceptions\HTTPException::forMethodNotAllowed();
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
         $salesModel = new M_sales();
@@ -1654,8 +1666,16 @@ class Sales extends BaseController
                 return redirect()->back()->with('error', 'Signed invoice XML file is empty.');
             }
 
+            $normalizedXml = $this->normalizeXmlForComplianceCheck($signedXml);
+            if ($normalizedXml === '') {
+                return redirect()->back()->with(
+                    'error',
+                    'Signed invoice XML is corrupted or not valid UTF-8. Re-sign this invoice from Sales > Sign ZATCA, then run compliance check again.'
+                );
+            }
+
             // Prepare invoice payload and submit to ZATCA compliance endpoint for validation
-            $invoicePayload = $this->zatcaInvoiceService->prepareInvoicePayloadForApi($signedXml);
+            $invoicePayload = $this->zatcaInvoiceService->prepareInvoicePayloadForApi($normalizedXml);
 
             // Get certificate and settings for submission
             $storeId = (int) ($sale['store_id'] ?? 0);
@@ -1737,6 +1757,35 @@ class Sales extends BaseController
             log_message('error', 'ZATCA compliance check failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Compliance check failed: ' . $e->getMessage());
         }
+    }
+
+    private function normalizeXmlForComplianceCheck(string $xml): string
+    {
+        if ($xml === '') {
+            return '';
+        }
+
+        // Strip UTF-8 BOM if present.
+        if (strncmp($xml, "\xEF\xBB\xBF", 3) === 0) {
+            $xml = substr($xml, 3);
+        }
+
+        // Best-effort cleanup for legacy files that contain invalid UTF-8 bytes.
+        if (!preg_match('//u', $xml)) {
+            if (function_exists('iconv')) {
+                $sanitized = @iconv('UTF-8', 'UTF-8//IGNORE', $xml);
+                if ($sanitized !== false) {
+                    $xml = $sanitized;
+                }
+            }
+        }
+
+        if (!preg_match('//u', $xml)) {
+            log_message('warning', 'ZATCA compliance check: invoice XML contains invalid UTF-8 bytes after sanitize attempt.');
+            return '';
+        }
+
+        return trim($xml);
     }
 
     // Save a sale as draft
@@ -2173,7 +2222,7 @@ class Sales extends BaseController
         $saleItemsModel = new \App\Models\M_sale_items();
         $returnModel = new \App\Models\SalesReturnModel();
 
-        $sale = $salesModel->find($saleId);
+        $sale = $salesModel->forStore()->find($saleId);
         $items = $saleItemsModel->where('sale_id', $saleId)->findAll();
 
         // Get already returned quantities for each product in this sale
@@ -2213,7 +2262,7 @@ class Sales extends BaseController
 
         try {
 
-            $sale = $salesModel->find($saleId);
+            $sale = $salesModel->forStore()->find($saleId);
 
             if (!$sale) {
                 return redirect()->back()->with('error', 'Sale not found.');
@@ -2226,6 +2275,8 @@ class Sales extends BaseController
             }
 
             $totalReturnAmountCreditSale = 0.0; // Sum of return amounts to reduce due for credit sales
+            $returnedLinesForZatca = [];
+            $returnEntryIds = [];
 
             // Proportional tax multiplier: only apply if tax is present on the sale.
             // If tax is 0, no multiplier needed. Otherwise multiply return amounts to include tax.
@@ -2301,7 +2352,7 @@ class Sales extends BaseController
                         } else {
                             $unitNetForRow = (float)$item['price'];
                         }
-                        $returnModel->insert([
+                        $returnInserted = $returnModel->insert([
                             'sale_id' => (int)$saleId,
                             'product_id' => $productId,
                             'quantity' => $qty,
@@ -2311,6 +2362,25 @@ class Sales extends BaseController
                             'created_at' => $returnTimestamp,
                             'store_id' => $store_id,
                         ]);
+
+                        if (!$returnInserted) {
+                            throw new \RuntimeException('Failed to save sales return entry for product ID ' . (int) $productId);
+                        }
+
+                        $returnEntryIds[] = (int) $returnModel->getInsertID();
+
+                        // Keep a normalized copy of returned lines to build ZATCA credit note payload.
+                        $lineSubtotal = round($qty * $unitNetForRow, 2);
+                        $lineTotal = round($qty * $unitNetForRow * $taxMultiplier, 2);
+                        $lineTax = round(max(0.0, $lineTotal - $lineSubtotal), 2);
+                        $returnedLinesForZatca[] = [
+                            'name' => (string) ($item['product_name'] ?? ($product['name'] ?? ('Product #' . (int) $productId))),
+                            'quantity' => (float) $qty,
+                            'unit_price' => round((float) $unitNetForRow, 2),
+                            'line_subtotal' => $lineSubtotal,
+                            'line_tax' => $lineTax,
+                            'line_total' => $lineTotal,
+                        ];
 
                         if ($product && (int) ($product['requires_imei'] ?? 0) === 1 && function_exists('business_feature_enabled') && business_feature_enabled('imei_tracking')) {
                             $soldImeis = $imeiModel->forStore()
@@ -2360,7 +2430,129 @@ class Sales extends BaseController
         // Commit transaction
         $db->transComplete();
 
-        return redirect()->to(site_url('sales'))->with('success', 'Sales return processed.');
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Failed to process sales return. Please try again.');
+        }
+
+        $zatcaWarning = '';
+        try {
+            $storeIdInt = (int) ($store_id ?? 0);
+            $settingsRow = (new SettingsModel())->getSettings() ?? [];
+            $isZatcaEnabled = $this->isZatcaEnabledForStore($storeIdInt, $settingsRow);
+            $shouldProcessZatca = $isZatcaEnabled && !empty($returnedLinesForZatca);
+
+            if ($shouldProcessZatca) {
+                $creditNoteResult = $this->zatcaInvoiceService->generateAndSubmitCreditNoteForSaleReturn(
+                    (int) $saleId,
+                    $returnedLinesForZatca,
+                    (string) ($reason ?? ''),
+                    $returnTimestamp
+                );
+
+                $this->persistReturnCreditNoteResult($returnModel, $returnEntryIds, $creditNoteResult);
+
+                if (!empty($creditNoteResult['success']) && in_array((string) ($creditNoteResult['status'] ?? ''), ['reported', 'cleared'], true)) {
+                    logAction(
+                        'zatca_credit_note_' . (string) $creditNoteResult['status'],
+                        'Sale ID: ' . (int) $saleId
+                            . ', invoice_no: ' . (string) ($sale['invoice_no'] ?? '')
+                            . ', UUID: ' . (string) ($creditNoteResult['uuid'] ?? '')
+                    );
+                } else {
+                    $zatcaWarning = 'Sales return completed, but ZATCA credit note submission is pending: ' . (string) ($creditNoteResult['message'] ?? 'Unknown error');
+                    log_message('warning', 'ZATCA credit note submission pending for sale ' . (int) $saleId . ': ' . (string) ($creditNoteResult['message'] ?? 'Unknown error'));
+                }
+            } else {
+                $skipReason = !$isZatcaEnabled
+                    ? 'ZATCA disabled for this store/environment.'
+                    : 'No valid returned lines were found for credit note generation.';
+                $this->persistReturnCreditNoteResult($returnModel, $returnEntryIds, [
+                    'success' => false,
+                    'status' => 'skipped',
+                    'message' => $skipReason,
+                ]);
+            }
+        } catch (\Throwable $zatcaError) {
+            $this->persistReturnCreditNoteResult($returnModel, $returnEntryIds, [
+                'success' => false,
+                'status' => 'pending',
+                'message' => $zatcaError->getMessage(),
+            ]);
+            $zatcaWarning = 'Sales return completed, but failed to submit ZATCA credit note: ' . $zatcaError->getMessage();
+            log_message('error', 'ZATCA credit note generation exception for returned sale ' . (int) $saleId . ': ' . $zatcaError->getMessage());
+        }
+
+        $redirect = redirect()->to(site_url('sales'))->with('success', 'Sales return processed.');
+        if ($zatcaWarning !== '') {
+            $redirect = $redirect->with('warning', $zatcaWarning);
+        }
+
+        return $redirect;
+    }
+
+    public function resendReturnCreditNote($saleId = null)
+    {
+        $salesModel = new M_sales();
+        $returnModel = new SalesReturnModel();
+
+        $sale = $salesModel->forStore()->find($saleId);
+        if (!$sale) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Sale not found');
+        }
+
+        $storeId = (int) (session('store_id') ?? 0);
+        $latestReturnRows = $this->getLatestReturnBatchRows($returnModel, (int) $saleId, $storeId);
+        if (empty($latestReturnRows)) {
+            return redirect()->back()->with('error', 'No return rows found for this sale.');
+        }
+
+        $returnedLines = $this->buildReturnedLinesFromReturnRows((int) $saleId, $sale, $latestReturnRows);
+        if (empty($returnedLines)) {
+            return redirect()->back()->with('error', 'No valid returned lines available for return credit note resubmission.');
+        }
+
+        $returnIds = array_values(array_map(static function ($row) {
+            return (int) ($row['id'] ?? 0);
+        }, $latestReturnRows));
+        $returnIds = array_values(array_filter($returnIds, static function ($id) {
+            return $id > 0;
+        }));
+
+        $reason = trim((string) ($latestReturnRows[0]['reason'] ?? ''));
+        $issuedAt = (string) ($latestReturnRows[0]['created_at'] ?? date('Y-m-d H:i:s'));
+
+        try {
+            $result = $this->zatcaInvoiceService->generateAndSubmitCreditNoteForSaleReturn(
+                (int) $saleId,
+                $returnedLines,
+                $reason,
+                $issuedAt
+            );
+
+            $this->persistReturnCreditNoteResult($returnModel, $returnIds, $result);
+
+            if (!empty($result['success']) && in_array((string) ($result['status'] ?? ''), ['reported', 'cleared'], true)) {
+                logAction(
+                    'zatca_return_credit_note_' . (string) $result['status'],
+                    'Sale ID: ' . (int) $saleId
+                        . ', invoice_no: ' . (string) ($sale['invoice_no'] ?? '')
+                        . ', UUID: ' . (string) ($result['uuid'] ?? '')
+                );
+                $flashType = (!empty($result['has_warnings']) && empty($result['has_errors'])) ? 'warning' : 'success';
+                $message = (string) ($result['message'] ?? 'Return credit note submitted successfully.');
+                return redirect()->back()->with($flashType, $message);
+            }
+
+            return redirect()->back()->with('error', 'Return credit note submission pending: ' . (string) ($result['message'] ?? 'Unknown error'));
+        } catch (\Throwable $e) {
+            $this->persistReturnCreditNoteResult($returnModel, $returnIds, [
+                'success' => false,
+                'status' => 'pending',
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', 'Return credit note submission failed: ' . $e->getMessage());
+        }
     }
 
     public function receivePayment($saleId)
@@ -2438,23 +2630,32 @@ class Sales extends BaseController
         $includeZatcaColumns = $onlyZatca || ((int) ($this->request->getVar('include_zatca') ?? 0) === 1);
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
-        $columns = [
-            'ps.id',
-            'ps.invoice_no',
-            'c.name',
-            'ps.total',
-            'return_total',
-            'net_total',
-            'ps.created_at',
-            'ps.payment_type',
-            'ps.payment_status',
-            'ps.due_amount',
-        ];
-
         if ($includeZatcaColumns) {
-            $columns[] = 'ps.zatca_invoice_type';
-            $columns[] = 'ps.zatca_status';
-            $columns[] = 'ps.zatca_submitted_at';
+            // Keep ordering map aligned with app/Views/sales/zatca_index.php columns.
+            $columns = [
+                'ps.id',
+                'ps.invoice_no',
+                'c.name',
+                'ps.created_at',
+                'ps.total',
+                'ps.zatca_invoice_type',
+                'ps.zatca_status',
+                'rr.zatca_credit_note_status',
+                'ps.zatca_submitted_at',
+            ];
+        } else {
+            $columns = [
+                'ps.id',
+                'ps.invoice_no',
+                'c.name',
+                'ps.total',
+                'return_total',
+                'net_total',
+                'ps.created_at',
+                'ps.payment_type',
+                'ps.payment_status',
+                'ps.due_amount',
+            ];
         }
 
         $db = \Config\Database::connect();
@@ -2469,6 +2670,7 @@ class Sales extends BaseController
                 ->where('zatca_uuid IS NOT NULL', null, false)
                 ->orWhere('zatca_status IS NOT NULL', null, false)
                 ->orWhere('zatca_xml_path IS NOT NULL', null, false)
+                ->orWhere('EXISTS (SELECT 1 FROM pos_sales_returns srz WHERE srz.sale_id = pos_sales.id AND (srz.zatca_credit_note_uuid IS NOT NULL OR srz.zatca_credit_note_status IS NOT NULL OR srz.zatca_credit_note_xml_path IS NOT NULL))', null, false)
                 ->groupEnd();
         }
         //$baseBuilder->where('status', 'draft');
@@ -2488,6 +2690,7 @@ class Sales extends BaseController
                 ->where('ps.zatca_uuid IS NOT NULL', null, false)
                 ->orWhere('ps.zatca_status IS NOT NULL', null, false)
                 ->orWhere('ps.zatca_xml_path IS NOT NULL', null, false)
+                ->orWhere('EXISTS (SELECT 1 FROM pos_sales_returns srz WHERE srz.sale_id = ps.id AND (srz.zatca_credit_note_uuid IS NOT NULL OR srz.zatca_credit_note_status IS NOT NULL OR srz.zatca_credit_note_xml_path IS NOT NULL))', null, false)
                 ->groupEnd();
         }
 
@@ -2521,6 +2724,14 @@ class Sales extends BaseController
         ) r';
 
         $filteredBuilder->join($returnsSubquery, 'r.sale_id = ps.id', 'left', false);
+        $returnsZatcaLatestSubquery = '(
+            SELECT sale_id, MAX(id) AS latest_return_id
+            FROM pos_sales_returns
+            ' . ($storeId !== null ? ('WHERE store_id = ' . $storeIdInt) : '') . '
+            GROUP BY sale_id
+        ) rz';
+        $filteredBuilder->join($returnsZatcaLatestSubquery, 'rz.sale_id = ps.id', 'left', false);
+        $filteredBuilder->join('pos_sales_returns rr', 'rr.id = rz.latest_return_id', 'left');
 
         $select = 'ps.id, ps.invoice_no, ps.total, '
             . 'COALESCE(r.total_return, 0) AS return_total, '
@@ -2531,6 +2742,7 @@ class Sales extends BaseController
 
         if ($includeZatcaColumns) {
             $select .= ', ps.zatca_invoice_type, ps.zatca_status, ps.zatca_xml_path, ps.zatca_uuid, ps.zatca_icv, ps.zatca_submitted_at, ps.zatca_response';
+            $select .= ', rr.id AS return_row_id, rr.zatca_credit_note_uuid AS return_zatca_uuid, rr.zatca_credit_note_status AS return_zatca_status, rr.zatca_credit_note_xml_path AS return_zatca_xml_path, rr.zatca_credit_note_submitted_at AS return_zatca_submitted_at';
         }
 
         $filteredBuilder->select($select);
@@ -2582,6 +2794,141 @@ class Sales extends BaseController
         }
 
         return WRITEPATH . $relativePath;
+    }
+
+    private function persistReturnCreditNoteResult(SalesReturnModel $returnModel, array $returnEntryIds, array $creditNoteResult): void
+    {
+        if (empty($returnEntryIds)) {
+            return;
+        }
+
+        $status = trim((string) ($creditNoteResult['status'] ?? 'pending'));
+        if ($status === '') {
+            $status = 'pending';
+        }
+
+        $responsePayload = [
+            'success' => (bool) ($creditNoteResult['success'] ?? false),
+            'status' => $status,
+            'message' => (string) ($creditNoteResult['message'] ?? ''),
+            'response' => $creditNoteResult['response'] ?? null,
+            'updated_at' => date('c'),
+        ];
+
+        $submittedAt = null;
+        if (($creditNoteResult['success'] ?? false) && in_array($status, ['reported', 'cleared'], true)) {
+            $submittedAt = date('Y-m-d H:i:s');
+        }
+
+        $updatePayload = [
+            'zatca_credit_note_uuid' => (string) ($creditNoteResult['uuid'] ?? ''),
+            'zatca_credit_note_hash' => (string) ($creditNoteResult['hash'] ?? ''),
+            'zatca_credit_note_xml_path' => (string) ($creditNoteResult['xml_path'] ?? ''),
+            'zatca_credit_note_status' => $status,
+            'zatca_credit_note_response' => json_encode($responsePayload),
+            'zatca_credit_note_submitted_at' => $submittedAt,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+
+        $returnModel->whereIn('id', $returnEntryIds)->set($updatePayload)->update();
+    }
+
+    private function getLatestReturnBatchRows(SalesReturnModel $returnModel, int $saleId, int $storeId): array
+    {
+        $latest = $returnModel
+            ->where('sale_id', $saleId)
+            ->where('store_id', $storeId)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        if (!$latest) {
+            return [];
+        }
+
+        $existingUuid = trim((string) ($latest['zatca_credit_note_uuid'] ?? ''));
+        if ($existingUuid !== '') {
+            $rows = $returnModel
+                ->where('sale_id', $saleId)
+                ->where('store_id', $storeId)
+                ->where('zatca_credit_note_uuid', $existingUuid)
+                ->orderBy('id', 'ASC')
+                ->findAll();
+
+            if (!empty($rows)) {
+                return $rows;
+            }
+        }
+
+        $createdAt = (string) ($latest['created_at'] ?? '');
+        if ($createdAt !== '') {
+            $rows = $returnModel
+                ->where('sale_id', $saleId)
+                ->where('store_id', $storeId)
+                ->where('created_at', $createdAt)
+                ->orderBy('id', 'ASC')
+                ->findAll();
+
+            if (!empty($rows)) {
+                return $rows;
+            }
+        }
+
+        return [$latest];
+    }
+
+    private function buildReturnedLinesFromReturnRows(int $saleId, array $sale, array $returnRows): array
+    {
+        $saleItemsModel = new M_sale_items();
+        $productModel = new M_products();
+
+        $saleItems = $saleItemsModel->where('sale_id', $saleId)->findAll();
+        $saleItemsByProduct = [];
+        foreach ($saleItems as $item) {
+            $saleItemsByProduct[(int) ($item['product_id'] ?? 0)] = $item;
+        }
+
+        $saleTaxAmount = (float) ($sale['total_tax'] ?? 0);
+        $taxMultiplier = 1.0;
+        if ($saleTaxAmount > 0.001) {
+            $saleNetPreTax = (float) ($sale['total'] ?? 0) - $saleTaxAmount;
+            $taxMultiplier = ($saleNetPreTax > 0.001) ? ((float) ($sale['total'] ?? 0) / $saleNetPreTax) : 1.0;
+        }
+
+        $lines = [];
+        foreach ($returnRows as $row) {
+            $productId = (int) ($row['product_id'] ?? 0);
+            $qty = max(0.0, (float) ($row['quantity'] ?? 0));
+            if ($productId <= 0 || $qty <= 0) {
+                continue;
+            }
+
+            $saleItem = $saleItemsByProduct[$productId] ?? null;
+            $unitNet = 0.0;
+            if ($saleItem && (float) ($saleItem['quantity'] ?? 0) > 0) {
+                $unitNet = (float) ($saleItem['subtotal'] ?? 0) / (float) ($saleItem['quantity'] ?? 1);
+            } elseif ($saleItem) {
+                $unitNet = (float) ($saleItem['price'] ?? 0);
+            } else {
+                $unitNet = ((float) ($row['return_amount'] ?? 0) > 0) ? ((float) $row['return_amount'] / $qty) : 0.0;
+            }
+
+            $lineSubtotal = round(max(0.0, $qty * $unitNet), 2);
+            $lineTotalStored = round(max(0.0, (float) ($row['return_amount'] ?? 0)), 2);
+            $lineTotal = $lineTotalStored > 0 ? $lineTotalStored : round(max(0.0, $lineSubtotal * $taxMultiplier), 2);
+            $lineTax = round(max(0.0, $lineTotal - $lineSubtotal), 2);
+
+            $product = $productModel->forStore()->find($productId);
+            $lines[] = [
+                'name' => (string) ($product['name'] ?? ('Product #' . $productId)),
+                'quantity' => $qty,
+                'unit_price' => round($unitNet, 2),
+                'line_subtotal' => $lineSubtotal,
+                'line_tax' => $lineTax,
+                'line_total' => $lineTotal,
+            ];
+        }
+
+        return $lines;
     }
 
     /**

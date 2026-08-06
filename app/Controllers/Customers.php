@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\M_customers;
-use App\Models\SettingsModel;
 use App\Models\StoreModel;
 
 class Customers extends BaseController
@@ -13,7 +12,7 @@ class Customers extends BaseController
      */
     public function __construct()
     {
-        helper(['audit', 'form', 'number']);
+        helper(['audit', 'form', 'number', 'zatca_helper']);
     }
 
     /**
@@ -159,7 +158,6 @@ class Customers extends BaseController
     public function show($id = null)
     {
         $model = new M_customers();
-        $settingsModel = new SettingsModel();
         $storeModel = new StoreModel();
 
         $data['customer'] = $model->forStore()
@@ -169,9 +167,8 @@ class Customers extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Customer not found');
         }
 
-        $settings = $settingsModel->getZatcaSettings();
-        $isZatcaEnabled = !empty($settings['einvoicing_enabled'])
-            && strtoupper((string) ($settings['einvoicing_country'] ?? 'SA')) === 'SA';
+        $storeId = (int) (session('store_id') ?? 0);
+        $isZatcaEnabled = zatca_enabled_for_store($storeId);
 
         $data['isZatcaEnabled'] = $isZatcaEnabled;
         $data['storeProfile'] = $storeModel->find((int) (session('store_id') ?? 0)) ?? [];
@@ -181,8 +178,11 @@ class Customers extends BaseController
 
     public function new()
     {
+        $storeId = (int) (session('store_id') ?? 0);
+        $isZatcaEnabled = zatca_enabled_for_store($storeId);
 
         $data['title'] = 'Add New Customer';
+        $data['isZatcaEnabled'] = $isZatcaEnabled;
         return view('customers/new', $data);
     }
 
@@ -267,6 +267,8 @@ class Customers extends BaseController
         if (!$data['customer']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Customer not found');
         }
+        $storeId = (int) (session('store_id') ?? 0);
+        $data['isZatcaEnabled'] = zatca_enabled_for_store($storeId);
         return view('customers/edit', $data);
     }
 

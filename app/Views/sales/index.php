@@ -1,6 +1,7 @@
 <?= $this->extend('templates/header') ?>
 
 <?= $this->section('content') ?>
+<?php $zatcaEnabled = !empty($zatcaEnabled); ?>
 <?php $showZatcaColumns = false; ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Page Header -->
@@ -10,7 +11,7 @@
             <p class="mt-1 text-sm text-gray-500"><?= lang('Sales.records_subtitle') ?></p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <?php if (can('sales.view')): ?>
+            <?php if (can('sales.view') && $zatcaEnabled): ?>
                 <a href="<?= site_url('sales/zatca-invoices') ?>" class="btn btn-muted mr-2">
                     <i class="fas fa-file-invoice"></i> ZATCA E-Invoices
                 </a>

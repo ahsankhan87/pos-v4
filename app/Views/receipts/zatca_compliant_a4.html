@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" dir="{{direction}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt {{invoice_number}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0.5cm;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+            .page {
+                page-break-after: always;
+                break-after: page;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            color: #333;
+            line-height: 1.4;
+            background: #f5f5f5;
+        }
+
+        .page {
+            background: white;
+            width: 21cm;
+            height: 29.7cm;
+            margin: 10px auto;
+            padding: 0.8cm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Language Direction */
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+        [dir="ltr"] {
+            direction: ltr;
+            text-align: left;
+        }
+
+        .header-section {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #1a472a;
+            align-items: center;
+        }
+
+        .logo-box {
+            text-align: center;
+        }
+
+        .logo-box img {
+            max-height: 60px;
+            max-width: 100px;
+            object-fit: contain;
+        }
+
+        .company-info {
+            text-align: center;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a472a;
+            margin-bottom: 4px;
+        }
+
+        .invoice-type {
+            display: inline-block;
+            background: #1a472a;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .invoice-type.credit-note {
+            background: #d32f2f;
+        }
+
+        .top-right-info {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        [dir="rtl"] .top-right-info {
+            text-align: left;
+        }
+
+        .invoice-ref {
+            font-size: 12px;
+            margin: 2px 0;
+            color: #555;
+        }
+
+        /* Two Column Layout */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-block {
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #fafafa;
+            border-radius: 3px;
+        }
+
+        .info-block h4 {
+            font-size: 10px;
+            font-weight: bold;
+            color: #1a472a;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #1a472a;
+            padding-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 2px 8px;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* ZATCA Compliance Display */
+        .zatca-info {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #ccc;
+            font-size: 9px;
+            display: none;
+        }
+
+        .zatca-info.show {
+            display: block;
+        }
+
+        .zatca-info .row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 2px 6px;
+            margin: 2px 0;
+            line-height: 1.3;
+        }
+
+        .zatca-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .zatca-value {
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* Items Table */
+        .items-section {
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        thead {
+            background: #1a472a;
+            color: white;
+        }
+
+        thead th {
+            padding: 6px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 10px;
+            border: 1px solid #1a472a;
+        }
+
+        [dir="rtl"] thead th {
+            text-align: right;
+        }
+
+        tbody td {
+            padding: 6px;
+            border: 1px solid #ddd;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background: #f0f0f0;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        [dir="rtl"] .text-right {
+            text-align: left;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .totals-notes {
+            font-size: 9px;
+            line-height: 1.5;
+            border: 1px solid #ddd;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 3px;
+            min-height: 60px;
+        }
+
+        .totals-table {
+            min-width: 280px;
+        }
+
+        .totals-table table {
+            margin: 0;
+        }
+
+        .totals-table td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            font-size: 10px;
+        }
+
+        .totals-table .total-row {
+            background: #e8f5e9;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .totals-table .grand-total-row {
+            background: #1a472a;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .total-label {
+            text-align: left;
+            font-weight: 600;
+        }
+
+        [dir="rtl"] .total-label {
+            text-align: right;
+        }
+
+        .total-amount {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        [dir="rtl"] .total-amount {
+            text-align: left;
+            padding-right: 0;
+            padding-left: 10px;
+        }
+
+        /* QR Code Section */
+        .qr-compliance {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            border-radius: 3px;
+            display: none;
+        }
+
+        .qr-compliance.show {
+            display: grid;
+        }
+
+        .qr-code {
+            text-align: center;
+        }
+
+        .qr-code img {
+            max-width: 80px;
+            max-height: 80px;
+        }
+
+        .compliance-text {
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .compliance-text strong {
+            color: #1a472a;
+        }
+
+        [dir="rtl"] .qr-compliance {
+            grid-template-columns: 1fr auto;
+        }
+
+        /* Footer */
+        .footer-section {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .footer-notes {
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .payment-terms {
+            font-size: 9px;
+            margin: 6px 0;
+            padding: 6px;
+            background: #fffacd;
+            border-left: 3px solid #ffc107;
+            border-radius: 2px;
+        }
+
+        [dir="rtl"] .payment-terms {
+            border-left: none;
+            border-right: 3px solid #ffc107;
+        }
+
+        /* Print Specific */
+        @media print {
+            body {
+                background: white;
+            }
+            .page {
+                margin: 0;
+                box-shadow: none;
+                break-after: page;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media screen and (max-width: 768px) {
+            .page {
+                width: 100%;
+                margin: 5px;
+                padding: 0.5cm;
+            }
+            .header-section {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .totals-section {
+                grid-template-columns: 1fr;
+            }
+            .qr-compliance {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page" dir="{{direction}}">
+        <!-- HEADER -->
+        <div class="header-section">
+            <div class="logo-box">
+                {{store_logo_img}}
+            </div>
+            <div class="company-info">
+                <div class="company-name">{{store_name}}</div>
+                <div class="invoice-type">{{invoice_type_label}}</div>
+                <div style="font-size: 9px; color: #666; margin-top: 4px;">
+                    {{vat_label}}: {{store_vat_number}}
+                </div>
+            </div>
+            <div class="top-right-info">
+                <div class="invoice-ref">{{invoice_number_label}}</div>
+                <div style="font-size: 13px; font-weight: bold; color: #1a472a;">{{invoice_number}}</div>
+                <div class="invoice-ref" style="margin-top: 6px;">{{invoice_date_label}}</div>
+                <div style="font-size: 11px;">{{invoice_date}}</div>
+            </div>
+        </div>
+
+        <!-- SELLER & BUYER INFO -->
+        <div class="content-wrapper">
+            <!-- SELLER (Store) -->
+            <div class="info-block">
+                <h4>{{seller_label}}</h4>
+                <div class="info-grid">
+                    <div class="info-label">{{legal_name_label}}:</div>
+                    <div class="info-value"><strong>{{store_legal_name}}</strong></div>
+
+                    <div class="info-label">{{cr_number_label}}:</div>
+                    <div class="info-value">{{store_cr_number}}</div>
+
+                    <div class="info-label">{{vat_label}}:</div>
+                    <div class="info-value">{{store_vat_number}}</div>
+
+                    <div class="info-label">{{phone_label}}:</div>
+                    <div class="info-value">{{store_phone}}</div>
+
+                    <div class="info-label">{{email_label}}:</div>
+                    <div class="info-value">{{store_email}}</div>
+                </div>
+
+                <!-- ZATCA Seller Address -->
+                <div class="zatca-info" id="seller-zatca">
+                    <strong style="color: #1a472a; display: block; margin-bottom: 4px;">{{postal_address_label}}</strong>
+                    <div class="row">
+                        <div class="zatca-label">{{street_label}}:</div>
+                        <div class="zatca-value">{{store_street_name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{building_label}}:</div>
+                        <div class="zatca-value">{{store_building_number}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{city_subdivision_label}}:</div>
+                        <div class="zatca-value">{{store_city_subdivision_name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{city_label}}:</div>
+                        <div class="zatca-value">{{store_city_name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{postal_code_label}}:</div>
+                        <div class="zatca-value">{{store_postal_code}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUYER (Customer) -->
+            <div class="info-block">
+                <h4>{{buyer_label}}</h4>
+                <div class="info-grid">
+                    <div class="info-label">{{name_label}}:</div>
+                    <div class="info-value"><strong>{{customer_name}}</strong></div>
+
+                    <div class="info-label">{{registration_name_label}}:</div>
+                    <div class="info-value">{{customer_zatca_registration_name}}</div>
+
+                    <div class="info-label">{{cr_number_label}}:</div>
+                    <div class="info-value">{{customer_zatca_cr_number}}</div>
+
+                    <div class="info-label">{{vat_label}}:</div>
+                    <div class="info-value">{{customer_vat_number}}</div>
+
+                    <div class="info-label">{{phone_label}}:</div>
+                    <div class="info-value">{{customer_phone}}</div>
+
+                    <div class="info-label">{{email_label}}:</div>
+                    <div class="info-value">{{customer_email}}</div>
+                </div>
+
+                <!-- ZATCA Customer Address -->
+                <div class="zatca-info" id="buyer-zatca">
+                    <strong style="color: #1a472a; display: block; margin-bottom: 4px;">{{postal_address_label}}</strong>
+                    <div class="row">
+                        <div class="zatca-label">{{street_label}}:</div>
+                        <div class="zatca-value">{{customer_street_name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{building_label}}:</div>
+                        <div class="zatca-value">{{customer_building_number}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{city_subdivision_label}}:</div>
+                        <div class="zatca-value">{{customer_city_subdivision_name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{city_label}}:</div>
+                        <div class="zatca-value">{{customer_city_name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="zatca-label">{{postal_code_label}}:</div>
+                        <div class="zatca-value">{{customer_postal_code}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ITEMS TABLE -->
+        <div class="items-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%; text-align: center;">#</th>
+                        <th style="width: 40%;">{{description_label}}</th>
+                        <th style="width: 12%; text-align: center;">{{qty_label}}</th>
+                        <th style="width: 15%; text-align: right;">{{unit_price_label}}</th>
+                        <th style="width: 12%; text-align: right;">{{discount_label}}</th>
+                        <th style="width: 16%; text-align: right;">{{amount_label}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{invoice_items}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TOTALS -->
+        <div class="totals-section">
+            <div class="totals-notes">
+                <strong>{{notes_label}}</strong><br>
+                {{invoice_notes}}
+            </div>
+            <div class="totals-table">
+                <table>
+                    <tr>
+                        <td class="total-label">{{subtotal_label}}:</td>
+                        <td class="total-amount">{{currency}}{{subtotal}}</td>
+                    </tr>
+                    <tr>
+                        <td class="total-label">{{discount_label}}:</td>
+                        <td class="total-amount">-{{currency}}{{total_discount}}</td>
+                    </tr>
+                    <tr>
+                        <td class="total-label">{{tax_label}} ({{tax_rate}}%):</td>
+                        <td class="total-amount">{{currency}}{{total_tax}}</td>
+                    </tr>
+                    <tr class="grand-total-row">
+                        <td class="total-label">{{grand_total_label}}:</td>
+                        <td class="total-amount">{{currency}}{{grand_total}}</td>
+                    </tr>
+                    <tr>
+                        <td class="total-label">{{paid_label}}:</td>
+                        <td class="total-amount">{{currency}}{{amount_paid}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ZATCA QR CODE & COMPLIANCE -->
+        <div class="qr-compliance" id="zatca-qr-section">
+            <div class="qr-code">
+                {{zatca_qr_code}}
+            </div>
+            <div class="compliance-text">
+                <strong>{{zatca_compliance_label}}</strong><br>
+                {{zatca_compliance_text}}<br><br>
+                <strong>{{invoice_id_label}}:</strong> {{invoice_hash}}<br>
+                <strong>{{uuid_label}}:</strong> {{invoice_uuid}}
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer-section">
+            <div class="footer-notes">
+                {{footer_text}}
+            </div>
+            <div style="margin-top: 8px; font-size: 8px; color: #999;">
+                {{footer_disclaimer}}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-show ZATCA sections when QR code exists
+        document.addEventListener('DOMContentLoaded', function() {
+            var zatcaQrSection = document.getElementById('zatca-qr-section');
+            var sellerZatca = document.getElementById('seller-zatca');
+            var buyerZatca = document.getElementById('buyer-zatca');
+
+            // Check if QR code has content (not just empty placeholder)
+            if (zatcaQrSection && zatcaQrSection.textContent.trim().length > 20) {
+                zatcaQrSection.classList.add('show');
+                if (sellerZatca) sellerZatca.classList.add('show');
+                if (buyerZatca) buyerZatca.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>

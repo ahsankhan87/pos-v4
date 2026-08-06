@@ -68,43 +68,45 @@
                                 </div>
                             </div>
 
-                            <div class="mt-6 border-t border-gray-200 pt-4">
-                                <h4 class="text-sm font-bold text-gray-900 mb-3"><?= lang('Customers.zatca_buyer_details') ?></h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_registration_name') ?></label>
-                                        <input type="text" name="zatca_registration_name" value="<?= esc($customer['zatca_registration_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_registration_name_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_cr_number') ?></label>
-                                        <input type="text" name="zatca_cr_number" value="<?= esc($customer['zatca_cr_number'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_cr_number_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_street_name') ?></label>
-                                        <input type="text" name="zatca_street_name" value="<?= esc($customer['zatca_street_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_street_name_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_building_number') ?></label>
-                                        <input type="text" name="zatca_building_number" value="<?= esc($customer['zatca_building_number'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_building_number_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_city_subdivision_name') ?></label>
-                                        <input type="text" name="zatca_city_subdivision_name" value="<?= esc($customer['zatca_city_subdivision_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_city_subdivision_name_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_city_name') ?></label>
-                                        <input type="text" name="zatca_city_name" value="<?= esc($customer['zatca_city_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_city_name_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_postal_code') ?></label>
-                                        <input type="text" name="zatca_postal_code" value="<?= esc($customer['zatca_postal_code'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_postal_code_placeholder')) ?>">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_country_code') ?></label>
-                                        <input type="text" name="zatca_country_code" value="<?= esc($customer['zatca_country_code'] ?? 'SA') ?>" maxlength="2" readonly class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-700">
+                            <?php if (!empty($isZatcaEnabled)): ?>
+                                <div class="mt-6 border-t border-gray-200 pt-4">
+                                    <h4 class="text-sm font-bold text-gray-900 mb-3"><?= lang('Customers.zatca_buyer_details') ?></h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_registration_name') ?></label>
+                                            <input type="text" name="zatca_registration_name" value="<?= esc($customer['zatca_registration_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_registration_name_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_cr_number') ?></label>
+                                            <input type="text" name="zatca_cr_number" value="<?= esc($customer['zatca_cr_number'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_cr_number_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_street_name') ?></label>
+                                            <input type="text" name="zatca_street_name" value="<?= esc($customer['zatca_street_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_street_name_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_building_number') ?></label>
+                                            <input type="text" name="zatca_building_number" value="<?= esc($customer['zatca_building_number'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_building_number_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_city_subdivision_name') ?></label>
+                                            <input type="text" name="zatca_city_subdivision_name" value="<?= esc($customer['zatca_city_subdivision_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_city_subdivision_name_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_city_name') ?></label>
+                                            <input type="text" name="zatca_city_name" value="<?= esc($customer['zatca_city_name'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_city_name_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_postal_code') ?></label>
+                                            <input type="text" name="zatca_postal_code" value="<?= esc($customer['zatca_postal_code'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<?= esc(lang('Customers.zatca_postal_code_placeholder')) ?>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1"><?= lang('Customers.zatca_country_code') ?></label>
+                                            <input type="text" name="zatca_country_code" value="<?= esc($customer['zatca_country_code'] ?? 'SA') ?>" maxlength="2" readonly class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-700">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

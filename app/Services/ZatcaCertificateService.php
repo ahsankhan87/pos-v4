@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Config\Zatca;
+use Saleh7\Zatca\CertificateBuilder;
 
 /**
  * ZATCA Certificate Service
@@ -62,6 +63,76 @@ class ZatcaCertificateService
         string $location = 'Riyadh',
         string $industry = 'Retail'
     ): array {
+        try {
+            $settingsModel = model('SettingsModel');
+            $settings = $settingsModel->getZatcaSettings();
+            $environment = (string) ($settings['zatca_environment'] ?? 'sandbox');
+
+            $serialUuid = strtoupper(bin2hex(random_bytes(16)));
+            $serialUuid = substr($serialUuid, 0, 8) . '-' . substr($serialUuid, 8, 4) . '-' . substr($serialUuid, 12, 4) . '-' . substr($serialUuid, 16, 4) . '-' . substr($serialUuid, 20, 12);
+            $tin = substr($vatNumber, 0, 10);
+
+            $builder = (new CertificateBuilder())
+                ->setOrganizationIdentifier($vatNumber)
+                ->setSerialNumber('POS', '1.0', $serialUuid)
+                ->setCommonName('ERP-' . $tin . '-' . $vatNumber)
+                ->setCountryName('SA')
+                ->setOrganizationName($organizationName)
+                ->setOrganizationalUnitName($organizationUnit)
+                ->setAddress($location)
+                ->setInvoiceType($this->mapInvoiceTypeToBitmask($invoiceType))
+                ->setEnvironment($this->mapEnvironmentToBuilderEnvironment($environment))
+                ->setBusinessCategory($industry);
+
+            $builder->generate();
+            $csrPem = $builder->getCsr();
+
+            $tmpKeyPath = WRITEPATH . 'zatca/private_' . uniqid('', true) . '.pem';
+            $builder->savePrivateKey($tmpKeyPath);
+            $privateKeyPem = (string) file_get_contents($tmpKeyPath);
+            @unlink($tmpKeyPath);
+
+            if ($csrPem === '' || $privateKeyPem === '') {
+                throw new \RuntimeException('Generated CSR/private key is empty.');
+            }
+
+            $csrBase64 = base64_encode($csrPem);
+            $privateKeyRawBody = $this->extractPrivateKeyRawBody($privateKeyPem);
+
+            $existingCert = $this->certificatesModel
+                ->where('store_id', $storeId)
+                ->where('environment', $environment)
+                ->first();
+
+            if ($existingCert) {
+                $this->certificatesModel->update($existingCert['id'], [
+                    'csr' => $csrBase64,
+                    'private_key' => $privateKeyRawBody,
+                    'status' => 'draft',
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+                $certificateId = $existingCert['id'];
+            } else {
+                $certificateId = $this->certificatesModel->insert([
+                    'store_id' => $storeId,
+                    'environment' => $environment,
+                    'csr' => $csrBase64,
+                    'private_key' => $privateKeyRawBody,
+                    'status' => 'draft',
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+
+            return [
+                'csr' => $csrBase64,
+                'private_key' => $privateKeyPem,
+                'certificate_id' => $certificateId,
+            ];
+        } catch (\Throwable $e) {
+            $this->logMessage('warning', 'ZATCA: php-zatca-xml CertificateBuilder failed, falling back to legacy OpenSSL flow: ' . $e->getMessage());
+        }
+
         // --- Step 1: Build CSR identity values ---
         // Serial number: ZATCA format 1-TST|2-TST|3-{UUID} with standard 8-4-4-4-12 dashes
         $uuidBytes    = random_bytes(16);
@@ -608,7 +679,7 @@ class ZatcaCertificateService
     /**
      * Attempt to normalize the key through a temporary file using PHP OpenSSL.
      */
-    protected function tryNormalizeFromTempFile(string $value): ?string
+    protected function tryNormalizeFromTempFile(string $value)
     {
         $tmpDir = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'writable' . DIRECTORY_SEPARATOR . 'zatca';
         if (!is_dir($tmpDir)) {
@@ -641,7 +712,7 @@ class ZatcaCertificateService
     /**
      * Attempt to normalize the key using the OpenSSL CLI.
      */
-    protected function tryNormalizeWithOpenSslCli(string $value): ?string
+    protected function tryNormalizeWithOpenSslCli(string $value)
     {
         $bin = $this->findOpenSslBinary();
         if (!$bin) {
@@ -707,7 +778,7 @@ class ZatcaCertificateService
     /**
      * Extract a PEM block from a larger string containing surrounding text.
      */
-    protected function extractPemBlock(string $value): ?string
+    protected function extractPemBlock(string $value)
     {
         if (preg_match('/-----BEGIN[^
 \n]+-----[\s\S]*?-----END[^
@@ -865,5 +936,31 @@ class ZatcaCertificateService
         $this->logMessage('info', 'ZATCA: PHP config: ' . $phpAbs);
 
         return [$cliAbs, $phpAbs];
+    }
+
+    protected function mapEnvironmentToBuilderEnvironment(string $environment): string
+    {
+        $normalized = strtolower(trim($environment));
+        if ($normalized === 'production') {
+            return CertificateBuilder::ENV_PRODUCTION;
+        }
+        if ($normalized === 'simulation') {
+            return CertificateBuilder::ENV_SIMULATION;
+        }
+
+        return CertificateBuilder::ENV_NONPROD;
+    }
+
+    protected function mapInvoiceTypeToBitmask(string $invoiceType): string
+    {
+        $type = trim($invoiceType);
+        if ($type === '0') {
+            return '0100';
+        }
+        if ($type === '1') {
+            return '1000';
+        }
+
+        return '1100';
     }
 }

@@ -1,7 +1,7 @@
 <?= $this->extend('templates/header') ?>
 
 <?= $this->section('content') ?>
-<?php $showZatcaColumns = true; ?>
+<?php $showZatcaColumns = !empty($zatcaEnabled); ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -197,10 +197,12 @@
                         <th scope="col"><?= lang('Sales.invoice_no') ?></th>
                         <th scope="col"><?= lang('Sales.customer') ?></th>
                         <th scope="col"><?= lang('Sales.date') ?></th>
+                        <th scope="col"><?= lang('Sales.gross_total') ?></th>
                         <?php if ($showZatcaColumns): ?>
                             <th scope="col"><?= lang('Sales.zatca_invoice_type') ?></th>
                             <th scope="col"><?= lang('Sales.zatca_status') ?></th>
-                            <th scope="col"><?= lang('Sales.zatca_submitted_at') ?></th>
+                            <th scope="col"><?= lang('Sales.zatca_status') ?> (Return CN)</th>
+                            <!-- <th scope="col"><?= lang('Sales.zatca_submitted_at') ?></th> -->
                         <?php endif; ?>
                         <th scope="col" class="text-right">
                             <?= lang('Sales.actions') ?>
@@ -454,6 +456,7 @@
         description: <?= json_encode(lang('Sales.description')) ?>,
         complianceCheck: <?= json_encode(lang('Sales.compliance_check') ?? 'ZATCA Compliance Check') ?>,
         close: <?= json_encode(lang('Sales.close')) ?>,
+        returnCreditNoteLabel: <?= json_encode('Return CN') ?>,
     };
 
     function showPaymentHistory(saleId, meta) {
@@ -673,6 +676,7 @@
             invoiceXml: <?= json_encode(site_url('sales/invoice-xml')) ?>,
             zatcaSign: <?= json_encode(site_url('sales/sign-zatca')) ?>,
             zatcaResend: <?= json_encode(site_url('sales/resend-zatca')) ?>,
+            returnCreditNoteResend: <?= json_encode(site_url('sales/resend-return-zatca')) ?>,
             complianceCheck: <?= json_encode(site_url('sales/compliance-check')) ?>,
             edit: <?= json_encode(site_url('sales/edit')) ?>,
             delete: <?= json_encode(site_url('sales/delete')) ?>
@@ -725,6 +729,13 @@
                     render: function(data) {
                         return formatDateTime(data);
                     }
+                },
+                {
+                    data: 'total',
+                    name: 'total',
+                    render: function(data) {
+                        return '<span class="text-gray-700 font-medium">' + currencySymbol + formatNumber(data) + '</span>';
+                    }
                 }
             ];
 
@@ -744,12 +755,19 @@
                     }
                 });
                 columns.push({
-                    data: 'zatca_submitted_at',
-                    name: 'zatca_submitted_at',
+                    data: 'return_zatca_status',
+                    name: 'return_zatca_status',
                     render: function(data) {
-                        return data ? formatDateTime(data) : '<span class="text-gray-400">-</span>';
+                        return formatZatcaStatusBadge(data);
                     }
                 });
+                // columns.push({
+                //     data: 'zatca_submitted_at',
+                //     name: 'zatca_submitted_at',
+                //     render: function(data) {
+                //         return data ? formatDateTime(data) : '<span class="text-gray-400">-</span>';
+                //     }
+                // });
             }
 
             columns.push({
@@ -1015,9 +1033,12 @@
                 [salesI18n.invoice, row.invoice_no || '-'],
                 [salesI18n.zatcaInvoiceType, row.zatca_invoice_type || '-'],
                 [salesI18n.zatcaStatus, row.zatca_status || '-'],
+                [salesI18n.zatcaStatus + ' (' + salesI18n.returnCreditNoteLabel + ')', row.return_zatca_status || '-'],
                 [salesI18n.zatcaUuid, row.zatca_uuid || '-'],
+                [salesI18n.zatcaUuid + ' (' + salesI18n.returnCreditNoteLabel + ')', row.return_zatca_uuid || '-'],
                 [salesI18n.zatcaIcv, row.zatca_icv || '-'],
-                [salesI18n.zatcaSubmittedAt, row.zatca_submitted_at ? formatDateTime(row.zatca_submitted_at) : '-']
+                [salesI18n.zatcaSubmittedAt, row.zatca_submitted_at ? formatDateTime(row.zatca_submitted_at) : '-'],
+                [salesI18n.zatcaSubmittedAt + ' (' + salesI18n.returnCreditNoteLabel + ')', row.return_zatca_submitted_at ? formatDateTime(row.return_zatca_submitted_at) : '-']
             ];
 
             $('#zatcaMeta').html(metaItems.map(function(item) {
@@ -1126,7 +1147,10 @@
                 }
             }
 
-            if (permissions.update && (row.zatca_status || '').toLowerCase() === 'pending') {
+            const invoiceStatus = (row.zatca_status || '').toLowerCase();
+            const isInvoiceFinalStatus = invoiceStatus === 'reported' || invoiceStatus === 'cleared';
+
+            if (permissions.update && invoiceStatus === 'pending') {
                 menuItems += `
                     <form action="${routes.zatcaSign}/${row.id}" method="POST" class="inline">
                         <?= csrf_field() ?>
@@ -1136,7 +1160,9 @@
                         </button>
                     </form>
                 `;
+            }
 
+            if (permissions.update && !isInvoiceFinalStatus) {
                 menuItems += `
                     <form action="${routes.zatcaResend}/${row.id}" method="POST" class="inline">
                         <?= csrf_field() ?>
@@ -1148,13 +1174,17 @@
                 `;
             }
 
-            if (permissions.update && (row.zatca_status || '').toLowerCase() === 'signed') {
+            const returnStatus = (row.return_zatca_status || '').toLowerCase();
+            const isReturnFinalStatus = returnStatus === 'reported' || returnStatus === 'cleared';
+            const hasReturnedAmount = (parseFloat(row.return_total || 0) || 0) > 0;
+            const hasReturnCreditNote = hasReturnedAmount || returnStatus !== '' || (row.return_zatca_uuid || '') !== '' || (row.return_zatca_xml_path || '') !== '';
+            if (permissions.update && hasReturnCreditNote && !isReturnFinalStatus) {
                 menuItems += `
-                    <form action="${routes.zatcaResend}/${row.id}" method="POST" class="inline">
+                    <form action="${routes.returnCreditNoteResend}/${row.id}" method="POST" class="inline">
                         <?= csrf_field() ?>
-                        <button type="submit" class="actions-link actions-link--success">
-                            <i class="fas fa-paper-plane"></i>
-                            <span>${salesI18n.submitZatca}</span>
+                        <button type="submit" class="actions-link actions-link--warning">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>${salesI18n.resendZatca} (Return CN)</span>
                         </button>
                     </form>
                 `;

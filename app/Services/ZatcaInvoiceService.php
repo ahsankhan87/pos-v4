@@ -7,6 +7,10 @@ use App\Models\M_sales;
 use App\Models\SettingsModel;
 use App\Models\StoreModel;
 use App\Models\ZatcaCertificatesModel;
+use Saleh7\Zatca\GeneratorInvoice;
+use Saleh7\Zatca\Helpers\Certificate;
+use Saleh7\Zatca\InvoiceSigner;
+use Saleh7\Zatca\Mappers\InvoiceMapper;
 
 /**
  * ZATCA Invoice Service
@@ -39,12 +43,13 @@ class ZatcaInvoiceService
     }
 
     /**
-     * Generate all 4 compliance test invoices signed with the compliance private key.
+     * Generate all required compliance test invoices signed with the compliance private key.
      *
      * @param array $certificate  Row from pos_zatca_certificates (must have private_key + binary_security_token)
      * @param array $settings     ZATCA settings (environment/toggles and compatibility fallbacks)
      * @param array $store        Active store profile containing seller VAT/legal identity/address
-     * @return array  Keys: standard_invoice, simplified_invoice, credit_note, debit_note
+     * @return array  Keys: standard_invoice, simplified_invoice, credit_note, debit_note,
+     *                 simplified_credit_note, simplified_debit_note
      */
     public function generateComplianceTestInvoices(array $certificate, array $settings, array $store = []): array
     {
@@ -77,6 +82,8 @@ class ZatcaInvoiceService
             'simplified_invoice' => $this->buildAndSign('simplified', $privateKeyPem, $this->resolveSigningCertificateToken($certificate, $settings, 'simplified'), $params, 2),
             'credit_note'        => $this->buildAndSign('credit_note', $privateKeyPem, $this->resolveSigningCertificateToken($certificate, $settings, 'standard'), $params, 3),
             'debit_note'         => $this->buildAndSign('debit_note',  $privateKeyPem, $this->resolveSigningCertificateToken($certificate, $settings, 'standard'), $params, 4),
+            'simplified_credit_note' => $this->buildAndSign('simplified_credit_note', $privateKeyPem, $this->resolveSigningCertificateToken($certificate, $settings, 'simplified'), $params, 5),
+            'simplified_debit_note'  => $this->buildAndSign('simplified_debit_note',  $privateKeyPem, $this->resolveSigningCertificateToken($certificate, $settings, 'simplified'), $params, 6),
         ];
     }
 
@@ -304,34 +311,14 @@ class ZatcaInvoiceService
             'payable_total' => $totals['payable_total'],
         ]);
 
-        $invoiceHash = $this->computeHash($xml);
-        $signedXml = $this->embedXadesSignature($xml, $invoiceHash, $privateKeyPem, $rawToken, $issuedAt['datetime']);
-        $signatureValue = $this->extractSignatureValue($signedXml);
-        $publicKeyBase64 = $this->extractPublicKeyBase64FromToken($rawToken);
-        $certificateSignatureBase64 = $this->extractCertificateSignatureBase64FromToken($rawToken);
-        $publicKeyTagValue = $this->decodeBase64ToBinaryOrKeep($publicKeyBase64);
-        $certificateSignatureTagValue = $this->decodeBase64ToBinaryOrKeep($certificateSignatureBase64);
+        $signResult = $this->signInvoiceWithLibrary($xml, $rawToken, $privateKeyPem);
+        $invoiceHash = $signResult['hash'];
+        $qr = $signResult['qr'];
+        $signedXml = $signResult['signed_xml'];
 
-        $qr = $this->buildTlvQrBase64([
-            1 => $sellerName,
-            2 => $sellerVat,
-            3 => $issuedAt['datetime'],
-            4 => number_format($totals['payable_total'], 2, '.', ''),
-            5 => number_format($totals['tax_total'], 2, '.', ''),
-            6 => $invoiceHash,            // base64-encoded SHA256 string (per ZATCA QR spec)
-            7 => $signatureValue,         // base64-encoded ECDSA string (per ZATCA QR spec)
-            8 => $publicKeyTagValue,      // binary DER SubjectPublicKeyInfo
-            9 => $certificateSignatureTagValue, // binary cert signature bytes
-        ]);
+        log_message('info', 'ZATCA QR generated (sale): sale_id=' . $saleId . ' qr_b64_len=' . strlen($qr));
 
-        log_message('info', 'ZATCA QR tags (sale): sale_id=' . $saleId
-            . ' t7_len=' . strlen($signatureValue)
-            . ' t8_len=' . strlen($publicKeyTagValue)
-            . ' t9_len=' . strlen($certificateSignatureTagValue)
-            . ' qr_b64_len=' . strlen($qr));
-
-        $signedXmlWithQr = str_replace('PLACEHOLDER_QR', htmlspecialchars($qr, ENT_XML1 | ENT_QUOTES, 'UTF-8'), $signedXml);
-        $relativePath = $this->saveSignedInvoiceXml($saleId, $uuid, $signedXmlWithQr);
+        $relativePath = $this->saveSignedInvoiceXml($saleId, $uuid, $signedXml);
 
         $salesModel->update($saleId, [
             'zatca_uuid' => $uuid,
@@ -619,6 +606,266 @@ class ZatcaInvoiceService
         }
     }
 
+    /**
+     * Generate and submit a ZATCA credit note for returned sale items.
+     *
+     * @param int   $saleId
+     * @param array $returnedLines Each item must include: name, quantity, unit_price, line_subtotal, line_tax, line_total
+     * @param string $reason
+     * @param string|null $issuedAt
+     * @return array{success:bool,status:string,message:string,uuid?:string,hash?:string,xml_path?:string,response?:array,has_warnings?:bool,has_errors?:bool}
+     */
+    public function generateAndSubmitCreditNoteForSaleReturn(int $saleId, array $returnedLines, string $reason = '', $issuedAt = null): array
+    {
+        $salesModel = new M_sales();
+        $settingsModel = new SettingsModel();
+        $certModel = new ZatcaCertificatesModel();
+
+        $sale = $salesModel->forStore()->find($saleId);
+        if (!$sale) {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'Sale not found in current store scope.',
+            ];
+        }
+
+        if (empty($returnedLines)) {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'No returned items found to generate a credit note.',
+            ];
+        }
+
+        $settings = $settingsModel->getSettings() ?? [];
+        $isEnabled = !empty($settings['einvoicing_enabled']) && strtoupper((string) ($settings['einvoicing_country'] ?? '')) === 'SA';
+        if (!$isEnabled) {
+            return [
+                'success' => true,
+                'status' => 'skipped',
+                'message' => 'E-invoicing is disabled or non-SA branch.',
+            ];
+        }
+
+        $storeId = (int) ($sale['store_id'] ?? 0);
+        $store = (new StoreModel())->find($storeId);
+        if (!$store) {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'Store profile not found.',
+            ];
+        }
+
+        $environment = (string) ($settings['zatca_environment'] ?? 'sandbox');
+        $certificate = $certModel
+            ->where('store_id', $storeId)
+            ->where('environment', $environment)
+            ->whereIn('status', ['production', 'compliance'])
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        if (!$certificate) {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'No ZATCA certificate found for this store/environment.',
+            ];
+        }
+
+        $customerVat = '';
+        $customerName = '';
+        $customerAddress = '';
+        $customerRegistrationName = '';
+        $customerCrNumber = '';
+        $customerStreetName = '';
+        $customerBuildingNumber = '';
+        $customerCitySubdivisionName = '';
+        $customerCityName = '';
+        $customerPostalCode = '';
+        $customerCountryCode = 'SA';
+
+        $customerId = (int) ($sale['customer_id'] ?? 0);
+        if ($customerId > 0) {
+            $customer = (new M_customers())->forStore()->find($customerId);
+            if ($customer) {
+                $customerVat = trim((string) ($customer['vat_number'] ?? ''));
+                $customerName = trim((string) ($customer['name'] ?? ''));
+                $customerAddress = trim((string) ($customer['address'] ?? ''));
+                $customerRegistrationName = trim((string) ($customer['zatca_registration_name'] ?? ''));
+                $customerCrNumber = trim((string) ($customer['zatca_cr_number'] ?? ''));
+                $customerStreetName = trim((string) ($customer['zatca_street_name'] ?? ''));
+                $customerBuildingNumber = trim((string) ($customer['zatca_building_number'] ?? ''));
+                $customerCitySubdivisionName = trim((string) ($customer['zatca_city_subdivision_name'] ?? ''));
+                $customerCityName = trim((string) ($customer['zatca_city_name'] ?? ''));
+                $customerPostalCode = trim((string) ($customer['zatca_postal_code'] ?? ''));
+                $customerCountryCode = strtoupper(trim((string) ($customer['zatca_country_code'] ?? 'SA')));
+            }
+        }
+
+        $invoiceFlavor = $this->determineInvoiceFlavor(
+            (string) ($sale['zatca_invoice_type'] ?? ($settings['zatca_invoice_type'] ?? 'simplified')),
+            $customerVat
+        );
+
+        $submissionToken  = (string) ($certificate['production_binary_security_token'] ?? '');
+        $submissionSecret = (string) ($certificate['production_secret'] ?? '');
+        if ($submissionToken === '' || $submissionSecret === '') {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'Production CSID credentials are missing. Complete onboarding Step 4 before issuing credit notes.',
+            ];
+        }
+
+        $signingToken = $submissionToken;
+        $privateKeyPem = (string) ($certificate['private_key'] ?? '');
+        if (trim($privateKeyPem) === '') {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'Missing or unreadable private key.',
+            ];
+        }
+
+        $sellerName = trim((string) ($store['zatca_seller_legal_name'] ?? ''));
+        if ($sellerName === '') {
+            $sellerName = trim((string) ($store['name'] ?? 'Seller'));
+        }
+        $sellerVat = trim((string) ($store['zatca_seller_vat_number'] ?? ''));
+        if ($sellerVat === '') {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'ZATCA seller VAT number is missing in store profile.',
+            ];
+        }
+
+        $totalsRows = [];
+        $taxableTotal = 0.0;
+        $taxTotal = 0.0;
+        $payableTotal = 0.0;
+        foreach ($returnedLines as $line) {
+            $qty = max(0.0, (float) ($line['quantity'] ?? 0));
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $lineSubtotal = max(0.0, (float) ($line['line_subtotal'] ?? 0));
+            $lineTax = max(0.0, (float) ($line['line_tax'] ?? 0));
+            $lineTotal = max(0.0, (float) ($line['line_total'] ?? ($lineSubtotal + $lineTax)));
+            $unitPrice = max(0.0, (float) ($line['unit_price'] ?? ($qty > 0 ? ($lineSubtotal / $qty) : 0)));
+
+            $taxableTotal += $lineSubtotal;
+            $taxTotal += $lineTax;
+            $payableTotal += $lineTotal;
+
+            $totalsRows[] = [
+                'name' => trim((string) ($line['name'] ?? 'Returned Item')),
+                'qty' => $qty,
+                'unit_price' => $unitPrice,
+                'line_subtotal' => round($lineSubtotal, 2),
+                'line_tax' => round($lineTax, 2),
+                'line_total' => round($lineTotal, 2),
+            ];
+        }
+
+        if (empty($totalsRows)) {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'Returned items were invalid for credit note generation.',
+            ];
+        }
+
+        $issuedTimestamp = $issuedAt ?? date('Y-m-d H:i:s');
+        $issued = $this->normalizeSaleIssuedAt($issuedTimestamp);
+
+        $chain = $this->getInvoiceChainContext($storeId, 0);
+        $icv = (int) ($chain['next_icv'] ?? 1);
+        $pih = (string) ($chain['previous_hash'] ?? self::DEFAULT_PIH);
+
+        $creditUuid = $this->newUuid();
+        $creditInvoiceNo = 'CRN-' . (string) ($sale['invoice_no'] ?? ('SALE-' . $saleId)) . '-' . gmdate('YmdHis');
+        $subType = $invoiceFlavor === 'simplified' ? '0200000' : '0100000';
+
+        $xml = $this->buildSaleXml([
+            'uuid' => $creditUuid,
+            'invoice_no' => $creditInvoiceNo,
+            'issue_date' => $issued['date'],
+            'issue_time' => $issued['time'],
+            'type_code' => '381',
+            'sub_type' => $subType,
+            'seller_name' => $sellerName,
+            'seller_vat' => $sellerVat,
+            'seller_address' => $this->normalizeSellerAddressValue((string) ($store['zatca_street_name'] ?? ''), trim((string) ($store['address'] ?? 'Riyadh'))),
+            'seller_building_number' => $this->normalizeSellerBuildingNumber((string) ($store['zatca_building_number'] ?? '1234')),
+            'seller_city_subdivision_name' => $this->normalizeSellerAddressValue((string) ($store['zatca_city_subdivision_name'] ?? ''), 'Al-Murabba'),
+            'seller_city_name' => $this->normalizeSellerAddressValue((string) ($store['zatca_city_name'] ?? ''), 'Riyadh'),
+            'seller_postal_code' => $this->normalizeSellerPostalCode((string) ($store['zatca_postal_code'] ?? '12345')),
+            'seller_country' => $this->normalizeSellerAddressValue(strtoupper(trim((string) ($store['zatca_country_code'] ?? 'SA'))), 'SA'),
+            'buyer_name' => $customerName,
+            'buyer_vat' => $customerVat,
+            'buyer_address' => $customerAddress,
+            'buyer_registration_name' => $customerRegistrationName,
+            'buyer_cr_number' => $customerCrNumber,
+            'buyer_street_name' => $customerStreetName,
+            'buyer_building_number' => $customerBuildingNumber,
+            'buyer_city_subdivision_name' => $customerCitySubdivisionName,
+            'buyer_city_name' => $customerCityName,
+            'buyer_postal_code' => $customerPostalCode,
+            'buyer_country' => $customerCountryCode,
+            'invoice_flavor' => $invoiceFlavor,
+            'currency' => 'SAR',
+            'icv' => $icv,
+            'pih' => $pih,
+            'rows' => $totalsRows,
+            'taxable_total' => round($taxableTotal, 2),
+            'tax_total' => round($taxTotal, 2),
+            'payable_total' => round($payableTotal, 2),
+            'adjustment_reason' => trim($reason) !== '' ? trim($reason) : 'Sales return',
+            'reference_invoice_no' => trim((string) ($sale['invoice_no'] ?? ('SALE-' . $saleId))),
+        ]);
+
+        $signResult = $this->signInvoiceWithLibrary($xml, $signingToken, $privateKeyPem);
+        $signedXml = $signResult['signed_xml'];
+        $invoiceHash = $this->computeHash($signedXml);
+        $invoicePayload = $this->prepareInvoicePayloadForApi($signedXml);
+        $xmlPath = $this->saveSignedInvoiceXml($saleId, $creditUuid, $signedXml);
+
+        try {
+            if ($invoiceFlavor === 'standard') {
+                $response = $this->apiClient->clearInvoice($invoiceHash, $creditUuid, $invoicePayload, $submissionToken, $submissionSecret);
+            } else {
+                $response = $this->apiClient->reportInvoice($invoiceHash, $creditUuid, $invoicePayload, $submissionToken, $submissionSecret);
+            }
+
+            $evaluation = $this->evaluateSubmissionResponse($response, $invoiceFlavor);
+
+            return array_merge([
+                'success' => $evaluation['success'],
+                'status' => (string) ($evaluation['status'] ?? 'pending'),
+                'message' => (string) ($evaluation['message'] ?? 'Credit note submission completed.'),
+                'uuid' => $creditUuid,
+                'hash' => $invoiceHash,
+                'xml_path' => $xmlPath,
+                'response' => $response,
+                'has_warnings' => (bool) ($evaluation['has_warnings'] ?? false),
+                'has_errors' => (bool) ($evaluation['has_errors'] ?? false),
+            ], $evaluation['details'] ?? []);
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'status' => 'pending',
+                'message' => 'Credit note submission failed: ' . $e->getMessage(),
+                'uuid' => $creditUuid,
+                'hash' => $invoiceHash,
+                'xml_path' => $xmlPath,
+            ];
+        }
+    }
+
     protected function evaluateSubmissionResponse(array $response, string $invoiceFlavor): array
     {
         $validation = is_array($response['validationResults'] ?? null) ? $response['validationResults'] : [];
@@ -897,54 +1144,55 @@ class ZatcaInvoiceService
         $invNum = strtoupper(substr($type, 0, 3)) . '-' . gmdate('Ymd') . '-' . rand(100, 999);
         $date = gmdate('Y-m-d');
         $time = gmdate('H:i:s');
-        $issuedAt = $date . 'T' . $time;
 
         $xml = $this->buildXml($type, $uuid, $invNum, $date, $time, $p, $icv);
-        $invoiceHash = $this->computeHash($xml);
-        $signedXml = $this->embedXadesSignature($xml, $invoiceHash, $privateKey, $rawToken, $issuedAt);
+        $signResult = $this->signInvoiceWithLibrary($xml, $rawToken, $privateKey);
 
-        $lineAmount = 100.00;
-        if ($type === 'credit_note') {
-            $lineAmount = 4.00;
-        } elseif ($type === 'debit_note') {
-            $lineAmount = 24.00;
-        }
-        $taxAmount = round($lineAmount * 0.15, 2);
-        $payableTotal = $lineAmount + $taxAmount;
-
-        $signatureValue = $this->extractSignatureValue($signedXml);
-        $publicKeyBase64 = $this->extractPublicKeyBase64FromToken($rawToken);
-        $certificateSignatureBase64 = $this->extractCertificateSignatureBase64FromToken($rawToken);
-        $publicKeyTagValue = $this->decodeBase64ToBinaryOrKeep($publicKeyBase64);
-        $certificateSignatureTagValue = $this->decodeBase64ToBinaryOrKeep($certificateSignatureBase64);
-
-        $qrTags = [
-            1 => (string) ($p['seller_name'] ?? ''),
-            2 => (string) ($p['seller_vat'] ?? ''),
-            3 => $issuedAt,
-            4 => number_format($payableTotal, 2, '.', ''),
-            5 => number_format($taxAmount, 2, '.', ''),
-            6 => $invoiceHash,            // base64-encoded SHA256 string (per ZATCA QR spec)
-            7 => $signatureValue,         // base64-encoded ECDSA string (per ZATCA QR spec)
-            8 => $publicKeyTagValue,      // binary DER SubjectPublicKeyInfo
-            9 => $certificateSignatureTagValue, // binary cert signature bytes
-        ];
-
-        $qr = $this->buildTlvQrBase64($qrTags);
-
-        log_message('info', 'ZATCA QR tags (compliance): type=' . $type
-            . ' t7_len=' . strlen($signatureValue)
-            . ' t8_len=' . strlen($publicKeyTagValue)
-            . ' t9_len=' . strlen($certificateSignatureTagValue)
-            . ' qr_b64_len=' . strlen($qr));
-
-        $signedXml = str_replace('PLACEHOLDER_QR', htmlspecialchars($qr, ENT_XML1 | ENT_QUOTES, 'UTF-8'), $signedXml);
+        log_message('info', 'ZATCA QR generated (compliance): type=' . $type . ' qr_b64_len=' . strlen($signResult['qr']));
 
         return [
             'uuid' => $uuid,
-            'hash' => $invoiceHash,
-            'xml' => base64_encode($signedXml),
+            'hash' => $signResult['hash'],
+            'xml' => base64_encode($signResult['signed_xml']),
         ];
+    }
+
+    protected function signInvoiceWithLibrary(string $unsignedXml, string $rawToken, string $privateKeyPem): array
+    {
+        try {
+            $certificate = new Certificate(
+                $this->normalizeCertificateForSigner($rawToken),
+                $this->certService->normalizePrivateKeyPem($privateKeyPem),
+                ''
+            );
+
+            $signer = InvoiceSigner::signInvoice($unsignedXml, $certificate);
+
+            return [
+                'signed_xml' => $signer->getInvoice(),
+                'hash' => $signer->getHash(),
+                'qr' => $signer->getQRCode(),
+            ];
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Unable to sign ZATCA invoice using php-zatca-xml: ' . $e->getMessage());
+        }
+    }
+
+    protected function normalizeCertificateForSigner(string $rawToken): string
+    {
+        $token = trim($rawToken);
+        if ($token === '') {
+            return '';
+        }
+
+        // InvoiceSigner writes this value inside ds:X509Certificate, so it must be
+        // base64 text (XML-safe), not raw DER binary.
+        $normalized = $this->normalizeCertificateTokenBase64($token);
+        if ($normalized !== '') {
+            return $normalized;
+        }
+
+        return $token;
     }
 
     // -------------------------------------------------------------------------
@@ -977,9 +1225,46 @@ class ZatcaInvoiceService
 
         if ($type === 'simplified') {
             $invoiceFlavor = 'simplified';
+            $subType = '0200000';
             $lineAmount = 100.00;
             $taxAmount = 15.00;
             $payableTotal = 115.00;
+            $buyerVat = '';
+            $buyerName = '';
+            $buyerAddress = '';
+            $buyerRegistrationName = '';
+            $buyerCrNumber = '';
+            $buyerStreetName = '';
+            $buyerBuildingNumber = '';
+            $buyerCitySubdivisionName = '';
+            $buyerCityName = '';
+            $buyerPostalCode = '';
+            $buyerCountry = 'SA';
+        } elseif ($type === 'simplified_credit_note') {
+            $invoiceFlavor = 'simplified';
+            $typeCode = '381';
+            $subType = '0200000';
+            $lineAmount = 4.00;
+            $taxAmount = 0.60;
+            $payableTotal = 4.60;
+            $buyerVat = '';
+            $buyerName = '';
+            $buyerAddress = '';
+            $buyerRegistrationName = '';
+            $buyerCrNumber = '';
+            $buyerStreetName = '';
+            $buyerBuildingNumber = '';
+            $buyerCitySubdivisionName = '';
+            $buyerCityName = '';
+            $buyerPostalCode = '';
+            $buyerCountry = 'SA';
+        } elseif ($type === 'simplified_debit_note') {
+            $invoiceFlavor = 'simplified';
+            $typeCode = '383';
+            $subType = '0200000';
+            $lineAmount = 24.00;
+            $taxAmount = 3.60;
+            $payableTotal = 27.60;
             $buyerVat = '';
             $buyerName = '';
             $buyerAddress = '';
@@ -1500,270 +1785,227 @@ XML;
     protected function buildSaleXml(array $ctx): string
     {
         $currency = 'SAR';
-        $invoiceNo = htmlspecialchars((string) $ctx['invoice_no'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $uuid = htmlspecialchars((string) $ctx['uuid'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $issueDate = htmlspecialchars((string) $ctx['issue_date'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $issueTime = htmlspecialchars((string) $ctx['issue_time'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $subType = htmlspecialchars((string) $ctx['sub_type'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $typeCode = htmlspecialchars((string) $ctx['type_code'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerName = htmlspecialchars((string) $ctx['seller_name'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerVat = htmlspecialchars((string) $ctx['seller_vat'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerAddress = htmlspecialchars($this->normalizeSellerAddressValue((string) ($ctx['seller_address'] ?? ''), 'Riyadh'), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerBuildingNumber = htmlspecialchars($this->normalizeSellerBuildingNumber((string) ($ctx['seller_building_number'] ?? '1234')), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerCitySubdivisionName = htmlspecialchars($this->normalizeSellerAddressValue((string) ($ctx['seller_city_subdivision_name'] ?? 'Al-Murabba'), 'Al-Murabba'), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerCityName = htmlspecialchars($this->normalizeSellerAddressValue((string) ($ctx['seller_city_name'] ?? 'Riyadh'), 'Riyadh'), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerPostalCode = htmlspecialchars($this->normalizeSellerPostalCode((string) ($ctx['seller_postal_code'] ?? '12345')), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $sellerCountry = htmlspecialchars($this->normalizeSellerAddressValue(strtoupper((string) ($ctx['seller_country'] ?? 'SA')), 'SA'), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerNameRaw = trim((string) ($ctx['buyer_name'] ?? ''));
-        if ($buyerNameRaw === '') {
-            $buyerNameRaw = 'Customer';
-        }
-        $buyerName = htmlspecialchars($buyerNameRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerVat = htmlspecialchars((string) ($ctx['buyer_vat'] ?? ''), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerAddressRaw = trim((string) ($ctx['buyer_address'] ?? ''));
-        if ($buyerAddressRaw === '') {
-            $buyerAddressRaw = 'Street';
-        }
-        $buyerAddress = htmlspecialchars($buyerAddressRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerRegistrationNameRaw = trim((string) ($ctx['buyer_registration_name'] ?? ''));
-        if ($buyerRegistrationNameRaw === '') {
-            $buyerRegistrationNameRaw = $buyerNameRaw;
-        }
-        $buyerRegistrationName = htmlspecialchars($buyerRegistrationNameRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerCrNumberRaw = trim((string) ($ctx['buyer_cr_number'] ?? ''));
-        if ($buyerCrNumberRaw === '') {
-            $buyerCrNumberRaw = '1001001000';
-        }
-        $buyerCrNumber = htmlspecialchars($this->normalizeCrnValue($buyerCrNumberRaw), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerStreetNameRaw = trim((string) ($ctx['buyer_street_name'] ?? ''));
-        if ($buyerStreetNameRaw === '') {
-            $buyerStreetNameRaw = $buyerAddressRaw;
-        }
-        $buyerStreetName = htmlspecialchars($buyerStreetNameRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerBuildingNumberRaw = trim((string) ($ctx['buyer_building_number'] ?? ''));
-        if ($buyerBuildingNumberRaw === '') {
-            $buyerBuildingNumberRaw = '1';
-        }
-        $buyerBuildingNumber = htmlspecialchars($buyerBuildingNumberRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerCitySubdivisionRaw = trim((string) ($ctx['buyer_city_subdivision_name'] ?? ''));
-        if ($buyerCitySubdivisionRaw === '') {
-            $buyerCitySubdivisionRaw = 'District';
-        }
-        $buyerCitySubdivisionName = htmlspecialchars($buyerCitySubdivisionRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerCityNameRaw = trim((string) ($ctx['buyer_city_name'] ?? ''));
-        if ($buyerCityNameRaw === '') {
-            $buyerCityNameRaw = 'Riyadh';
-        }
-        $buyerCityName = htmlspecialchars($buyerCityNameRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerPostalCodeRaw = trim((string) ($ctx['buyer_postal_code'] ?? ''));
-        if ($buyerPostalCodeRaw === '') {
-            $buyerPostalCodeRaw = '00000';
-        }
-        $buyerPostalCode = htmlspecialchars($buyerPostalCodeRaw, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $buyerCountry = htmlspecialchars(strtoupper((string) ($ctx['buyer_country'] ?? 'SA')), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $icv = (int) ($ctx['icv'] ?? 1);
-        $pih = htmlspecialchars((string) ($ctx['pih'] ?? self::DEFAULT_PIH), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-
-        $taxableTotal = number_format((float) ($ctx['taxable_total'] ?? 0), 2, '.', '');
-        $taxTotal = number_format((float) ($ctx['tax_total'] ?? 0), 2, '.', '');
-        $payableTotal = number_format((float) ($ctx['payable_total'] ?? 0), 2, '.', '');
-        $vatPercent = ((float) ($ctx['taxable_total'] ?? 0)) > 0
-            ? number_format(((float) ($ctx['tax_total'] ?? 0) / (float) $ctx['taxable_total']) * 100, 2, '.', '')
-            : '15.00';
+        $issueDate = (string) ($ctx['issue_date'] ?? gmdate('Y-m-d'));
+        $issueTime = (string) ($ctx['issue_time'] ?? gmdate('H:i:s'));
         $invoiceFlavor = (string) ($ctx['invoice_flavor'] ?? 'simplified');
-        $noteEl = '';
-        $deliveryEl = '';
-        $payNote = '';
-        $discrepancyResponseEl = '';
-        $documentRoot = 'Invoice';
-        $lineElementName = 'InvoiceLine';
+        $subType = (string) ($ctx['sub_type'] ?? ($invoiceFlavor === 'simplified' ? '0200000' : '0100000'));
+        $typeCode = (string) ($ctx['type_code'] ?? '388');
+
+        $vatPercent = 15.0;
+        if ((float) ($ctx['taxable_total'] ?? 0) > 0) {
+            $vatPercent = round(((float) ($ctx['tax_total'] ?? 0) / (float) $ctx['taxable_total']) * 100, 2);
+        }
+
+        $invoiceType = 'invoice';
+        if ($typeCode === '381') {
+            $invoiceType = 'credit';
+        } elseif ($typeCode === '383') {
+            $invoiceType = 'debit';
+        }
+        $isAdjustmentNote = $typeCode === '381' || $typeCode === '383';
+
+        $flags = str_pad($subType, 7, '0', STR_PAD_RIGHT);
+        $invoiceData = [
+            'uuid' => (string) ($ctx['uuid'] ?? $this->newUuid()),
+            'id' => (string) ($ctx['invoice_no'] ?? 'INV-' . gmdate('YmdHis')),
+            'issueDate' => $issueDate,
+            'issueTime' => $issueTime,
+            'currencyCode' => $currency,
+            'taxCurrencyCode' => $currency,
+            'invoiceType' => [
+                'invoice' => $invoiceFlavor === 'simplified' ? 'simplified' : 'standard',
+                'type' => $invoiceType,
+                'isThirdParty' => substr($flags, 2, 1) === '1',
+                'isNominal' => substr($flags, 3, 1) === '1',
+                'isExport' => substr($flags, 4, 1) === '1',
+                'isSummary' => substr($flags, 5, 1) === '1',
+                'isSelfBilled' => substr($flags, 6, 1) === '1',
+            ],
+            'additionalDocuments' => [
+                [
+                    'id' => 'ICV',
+                    'uuid' => (string) (int) ($ctx['icv'] ?? 1),
+                ],
+                [
+                    'id' => 'PIH',
+                    'attachment' => [
+                        'content' => (string) ($ctx['pih'] ?? self::DEFAULT_PIH),
+                    ],
+                ],
+            ],
+            'supplier' => [
+                'registrationName' => (string) ($ctx['seller_name'] ?? 'Seller'),
+                'taxId' => (string) ($ctx['seller_vat'] ?? ''),
+                'identificationId' => '1001001000',
+                'identificationType' => 'CRN',
+                'address' => [
+                    'street' => $this->normalizeSellerAddressValue((string) ($ctx['seller_address'] ?? ''), 'Riyadh'),
+                    'buildingNumber' => $this->normalizeSellerBuildingNumber((string) ($ctx['seller_building_number'] ?? '1234')),
+                    'subdivision' => $this->normalizeSellerAddressValue((string) ($ctx['seller_city_subdivision_name'] ?? 'Al-Murabba'), 'Al-Murabba'),
+                    'city' => $this->normalizeSellerAddressValue((string) ($ctx['seller_city_name'] ?? 'Riyadh'), 'Riyadh'),
+                    'postalZone' => $this->normalizeSellerPostalCode((string) ($ctx['seller_postal_code'] ?? '12345')),
+                    'country' => strtoupper((string) ($ctx['seller_country'] ?? 'SA')),
+                ],
+            ],
+            'paymentMeans' => [
+                'code' => '10',
+            ],
+            'allowanceCharges' => [
+                [
+                    'isCharge' => false,
+                    'reason' => 'discount',
+                    'amount' => 0.00,
+                    'taxCategories' => [
+                        [
+                            'id' => 'S',
+                            'percent' => $vatPercent,
+                            'taxScheme' => ['id' => 'VAT'],
+                        ],
+                    ],
+                ],
+            ],
+            'taxTotal' => [
+                'taxAmount' => (float) ($ctx['tax_total'] ?? 0),
+                'subTotals' => [
+                    [
+                        'taxableAmount' => (float) ($ctx['taxable_total'] ?? 0),
+                        'taxAmount' => (float) ($ctx['tax_total'] ?? 0),
+                        'taxCategory' => [
+                            'id' => 'S',
+                            'percent' => $vatPercent,
+                            'taxScheme' => ['id' => 'VAT'],
+                        ],
+                    ],
+                ],
+            ],
+            'legalMonetaryTotal' => [
+                'lineExtensionAmount' => (float) ($ctx['taxable_total'] ?? 0),
+                'taxExclusiveAmount' => (float) ($ctx['taxable_total'] ?? 0),
+                'taxInclusiveAmount' => (float) ($ctx['payable_total'] ?? 0),
+                'prepaidAmount' => 0,
+                'payableAmount' => (float) ($ctx['payable_total'] ?? 0),
+                'allowanceTotalAmount' => 0,
+            ],
+            'invoiceLines' => [],
+        ];
+
+        if ($isAdjustmentNote) {
+            $reason = trim((string) ($ctx['adjustment_reason'] ?? 'Correction of previous invoice'));
+            if ($reason === '') {
+                $reason = 'Correction of previous invoice';
+            }
+
+            $referenceInvoiceId = trim((string) ($ctx['reference_invoice_no'] ?? 'INV-REF-1'));
+            if ($referenceInvoiceId === '') {
+                $referenceInvoiceId = 'INV-REF-1';
+            }
+
+            // BR-KSA-17 (KSA-10): Credit/Debit notes must carry the issuing reason.
+            $invoiceData['paymentMeans']['note'] = $reason;
+            $invoiceData['billingReferences'] = [
+                ['id' => $referenceInvoiceId],
+            ];
+        }
+
         if ($invoiceFlavor === 'simplified') {
-            $noteEl = '<cbc:Note languageID="ar">ABC</cbc:Note>' . "\n    ";
+            $invoiceData['note'] = 'ABC';
+            $invoiceData['languageID'] = 'ar';
         } else {
-            $deliveryEl = '<cac:Delivery><cbc:ActualDeliveryDate>' . $issueDate . '</cbc:ActualDeliveryDate></cac:Delivery>' . "\n    ";
+            $buyerVat = trim((string) ($ctx['buyer_vat'] ?? ''));
+            if ($buyerVat === '') {
+                $buyerVat = '399999999800003';
+            }
+
+            $buyerRegistration = trim((string) ($ctx['buyer_registration_name'] ?? $ctx['buyer_name'] ?? ''));
+            if ($buyerRegistration === '') {
+                $buyerRegistration = 'Fatoora Samples LTD';
+            }
+
+            $buyerStreet = trim((string) ($ctx['buyer_street_name'] ?? $ctx['buyer_address'] ?? ''));
+            if ($buyerStreet === '') {
+                $buyerStreet = 'Salah Al-Din';
+            }
+
+            $buyerBuilding = trim((string) ($ctx['buyer_building_number'] ?? ''));
+            if ($buyerBuilding === '') {
+                $buyerBuilding = '1';
+            }
+
+            $buyerSubdivision = trim((string) ($ctx['buyer_city_subdivision_name'] ?? ''));
+            if ($buyerSubdivision === '') {
+                $buyerSubdivision = 'Al-Murooj';
+            }
+
+            $buyerCity = trim((string) ($ctx['buyer_city_name'] ?? ''));
+            if ($buyerCity === '') {
+                $buyerCity = 'Riyadh';
+            }
+
+            $buyerPostal = trim((string) ($ctx['buyer_postal_code'] ?? ''));
+            if ($buyerPostal === '') {
+                $buyerPostal = '12222';
+            }
+
+            $buyerCountry = strtoupper(trim((string) ($ctx['buyer_country'] ?? 'SA')));
+            if ($buyerCountry === '') {
+                $buyerCountry = 'SA';
+            }
+
+            $invoiceData['delivery'] = [
+                'actualDeliveryDate' => $issueDate,
+            ];
+
+            $invoiceData['customer'] = [
+                'registrationName' => $buyerRegistration,
+                'taxId' => $buyerVat,
+                'identificationId' => $this->normalizeCrnValue((string) ($ctx['buyer_cr_number'] ?? '1001001000')),
+                'identificationType' => 'CRN',
+                'address' => [
+                    'street' => $buyerStreet,
+                    'buildingNumber' => $buyerBuilding,
+                    'subdivision' => $buyerSubdivision,
+                    'city' => $buyerCity,
+                    'postalZone' => $buyerPostal,
+                    'country' => $buyerCountry,
+                ],
+            ];
         }
 
-        if (in_array($typeCode, ['381', '383'], true)) {
-            $documentRoot = $typeCode === '381' ? 'CreditNote' : 'DebitNote';
-            $lineElementName = $typeCode === '381' ? 'CreditNoteLine' : 'DebitNoteLine';
-            $discrepancyResponseEl = <<<XML
-    <cac:DiscrepancyResponse>
-        <cbc:ReferenceID>CRN-1</cbc:ReferenceID>
-        <cbc:ResponseCode>RE</cbc:ResponseCode>
-        <cbc:Description>Correction of previous invoice</cbc:Description>
-    </cac:DiscrepancyResponse>
-XML;
-        }
-
-        $buyerBlock = '<cac:AccountingCustomerParty>' . "\n" . '    </cac:AccountingCustomerParty>';
-        if (($ctx['invoice_flavor'] ?? 'simplified') !== 'simplified') {
-            $buyerCompanyId = $buyerVat !== '' ? ('<cbc:CompanyID>' . $buyerVat . '</cbc:CompanyID>') : '';
-            $buyerBlock = <<<XML
-<cac:AccountingCustomerParty>
-        <cac:Party>
-            <cac:PartyIdentification>
-                <cbc:ID schemeID="CRN">{$buyerCrNumber}</cbc:ID>
-            </cac:PartyIdentification>
-            <cac:PostalAddress>
-                <cbc:StreetName>{$buyerStreetName}</cbc:StreetName>
-                <cbc:BuildingNumber>{$buyerBuildingNumber}</cbc:BuildingNumber>
-                <cbc:CitySubdivisionName>{$buyerCitySubdivisionName}</cbc:CitySubdivisionName>
-                <cbc:CityName>{$buyerCityName}</cbc:CityName>
-                <cbc:PostalZone>{$buyerPostalCode}</cbc:PostalZone>
-                <cac:Country><cbc:IdentificationCode>{$buyerCountry}</cbc:IdentificationCode></cac:Country>
-            </cac:PostalAddress>
-            <cac:PartyTaxScheme>
-                {$buyerCompanyId}
-                <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
-            </cac:PartyTaxScheme>
-            <cac:PartyLegalEntity>
-                <cbc:RegistrationName>{$buyerRegistrationName}</cbc:RegistrationName>
-            </cac:PartyLegalEntity>
-            <cac:Person>
-                <cbc:FirstName>{$buyerName}</cbc:FirstName>
-                <cbc:FamilyName>{$buyerName}</cbc:FamilyName>
-            </cac:Person>
-        </cac:Party>
-    </cac:AccountingCustomerParty>
-XML;
-        }
-
-        $linesXml = '';
         $lineNumber = 1;
         foreach ((array) ($ctx['rows'] ?? []) as $line) {
-            $qty = number_format((float) ($line['qty'] ?? 0), 6, '.', '');
-            $lineSubtotal = number_format((float) ($line['line_subtotal'] ?? 0), 2, '.', '');
-            $lineTax = number_format((float) ($line['line_tax'] ?? 0), 2, '.', '');
-            $lineTotal = number_format((float) ($line['line_total'] ?? 0), 2, '.', '');
-            $lineName = htmlspecialchars((string) ($line['name'] ?? 'Item'), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-            $unitPrice = number_format((float) ($line['unit_price'] ?? 0), 2, '.', '');
-
-            $linesXml .= <<<XML
-    <cac:{$lineElementName}>
-        <cbc:ID>{$lineNumber}</cbc:ID>
-        <cbc:InvoicedQuantity unitCode="PCE">{$qty}</cbc:InvoicedQuantity>
-        <cbc:LineExtensionAmount currencyID="{$currency}">{$lineSubtotal}</cbc:LineExtensionAmount>
-        <cac:TaxTotal>
-            <cbc:TaxAmount currencyID="{$currency}">{$lineTax}</cbc:TaxAmount>
-            <cbc:RoundingAmount currencyID="{$currency}">{$lineTotal}</cbc:RoundingAmount>
-        </cac:TaxTotal>
-        <cac:Item>
-            <cbc:Name>{$lineName}</cbc:Name>
-            <cac:ClassifiedTaxCategory>
-                <cbc:ID>S</cbc:ID>
-                <cbc:Percent>{$vatPercent}</cbc:Percent>
-                <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
-            </cac:ClassifiedTaxCategory>
-        </cac:Item>
-        <cac:Price>
-            <cbc:PriceAmount currencyID="{$currency}">{$unitPrice}</cbc:PriceAmount>
-        </cac:Price>
-    </cac:{$lineElementName}>
-
-XML;
+            $invoiceData['invoiceLines'][] = [
+                'id' => $lineNumber,
+                'unitCode' => 'PCE',
+                'quantity' => (float) ($line['qty'] ?? 0),
+                'lineExtensionAmount' => (float) ($line['line_subtotal'] ?? 0),
+                'item' => [
+                    'name' => (string) ($line['name'] ?? 'Item'),
+                    'classifiedTaxCategory' => [
+                        [
+                            'id' => 'S',
+                            'percent' => $vatPercent,
+                            'taxScheme' => ['id' => 'VAT'],
+                        ],
+                    ],
+                ],
+                'price' => [
+                    'amount' => (float) ($line['unit_price'] ?? 0),
+                    'unitCode' => 'UNIT',
+                ],
+                'taxTotal' => [
+                    'taxAmount' => (float) ($line['line_tax'] ?? 0),
+                    'roundingAmount' => (float) ($line['line_total'] ?? 0),
+                ],
+            ];
             $lineNumber++;
         }
 
-        return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . <<<XML
-<{$documentRoot} xmlns="urn:oasis:names:specification:ubl:schema:xsd:{$documentRoot}-2"
-    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
-    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
-    xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
-    <ext:UBLExtensions>
-        <ext:UBLExtension>
-            <ext:ExtensionURI>urn:oasis:names:specification:ubl:dsig:enveloped:xades</ext:ExtensionURI>
-            <ext:ExtensionContent/>
-        </ext:UBLExtension>
-    </ext:UBLExtensions>
-    <cbc:ProfileID>reporting:1.0</cbc:ProfileID>
-    <cbc:ID>{$invoiceNo}</cbc:ID>
-    <cbc:UUID>{$uuid}</cbc:UUID>
-    <cbc:IssueDate>{$issueDate}</cbc:IssueDate>
-    <cbc:IssueTime>{$issueTime}</cbc:IssueTime>
-    <cbc:InvoiceTypeCode name="{$subType}">{$typeCode}</cbc:InvoiceTypeCode>
-    {$noteEl}<cbc:DocumentCurrencyCode>{$currency}</cbc:DocumentCurrencyCode>
-    <cbc:TaxCurrencyCode>{$currency}</cbc:TaxCurrencyCode>
-    <cac:AdditionalDocumentReference>
-        <cbc:ID>ICV</cbc:ID>
-        <cbc:UUID>{$icv}</cbc:UUID>
-    </cac:AdditionalDocumentReference>
-    <cac:AdditionalDocumentReference>
-        <cbc:ID>PIH</cbc:ID>
-        <cac:Attachment>
-            <cbc:EmbeddedDocumentBinaryObject mimeCode="text/plain">{$pih}</cbc:EmbeddedDocumentBinaryObject>
-        </cac:Attachment>
-    </cac:AdditionalDocumentReference>
-    <cac:AdditionalDocumentReference>
-        <cbc:ID>QR</cbc:ID>
-        <cac:Attachment>
-            <cbc:EmbeddedDocumentBinaryObject mimeCode="text/plain">PLACEHOLDER_QR</cbc:EmbeddedDocumentBinaryObject>
-        </cac:Attachment>
-    </cac:AdditionalDocumentReference>
-    <cac:Signature>
-        <cbc:ID>urn:oasis:names:specification:ubl:signature:Invoice</cbc:ID>
-        <cbc:SignatureMethod>urn:oasis:names:specification:ubl:dsig:enveloped:xades</cbc:SignatureMethod>
-    </cac:Signature>
-    {$discrepancyResponseEl}<cac:AccountingSupplierParty>
-        <cac:Party>
-            <cac:PartyIdentification>
-                <cbc:ID schemeID="CRN">1001001000</cbc:ID>
-            </cac:PartyIdentification>
-            <cac:PostalAddress>
-                <cbc:StreetName>{$sellerAddress}</cbc:StreetName>
-                <cbc:BuildingNumber>{$sellerBuildingNumber}</cbc:BuildingNumber>
-                <cbc:CitySubdivisionName>{$sellerCitySubdivisionName}</cbc:CitySubdivisionName>
-                <cbc:CityName>{$sellerCityName}</cbc:CityName>
-                <cbc:PostalZone>{$sellerPostalCode}</cbc:PostalZone>
-                <cac:Country><cbc:IdentificationCode>{$sellerCountry}</cbc:IdentificationCode></cac:Country>
-            </cac:PostalAddress>
-            <cac:PartyTaxScheme>
-                <cbc:CompanyID>{$sellerVat}</cbc:CompanyID>
-                <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
-            </cac:PartyTaxScheme>
-            <cac:PartyLegalEntity>
-                <cbc:RegistrationName>{$sellerName}</cbc:RegistrationName>
-            </cac:PartyLegalEntity>
-        </cac:Party>
-    </cac:AccountingSupplierParty>
-    {$buyerBlock}
-    {$discrepancyResponseEl}{$deliveryEl}<cac:PaymentMeans>
-        <cbc:PaymentMeansCode>10</cbc:PaymentMeansCode>
-        {$payNote}</cac:PaymentMeans>
-    <cac:AllowanceCharge>
-        <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
-        <cbc:AllowanceChargeReason>discount</cbc:AllowanceChargeReason>
-        <cbc:Amount currencyID="{$currency}">0.00</cbc:Amount>
-        <cac:TaxCategory>
-            <cbc:ID schemeID="UN/ECE 5305" schemeAgencyID="6">S</cbc:ID>
-            <cbc:Percent>{$vatPercent}</cbc:Percent>
-            <cac:TaxScheme><cbc:ID schemeID="UN/ECE 5153" schemeAgencyID="6">VAT</cbc:ID></cac:TaxScheme>
-        </cac:TaxCategory>
-    </cac:AllowanceCharge>
-    <cac:TaxTotal>
-        <cbc:TaxAmount currencyID="{$currency}">{$taxTotal}</cbc:TaxAmount>
-    </cac:TaxTotal>
-    <cac:TaxTotal>
-        <cbc:TaxAmount currencyID="{$currency}">{$taxTotal}</cbc:TaxAmount>
-        <cac:TaxSubtotal>
-            <cbc:TaxableAmount currencyID="{$currency}">{$taxableTotal}</cbc:TaxableAmount>
-            <cbc:TaxAmount currencyID="{$currency}">{$taxTotal}</cbc:TaxAmount>
-            <cac:TaxCategory>
-                <cbc:ID schemeID="UN/ECE 5305" schemeAgencyID="6">S</cbc:ID>
-                <cbc:Percent>{$vatPercent}</cbc:Percent>
-                <cac:TaxScheme><cbc:ID schemeID="UN/ECE 5153" schemeAgencyID="6">VAT</cbc:ID></cac:TaxScheme>
-            </cac:TaxCategory>
-        </cac:TaxSubtotal>
-    </cac:TaxTotal>
-    <cac:LegalMonetaryTotal>
-        <cbc:LineExtensionAmount currencyID="{$currency}">{$taxableTotal}</cbc:LineExtensionAmount>
-        <cbc:TaxExclusiveAmount currencyID="{$currency}">{$taxableTotal}</cbc:TaxExclusiveAmount>
-        <cbc:TaxInclusiveAmount currencyID="{$currency}">{$payableTotal}</cbc:TaxInclusiveAmount>
-        <cbc:AllowanceTotalAmount currencyID="{$currency}">0.00</cbc:AllowanceTotalAmount>
-        <cbc:PrepaidAmount currencyID="{$currency}">0.00</cbc:PrepaidAmount>
-        <cbc:PayableAmount currencyID="{$currency}">{$payableTotal}</cbc:PayableAmount>
-    </cac:LegalMonetaryTotal>
-{$linesXml}</{$documentRoot}>
-XML;
+        try {
+            $invoice = (new InvoiceMapper())->mapToInvoice($invoiceData);
+            return GeneratorInvoice::invoice($invoice)->getXML();
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Failed to build invoice XML using php-zatca-xml: ' . $e->getMessage());
+        }
     }
 
     protected function extractSignatureValue(string $signedXml): string

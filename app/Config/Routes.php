@@ -31,6 +31,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('invoice-xml/(:num)', 'Sales::downloadInvoiceXml/$1', ['filter' => 'permission:sales.view']);
     $routes->post('sign-zatca/(:num)', 'Sales::signZatca/$1', ['filter' => 'permission:sales.update']);
     $routes->post('resend-zatca/(:num)', 'Sales::resendZatca/$1', ['filter' => 'permission:sales.update']);
+    $routes->post('resend-return-zatca/(:num)', 'Sales::resendReturnCreditNote/$1', ['filter' => 'permission:sales.update']);
     $routes->post('compliance-check/(:num)', 'Sales::complianceCheck/$1', ['filter' => 'permission:sales.update']);
     $routes->get('payment-history/(:num)', 'Sales::paymentHistory/$1', ['filter' => 'permission:sales.view']);
     $routes->get('drafts', 'Sales::drafts', ['filter' => 'permission:sales.view']);

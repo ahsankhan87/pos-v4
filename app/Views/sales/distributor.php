@@ -339,7 +339,21 @@ $canEditLineDiscount = can('sales.edit_discount');
                             </button>
                         </div>
                         <input type="hidden" name="draft" id="draft-flag" value="0">
-                        <button type="submit" class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 shadow-lg">
+                        <!-- Loading Overlay -->
+                        <div id="sale-loader" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                            <div class="bg-white rounded-lg p-8 text-center shadow-2xl">
+                                <div class="inline-flex items-center justify-center w-16 h-16 mb-4">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600"></div>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-800 mb-2"><?= lang('Sales.processing_sale') ?? 'Processing Sale' ?></h3>
+                                <?php if (!empty($zatcaEnabled)): ?>
+                                    <p class="text-gray-600 text-sm"><?= lang('Sales.zatca_submission_in_progress') ?? 'ZATCA submission in progress, please wait...' ?></p>
+                                <?php else: ?>
+                                    <p class="text-gray-600 text-sm"><?= lang('Sales.please_wait') ?? 'Please wait...' ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <button type="submit" id="completeSubmitBtn" class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 shadow-lg">
                             <i class="fas fa-check-circle mr-2"></i><?= lang('Sales.complete_sale') ?> (F9)
                         </button>
                     </div>
@@ -359,6 +373,14 @@ $canEditLineDiscount = can('sales.edit_discount');
 
 <script>
     $(document).ready(function() {
+        // Hide loader if page reloads with errors (from server validation)
+        if ($('.bg-red-50').length > 0 || $('form').find('.error').length > 0) {
+            $('#sale-loader').addClass('hidden');
+            $('#completeSubmitBtn').prop('disabled', false).css('opacity', '1');
+            $('#completeSubmitBtn').find('i').removeClass('fa-spinner fa-spin').addClass('fa-check-circle');
+            isFormSubmitting = false;
+        }
+
         // Role/permission-based locks
         const CAN_EDIT_PRICE = <?= $canEditLinePrice ? 'true' : 'false' ?>;
         const CAN_EDIT_DISCOUNT = <?= $canEditLineDiscount ? 'true' : 'false' ?>;
@@ -1063,7 +1085,14 @@ $canEditLineDiscount = can('sales.edit_discount');
         }
 
         // Form submission
+        let isFormSubmitting = false;
         $('form').on('submit', function(e) {
+            // Prevent duplicate submissions
+            if (isFormSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+
             const validItems = getValidCartItems();
             if (validItems.length === 0) {
                 e.preventDefault();
@@ -1085,6 +1114,12 @@ $canEditLineDiscount = can('sales.edit_discount');
             }
             // Update cart data with only valid items
             $('#cart-data').val(JSON.stringify(validItems));
+
+            // Show loader and disable button on successful validation
+            isFormSubmitting = true;
+            $('#sale-loader').removeClass('hidden');
+            $('#completeSubmitBtn').prop('disabled', true).css('opacity', '0.6');
+            $('#completeSubmitBtn').find('i').removeClass('fa-check-circle').addClass('fa-spinner fa-spin');
         });
 
         $('#saveDraftBtn').on('click', function() {

@@ -14,7 +14,8 @@
         "ext-intl": "*",
         "ext-mbstring": "*",
         "laminas/laminas-escaper": "^2.14",
-        "psr/log": "^3.0"
+        "psr/log": "^3.0",
+        "saleh7/php-zatca-xml": "*"
     },
     "require-dev": {
         "codeigniter/coding-standard": "^1.7",

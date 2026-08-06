@@ -16,6 +16,12 @@ class SalesReturnModel extends Model
         'user_id',
         'created_at',
         'updated_at',
-        'store_id'
+        'store_id',
+        'zatca_credit_note_uuid',
+        'zatca_credit_note_hash',
+        'zatca_credit_note_xml_path',
+        'zatca_credit_note_status',
+        'zatca_credit_note_response',
+        'zatca_credit_note_submitted_at',
     ];
 }

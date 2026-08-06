@@ -325,7 +325,35 @@ class ZatcaOnboarding extends BaseController
 
                     $validation = is_array($apiResponse['validationResults'] ?? null) ? $apiResponse['validationResults'] : [];
                     $status = strtoupper($toText($validation['status'] ?? ''));
-                    $passed = $status === 'PASS';
+                    $errorMessages = is_array($validation['errorMessages'] ?? null) ? $validation['errorMessages'] : [];
+                    $warningMessages = is_array($validation['warningMessages'] ?? null) ? $validation['warningMessages'] : [];
+
+                    $warningCodes = [];
+                    foreach ($warningMessages as $warningMessage) {
+                        if (is_array($warningMessage)) {
+                            $code = strtoupper(trim((string) ($warningMessage['code'] ?? '')));
+                            if ($code !== '') {
+                                $warningCodes[] = $code;
+                            }
+                        }
+                    }
+
+                    $simplifiedComplianceTypes = [
+                        'simplified_invoice',
+                        'simplified_credit_note',
+                        'simplified_debit_note',
+                    ];
+
+                    $isOnlyAllowedSimplifiedWarning = in_array($invoiceType, $simplifiedComplianceTypes, true)
+                        && empty($errorMessages)
+                        && !empty($warningCodes)
+                        && empty(array_diff($warningCodes, ['BR-KSA-98']));
+
+                    $passed = $status === 'PASS' || $isOnlyAllowedSimplifiedWarning;
+
+                    if ($isOnlyAllowedSimplifiedWarning && $status === 'WARNING') {
+                        $status = 'PASS_WITH_WARNING';
+                    }
 
                     $message = '';
                     if (!$passed) {
@@ -547,9 +575,14 @@ class ZatcaOnboarding extends BaseController
         } catch (\Exception $e) {
             $this->logsModel->logAction('request_production_csid', $e->getMessage(), 'error');
 
+            $errorMessage = $e->getMessage();
+            if (stripos($errorMessage, 'Missing-ComplianceSteps') !== false) {
+                $errorMessage = 'Missing required compliance checks for Production CSID. Run Step 3 again until all are passed: standard_invoice, simplified_invoice, credit_note, debit_note, simplified_credit_note, simplified_debit_note.';
+            }
+
             return $this->response->setJSON([
                 'success' => false,
-                'message' => lang('Zatca.onboarding_production_csid_failed') . ': ' . $e->getMessage(),
+                'message' => lang('Zatca.onboarding_production_csid_failed') . ': ' . $errorMessage,
             ]);
         }
     }

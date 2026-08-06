@@ -44,38 +44,40 @@
             <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="phone" type="text" name="phone" value="<?= esc($store['phone']) ?>" placeholder="<?= esc(lang('Stores.enter_store_phone')) ?>">
         </div>
 
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_seller_vat_number"><?= lang('Stores.zatca_seller_vat_number') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_seller_vat_number" type="text" name="zatca_seller_vat_number" value="<?= esc($store['zatca_seller_vat_number'] ?? '') ?>" maxlength="15" placeholder="<?= esc(lang('Stores.zatca_seller_vat_number_placeholder')) ?>">
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_seller_legal_name"><?= lang('Stores.zatca_seller_legal_name') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_seller_legal_name" type="text" name="zatca_seller_legal_name" value="<?= esc($store['zatca_seller_legal_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_seller_legal_name_placeholder')) ?>">
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_street_name"><?= lang('Stores.zatca_street_name') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_street_name" type="text" name="zatca_street_name" value="<?= esc($store['zatca_street_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_street_name_placeholder')) ?>">
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_building_number"><?= lang('Stores.zatca_building_number') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_building_number" type="text" name="zatca_building_number" value="<?= esc($store['zatca_building_number'] ?? '') ?>" maxlength="4" placeholder="<?= esc(lang('Stores.zatca_building_number_placeholder')) ?>">
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_city_subdivision_name"><?= lang('Stores.zatca_city_subdivision_name') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_city_subdivision_name" type="text" name="zatca_city_subdivision_name" value="<?= esc($store['zatca_city_subdivision_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_city_subdivision_name_placeholder')) ?>">
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_city_name"><?= lang('Stores.zatca_city_name') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_city_name" type="text" name="zatca_city_name" value="<?= esc($store['zatca_city_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_city_name_placeholder')) ?>">
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_postal_code"><?= lang('Stores.zatca_postal_code') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_postal_code" type="text" name="zatca_postal_code" value="<?= esc($store['zatca_postal_code'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_postal_code_placeholder')) ?>">
-        </div>
-        <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_country_code"><?= lang('Stores.zatca_country_code') ?>:</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_country_code" type="text" name="zatca_country_code" value="<?= esc($store['zatca_country_code'] ?? 'SA') ?>" maxlength="2" readonly>
-        </div>
+        <?php if (!empty($isZatcaEnabled)): ?>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_seller_vat_number"><?= lang('Stores.zatca_seller_vat_number') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_seller_vat_number" type="text" name="zatca_seller_vat_number" value="<?= esc($store['zatca_seller_vat_number'] ?? '') ?>" maxlength="15" placeholder="<?= esc(lang('Stores.zatca_seller_vat_number_placeholder')) ?>">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_seller_legal_name"><?= lang('Stores.zatca_seller_legal_name') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_seller_legal_name" type="text" name="zatca_seller_legal_name" value="<?= esc($store['zatca_seller_legal_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_seller_legal_name_placeholder')) ?>">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_street_name"><?= lang('Stores.zatca_street_name') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_street_name" type="text" name="zatca_street_name" value="<?= esc($store['zatca_street_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_street_name_placeholder')) ?>">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_building_number"><?= lang('Stores.zatca_building_number') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_building_number" type="text" name="zatca_building_number" value="<?= esc($store['zatca_building_number'] ?? '') ?>" maxlength="4" placeholder="<?= esc(lang('Stores.zatca_building_number_placeholder')) ?>">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_city_subdivision_name"><?= lang('Stores.zatca_city_subdivision_name') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_city_subdivision_name" type="text" name="zatca_city_subdivision_name" value="<?= esc($store['zatca_city_subdivision_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_city_subdivision_name_placeholder')) ?>">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_city_name"><?= lang('Stores.zatca_city_name') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_city_name" type="text" name="zatca_city_name" value="<?= esc($store['zatca_city_name'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_city_name_placeholder')) ?>">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_postal_code"><?= lang('Stores.zatca_postal_code') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_postal_code" type="text" name="zatca_postal_code" value="<?= esc($store['zatca_postal_code'] ?? '') ?>" placeholder="<?= esc(lang('Stores.zatca_postal_code_placeholder')) ?>">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="zatca_country_code"><?= lang('Stores.zatca_country_code') ?>:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="zatca_country_code" type="text" name="zatca_country_code" value="<?= esc($store['zatca_country_code'] ?? 'SA') ?>" maxlength="2" readonly>
+            </div>
+        <?php endif; ?>
         <div class="mb-6">
             <label class="block font-semibold mb-1"><?= lang('Stores.currency_code') ?> </label>
             <select name="currency_code" class="w-full border rounded px-3 py-2">

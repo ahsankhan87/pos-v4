@@ -398,7 +398,6 @@ $canEditLineDiscount = can('sales.edit_discount');
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-0.5"><?= lang('Sales.zatca_invoice_type') ?></label>
                                 <select name="zatca_invoice_type" id="zatca_invoice_type" class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500">
-                                    <option value="" <?= $selectedZatcaInvoiceType === '' ? 'selected' : '' ?>><?= lang('Sales.select_invoice_type') ?></option>
                                     <option value="simplified" <?= $selectedZatcaInvoiceType === 'simplified' ? 'selected' : '' ?>><?= lang('Sales.zatca_invoice_type_simplified') ?></option>
                                     <option value="standard" <?= $selectedZatcaInvoiceType === 'standard' ? 'selected' : '' ?>><?= lang('Sales.zatca_invoice_type_standard') ?></option>
                                 </select>
@@ -511,7 +510,21 @@ $canEditLineDiscount = can('sales.edit_discount');
                             </button>
                         </div>
                         <input type="hidden" name="draft" id="draft-flag" value="0">
-                        <button type="submit"
+                        <!-- Loading Overlay -->
+                        <div id="sale-loader" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                            <div class="bg-white rounded-lg p-8 text-center shadow-2xl">
+                                <div class="inline-flex items-center justify-center w-16 h-16 mb-4">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600"></div>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-800 mb-2"><?= lang('Sales.processing_sale') ?? 'Processing Sale' ?></h3>
+                                <?php if (!empty($zatcaEnabled)): ?>
+                                    <p class="text-gray-600 text-sm"><?= lang('Sales.zatca_submission_in_progress') ?? 'ZATCA submission in progress, please wait...' ?></p>
+                                <?php else: ?>
+                                    <p class="text-gray-600 text-sm"><?= lang('Sales.please_wait') ?? 'Please wait...' ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <button type="submit" id="completeSubmitBtn"
                             class="w-full flex items-center justify-center px-3 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white text-xl font-bold rounded hover:from-green-700 hover:to-green-800 transition-all shadow-md">
                             <i class="fas fa-check-circle mr-1.5"></i><?= lang('Sales.complete_sale') ?><kbd class="ml-1 bg-white/20 px-1 rounded text-[10px]">F9</kbd>
                         </button>
@@ -639,6 +652,14 @@ $canEditLineDiscount = can('sales.edit_discount');
     const SHOW_ITEM_DISCOUNT_TYPE = <?= (!empty($salesShowDiscountType)) ? 'true' : 'false' ?>;
 
     $(document).ready(function() {
+        // Hide loader if page reloads with errors (from server validation)
+        if ($('.bg-red-50').length > 0 || $('form').find('.error').length > 0) {
+            $('#sale-loader').addClass('hidden');
+            $('#completeSubmitBtn').prop('disabled', false).css('opacity', '1');
+            $('#completeSubmitBtn').find('i').removeClass('fa-spinner fa-spin').addClass('fa-check-circle');
+            isFormSubmitting = false;
+        }
+
         // Update time every second
         function updateTime() {
             const now = new Date();
@@ -806,7 +827,14 @@ $canEditLineDiscount = can('sales.edit_discount');
         $('#discount_type').on('change', syncDiscountInputConstraints);
 
         // Form submission handling
+        let isFormSubmitting = false;
         $('form').on('submit', function(e) {
+            // Prevent duplicate submissions
+            if (isFormSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+
             let errors = validateSaleForm();
             if (errors.length > 0) {
                 e.preventDefault();
@@ -814,6 +842,11 @@ $canEditLineDiscount = can('sales.edit_discount');
                 return false;
             }
 
+            // Show loader and disable button on successful validation
+            isFormSubmitting = true;
+            $('#sale-loader').removeClass('hidden');
+            $('#completeSubmitBtn').prop('disabled', true).css('opacity', '0.6');
+            $('#completeSubmitBtn').find('i').removeClass('fa-check-circle').addClass('fa-spinner fa-spin');
         });
 
         // Save Draft functionality

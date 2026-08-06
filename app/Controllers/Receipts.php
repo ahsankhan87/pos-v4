@@ -109,33 +109,64 @@ class Receipts extends BaseController
 
         $replacements = [
             '{{store_name}}' => $loggedInStore['name'] ?? 'Your Store Name',
+            '{{store_legal_name}}' => $loggedInStore['zatca_seller_legal_name'] ?? $loggedInStore['name'] ?? 'Your Store Name',
+            '{{store_cr_number}}' => $loggedInStore['zatca_seller_cr_number'] ?? '',
+            '{{store_vat_number}}' => $loggedInStore['zatca_seller_vat_number'] ?? '',
+            '{{store_street_name}}' => $loggedInStore['zatca_street_name'] ?? '',
+            '{{store_building_number}}' => $loggedInStore['zatca_building_number'] ?? '',
+            '{{store_city_subdivision_name}}' => $loggedInStore['zatca_city_subdivision_name'] ?? '',
+            '{{store_city_name}}' => $loggedInStore['zatca_city_name'] ?? '',
+            '{{store_postal_code}}' => $loggedInStore['zatca_postal_code'] ?? '',
+            '{{store_country_name}}' => $loggedInStore['zatca_country_code'] ?? 'SA',
             '{{store_address}}' => $loggedInStore['address'] ?? '123 Main St, City',
             '{{store_phone}}' => $loggedInStore['phone'] ?? '555-1234',
+            '{{store_email}}' => $loggedInStore['email'] ?? '',
             '{{store_footer}}' => 'Returns accepted within 7 days with receipt',
             '{{store_logo_url}}' => $logoUrl,
             '{{store_logo_img}}' => $logoUrl ? ('<img src="' . $logoUrl . '" alt="Logo" style="height:48px; max-width:220px; object-fit:contain;">') : '',
             '{{company_website}}' => $websiteUrl,
             '{{website_qr}}' => $websiteQrReplacement,
             '{{zatca_qr}}' => $zatcaQrReplacement,
+            '{{zatca_qr_code}}' => $zatcaQrReplacement,
             '{{zatca_compliance_label}}' => $zatcaLabelReplacement,
             '{{receipt_number}}' => $sale['invoice_no'],
+            '{{invoice_number}}' => $sale['invoice_no'],
+            '{{invoice_hash}}' => $sale['zatca_invoice_hash'] ?? '',
+            '{{invoice_uuid}}' => $sale['zatca_uuid'] ?? '',
             '{{date}}' => date('d/m/Y h:i A', strtotime($sale['created_at'])),
+            '{{invoice_date}}' => date('d/m/Y', strtotime($sale['created_at'])),
             '{{cashier}}' => $sale['cashier_name'],
             '{{customer}}' => $sale['customer_id'] ? $customerName : '',
             '{{customer_name}}' => $customerName,
+            '{{customer_email}}' => $sale['customer_id'] ? ($sale['customer_email'] ?? '') : '',
             '{{customer_phone}}' => $customerPhone,
             '{{customer_address}}' => $customerAddress,
+            '{{customer_zatca_registration_name}}' => $sale['customer_id'] ? ($sale['zatca_registration_name'] ?? '') : '',
+            '{{customer_zatca_cr_number}}' => $sale['customer_id'] ? ($sale['zatca_cr_number'] ?? '') : '',
+            '{{customer_vat_number}}' => $sale['customer_id'] ? ($sale['vat_number'] ?? '') : '',
+            '{{customer_street_name}}' => $sale['customer_id'] ? ($sale['zatca_street_name'] ?? '') : '',
+            '{{customer_building_number}}' => $sale['customer_id'] ? ($sale['zatca_building_number'] ?? '') : '',
+            '{{customer_city_subdivision_name}}' => $sale['customer_id'] ? ($sale['zatca_city_subdivision_name'] ?? '') : '',
+            '{{customer_city_name}}' => $sale['customer_id'] ? ($sale['zatca_city_name'] ?? '') : '',
+            '{{customer_postal_code}}' => $sale['customer_id'] ? ($sale['zatca_postal_code'] ?? '') : '',
+            '{{customer_country_name}}' => $sale['customer_id'] ? ($sale['zatca_country_code'] ?? 'SA') : '',
             '{{customer_balance}}' => $customerBalance !== null ? number_format($customerBalance, 2) : '',
             '{{customer_month_sales}}' => $customerMonthSales !== null ? number_format($customerMonthSales, 2) : '',
             '{{items}}' => $this->buildItemsHtml($sale['items']),
+            '{{invoice_items}}' => $this->buildItemsHtml($sale['items']),
             '{{subtotal}}' => number_format($subtotal, 2),
             '{{total_discount}}' => number_format($discountAmount, 2),
             '{{discount_percent}}' => number_format($discountPercent, 2),
             '{{discount_type}}' => $discountType,
             '{{tax}}' => number_format($totalTax, 2),
+            '{{total_tax}}' => number_format($totalTax, 2),
+            '{{tax_rate}}' => '15', // KSA standard VAT rate
             '{{total}}' => number_format($grandTotal, 2),
+            '{{grand_total}}' => number_format($grandTotal, 2),
             '{{paid}}' => number_format($sale['amount_tendered'], 2),
+            '{{amount_paid}}' => number_format($sale['amount_tendered'], 2),
             '{{change}}' => number_format($sale['change_amount'], 2),
+            '{{balance_due}}' => number_format($sale['change_amount'], 2),
             '{{ItemsCount}}' => count($sale['items']) ?? 0,
             '{{payment_type}}' => ($sale['payment_type'] == 'credit' ? strtoupper($sale['payment_type']) : ''),
             '{{currency}}' => $currency,
@@ -143,6 +174,52 @@ class Receipts extends BaseController
             '{{employee_phone}}' => $sale['employee_phone'] ?? '',
             '{{description}}' => $descSafeBr,
             '{{description_block}}' => $descBlock,
+            // Language labels for professional invoice template
+            '{{invoice_number_label}}' => lang('Invoice.invoice_number_label') ?? 'Invoice Number',
+            '{{invoice_date_label}}' => lang('Invoice.invoice_date_label') ?? 'Invoice Date',
+            '{{due_date_label}}' => lang('Invoice.due_date_label') ?? 'Due Date',
+            '{{seller_label}}' => lang('Invoice.seller_label') ?? 'Seller',
+            '{{buyer_label}}' => lang('Invoice.buyer_label') ?? 'Buyer',
+            '{{postal_address_label}}' => lang('Invoice.postal_address_label') ?? 'Postal Address',
+            '{{street_label}}' => lang('Invoice.street_label') ?? 'Street',
+            '{{building_label}}' => lang('Invoice.building_label') ?? 'Building',
+            '{{city_subdivision_label}}' => lang('Invoice.city_subdivision_label') ?? 'City Subdivision',
+            '{{city_label}}' => lang('Invoice.city_label') ?? 'City',
+            '{{postal_code_label}}' => lang('Invoice.postal_code_label') ?? 'Postal Code',
+            '{{country_label}}' => lang('Invoice.country_label') ?? 'Country',
+            '{{legal_name_label}}' => lang('Invoice.legal_name_label') ?? 'Legal Name',
+            '{{cr_number_label}}' => lang('Invoice.cr_number_label') ?? 'CR Number',
+            '{{vat_label}}' => lang('Invoice.vat_label') ?? 'VAT Number',
+            '{{phone_label}}' => lang('Invoice.phone_label') ?? 'Phone',
+            '{{email_label}}' => lang('Invoice.email_label') ?? 'Email',
+            '{{name_label}}' => lang('Invoice.name_label') ?? 'Name',
+            '{{registration_name_label}}' => lang('Invoice.registration_name_label') ?? 'Registration Name',
+            '{{item_no_label}}' => lang('Invoice.item_no_label') ?? '#',
+            '{{description_label}}' => lang('Invoice.description_label') ?? 'Description',
+            '{{qty_label}}' => lang('Invoice.qty_label') ?? 'Quantity',
+            '{{unit_price_label}}' => lang('Invoice.unit_price_label') ?? 'Unit Price',
+            '{{amount_label}}' => lang('Invoice.amount_label') ?? 'Amount',
+            '{{subtotal_label}}' => lang('Invoice.subtotal_label') ?? 'Subtotal',
+            '{{discount_label}}' => lang('Invoice.discount_label') ?? 'Discount',
+            '{{tax_label}}' => lang('Invoice.tax_label') ?? 'Tax',
+            '{{grand_total_label}}' => lang('Invoice.grand_total_label') ?? 'Grand Total',
+            '{{paid_label}}' => lang('Invoice.paid_label') ?? 'Amount Paid',
+            '{{balance_label}}' => lang('Invoice.balance_label') ?? 'Balance',
+            '{{zatca_compliance_label}}' => lang('Invoice.zatca_compliance_label') ?? 'ZATCA Compliance',
+            '{{zatca_compliance_text}}' => lang('Invoice.zatca_compliance_text') ?? 'This invoice complies with ZATCA requirements',
+            '{{invoice_id_label}}' => lang('Invoice.invoice_id_label') ?? 'Invoice ID',
+            '{{uuid_label}}' => lang('Invoice.uuid_label') ?? 'UUID',
+            '{{notes_label}}' => lang('Invoice.notes_label') ?? 'Notes',
+            '{{invoice_notes}}' => '',
+            '{{payment_terms_label}}' => lang('Invoice.payment_terms_label') ?? 'Payment Terms',
+            '{{payment_terms}}' => '',
+            '{{footer_text}}' => 'Thank you for your business',
+            '{{footer_disclaimer}}' => 'This is a computer-generated receipt. No signature required.',
+            '{{due_date}}' => '',
+            '{{invoice_type_label}}' => (strpos($sale['zatca_invoice_type'] ?? '', 'simplified') !== false) ? 'Simplified Invoice' : 'Standard Invoice',
+            '{{invoice_type_class}}' => '',
+            '{{invoice_document_type}}' => (strpos($sale['zatca_invoice_type'] ?? '', 'simplified') !== false) ? 'Simplified Invoice' : 'Standard Invoice',
+            '{{direction}}' => session('locale') === 'ar' ? 'rtl' : 'ltr',
         ];
 
         // Generate receipt HTML
@@ -159,20 +236,6 @@ class Receipts extends BaseController
                 $receiptHtml = preg_replace('/<\/body>/i', $descBlock . '</body>', $receiptHtml, 1);
             } else {
                 $receiptHtml .= $descBlock;
-            }
-        }
-
-        if ($zatcaQrCode !== '') {
-            $zatcaBlock = '<div style="margin-top:10px;text-align:center;">'
-                . $zatcaLabelReplacement
-                . $this->buildZatcaQrHtml($zatcaQrCode)
-                . '</div>';
-            if (strpos($receiptHtml, '{{zatca_qr}}') === false && strpos($receiptHtml, '{{zatca_compliance_label}}') === false) {
-                if (stripos($receiptHtml, '</body>') !== false) {
-                    $receiptHtml = preg_replace('/<\/body>/i', $zatcaBlock . '</body>', $receiptHtml, 1);
-                } else {
-                    $receiptHtml .= $zatcaBlock;
-                }
             }
         }
 
@@ -302,6 +365,8 @@ class Receipts extends BaseController
             '{{employee_phone}}' => $sale['employee_phone'] ?? '',
             '{{description}}' => $descSafeBr,
             '{{description_block}}' => $descBlock,
+            '{{invoice_document_type}}' => 'Invoice',
+            '{{invoice_classification}}' => (strpos($sale['zatca_invoice_type'] ?? '', 'simplified') !== false) ? 'Simplified' : 'Standard',
         ];
 
         $receiptHtml = str_replace(
@@ -315,20 +380,6 @@ class Receipts extends BaseController
                 $receiptHtml = preg_replace('/<\/body>/i', $descBlock . '</body>', $receiptHtml, 1);
             } else {
                 $receiptHtml .= $descBlock;
-            }
-        }
-
-        if ($zatcaQrCode !== '') {
-            $zatcaBlock = '<div style="margin-top:10px;text-align:center;">'
-                . $zatcaLabelReplacement
-                . $this->buildZatcaQrHtml($zatcaQrCode)
-                . '</div>';
-            if (strpos($receiptHtml, '{{zatca_qr}}') === false && strpos($receiptHtml, '{{zatca_compliance_label}}') === false) {
-                if (stripos($receiptHtml, '</body>') !== false) {
-                    $receiptHtml = preg_replace('/<\/body>/i', $zatcaBlock . '</body>', $receiptHtml, 1);
-                } else {
-                    $receiptHtml .= $zatcaBlock;
-                }
             }
         }
 
@@ -380,7 +431,9 @@ class Receipts extends BaseController
     protected function buildItemsHtml($items)
     {
         $html = '';
+        $serialNo = 0;
         foreach ($items as $item) {
+            $serialNo++;
             $cartonSize = (float)($item['carton_size'] ?? 0);
             $quantity = (float)($item['quantity'] ?? 0);
 
@@ -417,6 +470,8 @@ class Receipts extends BaseController
             }
 
             $html .= '<tr>';
+            $html .= '<td style="text-align: center;">' . $serialNo . '</td>';
+            // $html .= '<td style="text-align: center;">' . htmlspecialchars((string)($item['product_code'] ?? $item['sku'] ?? '-')) . '</td>';
             $html .= '<td>' . htmlspecialchars((string)$item['name']) . '</td>';
             $html .= '<td style="text-align: center;">' . $qtyDisplay . '</td>';
             $html .= '<td style="text-align: right;">' . number_format($unitPrice, 2) . '</td>';
@@ -426,7 +481,7 @@ class Receipts extends BaseController
 
             if ($selectedImeis !== []) {
                 $html .= '<tr>';
-                $html .= '<td colspan="5" style="font-size: 10px; color: #555; padding-top: 0; padding-bottom: 4px;">';
+                $html .= '<td colspan="6" style="font-size: 10px; color: #555; padding-top: 0; padding-bottom: 4px;">';
                 $html .= '<strong>IMEI:</strong> ' . implode(', ', $selectedImeis);
                 $html .= '</td>';
                 $html .= '</tr>';

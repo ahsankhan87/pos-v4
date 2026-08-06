@@ -51,6 +51,9 @@ class M_sales extends Model
         // This is a simplified example
         $sale = $this->select('pos_sales.*, pos_users.name as cashier_name, 
         pos_customers.name as customer_name, pos_customers.address as customer_address, pos_customers.phone as customer_phone,
+        pos_customers.zatca_registration_name, pos_customers.zatca_cr_number, pos_customers.vat_number,
+        pos_customers.zatca_street_name, pos_customers.zatca_building_number, pos_customers.zatca_city_subdivision_name,
+        pos_customers.zatca_city_name, pos_customers.zatca_postal_code, pos_customers.zatca_country_code,
         pos_employees.phone as employee_phone,pos_employees.name as employee_name')
             ->join('pos_users', 'pos_users.id = pos_sales.user_id', 'left')
             ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')

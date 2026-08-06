@@ -11,7 +11,7 @@ class Stores extends BaseController
 
     public function __construct()
     {
-        helper(['audit', 'business_feature']);
+        helper(['audit', 'business_feature', 'zatca_helper']);
         $this->storeModel = new StoreModel();
     }
     public function index()
@@ -92,9 +92,11 @@ class Stores extends BaseController
 
     public function new()
     {
+        $isZatcaEnabled = zatca_enabled();
         return view('stores/new', [
             'title' => 'Add New Store / Branch',
             'imeiTrackingMode' => old('imei_tracking_mode', 'inherit'),
+            'isZatcaEnabled' => $isZatcaEnabled,
         ]);
     }
     public function show($id)
@@ -192,10 +194,12 @@ class Stores extends BaseController
             $imeiTrackingMode = ((int) ($override['is_enabled'] ?? 0) === 1) ? 'enabled' : 'disabled';
         }
 
+        $isZatcaEnabled = zatca_enabled();
         $data = [
             'title' => 'Edit Store / Branch',
             'store' => $store,
             'imeiTrackingMode' => old('imei_tracking_mode', $imeiTrackingMode),
+            'isZatcaEnabled' => $isZatcaEnabled,
         ];
         return view('stores/edit', $data);
     }
