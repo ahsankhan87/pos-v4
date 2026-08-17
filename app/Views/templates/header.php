@@ -446,6 +446,9 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                                 <a href="<?= site_url('reports/debtors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                                     <i class="fas fa-users mr-2 text-red-600"></i> <?= lang('Navigation.debtors_customers') ?>
                                                                 </a>
+                                                                <a href="<?= site_url('reports/debtors-by-area') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                                    <i class="fas fa-map-marker-alt mr-2 text-orange-600"></i> <?= lang('Navigation.debtors_by_area') ?>
+                                                                </a>
                                                             <?php endif; ?>
                                                             <?php if (canAny(['reports.creditors', 'purchases.view'])): ?>
                                                                 <a href="<?= site_url('reports/creditors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
@@ -797,7 +800,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                         <i class="fas fa-chevron-down text-xs"></i>
                                     </button>
                                     <div class="mobile-submenu hidden pl-3 mt-1 space-y-1">
-                                        <?php if (canAny(['reports.debtors', 'customers.view'])): ?><a href="<?= site_url('reports/debtors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-users mr-2 text-red-300"></i> <?= lang('Navigation.debtors_customers') ?></a><?php endif; ?>
+                                        <?php if (canAny(['reports.debtors', 'customers.view'])): ?><a href="<?= site_url('reports/debtors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-users mr-2 text-red-300"></i> <?= lang('Navigation.debtors_customers') ?></a><a href="<?= site_url('reports/debtors-by-area') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-map-marker-alt mr-2 text-orange-300"></i> <?= lang('Navigation.debtors_by_area') ?></a><?php endif; ?>
                                         <?php if (canAny(['reports.creditors', 'purchases.view'])): ?><a href="<?= site_url('reports/creditors') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-truck mr-2 text-purple-300"></i> <?= lang('Navigation.creditors_suppliers') ?></a><?php endif; ?>
                                         <?php if (can('reports.expense_report')): ?>
                                             <a href="<?= site_url('sales/expense-report') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center"><i class="fas fa-receipt mr-2"></i> <?= lang('Navigation.expense_report') ?></a>

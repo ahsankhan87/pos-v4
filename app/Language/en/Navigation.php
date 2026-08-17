@@ -46,6 +46,7 @@ return [
     'inventory_reports' => 'Inventory Reports',
     'accounts' => 'Accounts',
     'debtors_customers' => 'Debtors (Customers)',
+    'debtors_by_area' => 'Debtors by Area/Route',
     'creditors_suppliers' => 'Creditors (Suppliers)',
     'expenses' => 'Expenses',
     'switch_store' => 'Switch Store',

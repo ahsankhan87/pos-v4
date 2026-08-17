@@ -305,4 +305,9 @@ return [
     'total_return_amount' => 'Total Return Amount',
     'total_return_qty' => 'Total Return Qty',
     'no_returns_found' => 'No returns found for the selected period.',
+    'debtors_by_area_description' => 'Customer balances grouped by area/route. Use this to track pending payments by route for collection purposes.',
+    'debtors_by_area_balances' => 'Area/Route-wise Customer Balances',
+    'debtors_by_area_export_title' => 'area_wise_debtors',
+    'customer_count' => 'Customers',
+    'search_area_placeholder' => 'Search area...',
 ];

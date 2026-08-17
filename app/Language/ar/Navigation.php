@@ -44,6 +44,7 @@ return [
     'inventory_reports' => 'تقارير المخزون',
     'accounts' => 'الحسابات',
     'debtors_customers' => 'المدينون (العملاء)',
+    'debtors_by_area' => 'المدينون حسب المنطقة/المسار',
     'creditors_suppliers' => 'الدائنون (الموردون)',
     'expenses' => 'المصروفات',
     'switch_store' => 'تبديل المتجر',

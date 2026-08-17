@@ -475,6 +475,8 @@ $routes->group('supplier-ledger', ['filter' => 'auth'], function ($routes) {
 $routes->group('reports', ['filter' => 'auth'], function ($routes) {
     $routes->get('debtors', 'Reports\Accounts::debtors', ['filter' => 'permission:any|reports.debtors|customers.view']);
     $routes->get('debtors/data', 'Reports\Accounts::debtorsData', ['filter' => 'permission:any|reports.debtors|customers.view']);
+    $routes->get('debtors-by-area', 'Reports\Accounts::debtorsByArea', ['filter' => 'permission:any|reports.debtors|customers.view']);
+    $routes->get('debtors-by-area/data', 'Reports\Accounts::debtorsByAreaData', ['filter' => 'permission:any|reports.debtors|customers.view']);
     $routes->get('creditors', 'Reports\Accounts::creditors', ['filter' => 'permission:any|reports.creditors|purchases.view']);
     $routes->get('creditors/data', 'Reports\Accounts::creditorsData', ['filter' => 'permission:any|reports.creditors|purchases.view']);
 });

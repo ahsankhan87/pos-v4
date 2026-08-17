@@ -305,4 +305,9 @@ return [
     'total_return_amount' => 'إجمالي مبلغ المرتجع',
     'total_return_qty' => 'إجمالي كمية المرتجع',
     'no_returns_found' => 'لا توجد مرتجعات للفترة المحددة.',
+    'debtors_by_area_description' => 'أرصدة العملاء مجمعة حسب المنطقة/المسار. استخدم هذا لتتبع الدفعات المعلقة حسب المسار لأغراض التحصيل.',
+    'debtors_by_area_balances' => 'أرصدة العملاء حسب المنطقة/المسار',
+    'debtors_by_area_export_title' => 'المدينون_حسب_المنطقة',
+    'customer_count' => 'عدد العملاء',
+    'search_area_placeholder' => 'ابحث عن المنطقة...',
 ];

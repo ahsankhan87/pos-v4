@@ -231,4 +231,120 @@ class Accounts extends BaseController
             'data' => $rows,
         ]);
     }
+
+    // Area/Route-wise Customer Balances Report
+    public function debtorsByArea()
+    {
+        return view('reports/debtors_by_area_index', [
+            'title' => 'Area/Route-wise Customer Balances'
+        ]);
+    }
+
+    public function debtorsByAreaData()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid request.']);
+        }
+
+        $draw = (int) ($this->request->getVar('draw') ?? 0);
+        $start = max(0, (int) ($this->request->getVar('start') ?? 0));
+        $length = (int) ($this->request->getVar('length') ?? 25);
+        $length = $length > 0 ? min($length, 500) : 25;
+        $search = (string)($this->request->getVar('search')['value'] ?? '');
+        $orderRequest = $this->request->getVar('order')[0] ?? null;
+        $from = $this->normalizeDateInput($this->request->getVar('from'));
+        $to = $this->normalizeDateInput($this->request->getVar('to'));
+        $onlyOutstanding = (string)($this->request->getVar('onlyOutstanding') ?? '1') === '1';
+
+        if ($from !== null && $to !== null && $from > $to) {
+            $tempDate = $from;
+            $from = $to;
+            $to = $tempDate;
+        }
+
+        $db = \Config\Database::connect();
+        $storeId = session('store_id');
+
+        // Build ledger subquery for date filtering
+        $ledgerSub = $db->table('pos_customer_ledger')
+            ->select('customer_id, SUM(debit) as t_debit, SUM(credit) as t_credit')
+            ->groupBy('customer_id');
+
+        if ($from !== null) {
+            $ledgerSub->where('date >=', $from . ' 00:00:00');
+        }
+
+        if ($to !== null) {
+            $ledgerSub->where('date <=', $to . ' 23:59:59');
+        }
+
+        // Build main query grouped by area using a customer aggregation subquery
+        $customersSub = $db->table('pos_customers c')
+            ->select('
+                c.area,
+                c.id,
+                c.opening_balance,
+                COALESCE(l.t_debit, 0) as total_debit,
+                COALESCE(l.t_credit, 0) as total_credit
+            ')
+            ->join('(' . $ledgerSub->getCompiledSelect() . ') l', 'l.customer_id = c.id', 'left');
+
+        if ($storeId !== null) {
+            $customersSub->where('c.store_id', $storeId);
+        }
+
+        // Now aggregate by area
+        $base = $db->table('(' . $customersSub->getCompiledSelect() . ') cust')
+            ->select('
+                cust.area,
+                COUNT(cust.id) as customer_count,
+                SUM(cust.opening_balance) as opening_balance,
+                SUM(cust.total_debit) as total_debit,
+                SUM(cust.total_credit) as total_credit,
+                (SUM(cust.opening_balance) + SUM(cust.total_debit) - SUM(cust.total_credit)) as balance
+            ')
+            ->groupBy('cust.area');
+
+        // Search filter
+        if ($search !== '') {
+            $base->like('cust.area', $search);
+        }
+
+        // Only outstanding balances
+        if ($onlyOutstanding) {
+            $base->having('(SUM(cust.opening_balance) + SUM(cust.total_debit) - SUM(cust.total_credit)) !=', 0);
+        }
+
+        // Get filtered count before applying limit
+        $recordsFiltered = (clone $base)->countAllResults(false);
+
+        // Get total count of distinct areas
+        $totalBase = $db->table('pos_customers c')
+            ->select('COUNT(DISTINCT c.area) as count', false);
+
+        if ($storeId !== null) {
+            $totalBase->where('c.store_id', $storeId);
+        }
+        $recordsTotal = $totalBase->get()->getRow()->count ?? 0;
+
+        // Apply ordering
+        $this->applyDataTableOrder($base, $orderRequest, [
+            0 => 'cust.area',
+            1 => 'customer_count',
+            2 => 'opening_balance',
+            3 => 'total_debit',
+            4 => 'total_credit',
+            5 => 'balance',
+        ], 'balance', 'DESC');
+
+        $base->limit($length, $start);
+        $rows = $base->get()->getResultArray();
+
+        return $this->response->setJSON([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $rows,
+        ]);
+    }
 }
