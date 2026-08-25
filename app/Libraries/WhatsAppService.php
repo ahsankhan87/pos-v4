@@ -38,6 +38,53 @@ class WhatsAppService
     }
 
     /**
+     * Send a plain text message using WhatsApp Cloud API.
+     *
+     * @param string $to E.164 number without + (e.g., 921234567890)
+     * @param string $message Text message body
+     * @return array [success=>bool, status|error=>string, response=>mixed]
+     */
+    public function sendTextMessage($to, $message)
+    {
+        if (!$this->isEnabled()) {
+            return ['success' => false, 'error' => 'WhatsApp not configured'];
+        }
+
+        $to = $this->normalizePhone($to);
+
+        $endpoint = sprintf(
+            'https://graph.facebook.com/%s/%s/messages',
+            $this->config->graphApiVersion,
+            $this->config->phoneNumberId
+        );
+
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to' => $to,
+            'type' => 'text',
+            'text' => [
+                'body' => $message,
+            ],
+        ];
+
+        try {
+            $response = $this->http->setHeader('Authorization', 'Bearer ' . $this->config->accessToken)
+                ->setHeader('Content-Type', 'application/json')
+                ->post($endpoint, json_encode($payload));
+
+            $status = $response->getStatusCode();
+            $body = json_decode($response->getBody(), true);
+
+            if ($status >= 200 && $status < 300) {
+                return ['success' => true, 'status' => $status, 'response' => $body];
+            }
+            return ['success' => false, 'status' => $status, 'error' => $body['error']['message'] ?? 'Unknown error', 'response' => $body];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Send a PDF (or any document) by public URL using WhatsApp Cloud API.
      *
      * @param string $to E.164 number without + (e.g., 921234567890)

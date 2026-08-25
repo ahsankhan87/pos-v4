@@ -449,6 +449,9 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                                 <a href="<?= site_url('reports/debtors-by-area') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                                     <i class="fas fa-map-marker-alt mr-2 text-orange-600"></i> <?= lang('Navigation.debtors_by_area') ?>
                                                                 </a>
+                                                                <a href="<?= site_url('reports/overdue-report') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                                    <i class="fas fa-exclamation-triangle mr-2 text-yellow-600"></i> <?= lang('Navigation.customers_overdue_report') ?>
+                                                                </a>
                                                             <?php endif; ?>
                                                             <?php if (canAny(['reports.creditors', 'purchases.view'])): ?>
                                                                 <a href="<?= site_url('reports/creditors') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">

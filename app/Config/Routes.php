@@ -479,6 +479,9 @@ $routes->group('reports', ['filter' => 'auth'], function ($routes) {
     $routes->get('debtors-by-area/data', 'Reports\Accounts::debtorsByAreaData', ['filter' => 'permission:any|reports.debtors|customers.view']);
     $routes->get('creditors', 'Reports\Accounts::creditors', ['filter' => 'permission:any|reports.creditors|purchases.view']);
     $routes->get('creditors/data', 'Reports\Accounts::creditorsData', ['filter' => 'permission:any|reports.creditors|purchases.view']);
+    $routes->get('overdue-report', 'Reports\Accounts::overdueReport', ['filter' => 'permission:any|reports.debtors|customers.view']);
+    $routes->get('overdue-report/data', 'Reports\Accounts::overdueDatatable', ['filter' => 'permission:any|reports.debtors|customers.view']);
+    $routes->post('overdue-report/remind/(:num)', 'Reports\Accounts::sendOverdueReminder/$1', ['filter' => 'permission:any|reports.debtors|customers.view']);
 });
 
 $routes->get('logs/datatable', 'AuditLogs::datatable', ['filter' => 'auth']);

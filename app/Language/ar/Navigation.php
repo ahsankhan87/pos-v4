@@ -11,6 +11,7 @@ return [
     'add_new_product' => 'إضافة منتج جديد',
     'customers' => 'العملاء',
     'customers_list' => 'قائمة العملاء',
+    'customers_overdue_report' => 'تقرير المتأخرين',
     'employees' => 'الموظفون',
     'employees_list' => 'قائمة الموظفين',
     'purchases' => 'المشتريات',

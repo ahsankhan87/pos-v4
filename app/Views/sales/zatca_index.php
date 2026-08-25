@@ -859,7 +859,7 @@
             lengthMenu: [25, 50, 100, 200],
             pageLength: 25,
             order: [
-                [3, 'desc']
+                [0, 'desc']
             ],
             columns: buildColumns(),
             createdRow: function(row, data) {

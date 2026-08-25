@@ -11,6 +11,7 @@ return [
     'add_new_product' => 'Add New Product',
     'customers' => 'Customers',
     'customers_list' => 'Customers List',
+    'customers_overdue_report' => 'Overdue Report',
     'employees' => 'Employees',
     'employees_list' => 'Employees List',
     'purchases' => 'Purchases',
