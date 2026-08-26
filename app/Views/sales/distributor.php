@@ -206,7 +206,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                             <select id="employee-select" name="employee_id" class="w-full text-sm rounded border-gray-300 select2-employee">
                                 <option value=""><?= lang('Sales.none') ?></option>
                                 <?php foreach ($employees as $employee): ?>
-                                    <option value="<?= $employee['id'] ?>"><?= esc($employee['name']) ?></option>
+                                    <option value="<?= $employee['id'] ?>" <?= (int) ($employee['id'] ?? 0) === (int) ($preselectedEmployeeId ?? 0) ? 'selected' : '' ?>><?= esc($employee['name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

@@ -120,6 +120,7 @@ class Sales extends BaseController
         //$data['discounts'] = $this->discountModel->where('is_active', 1)->forStore()->findAll();
         // $data['categories'] = $this->categoriesModel->forStore()->findAll();
         $data['employees'] = $this->employeeModel->forStore()->findAll();
+        $data['preselectedEmployeeId'] = $this->getLinkedEmployeeId();
         $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
         $data['title'] = 'New Sale';
         $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
@@ -149,6 +150,7 @@ class Sales extends BaseController
         //$data['discounts'] = $this->discountModel->where('is_active', 1)->forStore()->findAll();
         // $data['categories'] = $this->categoriesModel->forStore()->findAll();
         $data['employees'] = $this->employeeModel->forStore()->findAll();
+        $data['preselectedEmployeeId'] = $this->getLinkedEmployeeId();
         $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
         $data['title'] = 'New Sale';
         $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
@@ -1262,6 +1264,18 @@ class Sales extends BaseController
             'zatcaEnabled' => $zatcaEnabled,
             'zatcaDefaultInvoiceType' => $defaultZatcaInvoiceType,
         ]);
+    }
+
+    private function getLinkedEmployeeId(): int
+    {
+        $userId = (int) (session('user_id') ?? 0);
+        if ($userId <= 0) {
+            return 0;
+        }
+
+        $employee = $this->employeeModel->getEmployeeByUserId($userId);
+
+        return (int) ($employee['id'] ?? 0);
     }
 
     private function isAdminUser(): bool
