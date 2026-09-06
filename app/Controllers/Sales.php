@@ -1471,6 +1471,64 @@ class Sales extends BaseController
 
     public function delete($saleId)
     {
+        $result = $this->performSaleDelete((int) $saleId);
+
+        if ($result['success']) {
+            return redirect()->to(site_url('sales'))->with('success', $result['message']);
+        }
+
+        return redirect()->to(site_url('sales'))->with('error', $result['message']);
+    }
+
+    /**
+     * Bulk delete selected sales (AJAX). Expects POST with ids[] or a comma-separated ids string.
+     */
+    public function bulkDelete()
+    {
+        if (! $this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid request', 'token' => csrf_hash()]);
+        }
+
+        if (! can('sales.delete')) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden', 'token' => csrf_hash()]);
+        }
+
+        $ids = $this->getIdsFromRequest();
+        if (empty($ids)) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'No sales selected', 'token' => csrf_hash()]);
+        }
+
+        $deleted = 0;
+        $failed = 0;
+
+        foreach ($ids as $id) {
+            $result = $this->performSaleDelete((int) $id);
+            if ($result['success']) {
+                $deleted++;
+            } else {
+                $failed++;
+            }
+        }
+
+        if ($deleted > 0) {
+            logAction('sales_bulk_delete', 'Deleted: ' . $deleted . ', Failed: ' . $failed);
+        }
+
+        return $this->response->setJSON([
+            'deleted' => $deleted,
+            'failed' => $failed,
+            'token' => csrf_hash(),
+        ]);
+    }
+
+    /**
+     * Run the full single-sale deletion transaction (restore stock, remove sale
+     * items and ledger/payment entries, then delete the sale record).
+     *
+     * @return array{success: bool, message: string, sale: array|null}
+     */
+    private function performSaleDelete(int $saleId): array
+    {
         $salesModel = new M_sales();
         $saleItemsModel = new M_sale_items();
         $inventoryModel = new M_inventory();
@@ -1480,11 +1538,12 @@ class Sales extends BaseController
         $db = $salesModel->db;
         $db->transStart();
 
-        // Get sale details BEFORE any deletion
-        $sale = $salesModel->find($saleId);
-        if (!$sale) {
+        // Get sale details BEFORE any deletion (scoped to the active store)
+        $sale = $salesModel->forStore()->find($saleId);
+        if (! $sale) {
             $db->transRollback();
-            return redirect()->to(site_url('sales'))->with('error', 'Sale not found.');
+
+            return ['success' => false, 'message' => 'Sale not found.', 'sale' => null];
         }
 
         // Get sale items BEFORE deletion to restore stock
@@ -1493,12 +1552,13 @@ class Sales extends BaseController
         // Restore stock and log inventory changes
         $productModel = new M_products();
         foreach ($items as $item) {
-            if (!$productModel->adjustStock($item['product_id'], $item['quantity'], 'in')) {
+            if (! $productModel->adjustStock($item['product_id'], $item['quantity'], 'in')) {
                 $db->transRollback();
-                return redirect()->to(site_url('sales'))->with('error', 'Failed to restore stock for product ID: ' . $item['product_id']);
+
+                return ['success' => false, 'message' => 'Failed to restore stock for product ID: ' . $item['product_id'], 'sale' => $sale];
             }
 
-            if (!$inventoryModel->logStockChange(
+            if (! $inventoryModel->logStockChange(
                 $item['product_id'],
                 session()->get('user_id'),
                 $item['quantity'],
@@ -1511,35 +1571,39 @@ class Sales extends BaseController
                 date('Y-m-d H:i:s')
             )) {
                 $db->transRollback();
-                return redirect()->to(site_url('sales'))->with('error', 'Failed to log inventory for product ID: ' . $item['product_id']);
+
+                return ['success' => false, 'message' => 'Failed to log inventory for product ID: ' . $item['product_id'], 'sale' => $sale];
             }
         }
 
         // Delete sale items
-        if (!$saleItemsModel->where('sale_id', $saleId)->delete()) {
+        if (! $saleItemsModel->where('sale_id', $saleId)->delete()) {
             $db->transRollback();
-            return redirect()->to(site_url('sales'))->with('error', 'Failed to delete sale items.');
+
+            return ['success' => false, 'message' => 'Failed to delete sale items.', 'sale' => $sale];
         }
 
         // Delete ledger/payment entries for this sale
-        if (!$ledgerModel->where('sale_id', $saleId)->delete()) {
+        if (! $ledgerModel->where('sale_id', $saleId)->delete()) {
             $db->transRollback();
-            return redirect()->to(site_url('sales'))->with('error', 'Failed to delete ledger entries.');
+
+            return ['success' => false, 'message' => 'Failed to delete ledger entries.', 'sale' => $sale];
         }
 
         // Delete the sale record
-        if (!$salesModel->delete($saleId)) {
+        if (! $salesModel->delete($saleId)) {
             $dbError = $db->error();
             $modelErrors = $salesModel->errors();
             $db->transRollback();
             $errMsg = 'Failed to delete sale. ';
-            if (!empty($modelErrors)) {
+            if (! empty($modelErrors)) {
                 $errMsg .= 'Validation: ' . json_encode($modelErrors) . ' ';
             }
-            if (!empty($dbError) && ($dbError['code'] ?? 0)) {
+            if (! empty($dbError) && ($dbError['code'] ?? 0)) {
                 $errMsg .= 'DB: [' . ($dbError['code'] ?? '') . '] ' . ($dbError['message'] ?? '');
             }
-            return redirect()->to(site_url('sales'))->with('error', trim($errMsg));
+
+            return ['success' => false, 'message' => trim($errMsg), 'sale' => $sale];
         }
 
         // Commit transaction
@@ -1547,11 +1611,36 @@ class Sales extends BaseController
 
         if ($db->transStatus() === false) {
             $db->transRollback();
-            return redirect()->to(site_url('sales'))->with('error', 'Failed to delete sale. Please try again.');
+
+            return ['success' => false, 'message' => 'Failed to delete sale. Please try again.', 'sale' => $sale];
         }
 
         logAction('sale_deleted', 'Sale ID: ' . $saleId . ', invoice_no: ' . $sale['invoice_no'] . ', Total: ' . $sale['total']);
-        return redirect()->to(site_url('sales'))->with('success', 'Sale deleted successfully.');
+
+        return ['success' => true, 'message' => 'Sale deleted successfully.', 'sale' => $sale];
+    }
+
+    /**
+     * Parse a list of primary keys sent as POST/GET "ids[]" or a comma-separated string.
+     */
+    private function getIdsFromRequest(): array
+    {
+        $ids = $this->request->getPost('ids');
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+        if (! is_array($ids)) {
+            $ids = $this->request->getGet('ids');
+            if (is_string($ids)) {
+                $ids = explode(',', $ids);
+            }
+            if (! is_array($ids)) {
+                return [];
+            }
+        }
+        $ids = array_filter(array_map('intval', $ids));
+
+        return array_values(array_unique($ids));
     }
 
     // Generate sale receipt
@@ -2663,7 +2752,10 @@ class Sales extends BaseController
                 'ps.zatca_submitted_at',
             ];
         } else {
+            // Leading '' is the select-checkbox column (main sales index view only,
+            // see app/Views/sales/index.php). Keeps DataTables column indexes aligned.
             $columns = [
+                '',
                 'ps.id',
                 'ps.invoice_no',
                 'c.name',

@@ -121,6 +121,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
 
     // Delete
     $routes->delete('delete/(:num)', 'Sales::delete/$1', ['filter' => 'permission:sales.delete']);
+    $routes->post('bulk-delete', 'Sales::bulkDelete', ['filter' => 'permission:sales.delete']);
 });
 
 $routes->group('recurring-invoices', ['filter' => 'auth'], function ($routes) {

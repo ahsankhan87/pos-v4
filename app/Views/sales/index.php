@@ -26,6 +26,22 @@
                     <i class="fas fa-plus-circle"></i> <?= lang('Sales.new_sale') ?>
                 </a>
             <?php endif; ?>
+            <?php if (can('sales.delete')): ?>
+                <div class="relative inline-block bulk-actions-wrapper mr-2 align-middle">
+                    <button type="button" id="bulk-actions-btn" disabled
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-all duration-200 border-2 border-gray-300 hover:border-gray-400 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                        <i class="fas fa-tasks"></i>
+                        <span><?= lang('Sales.bulk_actions') ?></span>
+                        <i class="fas fa-chevron-down text-xs" style="transition: transform 0.2s;"></i>
+                    </button>
+                    <div id="bulk-actions-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                        <a href="#" id="bulk-delete-sales" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-700 hover:bg-red-50 transition-colors">
+                            <i class="fas fa-trash-alt w-5 text-red-600"></i>
+                            <span class="font-medium"><?= lang('Sales.delete_selected') ?></span>
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -84,6 +100,7 @@
             <table id="salesTable" class="data-table">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="sales-select-all"></th>
                         <th scope="col"><?= lang('Sales.id') ?></th>
                         <th scope="col"><?= lang('Sales.invoice_no') ?></th>
                         <th scope="col"><?= lang('Sales.customer') ?></th>
@@ -296,6 +313,11 @@
         delete: <?= json_encode(lang('Sales.delete')) ?>,
         noActions: <?= json_encode(lang('Sales.no_actions')) ?>,
         confirmDelete: <?= json_encode(lang('Sales.confirm_delete')) ?>,
+        bulkActions: <?= json_encode(lang('Sales.bulk_actions')) ?>,
+        deleteSelected: <?= json_encode(lang('Sales.delete_selected')) ?>,
+        confirmBulkDelete: <?= json_encode(lang('Sales.confirm_bulk_delete')) ?>,
+        bulkDeleteResult: <?= json_encode(lang('Sales.bulk_delete_result')) ?>,
+        bulkDeleteFailed: <?= json_encode(lang('Sales.bulk_delete_failed')) ?>,
         csvPrefix: <?= json_encode(lang('Sales.payment_history_csv')) ?>,
         paymentHistoryTitle: <?= json_encode(lang('Sales.payment_history_title')) ?>,
         saleId: <?= json_encode(lang('Sales.sale_id')) ?>,
@@ -520,6 +542,9 @@
             receiptsView: <?= can('sales.view') ? 'true' : 'false' ?>,
         };
 
+        const csrfName = <?= json_encode(csrf_token()) ?>;
+        let csrfHash = <?= json_encode(csrf_hash()) ?>;
+
         const routes = {
             datatable: <?= json_encode(site_url('sales/datatable')) ?>,
             ledgerBase: <?= json_encode(site_url('customers/ledger')) ?>,
@@ -533,6 +558,15 @@
 
         function buildColumns() {
             const columns = [{
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'select-checkbox',
+                    render: function(row) {
+                        return `<input type="checkbox" class="row-select" value="${row.id}">`;
+                    }
+                },
+                {
                     data: 'id',
                     name: 'id',
                     render: function(data) {
@@ -669,12 +703,18 @@
             buttons: [{
                     extend: 'excel',
                     text: '<i class="fas fa-file-excel"></i> ' + salesI18n.excel,
-                    className: 'btn btn-outline btn-sm'
+                    className: 'btn btn-outline btn-sm',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child):not(:last-child)'
+                    }
                 },
                 {
                     extend: 'pdf',
                     text: '<i class="fas fa-file-pdf"></i> ' + salesI18n.pdf,
-                    className: 'btn btn-outline btn-sm'
+                    className: 'btn btn-outline btn-sm',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child):not(:last-child)'
+                    }
                 },
                 {
                     extend: 'print',
@@ -724,7 +764,7 @@
             lengthMenu: [25, 50, 100, 200],
             pageLength: 25,
             order: [
-                [0, 'desc']
+                [1, 'desc']
             ],
             columns: buildColumns(),
             createdRow: function(row, data) {
@@ -998,6 +1038,79 @@
             // Retrieve row meta from DataTable
             const rowMeta = table.row($(this).closest('tr')).data();
             showPaymentHistory(saleId, rowMeta);
+        });
+
+        // --- Bulk selection & bulk delete ---
+        function updateBulkButtonState() {
+            const anyChecked = $('.row-select:checked').length > 0;
+            $('#bulk-actions-btn').prop('disabled', !anyChecked);
+            if (!anyChecked) {
+                $('#bulk-actions-menu').addClass('hidden');
+            }
+        }
+
+        $('#sales-select-all').on('change', function() {
+            const checked = $(this).is(':checked');
+            $('#salesTable tbody .row-select').prop('checked', checked);
+            updateBulkButtonState();
+        });
+
+        $('#salesTable').on('change', '.row-select', function() {
+            updateBulkButtonState();
+        });
+
+        table.on('draw', function() {
+            // Uncheck header select-all on draw to avoid confusion
+            $('#sales-select-all').prop('checked', false);
+            updateBulkButtonState();
+        });
+
+        $('#bulk-actions-btn').on('click', function(e) {
+            e.preventDefault();
+            if ($(this).is(':disabled')) return;
+            $('#bulk-actions-menu').toggleClass('hidden');
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.bulk-actions-wrapper').length) {
+                $('#bulk-actions-menu').addClass('hidden');
+            }
+        });
+
+        $('#bulk-delete-sales').on('click', function(e) {
+            e.preventDefault();
+            const ids = $('#salesTable tbody .row-select:checked').map(function() {
+                return this.value;
+            }).get();
+            if (!ids.length) return;
+            if (!confirm(salesI18n.confirmBulkDelete.replace('{count}', ids.length))) return;
+
+            const payload = new FormData();
+            payload.append(csrfName, csrfHash);
+            ids.forEach(id => payload.append('ids[]', id));
+
+            fetch(<?= json_encode(site_url('sales/bulk-delete')) ?>, {
+                    method: 'POST',
+                    body: payload,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                }).then(r => r.ok ? r.json() : Promise.reject(r))
+                .then(data => {
+                    if (data.token) csrfHash = data.token;
+                    $('#bulk-actions-menu').addClass('hidden');
+                    let msg = salesI18n.bulkDeleteResult.replace('{deleted}', (data.deleted ?? 0));
+                    if ((data.failed ?? 0) > 0) {
+                        msg += '\n' + salesI18n.bulkDeleteFailed;
+                    }
+                    alert(msg);
+                    table.ajax.reload(null, false);
+                })
+                .catch(() => {
+                    alert(salesI18n.bulkDeleteFailed);
+                });
         });
     });
 </script>
