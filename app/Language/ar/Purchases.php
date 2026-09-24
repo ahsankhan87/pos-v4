@@ -13,6 +13,7 @@ return [
     'date' => 'التاريخ',
     'supplier' => 'المورد',
     'supplier_invoice' => 'فاتورة المورد #',
+    'all_suppliers' => 'جميع الموردين',
     'total' => 'الإجمالي',
     'payment_status' => 'حالة الدفع',
     'status' => 'الحالة',

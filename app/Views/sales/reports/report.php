@@ -13,12 +13,21 @@ $grossTotal = 0;
 $discountTotal = 0;
 $returnsTotal = 0;
 $netTotal = 0;
+$paidTotal = 0;
+$dueTotal = 0;
+$netAfterPaidTotal = 0;
 $count = 0;
 foreach ($sales as $s) {
+    $rowNet = (float)($s['net_total'] ?? (($s['total'] ?? 0) - ($s['total_return_amount'] ?? 0)));
+    $rowDue = (float)($s['due_amount'] ?? 0);
+    $rowPaid = max(0, $rowNet - $rowDue);
     $grossTotal += (float)($s['total'] ?? 0);
     $discountTotal += (float)($s['total_discount'] ?? 0);
     $returnsTotal += (float)($s['total_return_amount'] ?? 0);
-    $netTotal += (float)($s['net_total'] ?? (($s['total'] ?? 0) - ($s['total_return_amount'] ?? 0)));
+    $netTotal += $rowNet;
+    $paidTotal += $rowPaid;
+    $dueTotal += $rowDue;
+    $netAfterPaidTotal += max(0, $rowNet - $rowPaid);
     $count++;
 }
 function money_fmt($v)
@@ -170,7 +179,7 @@ function money_fmt($v)
                     <?php endif; ?>
                     <?php if (can('reports.daily_sales')): ?>
                         <a href="<?= site_url('sales/report/print?from=' . urlencode($from) . '&to=' . urlencode($to) . (!empty($employee_id) ? ('&employee_id=' . urlencode($employee_id)) : '') . (!empty($payment_type) ? ('&payment_type=' . urlencode($payment_type)) : '')) ?>" target="_blank" rel="noopener noreferrer" class="inline-flex h-9 items-center justify-center px-3.5 rounded-md bg-gray-700 text-sm text-white hover:bg-gray-800 shadow-soft">
-                            <i class="fas fa-print mr-2"></i> <?= lang('Reports.print_sales_report') ?>
+                            <i class="fas fa-print mr-2"></i> <?= lang('Reports.print') ?>
                         </a>
                     <?php endif; ?>
                 </div>
@@ -197,7 +206,7 @@ function money_fmt($v)
             </form>
         </div>
         <!-- KPI Cards -->
-        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 stats-summary">
+        <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 stats-summary">
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                 <div class="text-xs text-blue-700"><?= lang('Reports.gross_sales') ?></div>
                 <div class="mt-1 text-xl font-semibold text-blue-900"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></div>
@@ -206,6 +215,10 @@ function money_fmt($v)
                 <div class="text-xs text-emerald-700"><?= lang('Reports.net_sales') ?></div>
                 <div class="mt-1 text-xl font-semibold text-emerald-900"><?= esc($currency) . ' ' . money_fmt($netTotal) ?></div>
             </div>
+            <div class="bg-teal-50 border border-teal-100 rounded-lg p-4">
+                <div class="text-xs text-teal-700"><?= lang('Reports.total_paid') ?></div>
+                <div class="mt-1 text-xl font-semibold text-teal-900"><?= esc($currency) . ' ' . money_fmt($paidTotal) ?></div>
+            </div>
             <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
                 <div class="text-xs text-amber-700"><?= lang('Reports.discounts') ?></div>
                 <div class="mt-1 text-xl font-semibold text-amber-900"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></div>
@@ -213,6 +226,10 @@ function money_fmt($v)
             <div class="bg-rose-50 border border-rose-100 rounded-lg p-4">
                 <div class="text-xs text-rose-700"><?= lang('Reports.returns') ?></div>
                 <div class="mt-1 text-xl font-semibold text-rose-900"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></div>
+            </div>
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div class="text-xs text-orange-700"><?= lang('Reports.credit_due') ?></div>
+                <div class="mt-1 text-xl font-semibold text-orange-900"><?= esc($currency) . ' ' . money_fmt($dueTotal) ?></div>
             </div>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div class="text-xs text-gray-600"><?= lang('Reports.sales_count') ?></div>
@@ -239,21 +256,34 @@ function money_fmt($v)
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.gross') ?></th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.discount') ?></th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.returned') ?></th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.paid') ?></th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.net') ?></th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     <?php foreach ($sales as $sale): ?>
+                        <?php
+                        $rowNet = (float)($sale['net_total'] ?? (($sale['total'] ?? 0) - ($sale['total_return_amount'] ?? 0)));
+                        $rowDue = (float)($sale['due_amount'] ?? 0);
+                        $rowPaid = max(0, $rowNet - $rowDue);
+                        $rowNetAfterPaid = max(0, $rowNet - $rowPaid);
+                        $isCredit = ($sale['payment_type'] ?? '') === 'credit';
+                        ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-3 text-sm text-gray-900">#<?= (int)$sale['id'] ?></td>
                             <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['invoice_no']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['customer_name']) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-700"><?= esc($sale['payment_type']) ?></td>
+                            <td class="px-6 py-3 text-sm">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <?= $isCredit ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' ?>">
+                                    <?= esc($isCredit ? lang('Sales.credit') : lang('Sales.cash')) ?>
+                                </span>
+                            </td>
                             <td class="px-6 py-3 text-sm text-gray-500"><?= esc($sale['created_at']) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($sale['total'] ?? 0) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($sale['total_discount'] ?? 0) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($sale['total_return_amount'] ?? 0) ?></td>
-                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt(($sale['net_total'] ?? (($sale['total'] ?? 0) - ($sale['total_return_amount'] ?? 0)))) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($rowPaid) ?></td>
+                            <td class="px-6 py-3 text-sm text-right <?= $rowNetAfterPaid > 0 ? 'font-semibold text-orange-700' : 'text-gray-900' ?>"><?= esc($currency) . ' ' . money_fmt($rowNetAfterPaid) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -263,7 +293,8 @@ function money_fmt($v)
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></td>
                         <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></td>
-                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($netTotal) ?></td>
+                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($paidTotal) ?></td>
+                        <td class="px-6 py-3 text-sm font-semibold text-orange-700 text-right"><?= esc($currency) . ' ' . money_fmt($netAfterPaidTotal) ?></td>
                     </tr>
                 </tfoot>
             </table>

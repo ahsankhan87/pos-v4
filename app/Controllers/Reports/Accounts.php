@@ -371,8 +371,13 @@ class Accounts extends BaseController
 
         $draw = (int) ($this->request->getVar('draw') ?? 0);
         $start = max(0, (int) ($this->request->getVar('start') ?? 0));
-        $length = (int) ($this->request->getVar('length') ?? 25);
-        $length = $length > 0 ? min($length, 500) : 25;
+        // DataTables sends length = -1 when the user selects "All".
+        $lengthVar = $this->request->getVar('length');
+        $length = $lengthVar === null ? 25 : (int) $lengthVar;
+        $fetchAll = $length < 0;
+        if (!$fetchAll) {
+            $length = $length > 0 ? min($length, 500) : 25;
+        }
         $search = (string) ($this->request->getVar('search')['value'] ?? '');
         $orderRequest = $this->request->getVar('order')[0] ?? null;
         $from = $this->normalizeDateInput($this->request->getVar('from'));
@@ -456,7 +461,9 @@ class Accounts extends BaseController
         ];
 
         $this->applyDataTableOrder($base, $orderRequest, $columns, 'overdue_amount', 'DESC');
-        $base->limit($length, $start);
+        if (!$fetchAll) {
+            $base->limit($length, $start);
+        }
 
         $rows = $base->get()->getResultArray();
 

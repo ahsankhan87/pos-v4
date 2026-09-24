@@ -226,6 +226,7 @@ $printUrl = site_url('sales/customer-report/print?' . http_build_query($printPar
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.customer') ?></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.phone') ?></th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.sales_count_col') ?></th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_sales') ?></th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Reports.total_discount') ?></th>
@@ -235,6 +236,7 @@ $printUrl = site_url('sales/customer-report/print?' . http_build_query($printPar
                     <?php foreach ($sales as $row): ?>
                         <tr class="hover:bg-gray-50" data-sales="<?= (float) ($row['total_sales'] ?? 0) ?>" data-discount="<?= (float) ($row['total_discount'] ?? 0) ?>" data-sale-count="<?= (int) ($row['sale_count'] ?? 0) ?>">
                             <td class="px-6 py-3 text-sm text-gray-900"><?= esc($row['customer_name']) ?></td>
+                            <td class="px-6 py-3 text-sm text-gray-700"><?= esc($row['customer_phone'] ?? '') ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>
                             <td class="px-6 py-3 text-sm text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($row['total_discount'] ?? 0) ?></td>
@@ -242,12 +244,13 @@ $printUrl = site_url('sales/customer-report/print?' . http_build_query($printPar
                     <?php endforeach; ?>
 
                     <tr id="noMatchesRow" style="display:none;">
-                        <td colspan="4" class="px-6 py-6 text-center text-sm text-gray-500"><?= lang('Reports.no_matching_customers') ?></td>
+                        <td colspan="5" class="px-6 py-6 text-center text-sm text-gray-500"><?= lang('Reports.no_matching_customers') ?></td>
                     </tr>
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
                         <td class="px-6 py-3 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
+                        <td class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"></td>
                         <td id="totalSaleCountCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= number_format($saleCount) ?></td>
                         <td id="totalSalesCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
                         <td id="totalDiscountCell" class="px-6 py-3 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></td>

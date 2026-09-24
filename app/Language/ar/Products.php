@@ -119,6 +119,7 @@ return [
     'reset_copies' => 'إعادة تعيين النسخ',
     'exact_60x25_print' => 'طباعة دقيقة 60×25',
     'show_price_on_exact_print' => 'إظهار السعر في الطباعة الدقيقة',
+    'show_name_on_exact_print' => 'إظهار اسم المنتج في الطباعة الدقيقة',
     'pad_mm' => 'الهامش (مم)',
     'label_copies' => 'نسخ الملصق',
     'total_labels' => 'إجمالي الملصقات',

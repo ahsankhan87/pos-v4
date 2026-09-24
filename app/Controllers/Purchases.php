@@ -847,6 +847,22 @@ class Purchases extends BaseController
      */
     public function purchaseReport()
     {
+        return view('purchases/reports/purchase_report', $this->buildPurchaseReportData());
+    }
+
+    /**
+     * Purchase Report - standalone printer-friendly page.
+     */
+    public function purchaseReportPrint()
+    {
+        return view('purchases/reports/purchase_report_print', $this->buildPurchaseReportData());
+    }
+
+    /**
+     * Build the purchase report dataset shared by the on-screen and print views.
+     */
+    private function buildPurchaseReportData(): array
+    {
         $dateParam = $this->request->getGet('date');
         $from = $this->request->getGet('from') ?? $dateParam ?? date('Y-m-d');
         $to = $this->request->getGet('to') ?? $dateParam ?? date('Y-m-d');
@@ -858,6 +874,13 @@ class Purchases extends BaseController
 
         $storeId = session('store_id');
         $db = \Config\Database::connect();
+
+        // Optional supplier filter
+        $supplierId = $this->request->getGet('supplier_id');
+        $supplierId = ($supplierId === null || $supplierId === '') ? null : (int) $supplierId;
+        if ($supplierId !== null && $supplierId <= 0) {
+            $supplierId = null;
+        }
 
         // Get purchase items with product details
         $builder = $db->table('pos_purchase_items pi')
@@ -881,6 +904,10 @@ class Purchases extends BaseController
 
         if ($storeId !== null) {
             $builder->where('pu.store_id', $storeId);
+        }
+
+        if ($supplierId !== null) {
+            $builder->where('pu.supplier_id', $supplierId);
         }
 
         $products = $builder
@@ -909,6 +936,10 @@ class Purchases extends BaseController
             ->groupBy('r.product_id');
         if ($storeId !== null) {
             $returnsRows->where('r.store_id', $storeId);
+        }
+        if ($supplierId !== null) {
+            $returnsRows->join('pos_purchases pu', 'pu.id = r.purchase_id')
+                ->where('pu.supplier_id', $supplierId);
         }
         $returnsRows = $returnsRows->get()->getResultArray();
         $returnsByProduct = [];
@@ -947,6 +978,10 @@ class Purchases extends BaseController
             $summaryBuilder->where('store_id', $storeId);
         }
 
+        if ($supplierId !== null) {
+            $summaryBuilder->where('supplier_id', $supplierId);
+        }
+
         $summary = $summaryBuilder->get()->getRowArray();
         $totalPurchases = (int)($summary['total_purchases'] ?? 0);
         $totalAmount = (float)($summary['total_amount'] ?? 0);
@@ -954,15 +989,18 @@ class Purchases extends BaseController
         $totalDue = $totalAmount - $totalPaid;
 
         // Purchase returns (reduce gross purchase value)
-        $returnModel = new \App\Models\PurchaseReturnModel();
-        $returnsAgg = $returnModel
-            ->select('SUM(return_amount) as total_return_amount, SUM(quantity) as total_return_qty')
-            ->where('created_at >=', $from . ' 00:00:00')
-            ->where('created_at <=', $to . ' 23:59:59');
+        $returnsAgg = $db->table('pos_purchase_returns r')
+            ->select('SUM(r.return_amount) as total_return_amount, SUM(r.quantity) as total_return_qty')
+            ->where('r.created_at >=', $from . ' 00:00:00')
+            ->where('r.created_at <=', $to . ' 23:59:59');
         if ($storeId !== null) {
-            $returnsAgg->where('store_id', $storeId);
+            $returnsAgg->where('r.store_id', $storeId);
         }
-        $returnsData = $returnsAgg->first() ?? [];
+        if ($supplierId !== null) {
+            $returnsAgg->join('pos_purchases pu', 'pu.id = r.purchase_id')
+                ->where('pu.supplier_id', $supplierId);
+        }
+        $returnsData = $returnsAgg->get()->getRowArray() ?? [];
         $totalReturnAmount = (float)($returnsData['total_return_amount'] ?? 0);
         $totalReturnQty = (float)($returnsData['total_return_qty'] ?? 0);
         $netTotalAmount = max(0, $totalAmount - $totalReturnAmount);
@@ -983,9 +1021,11 @@ class Purchases extends BaseController
             'totalDue' => $totalDue,
             'from' => $from,
             'to' => $to,
+            'suppliers' => $this->supplierModel->forStore()->orderBy('name', 'ASC')->findAll(),
+            'supplierId' => $supplierId,
         ];
 
-        return view('purchases/reports/purchase_report', $data);
+        return $data;
     }
 
     /**

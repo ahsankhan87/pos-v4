@@ -24,6 +24,10 @@
                 <?= lang('Products.show_price_on_exact_print') ?>
             </label>
             <label class="flex items-center gap-2 text-sm text-slate-600">
+                <input type="checkbox" id="showNameExact" class="border-slate-300" checked>
+                <?= lang('Products.show_name_on_exact_print') ?>
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
                 <span><?= lang('Products.pad_mm') ?></span>
                 <input type="number" id="padExact" class="w-20 rounded border border-slate-300 px-2 py-1 text-sm" min="0" max="5" step="0.1" value="0">
             </label>
@@ -508,6 +512,9 @@
                 const showPriceCheckbox = document.getElementById('showPriceExact');
                 const showPrice = showPriceCheckbox && showPriceCheckbox.checked ? 1 : 0;
 
+                const showNameCheckbox = document.getElementById('showNameExact');
+                const showName = showNameCheckbox && showNameCheckbox.checked ? 1 : 0;
+
                 // Read current barcode height (mm) from sizing controls
                 let barcodeMm = 12;
                 if (dimensionInputs.barcode && dimensionInputs.barcode.value !== '') {
@@ -531,6 +538,7 @@
                 const params = new URLSearchParams();
                 params.set('labels', q);
                 params.set('showPrice', String(showPrice));
+                params.set('showName', String(showName));
                 params.set('barcode', String(barcodeMm));
                 if (padMm > 0) {
                     params.set('pad', String(padMm));

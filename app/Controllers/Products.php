@@ -738,6 +738,8 @@ class Products extends BaseController
         // Options from query
         $showPrice = $this->request->getGet('showPrice');
         $showPrice = ($showPrice === null) ? 1 : ((int)$showPrice ? 1 : 0);
+        $showName = $this->request->getGet('showName');
+        $showName = ($showName === null) ? 1 : ((int)$showName ? 1 : 0);
         $barcodeHeight = $this->request->getGet('barcode');
         $barcodeHeightMm = is_numeric($barcodeHeight) ? (float)$barcodeHeight : 12.0;
         // clamp to sensible range
@@ -749,6 +751,7 @@ class Products extends BaseController
             'labels' => $labels,
             'currencySymbol' => session('currency_symbol') ?? '',
             'showPrice' => (bool)$showPrice,
+            'showName' => (bool)$showName,
             'barcodeHeightMm' => $barcodeHeightMm,
             // Optional extra top/bottom padding (mm) for feed tuning
             'padMm' => (function () {

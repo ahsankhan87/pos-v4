@@ -95,6 +95,7 @@
         <thead>
             <tr>
                 <th><?= lang('Reports.customer') ?></th>
+                <th><?= lang('Reports.phone') ?></th>
                 <th class="text-right"><?= lang('Reports.sales_count_col') ?></th>
                 <th class="text-right"><?= lang('Reports.total_sales') ?></th>
                 <th class="text-right"><?= lang('Reports.total_discount') ?></th>
@@ -104,6 +105,7 @@
             <?php foreach ($salesFiltered as $row): ?>
                 <tr>
                     <td><?= esc($row['customer_name']) ?></td>
+                    <td><?= esc($row['customer_phone'] ?? '') ?></td>
                     <td class="text-right"><?= number_format((int)($row['sale_count'] ?? 0)) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($row['total_sales'] ?? 0) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($row['total_discount'] ?? 0) ?></td>
@@ -112,13 +114,14 @@
 
             <?php if (empty($salesFiltered)): ?>
                 <tr>
-                    <td colspan="4" style="text-align:center; padding: 10px; color: #666;"><?= lang('Reports.no_matching_customers') ?></td>
+                    <td colspan="5" style="text-align:center; padding: 10px; color: #666;"><?= lang('Reports.no_matching_customers') ?></td>
                 </tr>
             <?php endif; ?>
         </tbody>
         <tfoot>
             <tr>
                 <th><?= lang('Reports.totals') ?></th>
+                <th class="text-right"></th>
                 <th class="text-right"><?= number_format($saleCount) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalDiscount) ?></th>

@@ -13,6 +13,7 @@ return [
     'date' => 'Date',
     'supplier' => 'Supplier',
     'supplier_invoice' => 'Supplier Inv #',
+    'all_suppliers' => 'All Suppliers',
     'total' => 'Total',
     'payment_status' => 'Payment Status',
     'status' => 'Status',

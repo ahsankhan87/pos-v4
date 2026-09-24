@@ -193,7 +193,7 @@ class Sales extends BaseController
     {
         $salesModel = new \App\Models\M_sales();
         $salesBuilder = $salesModel
-            ->select('pos_sales.customer_id, pos_customers.name as customer_name, SUM(pos_sales.total) as gross_sales, SUM(pos_sales.total_discount) as total_discount, COUNT(pos_sales.id) as sale_count')
+            ->select('pos_sales.customer_id, pos_customers.name as customer_name, pos_customers.phone as customer_phone, SUM(pos_sales.total) as gross_sales, SUM(pos_sales.total_discount) as total_discount, COUNT(pos_sales.id) as sale_count')
             ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
             ->where('pos_sales.created_at >=', $from . ' 00:00:00')
             ->where('pos_sales.created_at <=', $to . ' 23:59:59')
@@ -208,7 +208,7 @@ class Sales extends BaseController
 
         $returnsModel = new \App\Models\SalesReturnModel();
         $returnsBuilder = $returnsModel
-            ->select('pos_sales.customer_id, pos_customers.name as customer_name, SUM(pos_sales_returns.return_amount) as return_total')
+            ->select('pos_sales.customer_id, pos_customers.name as customer_name, pos_customers.phone as customer_phone, SUM(pos_sales_returns.return_amount) as return_total')
             ->join('pos_sales', 'pos_sales.id = pos_sales_returns.sale_id', 'left')
             ->join('pos_customers', 'pos_customers.id = pos_sales.customer_id', 'left')
             ->where('pos_sales_returns.created_at >=', $from . ' 00:00:00')
@@ -227,6 +227,7 @@ class Sales extends BaseController
             $cid = $r['customer_id'] ?? 0;
             $returnsByCustomer[$cid] = [
                 'customer_name' => $r['customer_name'] ?? 'Unknown',
+                'customer_phone' => $r['customer_phone'] ?? '',
                 'return_total' => (float)($r['return_total'] ?? 0),
             ];
         }
@@ -239,6 +240,7 @@ class Sales extends BaseController
             $rowsByCustomer[$cid] = [
                 'customer_id' => $cid,
                 'customer_name' => $s['customer_name'] ?? 'Unknown',
+                'customer_phone' => $s['customer_phone'] ?? ($returnsByCustomer[$cid]['customer_phone'] ?? ''),
                 'total_sales' => $gross - $ret,
                 'total_discount' => (float)($s['total_discount'] ?? 0),
                 'sale_count' => (int)($s['sale_count'] ?? 0),
@@ -253,6 +255,7 @@ class Sales extends BaseController
             $rowsByCustomer[$cid] = [
                 'customer_id' => $cid,
                 'customer_name' => $r['customer_name'] ?? 'Unknown',
+                'customer_phone' => $r['customer_phone'] ?? '',
                 'total_sales' => -1 * (float)($r['return_total'] ?? 0),
                 'total_discount' => 0.0,
                 'sale_count' => 0,

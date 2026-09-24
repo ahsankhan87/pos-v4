@@ -60,12 +60,21 @@
     $discountTotal = 0;
     $returnsTotal = 0;
     $netTotal = 0;
+    $paidTotal = 0;
+    $dueTotal = 0;
+    $netAfterPaidTotal = 0;
     $count = 0;
     foreach (($sales ?? []) as $s) {
+        $rowNet = (float)($s['net_total'] ?? (($s['total'] ?? 0) - ($s['total_return_amount'] ?? 0)));
+        $rowDue = (float)($s['due_amount'] ?? 0);
+        $rowPaid = max(0, $rowNet - $rowDue);
         $grossTotal += (float)($s['total'] ?? 0);
         $discountTotal += (float)($s['total_discount'] ?? 0);
         $returnsTotal += (float)($s['total_return_amount'] ?? 0);
-        $netTotal += (float)($s['net_total'] ?? (($s['total'] ?? 0) - ($s['total_return_amount'] ?? 0)));
+        $netTotal += $rowNet;
+        $paidTotal += $rowPaid;
+        $dueTotal += $rowDue;
+        $netAfterPaidTotal += max(0, $rowNet - $rowPaid);
         $count++;
     }
     if (!function_exists('money_fmt')) {
@@ -89,21 +98,29 @@
                 <th class="text-right"><?= lang('Reports.gross') ?></th>
                 <th class="text-right"><?= lang('Reports.discount') ?></th>
                 <th class="text-right"><?= lang('Reports.returned') ?></th>
+                <th class="text-right"><?= lang('Reports.paid') ?></th>
                 <th class="text-right"><?= lang('Reports.net') ?></th>
             </tr>
         </thead>
         <tbody>
             <?php foreach (($sales ?? []) as $sale): ?>
+                <?php
+                $rowNet = (float)($sale['net_total'] ?? (($sale['total'] ?? 0) - ($sale['total_return_amount'] ?? 0)));
+                $rowDue = (float)($sale['due_amount'] ?? 0);
+                $rowPaid = max(0, $rowNet - $rowDue);
+                $rowNetAfterPaid = max(0, $rowNet - $rowPaid);
+                ?>
                 <tr>
                     <!-- <td>#<?= (int)$sale['id'] ?></td> -->
                     <td><?= esc($sale['invoice_no']) ?></td>
                     <td><?= esc($sale['customer_name']) ?></td>
-                    <td><?= esc($sale['payment_method']) ?></td>
+                    <td><?= esc($sale['payment_type'] ?? $sale['payment_method']) ?></td>
                     <td><?= esc($sale['created_at']) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($sale['total'] ?? 0) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($sale['total_discount'] ?? 0) ?></td>
                     <td class="text-right"><?= esc($currency) . ' ' . money_fmt($sale['total_return_amount'] ?? 0) ?></td>
-                    <td class="text-right"><?= esc($currency) . ' ' . money_fmt(($sale['net_total'] ?? (($sale['total'] ?? 0) - ($sale['total_return_amount'] ?? 0)))) ?></td>
+                    <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowPaid) ?></td>
+                    <td class="text-right"><?= esc($currency) . ' ' . money_fmt($rowNetAfterPaid) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -113,7 +130,8 @@
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($grossTotal) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($discountTotal) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($returnsTotal) ?></th>
-                <th class="text-right"><?= esc($currency) . ' ' . money_fmt($netTotal) ?></th>
+                <th class="text-right"><?= esc($currency) . ' ' . money_fmt($paidTotal) ?></th>
+                <th class="text-right"><?= esc($currency) . ' ' . money_fmt($netAfterPaidTotal) ?></th>
             </tr>
         </tfoot>
     </table>

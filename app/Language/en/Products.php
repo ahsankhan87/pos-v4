@@ -119,6 +119,7 @@ return [
     'reset_copies' => 'Reset Copies',
     'exact_60x25_print' => 'Exact 60×25 Print',
     'show_price_on_exact_print' => 'Show price on exact print',
+    'show_name_on_exact_print' => 'Show product name on exact print',
     'pad_mm' => 'Pad (mm)',
     'label_copies' => 'Label Copies',
     'total_labels' => 'Total labels',

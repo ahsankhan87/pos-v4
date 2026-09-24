@@ -436,6 +436,7 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->get('view/(:num)', 'Purchases::view/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('print/(:num)', 'Purchases::print/$1', ['filter' => 'permission:purchases.view']);
     $routes->get('report', 'Purchases::purchaseReport', ['filter' => 'permission:any|reports.purchase_report|purchases.view']);
+    $routes->get('report/print', 'Purchases::purchaseReportPrint', ['filter' => 'permission:any|reports.purchase_report|purchases.view']);
     // Create
     $routes->get('create', 'Purchases::create', ['filter' => 'permission:purchases.create']);
     $routes->post('store', 'Purchases::store', ['filter' => 'permission:purchases.create']);

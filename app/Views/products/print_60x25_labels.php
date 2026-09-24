@@ -3,6 +3,7 @@
 /** @var array $labels */
 /** @var string $currencySymbol */
 /** @var bool $showPrice */
+/** @var bool $showName */
 /** @var float $barcodeHeightMm */
 ?>
 <!DOCTYPE html>
@@ -99,7 +100,9 @@
 
     <?php foreach ($labels as $row): ?>
         <section class="label">
-            <div class="name"><?= esc($row['name'] ?? '') ?></div>
+            <?php if (!empty($showName) && ($row['name'] ?? '') !== ''): ?>
+                <div class="name"><?= esc($row['name']) ?></div>
+            <?php endif; ?>
             <?php if (!empty($showPrice) && ($row['price'] ?? null) !== null && $row['price'] !== ''): ?>
                 <div class="price"><?= esc($currencySymbol) ?> <?= number_format((float)$row['price'], 2) ?></div>
             <?php endif; ?>

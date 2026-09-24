@@ -14,15 +14,15 @@
             <a href="<?= site_url('purchases') ?>" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium">
                 <i class="fas fa-arrow-left mr-2"></i> <?= lang('Purchases.back') ?>
             </a>
-            <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+            <a href="<?= site_url('purchases/report/print?' . http_build_query(array_filter(['from' => $from, 'to' => $to, 'supplier_id' => $supplierId ?? '']))) ?>" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                 <i class="fas fa-print mr-2"></i> <?= lang('Purchases.print') ?>
-            </button>
+            </a>
         </div>
     </div>
 
     <!-- Date Range Filter -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-4">
-        <form method="get" action="<?= site_url('purchases/report') ?>" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form method="get" action="<?= site_url('purchases/report') ?>" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2"><?= lang('Purchases.from_date') ?></label>
                 <input type="date" name="from" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" value="<?= esc($from) ?>" required>
@@ -30,6 +30,17 @@
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2"><?= lang('Purchases.to_date') ?></label>
                 <input type="date" name="to" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" value="<?= esc($to) ?>" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"><?= lang('Purchases.supplier') ?></label>
+                <select name="supplier_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                    <option value=""><?= lang('Purchases.all_suppliers') ?></option>
+                    <?php foreach (($suppliers ?? []) as $supplier): ?>
+                        <option value="<?= (int) $supplier['id'] ?>" <?= (int) ($supplierId ?? 0) === (int) $supplier['id'] ? 'selected' : '' ?>>
+                            <?= esc($supplier['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="flex items-end">
                 <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
@@ -266,6 +277,21 @@
                                 <td class="py-2 text-sm font-semibold text-gray-700"><?= lang('Purchases.date_range') ?>:</td>
                                 <td class="py-2 text-sm text-gray-900"><?= date('d M Y', strtotime($from)) ?> - <?= date('d M Y', strtotime($to)) ?></td>
                             </tr>
+                            <?php if (!empty($supplierId)): ?>
+                                <?php
+                                $supplierName = '';
+                                foreach (($suppliers ?? []) as $supplier) {
+                                    if ((int) $supplier['id'] === (int) $supplierId) {
+                                        $supplierName = $supplier['name'];
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <tr>
+                                    <td class="py-2 text-sm font-semibold text-gray-700"><?= lang('Purchases.supplier') ?>:</td>
+                                    <td class="py-2 text-sm text-gray-900"><?= esc($supplierName) ?></td>
+                                </tr>
+                            <?php endif; ?>
                             <tr>
                                 <td class="py-2 text-sm font-semibold text-gray-700"><?= lang('Purchases.total_products') ?>:</td>
                                 <td class="py-2 text-sm text-gray-900"><strong><?= count($products) ?></strong> <?= lang('Purchases.unique_products') ?></td>
