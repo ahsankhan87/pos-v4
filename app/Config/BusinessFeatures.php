@@ -13,12 +13,12 @@ class BusinessFeatures extends BaseConfig
      */
     public $businessTypes = [
         'general' => 'General Store',
-        'mobile_shop' => 'Mobile Shop',
+        'mobileshop' => 'Mobile Shop',
         'supermarket' => 'Supermarket',
-        'auto_parts' => 'Auto Parts Shop',
+        'autoparts' => 'Auto Parts Shop',
         'distributor' => 'Distributor/Dealer',
-        'electric_store' => 'Electric Store',
-        'medicine_store' => 'Medicine Store',
+        'electricstore' => 'Electric Store',
+        'medicinestore' => 'Medicine Store',
     ];
 
     /**
@@ -39,22 +39,22 @@ class BusinessFeatures extends BaseConfig
         'general' => [
             'imei_tracking' => false,
         ],
-        'mobile_shop' => [
+        'mobileshop' => [
             'imei_tracking' => true,
         ],
         'supermarket' => [
             'imei_tracking' => false,
         ],
-        'auto_parts' => [
+        'autoparts' => [
             'imei_tracking' => false,
         ],
         'distributor' => [
             'imei_tracking' => false,
         ],
-        'electric_store' => [
+        'electricstore' => [
             'imei_tracking' => false,
         ],
-        'medicine_store' => [
+        'medicinestore' => [
             'imei_tracking' => false,
         ],
     ];
