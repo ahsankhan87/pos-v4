@@ -364,6 +364,8 @@ $canEditLineDiscount = can('sales.edit_discount');
         <input type="hidden" name="cart_data" id="cart-data">
         <input type="hidden" name="tendered_amount" id="tendered_amount" value="">
         <input type="hidden" name="change_amount" id="change_amount" value="">
+        <input type="hidden" name="misc_service" id="misc-service-flag" value="0">
+        <input type="hidden" name="misc_service_amount" id="misc-service-amount" value="0">
     </form>
 </div>
 
@@ -1084,6 +1086,51 @@ $canEditLineDiscount = can('sales.edit_discount');
             });
         }
 
+        // Quick "Misc Service" cash sale: if there are no valid lines but the
+        // cashier typed an amount in the tendered field, offer to invoice it
+        // as a "Misc Service" line instead of blocking the sale.
+        function setupMiscServiceIfNeeded() {
+            const validItems = getValidCartItems();
+            if (validItems.length > 0) {
+                return {
+                    ok: true,
+                    misc: false
+                };
+            }
+
+            const amount = parseFloat($('#tenderedAmountInput').val()) || 0;
+            if (amount <= 0) {
+                return {
+                    ok: false,
+                    misc: false,
+                    cancelled: false
+                };
+            }
+
+            const currency = '<?= session()->get('currency_symbol') ?? '$' ?>';
+            const message = <?= json_encode(lang('Sales.misc_service_confirm')) ?>.replace('{amount}', currency + amount.toFixed(2));
+
+            if (!confirm(message)) {
+                return {
+                    ok: false,
+                    misc: true,
+                    cancelled: true
+                };
+            }
+
+            $('#misc-service-flag').val('1');
+            $('#misc-service-amount').val(amount.toFixed(2));
+            $('#tendered_amount').val(amount.toFixed(2));
+            $('#grand_total').val(amount.toFixed(2));
+            $('#subtotal').val(amount.toFixed(2));
+            $('#total_tax').val('0');
+            $('#total_discount').val('0');
+            return {
+                ok: true,
+                misc: true
+            };
+        }
+
         // Form submission
         let isFormSubmitting = false;
         $('form').on('submit', function(e) {
@@ -1093,8 +1140,17 @@ $canEditLineDiscount = can('sales.edit_discount');
                 return false;
             }
 
+            const misc = setupMiscServiceIfNeeded();
+            if (!misc.ok) {
+                e.preventDefault();
+                if (!misc.cancelled) {
+                    showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
+                }
+                return false;
+            }
+
             const validItems = getValidCartItems();
-            if (validItems.length === 0) {
+            if (!misc.misc && validItems.length === 0) {
                 e.preventDefault();
                 showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
                 return false;
@@ -1177,6 +1233,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                 $('select[name="payment_method"]').focus();
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
+                const misc = setupMiscServiceIfNeeded();
+                if (!misc.ok) {
+                    if (!misc.cancelled) {
+                        showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
+                    }
+                    return false;
+                }
                 const validItems = getValidCartItems();
                 const limitErrors = validateProductDiscountLimits(validItems);
                 const imeiErrors = validateImeiSelections(validItems);
@@ -1185,7 +1248,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                     showFormErrors(allErrors);
                     return false;
                 }
-                if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
+                if ((misc.misc || validItems.length > 0) && (misc.misc || confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>))) {
                     $('#cart-data').val(JSON.stringify(validItems));
                     $('form')[0].submit();
                 }
@@ -1300,6 +1363,13 @@ $canEditLineDiscount = can('sales.edit_discount');
                 $('#saveDraftBtn').click();
             } else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
+                const misc = setupMiscServiceIfNeeded();
+                if (!misc.ok) {
+                    if (!misc.cancelled) {
+                        showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
+                    }
+                    return false;
+                }
                 const validItems = getValidCartItems();
                 const limitErrors = validateProductDiscountLimits(validItems);
                 const imeiErrors = validateImeiSelections(validItems);
@@ -1308,7 +1378,7 @@ $canEditLineDiscount = can('sales.edit_discount');
                     showFormErrors(allErrors);
                     return false;
                 }
-                if (validItems.length > 0 && confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
+                if ((misc.misc || validItems.length > 0) && (misc.misc || confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>))) {
                     $('#cart-data').val(JSON.stringify(validItems));
                     $('form')[0].submit();
                 }

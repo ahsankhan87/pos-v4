@@ -145,6 +145,7 @@ return [
     'cart_cleared_successfully' => 'Cart cleared successfully',
     'cart_empty_add_products' => 'Cart is empty. Please add products to continue.',
     'confirm_complete_sale' => 'Complete this sale?',
+    'misc_service_confirm' => 'Cart is empty. Create a "Misc Service" sale for {amount}?',
     'processing_sale' => 'Processing Sale',
     'please_wait' => 'Please wait...',
     'zatca_submission_in_progress' => 'ZATCA submission in progress, please wait...',

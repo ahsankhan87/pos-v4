@@ -222,6 +222,50 @@ class Sales extends BaseController
         $defaultZatcaInvoiceType = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
         $saleZatcaInvoiceType = $zatcaEnabledForSale ? ($postedZatcaInvoiceType ?: $defaultZatcaInvoiceType) : null;
 
+        // Quick "Misc Service" cash sale: when the cashier types an amount in the
+        // tendered field and completes the sale with an empty cart, auto-create
+        // (or reuse) a "Misc Service" product and build a single-line cart from it.
+        $miscServiceRequested = ((int) ($this->request->getPost('misc_service') ?? 0)) === 1;
+        $miscServiceAmount = round((float) ($this->request->getPost('misc_service_amount') ?? 0), 2);
+        if ($miscServiceRequested && $miscServiceAmount > 0 && (empty($items) || !is_array($items))) {
+            $miscProduct = $this->findOrCreateMiscServiceProduct($storeId);
+
+            // Treat the collected amount as the invoice grand total and back out
+            // the tax portion so the invoice math stays consistent (subtotal + tax = total).
+            $miscRate = (float) ($tax_rate ?? 0);
+            $miscSubtotal = $miscRate > 0
+                ? round($miscServiceAmount / (1 + ($miscRate / 100)), 2)
+                : $miscServiceAmount;
+            $miscTax = round($miscServiceAmount - $miscSubtotal, 2);
+
+            $items = [[
+                'id' => (int) ($miscProduct['id'] ?? 0),
+                'name' => (string) ($miscProduct['name'] ?? 'Misc Service'),
+                'code' => (string) ($miscProduct['code'] ?? ''),
+                'price' => $miscSubtotal,
+                'cost_price' => (float) ($miscProduct['cost_price'] ?? 0),
+                'max_discount_value' => (float) ($miscProduct['max_discount_value'] ?? 0),
+                'max_discount_type' => (string) ($miscProduct['max_discount_type'] ?? 'fixed'),
+                'requires_imei' => 0,
+                'quantity' => 1,
+                'stock' => 0,
+                'carton_size' => 0,
+                'discount' => 0,
+                'discount_type' => 'fixed',
+                'selected_imeis' => [],
+                'is_gift' => 0,
+                'misc_service' => 1,
+            ]];
+
+            $subtotal = $miscSubtotal;
+            $totalDiscount = 0.0;
+            $discount_type = 'fixed';
+            $total_tax = $miscTax;
+            $total = $miscServiceAmount;
+            $amount_tendered = $miscServiceAmount;
+            $change_amount = 0.0;
+        }
+
         // Validation
         $errors = [];
         $discountLimitErrors = [];
@@ -271,7 +315,7 @@ class Sales extends BaseController
                 continue;
             }
 
-            $effectivePrice = $canEditLinePrice
+            $effectivePrice = ($canEditLinePrice || !empty($line['misc_service']))
                 ? (float) ($line['price'] ?? ($product['price'] ?? 0))
                 : (float) ($product['price'] ?? 0);
             if ($effectivePrice < 0) $effectivePrice = 0;
@@ -3587,5 +3631,77 @@ class Sales extends BaseController
             'imei_sold',
             'Sale ID: ' . $saleId . ', Sale Item ID: ' . $saleItemId . ', Product ID: ' . $productId . ', IMEIs: ' . implode(', ', $selectedImeis)
         );
+    }
+
+    /**
+     * Find the store's "Misc Service" product (a non-stock-tracked service item)
+     * used for quick cash service sales. Creates it on first use.
+     */
+    private function findOrCreateMiscServiceProduct(int $storeId): array
+    {
+        $existing = $this->productModel
+            ->where('store_id', $storeId)
+            ->where('name', 'Misc Service')
+            ->where('type', 'service')
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $db = \Config\Database::connect();
+        $hasRequiresImeiColumn = $db->fieldExists('requires_imei', 'pos_products');
+
+        $data = [
+            'name' => 'Misc Service',
+            'price' => 0,
+            'cost_price' => 0,
+            'max_discount_value' => 0,
+            'max_discount_type' => 'fixed',
+            'description' => 'Auto-created for quick cash service sales',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+            'barcode' => $this->generateMiscServiceBarcode($storeId),
+            'store_id' => $storeId,
+            'code' => 'MISC-SERVICE',
+            'stock_alert' => 0,
+            'unit_id' => null,
+            'category_id' => null,
+            'supplier_id' => null,
+            'expiry_date' => null,
+            'carton_size' => null,
+            'type' => 'service',
+            'is_stock_tracked' => 0,
+            'quantity' => 0,
+        ];
+
+        if ($hasRequiresImeiColumn) {
+            $data['requires_imei'] = 0;
+        }
+
+        $this->productModel->insert($data);
+        $productId = (int) $this->productModel->insertID();
+
+        logAction('product_created', 'Product Name: Misc Service, ID: ' . $productId . ' (auto-created for misc service quick sale)');
+
+        return $this->productModel->find($productId) ?? [];
+    }
+
+    private function generateMiscServiceBarcode(int $storeId): string
+    {
+        $db = \Config\Database::connect();
+        $prefix = 'MS' . str_pad((string) $storeId, 4, '0', STR_PAD_LEFT);
+
+        do {
+            $barcode = $prefix . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $exists = $db->table('pos_products')
+                ->select('id')
+                ->where('barcode', $barcode)
+                ->limit(1)
+                ->get()
+                ->getFirstRow();
+        } while ($exists !== null);
+
+        return $barcode;
     }
 }

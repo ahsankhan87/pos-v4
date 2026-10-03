@@ -145,6 +145,7 @@ return [
     'cart_cleared_successfully' => 'تم مسح السلة بنجاح',
     'cart_empty_add_products' => 'السلة فارغة. الرجاء إضافة منتجات للمتابعة.',
     'confirm_complete_sale' => 'إتمام هذه المبيعة؟',
+    'misc_service_confirm' => 'السلة فارغة. إنشاء فاتورة "خدمة متنوعة" بمبلغ {amount}؟',
     'processing_sale' => 'معالجة البيع',
     'please_wait' => 'انتظر من فضلك...',
     'zatca_submission_in_progress' => 'جاري إرسال زاتكا، يرجى الانتظار...',

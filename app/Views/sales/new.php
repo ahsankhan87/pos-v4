@@ -536,6 +536,8 @@ $canEditLineDiscount = can('sales.edit_discount');
         <input type="hidden" name="cart_data" id="cart-data">
         <input type="hidden" name="tendered_amount" id="tendered_amount" value="">
         <input type="hidden" name="change_amount" id="change_amount" value="">
+        <input type="hidden" name="misc_service" id="misc-service-flag" value="0">
+        <input type="hidden" name="misc_service_amount" id="misc-service-amount" value="0">
     </form>
 </div>
 
@@ -675,7 +677,7 @@ $canEditLineDiscount = can('sales.edit_discount');
         // Client-side validation for sale and draft
         function validateSaleForm() {
             let errors = [];
-            if (cart.length === 0) {
+            if (cart.length === 0 && $('#misc-service-flag').val() !== '1') {
                 errors.push('Cart is empty. Please add products to continue.');
             }
             if (!$('select[name="payment_method"]').val()) {
@@ -826,12 +828,65 @@ $canEditLineDiscount = can('sales.edit_discount');
         syncDiscountInputConstraints();
         $('#discount_type').on('change', syncDiscountInputConstraints);
 
+        // Quick "Misc Service" cash sale: if the cart is empty but the cashier
+        // typed an amount in the tendered field, offer to invoice it as a
+        // "Misc Service" line instead of blocking the sale.
+        function setupMiscServiceIfNeeded() {
+            if (cart.length > 0) {
+                return {
+                    ok: true,
+                    misc: false
+                };
+            }
+
+            const amount = parseFloat($('#tenderedAmountInput').val()) || 0;
+            if (amount <= 0) {
+                return {
+                    ok: false,
+                    misc: false,
+                    cancelled: false
+                };
+            }
+
+            const currency = '<?= session()->get('currency_symbol') ?? '$' ?>';
+            const message = <?= json_encode(lang('Sales.misc_service_confirm')) ?>.replace('{amount}', currency + amount.toFixed(2));
+
+            if (!confirm(message)) {
+                return {
+                    ok: false,
+                    misc: true,
+                    cancelled: true
+                };
+            }
+
+            $('#misc-service-flag').val('1');
+            $('#misc-service-amount').val(amount.toFixed(2));
+            $('#tendered_amount').val(amount.toFixed(2));
+            $('#grand_total').val(amount.toFixed(2));
+            $('#subtotal').val(amount.toFixed(2));
+            $('#total_tax').val('0');
+            $('#total_discount').val('0');
+            return {
+                ok: true,
+                misc: true
+            };
+        }
+
         // Form submission handling
         let isFormSubmitting = false;
         $('form').on('submit', function(e) {
             // Prevent duplicate submissions
             if (isFormSubmitting) {
                 e.preventDefault();
+                return false;
+            }
+
+            const misc = setupMiscServiceIfNeeded();
+            if (!misc.ok) {
+                e.preventDefault();
+                if (!misc.cancelled) {
+                    showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
+                }
                 return false;
             }
 
@@ -1963,8 +2018,12 @@ $canEditLineDiscount = can('sales.edit_discount');
             // F9 or Ctrl+S - Complete sale (if cart has items)
             else if (e.key === 'F9' || (e.ctrlKey && e.key === 's')) {
                 e.preventDefault();
-                if (cart.length === 0) {
-                    showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
+
+                const misc = setupMiscServiceIfNeeded();
+                if (!misc.ok) {
+                    if (!misc.cancelled) {
+                        showFormErrors([<?= json_encode(lang('Sales.cart_empty_add_products')) ?>]);
+                    }
                     return false;
                 }
 
@@ -1975,8 +2034,8 @@ $canEditLineDiscount = can('sales.edit_discount');
                     return false;
                 }
 
-                // Confirm and submit
-                if (confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
+                // Confirm and submit (misc-service sales are already confirmed above)
+                if (misc.misc || confirm(<?= json_encode(lang('Sales.confirm_complete_sale')) ?>)) {
                     // Update cart data before submit
                     if (!SHOW_ITEM_DISCOUNT_TYPE) {
                         cart.forEach(it => {
