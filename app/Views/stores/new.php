@@ -127,6 +127,16 @@
             <p class="mt-1 text-xs text-gray-500"><?= lang('Stores.imei_tracking_help') ?></p>
         </div>
         <div class="mb-6">
+            <label class="block font-semibold mb-1"><?= lang('Stores.expiry_tracking_mode') ?></label>
+            <?php $expiryMode = old('expiry_tracking_mode', $expiryTrackingMode ?? 'inherit'); ?>
+            <select name="expiry_tracking_mode" class="w-full border rounded px-3 py-2">
+                <option value="inherit" <?= $expiryMode === 'inherit' ? 'selected' : '' ?>><?= lang('Stores.expiry_tracking_inherit') ?></option>
+                <option value="enabled" <?= $expiryMode === 'enabled' ? 'selected' : '' ?>><?= lang('Stores.expiry_tracking_enabled') ?></option>
+                <option value="disabled" <?= $expiryMode === 'disabled' ? 'selected' : '' ?>><?= lang('Stores.expiry_tracking_disabled') ?></option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500"><?= lang('Stores.expiry_tracking_help') ?></p>
+        </div>
+        <div class="mb-6">
             <label class="inline-flex items-center">
                 <input type="checkbox" name="is_active" value="1" class="form-checkbox h-5 w-5 text-blue-600">
                 <span class="ml-2 text-gray-700"><?= lang('Stores.active') ?></span>

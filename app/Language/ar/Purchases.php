@@ -63,6 +63,8 @@ return [
     'cost_price' => 'سعر التكلفة',
     'unit_price' => 'سعر الوحدة',
     'subtotal' => 'الإجمالي الفرعي',
+    'expiry_date' => 'تاريخ الانتهاء',
+    'batch_number' => 'رقم الدفعة',
     'discount' => 'الخصم',
     'tax' => 'الضريبة',
     'shipping_cost' => 'تكلفة الشحن',

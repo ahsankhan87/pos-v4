@@ -429,9 +429,12 @@
             imeiRequiredMismatch: <?= json_encode('IMEI count must match quantity for IMEI-tracked products.') ?>,
             imeiQuantityMustBeWhole: <?= json_encode('Quantity must be a whole number for IMEI-tracked products.') ?>,
             imeiTextareaPlaceholder: <?= json_encode('Enter one IMEI per line') ?>,
+            expiryDate: <?= json_encode(lang('Purchases.expiry_date')) ?>,
+            batchNumber: <?= json_encode(lang('Purchases.batch_number')) ?>,
         };
 
         const imeiTrackingEnabled = <?= !empty($imeiTrackingEnabled) ? 'true' : 'false' ?>;
+        const expiryTrackingEnabled = <?= !empty($expiryTrackingEnabled) ? 'true' : 'false' ?>;
 
         // Hidden items input
         const $itemsInput = $('#items');
@@ -706,6 +709,18 @@
                         <div class="ml-4">
                             <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
                             <div class="text-xs text-gray-400">${i18n.stock}: ${stockDisplay}</div>
+                            ${expiryTrackingEnabled ? `
+                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">${i18n.expiryDate}</label>
+                                    <input type="date" class="item-expiry-date w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs" value="${escapeHtml(item.expiry_date || '')}">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">${i18n.batchNumber}</label>
+                                    <input type="text" class="item-batch-number w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs" value="${escapeHtml(item.batch_number || '')}" placeholder="${i18n.batchNumber}">
+                                </div>
+                            </div>
+                            ` : ''}
                             ${item.requires_imei ? `
                             <div class="mt-2">
                                 <label class="block text-xs font-semibold text-amber-700 mb-1">IMEI (paste one per line)</label>
@@ -763,6 +778,10 @@
             });
 
             $row.find('.item-imeis').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            $row.find('.item-expiry-date, .item-batch-number').on('change input', function() {
                 updateItemFromRow($row, item);
             });
 
@@ -826,6 +845,12 @@
                 if (!$row.find('.item-imeis').is(activeElement)) {
                     $row.find('.item-imeis').val(item.imei_list || '');
                 }
+                if (!$row.find('.item-expiry-date').is(activeElement)) {
+                    $row.find('.item-expiry-date').val(item.expiry_date || '');
+                }
+                if (!$row.find('.item-batch-number').is(activeElement)) {
+                    $row.find('.item-batch-number').val(item.batch_number || '');
+                }
                 $row.find('.item-discount').val(item.discount);
                 $row.find('.item-discount-type').val(item.discount_type);
                 $row.find('.item-tax').text(item.tax_amount.toFixed(2));
@@ -854,6 +879,8 @@
             item.discount = parseFloat($row.find('.item-discount').val()) || 0;
             item.discount_type = $row.find('.item-discount-type').val();
             item.imei_list = $row.find('.item-imeis').val() || '';
+            item.expiry_date = $row.find('.item-expiry-date').val() || '';
+            item.batch_number = $row.find('.item-batch-number').val() || '';
 
             calculateItemTotals(item);
             updateItemRow(item);

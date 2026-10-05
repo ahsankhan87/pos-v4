@@ -150,6 +150,7 @@ class Purchases extends BaseController
             'today' => date('Y-m-d H:i:s'),
             'taxRate' => $settingModel->first()['tax_rate'] ?? 0,
             'imeiTrackingEnabled' => function_exists('business_feature_enabled') ? business_feature_enabled('imei_tracking') : false,
+            'expiryTrackingEnabled' => function_exists('business_feature_enabled') ? business_feature_enabled('expiry_tracking') : false,
         ];
 
         return view('purchases/create', $data);
@@ -324,7 +325,8 @@ class Purchases extends BaseController
         $data = [
             'title' => 'Purchase Details - ' . $purchase['invoice_no'],
             'purchase' => $purchase,
-            'permissions' => [] //service('permissions')->getUserPermissions(),]
+            'permissions' => [], //service('permissions')->getUserPermissions(),]
+            'expiryTrackingEnabled' => function_exists('business_feature_enabled') ? business_feature_enabled('expiry_tracking') : false,
         ];
 
         return view('purchases/view', $data);
@@ -348,6 +350,7 @@ class Purchases extends BaseController
             'products' => $this->productModel->select('id, name, code, cost_price, price, quantity')->findAll(),
             'stores' => $this->storeModel->findAll(),
             'taxRate' => isset($purchase['tax_rate']) ? (float) $purchase['tax_rate'] : (float) ($settingModel->first()['tax_rate'] ?? 0),
+            'expiryTrackingEnabled' => function_exists('business_feature_enabled') ? business_feature_enabled('expiry_tracking') : false,
         ];
 
         return view('purchases/edit', $data);
@@ -421,6 +424,8 @@ class Purchases extends BaseController
                 'tax_amount' => 0,
                 'subtotal' => $itemSubtotal,
                 'imei_list' => $item['imei_list'] ?? ($item['imeis'] ?? ''),
+                'expiry_date' => $item['expiry_date'] ?? null,
+                'batch_number' => $item['batch_number'] ?? null,
             ];
 
             $subtotal += $itemSubtotal;
@@ -678,7 +683,8 @@ class Purchases extends BaseController
         $data = [
             'title' => 'Purchase Invoice - ' . $purchase['invoice_no'],
             'purchase' => $purchase,
-            'company' => $this->getCompanyInfo()
+            'company' => $this->getCompanyInfo(),
+            'expiryTrackingEnabled' => function_exists('business_feature_enabled') ? business_feature_enabled('expiry_tracking') : false,
         ];
 
         return view('purchases/print', $data);

@@ -1,9 +1,11 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
 <?php
+helper('business_feature');
 $currency = session()->get('currency_symbol') ?? '$';
 $start = esc($filters['start_date'] ?? date('Y-m-01'));
 $end = esc($filters['end_date'] ?? date('Y-m-d'));
+$expiryEnabled = business_feature_enabled('expiry_tracking');
 ?>
 <div class="max-w-full mx-auto px-4 py-4">
     <div class="flex items-center justify-between mb-4">
@@ -71,6 +73,44 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
             <tbody id="slowMoversBody"></tbody>
         </table>
     </div>
+
+    <?php if ($expiryEnabled): ?>
+    <div class="bg-white rounded shadow p-3 mt-4">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold"><?= esc(lang('Reports.expiry_report_title')) ?></h3>
+            <a href="<?= site_url('reports/inventory/expiry-print') ?>" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:text-blue-800">
+                <i class="fas fa-print"></i> <?= esc(lang('Reports.print')) ?>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="bg-red-50 rounded p-3 border border-red-100">
+                <div class="text-xs text-red-600"><?= esc(lang('Reports.expired')) ?></div>
+                <div id="expiredCount" class="text-lg font-bold text-red-700">-</div>
+            </div>
+            <div class="bg-amber-50 rounded p-3 border border-amber-100">
+                <div class="text-xs text-amber-600"><?= esc(lang('Reports.expiring')) ?></div>
+                <div id="expiringCount" class="text-lg font-bold text-amber-700">-</div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-gray-500">
+                        <th class="py-1"><?= esc(lang('Reports.product')) ?></th>
+                        <th class="py-1"><?= esc(lang('Reports.code')) ?></th>
+                        <th class="py-1"><?= esc(lang('Reports.category')) ?></th>
+                        <th class="py-1 text-right"><?= esc(lang('Reports.qty')) ?></th>
+                        <th class="py-1"><?= esc(lang('Reports.expiry_date')) ?></th>
+                        <th class="py-1"><?= esc(lang('Reports.status')) ?></th>
+                    </tr>
+                </thead>
+                <tbody id="expiryBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <script src="<?php echo base_url() ?>assets/js/chartjs/chart.js"></script>
@@ -78,10 +118,16 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
 <script>
     (function() {
         const currency = <?= json_encode($currency) ?>;
+        const expiryEnabled = <?= $expiryEnabled ? 'true' : 'false' ?>;
         const texts = {
             networkError: <?= json_encode(lang('Reports.network_error'), JSON_UNESCAPED_UNICODE) ?>,
             stockIn: <?= json_encode(lang('Reports.stock_in'), JSON_UNESCAPED_UNICODE) ?>,
-            stockOut: <?= json_encode(lang('Reports.stock_out'), JSON_UNESCAPED_UNICODE) ?>
+            stockOut: <?= json_encode(lang('Reports.stock_out'), JSON_UNESCAPED_UNICODE) ?>,
+            expired: <?= json_encode(lang('Reports.expired'), JSON_UNESCAPED_UNICODE) ?>,
+            expiring: <?= json_encode(lang('Reports.expiring'), JSON_UNESCAPED_UNICODE) ?>,
+            daysLeft: <?= json_encode(lang('Reports.days_left'), JSON_UNESCAPED_UNICODE) ?>,
+            expiredDaysAgo: <?= json_encode(lang('Reports.expired_days_ago'), JSON_UNESCAPED_UNICODE) ?>,
+            noExpiry: <?= json_encode(lang('Reports.no_expiry_products'), JSON_UNESCAPED_UNICODE) ?>
         };
         const form = document.getElementById('filterForm');
         const qs = () => new URLSearchParams(new FormData(form)).toString();
@@ -161,8 +207,81 @@ $end = esc($filters['end_date'] ?? date('Y-m-d'));
             data.forEach(r => body.appendChild(row([r.name, r.code, Number(r.sold_qty).toFixed(0), Number(r.quantity).toFixed(0)])));
         }
 
+        async function loadExpiry() {
+            if (!expiryEnabled) {
+                return;
+            }
+            const data = await fetchJSON('<?= site_url('reports/inventory/expiry') ?>');
+            const body = document.getElementById('expiryBody');
+            body.innerHTML = '';
+
+            const expired = data.expired || [];
+            const expiring = data.expiring || [];
+            document.getElementById('expiredCount').textContent = String(expired.length);
+            document.getElementById('expiringCount').textContent = String(expiring.length);
+
+            const rows = expired.map(r => Object.assign({}, r, { _status: 'expired' }))
+                .concat(expiring.map(r => Object.assign({}, r, { _status: 'expiring' })));
+
+            if (!rows.length) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 6;
+                td.className = 'py-2 text-gray-400';
+                td.textContent = texts.noExpiry;
+                tr.appendChild(td);
+                body.appendChild(tr);
+                return;
+            }
+
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                const isExpired = r._status === 'expired';
+
+                const textCells = [
+                    r.name,
+                    r.code,
+                    r.category_name || '',
+                    Number(r.quantity || 0).toFixed(0),
+                    r.expiry_date
+                ];
+                textCells.forEach((c, i) => {
+                    const td = document.createElement('td');
+                    td.className = 'py-1 ' + (i === 3 ? 'text-right' : '');
+                    td.textContent = c;
+                    tr.appendChild(td);
+                });
+
+                const statusTd = document.createElement('td');
+                statusTd.className = 'py-1';
+                const badge = document.createElement('span');
+                badge.className = isExpired
+                    ? 'px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700'
+                    : 'px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800';
+                badge.textContent = isExpired ? texts.expired : texts.expiring;
+                statusTd.appendChild(badge);
+
+                const daysNode = document.createElement('span');
+                daysNode.className = 'ml-2 text-xs text-gray-500';
+                const days = parseInt(r.days_left, 10);
+                if (!isNaN(days)) {
+                    daysNode.textContent = days < 0
+                        ? texts.expiredDaysAgo.replace('{n}', String(Math.abs(days)))
+                        : texts.daysLeft.replace('{n}', String(days));
+                }
+                statusTd.appendChild(daysNode);
+
+                tr.appendChild(statusTd);
+                body.appendChild(tr);
+            });
+        }
+
         async function refreshAll() {
-            await Promise.all([loadValuation(), loadMovement(), loadLowStock(), loadSlowMovers()]);
+            const loaders = [loadValuation(), loadMovement(), loadLowStock(), loadSlowMovers()];
+            if (expiryEnabled) {
+                loaders.push(loadExpiry());
+            }
+            await Promise.all(loaders);
         }
         form.addEventListener('submit', function(e) {
             e.preventDefault();

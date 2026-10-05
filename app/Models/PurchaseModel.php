@@ -128,6 +128,48 @@ class PurchaseModel extends Model
         return $purchase;
     }
 
+    /**
+     * Roll the earliest batch expiry up to the product's expiry_date so the
+     * expiry report and sale-side guard reflect real received stock.
+     */
+    protected function syncProductExpiry($productId, $expiryDate)
+    {
+        if (! function_exists('business_feature_enabled')) {
+            helper('business_feature');
+        }
+        if (! business_feature_enabled('expiry_tracking')) {
+            return;
+        }
+
+        $expiryDate = trim((string) $expiryDate);
+        if ($expiryDate === '' || $expiryDate === '0000-00-00') {
+            return;
+        }
+        $expiryDate = substr($expiryDate, 0, 10);
+
+        $productModel = new \App\Models\M_products();
+        $product = $productModel->find($productId);
+        if (!$product) {
+            return;
+        }
+
+        // Services are not expiry-tracked.
+        if (isset($product['type']) && $product['type'] === 'service') {
+            return;
+        }
+
+        $current = trim((string) ($product['expiry_date'] ?? ''));
+        if ($current === '' || $current === '0000-00-00') {
+            $productModel->update($productId, ['expiry_date' => $expiryDate]);
+            return;
+        }
+
+        $current = substr($current, 0, 10);
+        if ($expiryDate < $current) {
+            $productModel->update($productId, ['expiry_date' => $expiryDate]);
+        }
+    }
+
     public function insertPurchase(array $data, array $items = [])
     {
         $productModel = new \App\Models\M_products();
@@ -230,6 +272,8 @@ class PurchaseModel extends Model
 
                 // Update product stock
                 $productModel->adjustStock($item['product_id'], $item['quantity'], 'in');
+
+                $this->syncProductExpiry($item['product_id'], $item['expiry_date'] ?? null);
 
                 // Update inventory for each item sold
                 $inventoryModel->logStockChange(
@@ -539,6 +583,8 @@ class PurchaseModel extends Model
 
             // Add stock for new quantity
             $productModel->adjustStock($item['product_id'], $item['quantity'], 'in');
+
+            $this->syncProductExpiry($item['product_id'], $item['expiry_date'] ?? null);
 
             // Log inventory change
             $inventoryModel->logStockChange(

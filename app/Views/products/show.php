@@ -80,10 +80,12 @@ $unitLabel = $unitLabel !== '' ? $unitLabel : lang('Products.not_available');
                                 <div class="text-gray-500"><?= lang('Products.stock_alert') ?></div>
                                 <div class="font-medium text-gray-900"><?= number_format((float)($product['stock_alert'] ?? 0), 2, '.', '') ?></div>
                             </div>
+                            <?php if (!empty($expiryTrackingEnabled)): ?>
                             <div>
                                 <div class="text-gray-500"><?= lang('Products.expiry_date') ?></div>
                                 <div class="font-medium text-gray-900"><?= !empty($product['expiry_date']) ? esc($product['expiry_date']) : lang('Products.not_available') ?></div>
                             </div>
+                            <?php endif; ?>
                             <div>
                                 <div class="text-gray-500">Stock Tracking</div>
                                 <div class="font-medium text-gray-900"><?= ((int) ($product['is_stock_tracked'] ?? 1)) === 1 ? 'Enabled' : 'Disabled' ?></div>

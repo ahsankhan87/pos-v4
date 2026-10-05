@@ -121,6 +121,8 @@ return [
     'preselect_customer_failed' => 'فشل التحديد المسبق للعميل',
     'error_adding_to_cart' => 'خطأ أثناء إضافة العنصر إلى السلة',
     'error_completing_sale' => 'خطأ أثناء إتمام البيع',
+    'error_product_expired' => 'المنتج "{product}" منتهي الصلاحية ولا يمكن بيعه.',
+    'expired_product_override' => 'منتج منتهي الصلاحية تم بيعه بتجاوز المشرف',
     'pos_edit' => ' تعديل نقطة البيع',
     'cart' => 'السلة',
     'clear' => 'مسح',

@@ -63,6 +63,8 @@ return [
     'cost_price' => 'Cost Price',
     'unit_price' => 'Unit Price',
     'subtotal' => 'Subtotal',
+    'expiry_date' => 'Expiry Date',
+    'batch_number' => 'Batch No',
     'discount' => 'Discount',
     'tax' => 'Tax',
     'shipping_cost' => 'Shipping Cost',

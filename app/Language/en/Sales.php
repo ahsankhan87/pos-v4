@@ -121,6 +121,8 @@ return [
     'preselect_customer_failed' => 'Preselect customer failed',
     'error_adding_to_cart' => 'Error adding to cart',
     'error_completing_sale' => 'Error completing sale',
+    'error_product_expired' => '"{product}" is expired and cannot be sold.',
+    'expired_product_override' => 'expired product sold with admin override',
     'pos_edit' => 'POS Edit',
     'cart' => 'Cart',
     'clear' => 'Clear',

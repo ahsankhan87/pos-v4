@@ -1,6 +1,8 @@
 <?= $this->extend('templates/header') ?>
 <?= $this->section('content') ?>
+<?php helper('business_feature'); ?>
 <?php $canViewCostPrice = can('reports.profit_loss'); ?>
+<?php $expiryEnabled = business_feature_enabled('expiry_tracking'); ?>
 
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="<?= base_url() ?>assets/datatable-1.11.5/jquery.dataTables.min.css">
@@ -116,6 +118,9 @@
                             <?php endif; ?>
                             <th scope="col"><?= lang('Products.price') ?></th>
                             <th scope="col"><?= lang('Products.quantity') ?></th>
+                            <?php if ($expiryEnabled ?? false): ?>
+                                <th scope="col"><?= lang('Products.expiry_date') ?></th>
+                            <?php endif; ?>
                             <th scope="col"><?= lang('Products.actions') ?></th>
                         </tr>
                     </thead>
@@ -141,6 +146,9 @@
             productsListTitle: <?= json_encode(lang('Products.products_list_title'), JSON_UNESCAPED_UNICODE) ?>,
             exportExcel: <?= json_encode(lang('Products.export_excel'), JSON_UNESCAPED_UNICODE) ?>,
             service: <?= json_encode(lang('Products.service'), JSON_UNESCAPED_UNICODE) ?>,
+            expiryStatusExpired: <?= json_encode(lang('Products.expiry_status_expired'), JSON_UNESCAPED_UNICODE) ?>,
+            daysLeft: <?= json_encode(lang('Products.expiry_days_left'), JSON_UNESCAPED_UNICODE) ?>,
+            expiresToday: <?= json_encode(lang('Products.expiry_expires_today'), JSON_UNESCAPED_UNICODE) ?>,
             searchProducts: <?= json_encode(lang('Products.search_products'), JSON_UNESCAPED_UNICODE) ?>,
             showEntries: <?= json_encode(lang('Products.show_entries'), JSON_UNESCAPED_UNICODE) ?>,
             showingEntries: <?= json_encode(lang('Products.showing_entries'), JSON_UNESCAPED_UNICODE) ?>,
@@ -181,6 +189,7 @@
             delete: <?= can('products.delete') ? 'true' : 'false' ?>,
             costPrice: <?= $canViewCostPrice ? 'true' : 'false' ?>,
         };
+        const expiryEnabled = <?= $expiryEnabled ? 'true' : 'false' ?>;
 
         const table = $('#productsTable').DataTable({
             processing: true,
@@ -319,6 +328,13 @@
                         return parseFloat(data).toFixed(2);
                     }
                 },
+                ...(expiryEnabled ? [{
+                    data: 'expiry_date',
+                    name: 'expiry_date',
+                    render: function(data, type, row) {
+                        return expiryBadge(data);
+                    }
+                }] : []),
                 {
                     data: null,
                     orderable: false,
@@ -359,6 +375,39 @@
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
+        }
+
+        function daysUntil(dateString) {
+            if (!dateString) {
+                return null;
+            }
+            const d = new Date(dateString + 'T00:00:00');
+            if (isNaN(d.getTime())) {
+                return null;
+            }
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            return Math.round((d - today) / (1000 * 60 * 60 * 24));
+        }
+
+        function expiryBadge(expiryDate) {
+            if (!expiryDate) {
+                return '<span class="text-gray-400">—</span>';
+            }
+            const days = daysUntil(expiryDate);
+            if (days === null) {
+                return escapeHtml(expiryDate);
+            }
+            if (days < 0) {
+                return `${escapeHtml(expiryDate)} <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700">${productTexts.expiryStatusExpired}</span>`;
+            }
+            if (days <= 7) {
+                const label = days === 0
+                    ? productTexts.expiresToday
+                    : productTexts.daysLeft.replace('{n}', days);
+                return `${escapeHtml(expiryDate)} <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">${label}</span>`;
+            }
+            return escapeHtml(expiryDate);
         }
 
         function buildActions(row) {

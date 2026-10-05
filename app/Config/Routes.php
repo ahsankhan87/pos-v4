@@ -295,6 +295,8 @@ $routes->group('reports/inventory', ['filter' => 'auth'], function ($routes) {
     $routes->get('low-stock', 'Reports\Inventory::lowStock', ['filter' => 'permission:any|reports.inventory_low_stock|analytics.view']);
     $routes->get('movement', 'Reports\Inventory::movement', ['filter' => 'permission:any|reports.inventory_movement|analytics.view']);
     $routes->get('slow-movers', 'Reports\Inventory::slowMovers', ['filter' => 'permission:any|reports.inventory_slow_movers|analytics.view']);
+    $routes->get('expiry', 'Reports\Inventory::expiry', ['filter' => 'permission:any|reports.inventory_expiry|analytics.view,businessFeature:expiry_tracking']);
+    $routes->get('expiry-print', 'Reports\Inventory::expiryPrint', ['filter' => 'permission:any|reports.inventory_expiry|analytics.view,businessFeature:expiry_tracking']);
 });
 
 $routes->get('send-whatsapp/(:num)', 'Receipts::sendWhatsApp/$1', ['filter' => 'permission:receipts.view,feature:whatsapp']);

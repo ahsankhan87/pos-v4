@@ -19,6 +19,7 @@ class BusinessFeatures extends BaseConfig
         'distributor' => 'Distributor/Dealer',
         'electricstore' => 'Electric Store',
         'medicinestore' => 'Medicine Store',
+        'meatshop' => 'Meat Shop / Butchery',
     ];
 
     /**
@@ -28,6 +29,7 @@ class BusinessFeatures extends BaseConfig
      */
     public $available = [
         'imei_tracking' => 'IMEI tracking for mobile devices',
+        'expiry_tracking' => 'Product expiry tracking & expiry reports',
     ];
 
     /**
@@ -38,24 +40,35 @@ class BusinessFeatures extends BaseConfig
     public $templates = [
         'general' => [
             'imei_tracking' => false,
+            'expiry_tracking' => false,
         ],
         'mobileshop' => [
             'imei_tracking' => true,
+            'expiry_tracking' => false,
         ],
         'supermarket' => [
             'imei_tracking' => false,
+            'expiry_tracking' => false,
         ],
         'autoparts' => [
             'imei_tracking' => false,
+            'expiry_tracking' => false,
         ],
         'distributor' => [
             'imei_tracking' => false,
+            'expiry_tracking' => false,
         ],
         'electricstore' => [
             'imei_tracking' => false,
+            'expiry_tracking' => false,
         ],
         'medicinestore' => [
             'imei_tracking' => false,
+            'expiry_tracking' => false,
+        ],
+        'meatshop' => [
+            'imei_tracking' => false,
+            'expiry_tracking' => true,
         ],
     ];
 }

@@ -168,6 +168,10 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.cost_price') ?></th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.unit_price') ?></th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.subtotal') ?></th>
+                                <?php if (!empty($expiryTrackingEnabled)): ?>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.batch_number') ?></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= lang('Purchases.expiry_date') ?></th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -221,6 +225,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap font-medium">
                                         <?= number_to_currency($item['subtotal'], session()->get('currency_symbol'), 'en_US', 2) ?>
                                     </td>
+                                    <?php if (!empty($expiryTrackingEnabled)): ?>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <?= !empty($item['batch_number']) ? esc($item['batch_number']) : '—' ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <?= !empty($item['expiry_date']) ? esc(substr((string)$item['expiry_date'], 0, 10)) : '—' ?>
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

@@ -134,6 +134,7 @@ class Stores extends BaseController
             'timezone' => 'permit_empty',
             'business_type' => $this->getBusinessTypeRule(),
             'imei_tracking_mode' => 'permit_empty|in_list[inherit,enabled,disabled]',
+            'expiry_tracking_mode' => 'permit_empty|in_list[inherit,enabled,disabled]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -175,6 +176,8 @@ class Stores extends BaseController
 
         $imeiMode = trim((string) $this->request->getPost('imei_tracking_mode'));
         $this->persistFeatureOverride($storeId, 'imei_tracking', $imeiMode);
+        $expiryMode = trim((string) $this->request->getPost('expiry_tracking_mode'));
+        $this->persistFeatureOverride($storeId, 'expiry_tracking', $expiryMode);
 
         logAction('store_created', 'Store ID: ' . $storeId . ', Name: ' . $newData['name']);
         return redirect()->to('/stores')->with('message', 'Store created!');
@@ -194,11 +197,18 @@ class Stores extends BaseController
             $imeiTrackingMode = ((int) ($override['is_enabled'] ?? 0) === 1) ? 'enabled' : 'disabled';
         }
 
+        $expiryOverride = $overrideModel->getOverride((int) $id, 'expiry_tracking');
+        $expiryTrackingMode = 'inherit';
+        if (is_array($expiryOverride)) {
+            $expiryTrackingMode = ((int) ($expiryOverride['is_enabled'] ?? 0) === 1) ? 'enabled' : 'disabled';
+        }
+
         $isZatcaEnabled = zatca_enabled();
         $data = [
             'title' => 'Edit Store / Branch',
             'store' => $store,
             'imeiTrackingMode' => old('imei_tracking_mode', $imeiTrackingMode),
+            'expiryTrackingMode' => old('expiry_tracking_mode', $expiryTrackingMode),
             'isZatcaEnabled' => $isZatcaEnabled,
         ];
         return view('stores/edit', $data);
@@ -233,6 +243,7 @@ class Stores extends BaseController
             'timezone' => 'permit_empty',
             'business_type' => $this->getBusinessTypeRule(),
             'imei_tracking_mode' => 'permit_empty|in_list[inherit,enabled,disabled]',
+            'expiry_tracking_mode' => 'permit_empty|in_list[inherit,enabled,disabled]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
@@ -269,6 +280,8 @@ class Stores extends BaseController
         $this->storeModel->update($id, $data);
         $imeiMode = trim((string) $this->request->getPost('imei_tracking_mode'));
         $this->persistFeatureOverride((int) $id, 'imei_tracking', $imeiMode);
+        $expiryMode = trim((string) $this->request->getPost('expiry_tracking_mode'));
+        $this->persistFeatureOverride((int) $id, 'expiry_tracking', $expiryMode);
 
         logAction('store_updated', 'Store ID: ' . (int) $id . ', Name: ' . $data['name']);
 

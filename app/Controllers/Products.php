@@ -27,6 +27,7 @@ class Products extends BaseController
     {
         $data = [
             'title' => 'Products List',
+            'expiryEnabled' => business_feature_enabled('expiry_tracking'),
         ];
 
         return view('products/index', $data);
@@ -47,6 +48,7 @@ class Products extends BaseController
             ->where('pos_products.store_id', session('store_id'))
             ->first();
         $data['title'] = 'Product Details';
+        $data['expiryTrackingEnabled'] = business_feature_enabled('expiry_tracking');
         // Check if the product exists before rendering the view.
         if (!$data['product']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Product not found');
@@ -77,6 +79,7 @@ class Products extends BaseController
             'categories' => $categories,
             'suppliers' => $suppliers,
             'imeiTrackingEnabled' => $this->isImeiFeatureEnabled(),
+            'expiryTrackingEnabled' => business_feature_enabled('expiry_tracking'),
         ]);
     }
 
@@ -204,6 +207,7 @@ class Products extends BaseController
         $data['product'] = $model->find($id);
         $data['title'] = 'Edit Product';
         $data['imeiTrackingEnabled'] = $this->isImeiFeatureEnabled();
+        $data['expiryTrackingEnabled'] = business_feature_enabled('expiry_tracking');
         // Check if the product exists before rendering the view.
         if (!$data['product']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Product not found');
@@ -512,11 +516,16 @@ class Products extends BaseController
         $orderRequest = $this->request->getVar('order')[0] ?? null;
 
         $canViewCostPrice = can('reports.profit_loss');
+        $expiryEnabled = business_feature_enabled('expiry_tracking');
         // Map DataTables column indexes to database columns.
         // Must align with the client-side columns array in products/index.php.
         $columns = $canViewCostPrice
-            ? ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.cost_price', 'pos_products.price', 'pos_products.quantity', '']
-            : ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.price', 'pos_products.quantity', ''];
+            ? ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.cost_price', 'pos_products.price', 'pos_products.quantity']
+            : ['', 'pos_products.id', 'pos_products.name', 'pos_categories.name', 'pos_products.barcode', 'pos_products.price', 'pos_products.quantity'];
+        if ($expiryEnabled) {
+            $columns[] = 'pos_products.expiry_date';
+        }
+        $columns[] = '';
 
         $db = \Config\Database::connect();
         $storeId = session('store_id');
@@ -554,6 +563,10 @@ class Products extends BaseController
             'IFNULL(pos_products.requires_imei, 0) as requires_imei',
             'IFNULL(pos_categories.name, "") as category_name',
         ];
+
+        if ($expiryEnabled) {
+            $selectFields[] = 'pos_products.expiry_date';
+        }
 
         if ($canViewCostPrice) {
             $selectFields[] = 'pos_products.cost_price';

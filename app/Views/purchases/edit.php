@@ -448,7 +448,11 @@
             pleaseAddAtLeastOneItem: <?= json_encode(lang('Purchases.please_add_at_least_one_item')) ?>,
             saveThisPurchase: <?= json_encode(lang('Purchases.save_this_purchase')) ?>,
             clearAllItemsFromPurchase: <?= json_encode(lang('Purchases.clear_all_items_from_purchase')) ?>,
+            expiryDate: <?= json_encode(lang('Purchases.expiry_date')) ?>,
+            batchNumber: <?= json_encode(lang('Purchases.batch_number')) ?>,
         };
+
+        const expiryTrackingEnabled = <?= !empty($expiryTrackingEnabled) ? 'true' : 'false' ?>;
 
         // Hidden items input
         const $itemsInput = $('#items');
@@ -707,6 +711,18 @@
                         <div class="ml-4">
                             <div class="font-medium text-gray-900">${escapeHtml(item.name)}</div>
                             <div class="text-xs text-gray-400">${i18n.stock}: ${stockDisplay}</div>
+                            ${expiryTrackingEnabled ? `
+                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">${i18n.expiryDate}</label>
+                                    <input type="date" class="item-expiry-date w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs" value="${escapeHtml(item.expiry_date || '')}">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">${i18n.batchNumber}</label>
+                                    <input type="text" class="item-batch-number w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs" value="${escapeHtml(item.batch_number || '')}" placeholder="${i18n.batchNumber}">
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
                     <input type="hidden" name="items[${item.product_id}][product_id]" value="${item.product_id}">
@@ -754,6 +770,10 @@
             });
 
             $row.find('.item-unit-price').on('change input', function() {
+                updateItemFromRow($row, item);
+            });
+
+            $row.find('.item-expiry-date, .item-batch-number').on('change input', function() {
                 updateItemFromRow($row, item);
             });
 
@@ -821,6 +841,12 @@
                 if (!$row.find('.item-cost-price').is(activeElement)) {
                     $row.find('.item-cost-price').val(item.cost_price.toFixed(2));
                 }
+                if (!$row.find('.item-expiry-date').is(activeElement)) {
+                    $row.find('.item-expiry-date').val(item.expiry_date || '');
+                }
+                if (!$row.find('.item-batch-number').is(activeElement)) {
+                    $row.find('.item-batch-number').val(item.batch_number || '');
+                }
                 $row.find('.item-discount').val(item.discount);
                 $row.find('.item-discount-type').val(item.discount_type);
                 $row.find('.item-tax').text(item.tax_amount.toFixed(2));
@@ -862,6 +888,8 @@
             item.cost_price = parseFloat($row.find('.item-cost-price').val()) || 0;
             item.discount = parseFloat($row.find('.item-discount').val()) || 0;
             item.discount_type = $row.find('.item-discount-type').val();
+            item.expiry_date = $row.find('.item-expiry-date').val() || '';
+            item.batch_number = $row.find('.item-batch-number').val() || '';
 
             calculateItemTotals(item);
             updateItemRow(item);
@@ -1184,6 +1212,8 @@
                     existingLoadedItem<?= $index ?>.quantity = parseFloat(<?= $item['quantity'] ?>);
                     existingLoadedItem<?= $index ?>.cost_price = parseFloat(<?= $item['cost_price'] ?>);
                     existingLoadedItem<?= $index ?>.unit_price = parseFloat(<?= $item['unit_price'] ?? 0 ?>);
+                    existingLoadedItem<?= $index ?>.expiry_date = <?= json_encode((string)($item['expiry_date'] ?? '')) ?>;
+                    existingLoadedItem<?= $index ?>.batch_number = <?= json_encode((string)($item['batch_number'] ?? '')) ?>;
                     calculateItemTotals(existingLoadedItem<?= $index ?>);
                     updateItemRow(existingLoadedItem<?= $index ?>);
                 }

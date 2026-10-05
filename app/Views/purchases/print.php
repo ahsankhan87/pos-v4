@@ -431,6 +431,14 @@
                         <td class="text-center"><?= $index + 1 ?></td>
                         <td>
                             <div class="font-bold"><?= esc($item['product_name']) ?></div>
+                            <?php if (!empty($expiryTrackingEnabled)): ?>
+                                <?php if (!empty($item['batch_number'])): ?>
+                                    <div class="text-muted" style="font-size: 10px;"><?= lang('Purchases.batch_number') ?>: <?= esc($item['batch_number']) ?></div>
+                                <?php endif; ?>
+                                <?php if (!empty($item['expiry_date'])): ?>
+                                    <div class="text-muted" style="font-size: 10px;"><?= lang('Purchases.expiry_date') ?>: <?= esc(substr((string)$item['expiry_date'], 0, 10)) ?></div>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                         <?php
                         // Calculate display quantity based on carton_size and quantity

@@ -195,6 +195,8 @@ class Sales extends BaseController
         $canEditLineDiscount = can('sales.edit_discount');
         $isAdminOverrideUser = $this->isAdminUser();
         $adminOverrideMessages = [];
+        $expiryOverrideMessages = [];
+        $expiryTrackingEnabled = business_feature_enabled('expiry_tracking');
         // Discount handling: prefer item-wise discount if provided per line
         $discountInput = (float) ($this->request->getPost('discount') ?? 0);
         $total = $this->request->getPost('grand_total') ?? 0;
@@ -307,6 +309,15 @@ class Sales extends BaseController
             if (!$product) {
                 $errors[] = 'Product not found for sale item.';
                 continue;
+            }
+
+            if ($expiryTrackingEnabled && $this->isExpiredProduct($product)) {
+                $productName = (string) ($product['name'] ?? ('Product #' . $productId));
+                if (!$isAdminOverrideUser) {
+                    $errors[] = lang('Sales.error_product_expired', ['product' => $productName]);
+                    continue;
+                }
+                $expiryOverrideMessages[] = $productName . ' (' . lang('Sales.expired_product_override') . ')';
             }
 
             $qty = (float) ($line['quantity'] ?? 0);
@@ -617,6 +628,9 @@ class Sales extends BaseController
                 if (!empty($adminOverrideMessages)) {
                     logAction('sale_discount_override', 'Sale ID: ' . $sale_id . ', Admin override applied for: ' . implode('; ', $adminOverrideMessages));
                 }
+                if (!empty($expiryOverrideMessages)) {
+                    logAction('sale_expiry_override', 'Sale ID: ' . $sale_id . ', Admin sold expired product(s): ' . implode('; ', $expiryOverrideMessages));
+                }
 
                 // For draft completion, clear any existing draft items
                 if ($isDraftCompletion) {
@@ -872,6 +886,8 @@ class Sales extends BaseController
                 : null;
             $isAdminOverrideUser = $this->isAdminUser();
             $adminOverrideMessages = [];
+            $expiryOverrideMessages = [];
+            $expiryTrackingEnabled = business_feature_enabled('expiry_tracking');
 
             $errors = [];
             $discountLimitErrors = [];
@@ -907,6 +923,15 @@ class Sales extends BaseController
                     if (!$product) {
                         $errors[] = 'Product not found or unavailable.';
                         break;
+                    }
+
+                    if ($expiryTrackingEnabled && $this->isExpiredProduct($product)) {
+                        $productName = (string) ($product['name'] ?? ('Product #' . $productId));
+                        if (!$isAdminOverrideUser) {
+                            $errors[] = lang('Sales.error_product_expired', ['product' => $productName]);
+                            break;
+                        }
+                        $expiryOverrideMessages[] = $productName . ' (' . lang('Sales.expired_product_override') . ')';
                     }
 
                     $isServiceProduct = isset($product['type']) && strtolower((string)$product['type']) === 'service';
@@ -1272,6 +1297,9 @@ class Sales extends BaseController
                 if (!empty($adminOverrideMessages)) {
                     logAction('sale_discount_override', 'Sale ID: ' . $saleId . ', Admin override applied for: ' . implode('; ', $adminOverrideMessages));
                 }
+                if (!empty($expiryOverrideMessages)) {
+                    logAction('sale_expiry_override', 'Sale ID: ' . $saleId . ', Admin sold expired product(s): ' . implode('; ', $expiryOverrideMessages));
+                }
             } catch (\Throwable $e) {
                 $db->transRollback();
                 log_message('error', 'Failed to update sale ID ' . $saleId . ': ' . $e->getMessage());
@@ -1340,6 +1368,16 @@ class Sales extends BaseController
         }
 
         return false;
+    }
+
+    private function isExpiredProduct(array $product): bool
+    {
+        $expiryDate = trim((string) ($product['expiry_date'] ?? ''));
+        if ($expiryDate === '' || $expiryDate === '0000-00-00' || $expiryDate === '0000-00-00 00:00:00') {
+            return false;
+        }
+
+        return substr($expiryDate, 0, 10) < date('Y-m-d');
     }
 
     private function applyPromotionsToCartItems(array $items, $saleDate)

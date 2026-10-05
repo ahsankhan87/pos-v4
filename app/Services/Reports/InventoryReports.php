@@ -68,6 +68,75 @@ class InventoryReports
         return $builder->get()->getResultArray();
     }
 
+    public function getExpiry(int $soonDays = 7): array
+    {
+        $storeId = $this->storeId();
+        $today = date('Y-m-d');
+
+        $soonEnd = date('Y-m-d', strtotime('+' . (int) $soonDays . ' days'));
+
+        $expired = $this->expiryBuilder($storeId)
+            ->where('p.expiry_date <', $today)
+            ->orderBy('p.expiry_date', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $expiring = $this->expiryBuilder($storeId)
+            ->where('p.expiry_date >=', $today)
+            ->where('p.expiry_date <=', $soonEnd)
+            ->orderBy('p.expiry_date', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $attachDaysLeft = function (array $rows): array {
+            $today = date('Y-m-d');
+            foreach ($rows as &$row) {
+                $row['days_left'] = $this->daysLeft($row['expiry_date'] ?? null, $today);
+            }
+            unset($row);
+            return $rows;
+        };
+
+        return [
+            'expired' => $attachDaysLeft($expired),
+            'expiring' => $attachDaysLeft($expiring),
+        ];
+    }
+
+    protected function expiryBuilder(?int $storeId)
+    {
+        $builder = $this->db->table('pos_products p');
+        $builder->select('p.id, p.name, p.code, p.barcode, p.quantity, p.expiry_date, IFNULL(c.name, "") as category_name')
+            ->join('pos_categories c', 'c.id = p.category_id', 'left')
+            ->where('p.expiry_date IS NOT NULL', null, false)
+            ->where('p.expiry_date !=', '')
+            ->where('p.type !=', 'service');
+
+        if ($storeId !== null) {
+            $builder->where('p.store_id', $storeId);
+        }
+
+        return $builder;
+    }
+
+    protected function daysLeft(?string $expiryDate, string $today): ?int
+    {
+        $expiryDate = trim((string) $expiryDate);
+        if ($expiryDate === '' || $expiryDate === '0000-00-00') {
+            return null;
+        }
+
+        $expiry = \DateTime::createFromFormat('Y-m-d', substr($expiryDate, 0, 10));
+        $current = \DateTime::createFromFormat('Y-m-d', $today);
+        if (!$expiry || !$current) {
+            return null;
+        }
+
+        $interval = $current->diff($expiry);
+        $days = (int) $interval->format('%r%a');
+        return $days;
+    }
+
     public function getSlowMovers(array $filters = []): array
     {
         [$start, $end] = $this->dateRange($filters);
