@@ -128,6 +128,7 @@
     <table>
         <thead>
             <tr>
+                <th style="text-align:left;"><?= lang('Reports.sr_no') ?></th>
                 <th style="text-align:left;"><?= lang('Reports.product') ?></th>
                 <th class="text-right"><?= lang('Reports.total_quantity') ?></th>
                 <th class="text-right"><?= lang('Reports.total_sales') ?></th>
@@ -135,13 +136,16 @@
             </tr>
         </thead>
         <tbody>
+            <?php $sr = 0; ?>
             <?php foreach (($items ?? []) as $item): ?>
                 <?php
+                $sr++;
                 $rowQty = (float)($item['total_qty'] ?? 0);
                 $rowSales = (float)($item['total_sales'] ?? 0);
                 $rowAvg = avg_price($rowSales, $rowQty);
                 ?>
                 <tr>
+                    <td style="text-align:left;"><?= $sr ?></td>
                     <td style="text-align:left;">
                         <?= esc($item['product_name'] ?? '') ?>
                     </td>
@@ -153,6 +157,7 @@
         </tbody>
         <tfoot>
             <tr>
+                <th class="text-right"></th>
                 <th class="text-right"><?= lang('Reports.totals') ?></th>
                 <th class="text-right"><?= number_format($totalQty, 2) ?></th>
                 <th class="text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></th>

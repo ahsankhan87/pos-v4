@@ -354,6 +354,7 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.sr_no') ?></th>
                         <th class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.product') ?></th>
                         <th class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.total_quantity') ?></th>
                         <th class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide\"><?= lang('Reports.total_sales') ?></th>
@@ -365,14 +366,17 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                 </thead>
 
                 <tbody id="productsTbody" class="bg-white divide-y divide-gray-100">
+                    <?php $sr = 0; ?>
                     <?php foreach ($items as $item): ?>
                         <?php
+                        $sr++;
                         $rowQty = (float)($item['total_qty'] ?? 0);
                         $rowSales = (float)($item['total_sales'] ?? 0);
                         $rowAvg = avg_price($rowSales, $rowQty);
                         $rowProfit = (float)($item['profit'] ?? 0);
                         ?>
                         <tr class="hover:bg-gray-50" data-qty="<?= esc($rowQty) ?>" data-sales="<?= esc($rowSales) ?>" data-profit="<?= esc($rowProfit) ?>">
+                            <td class="px-4 py-2 text-sm text-gray-500"><?= $sr ?></td>
                             <td class="px-4 py-2 text-sm text-gray-900">
                                 <div class="font-medium\"><?= esc($item['product_name']) ?></div>
                             </td>
@@ -387,12 +391,13 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
 
                     <!-- added: "no matches" row -->
                     <tr id="noMatchesRow" style="display:none;">
-                        <td colspan="<?= $canProfit ? '5' : '4' ?>" class="px-4 py-4 text-sm text-gray-500 text-center\"><?= lang('Reports.no_matching_products') ?></td>
+                        <td colspan="<?= $canProfit ? '6' : '5' ?>" class="px-4 py-4 text-sm text-gray-500 text-center\"><?= lang('Reports.no_matching_products') ?></td>
                     </tr>
                 </tbody>
 
                 <tfoot class="bg-gray-50">
                     <tr>
+                        <td class="px-4 py-2"></td>
                         <td class="px-4 py-2 text-right text-sm font-semibold text-gray-700"><?= lang('Reports.totals') ?></td>
                         <td id="totalQtyCell" class="px-4 py-2 text-sm font-semibold text-gray-900 text-right"><?= number_format($totalQty) ?></td>
                         <td id="totalSalesCell" class="px-4 py-2 text-sm font-semibold text-gray-900 text-right"><?= esc($currency) . ' ' . money_fmt($totalSales) ?></td>
@@ -507,6 +512,8 @@ $printUrl = site_url('sales/product-report/print?' . http_build_query($printPara
                 row.style.display = match ? '' : 'none';
                 if (match) {
                     visible++;
+                    const srCell = row.querySelector('td');
+                    if (srCell) srCell.textContent = String(visible);
                     const rowQty = parseFloat(row.getAttribute('data-qty') || '0') || 0;
                     const rowSales = parseFloat(row.getAttribute('data-sales') || '0') || 0;
                     const rowProfit = parseFloat(row.getAttribute('data-profit') || '0') || 0;

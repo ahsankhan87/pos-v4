@@ -171,6 +171,7 @@ return [
     'totals_by_category' => 'الإجماليات حسب الفئة',
     'employee_category_pivot' => 'جدول الموظف × الفئة',
     's_no' => 'م',
+    'sr_no' => 'S#',
     'top_products' => 'أفضل المنتجات',
     'search_product' => 'بحث المنتج',
     'type_name_or_code' => 'اكتب الاسم أو الكود...',

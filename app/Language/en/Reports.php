@@ -171,6 +171,7 @@ return [
     'totals_by_category' => 'Totals by Category',
     'employee_category_pivot' => 'Employee x Category Pivot',
     's_no' => 'S No',
+    'sr_no' => 'S#',
     'top_products' => 'Top Products',
     'search_product' => 'Search Product',
     'type_name_or_code' => 'Type name or code...',
