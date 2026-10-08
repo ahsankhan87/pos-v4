@@ -306,6 +306,8 @@ class Products extends BaseController
         $q = $this->request->getGet('q') ?? $keyword;
         $supplierId = $this->request->getGet('supplier_id');
         $context = $this->request->getGet('context');
+        $categoryId = (int) ($this->request->getGet('category_id') ?? 0);
+        $requestedLimit = (int) ($this->request->getGet('limit') ?? 0);
 
         $model = new \App\Models\M_products();
 
@@ -327,7 +329,7 @@ class Products extends BaseController
         // Require minimum 1 character to search (performance optimization for large datasets)
         if (empty($q) || strlen(trim($q)) < 1) {
             // Return empty array or top 20 products
-            $selectFields = 'id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type';
+            $selectFields = 'id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type, category_id';
             if ($this->supportsRequiresImeiColumn()) {
                 $selectFields .= ', requires_imei';
             }
@@ -335,12 +337,15 @@ class Products extends BaseController
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
             }
+            if ($categoryId > 0) {
+                $model->where('category_id', $categoryId);
+            }
             if (!empty($excludeIds)) {
                 $model->whereNotIn('id', $excludeIds);
             }
             $products = $model->forStore()
                 ->orderBy('name', 'ASC')
-                ->limit(20)
+                ->limit($requestedLimit > 0 ? min($requestedLimit, 200) : 20)
                 ->findAll();
         } else {
             // Search by name, code, or barcode with optimized query
@@ -349,7 +354,7 @@ class Products extends BaseController
                 ->orLike('code', $q)
                 ->orLike('barcode', $q)
                 ->groupEnd();
-            $selectFields = 'id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type';
+            $selectFields = 'id, name, code, barcode, cost_price, price, quantity, carton_size, max_discount_value, max_discount_type, category_id';
             if ($this->supportsRequiresImeiColumn()) {
                 $selectFields .= ', requires_imei';
             }
@@ -357,12 +362,15 @@ class Products extends BaseController
             if (!empty($supplierId)) {
                 $model->where('supplier_id', (int)$supplierId);
             }
+            if ($categoryId > 0) {
+                $model->where('category_id', $categoryId);
+            }
             if (!empty($excludeIds)) {
                 $model->whereNotIn('id', $excludeIds);
             }
             $products = $model->forStore()
                 ->orderBy('name', 'ASC')
-                ->limit(50)
+                ->limit($requestedLimit > 0 ? min($requestedLimit, 200) : 50)
                 ->findAll();
         }
 
@@ -380,6 +388,7 @@ class Products extends BaseController
                 'max_discount_type' => $p['max_discount_type'] ?? 'fixed',
                 'quantity' => $p['quantity'],
                 'carton_size' => $p['carton_size'] ?? null,
+                'category_id' => $p['category_id'] ?? null,
                 'requires_imei' => isset($p['requires_imei']) ? (int) $p['requires_imei'] : 0,
             ];
         }

@@ -63,6 +63,7 @@ return [
     'quick_access' => 'وصول سريع',
     'most_used' => 'الأكثر استخدامًا',
     'new_pos_sale' => 'عملية بيع نقطة بيع جديدة',
+    'touch_pos' => 'نقطة البيع باللمس',
     'sales_order' => 'أمر بيع',
     'recurring_invoices' => 'الفواتير الدورية',
     'promotions' => 'العروض',

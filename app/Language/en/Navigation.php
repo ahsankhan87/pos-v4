@@ -65,6 +65,7 @@ return [
     'quick_access' => 'Quick Access',
     'most_used' => 'Most Used',
     'new_pos_sale' => 'New POS Sale',
+    'touch_pos' => 'Touch POS',
     'sales_orders' => 'Salesman Orders',
     'sales_order' => 'Sales Order',
     'recurring_invoices' => 'Recurring Invoices',

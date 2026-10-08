@@ -165,6 +165,36 @@ class Sales extends BaseController
         return view('sales/new', $data);
     }
 
+    public function touch()
+    {
+        helper('form');
+        $customerModel = new M_customers();
+        //$productModel = new M_products();
+        $salesModel = new M_sales();
+        $settingModel = new \App\Models\SettingsModel();
+
+        // Removed per-tab sale session id logic; no redirect or sid required
+
+        $data['customers'] = $customerModel->forStore()->findAll();
+        //$data['products'] = $productModel->forStore()->getProducts();
+        //$data['discounts'] = $this->discountModel->where('is_active', 1)->forStore()->findAll();
+        $data['categories'] = $this->categoriesModel->forStore()->orderBy('name', 'ASC')->findAll();
+        $data['employees'] = $this->employeeModel->forStore()->findAll();
+        $data['preselectedEmployeeId'] = $this->getLinkedEmployeeId();
+        $data['userRole'] = $this->roleModel->find(session()->get('role_id'))['name'] ?? 'User';
+        $data['title'] = 'New Sale';
+        $data['invoiceNo'] = $salesModel->generateSalesInvoiceNo();
+        $settingsRow = $settingModel->first() ?? [];
+        $data['taxRate'] = $settingsRow['tax_rate'] ?? 0;
+        $data['salesShowDiscountType'] = ((int) ($settingsRow['sales_show_discount_type'] ?? 1)) === 1;
+        $data['zatcaEnabled'] = $this->isZatcaEnabledForStore((int) (session('store_id') ?? 0), $settingsRow);
+        $data['zatcaDefaultInvoiceType'] = $this->resolveZatcaSaleDefaultInvoiceType((string) ($settingsRow['zatca_invoice_type'] ?? 'both'));
+
+        // No session-based prefill; cart is managed in-memory on the client now
+
+        return view('sales/touch', $data);
+    }
+
     // Removed session-based cart endpoints (saveCart, clearCart)
 
     // Cart processing and sale creation

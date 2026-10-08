@@ -171,7 +171,7 @@ $segments = explode('/', $currentUrl);
 $segment1 = $segments[0] ?? '';
 $segment2 = $segments[1] ?? '';
 
-$isPosPage = ($segment1 === 'sales' && ($segment2 === 'new' || $segment2 === 'distributor'));
+$isPosPage = ($segment1 === 'sales' && ($segment2 === 'new' || $segment2 === 'distributor' || $segment2 === 'touch'));
 $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
 ?>
 
@@ -218,6 +218,9 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                                 <?php if (can('sales.create')): ?>
                                                     <a href="<?php echo site_url('sales/new') ?>" accesskey="s" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+S'])) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                         <i class="fas fa-plus mr-2"></i> <?= lang('Navigation.new_sale') ?>
+                                                    </a>
+                                                    <a href="<?php echo site_url('sales/touch') ?>" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+T'])) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                                                        <i class="fas fa-hand-pointer mr-2"></i> <?= lang('Navigation.touch_pos') ?>
                                                     </a>
                                                     <a href="<?php echo site_url('sales/distributor') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                                                         <i class="fas fa-hand-holding-usd mr-2"></i> <?= lang('Navigation.new_sale') ?> <bage class="bg-red-100 text-red-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded"><?= lang('Navigation.new_badge') ?></bage>
@@ -624,6 +627,9 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                         <a href="<?= site_url('sales/new') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                             <i class="fas fa-plus mr-2"></i> <?= lang('Navigation.new_sale') ?>
                                         </a>
+                                        <a href="<?= site_url('sales/touch') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
+                                            <i class="fas fa-hand-pointer mr-2"></i> <?= lang('Navigation.touch_pos') ?>
+                                        </a>
                                         <a href="<?= site_url('sales/distributor') ?>" class="block px-3 py-2 rounded-md text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600 flex items-center">
                                             <i class="fas fa-hand-holding-usd mr-2"></i> <?= lang('Navigation.new_sale') ?> <bage class="bg-red-100 text-red-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded"><?= lang('Navigation.new_badge') ?></bage>
                                         </a>
@@ -924,6 +930,11 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                                             <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+Alt+S</span>
                                         <?php endif; ?>
                                     </a>
+                                    <a href="<?= site_url('sales/touch') ?>" accesskey="t" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+T'])) ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'touch') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
+                                        <i class="fas fa-hand-pointer mr-3 <?= ($segment1 == 'sales' && $segment2 == 'touch') ? 'text-white' : 'text-green-500' ?>"></i>
+                                        <span class="<?= ($segment1 == 'sales' && $segment2 == 'touch') ? 'font-bold' : 'font-semibold text-gray-700' ?>"><?= lang('Navigation.touch_pos') ?></span>
+                                        <span class="ml-auto inline-block px-2 py-0.5 text-xs font-medium <?= ($segment1 == 'sales' && $segment2 == 'touch') ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity' ?> rounded-full">Ctrl+Alt+T</span>
+                                    </a>
                                     <a href="<?= site_url('sales/distributor') ?>" accesskey="d" title="<?= esc(lang('Navigation.shortcut_title', ['combo' => 'Ctrl+Alt+D'])) ?>" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-slow <?= ($segment1 == 'sales' && $segment2 == 'distributor') ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 hover:text-blue-600' ?>">
                                         <i class="fas fa-hand-holding-usd mr-3 <?= ($segment1 == 'sales' && $segment2 == 'distributor') ? 'text-white' : 'text-yellow-500' ?>"></i>
                                         <span class="<?= ($segment1 == 'sales' && $segment2 == 'distributor') ? 'font-bold' : 'font-semibold text-gray-700' ?>\"><?= lang('Navigation.new_sale') ?></span>
@@ -1198,6 +1209,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                     <li><span class="font-medium">Ctrl + Alt + D</span> — <?= lang('Navigation.dashboard') ?></li>
                     <li><span class="font-medium">Ctrl + Alt + Shift + D</span> — <?= lang('Navigation.focus_dashboard_menu') ?></li>
                     <li><span class="font-medium">Ctrl + Alt + S</span> — <?= lang('Navigation.pos_terminal_new_sale') ?></li>
+                    <li><span class="font-medium">Ctrl + Alt + T</span> — <?= lang('Navigation.touch_pos') ?></li>
                     <li><span class="font-medium">Ctrl + Alt + L</span> — <?= lang('Navigation.sales_list') ?></li>
                     <li><span class="font-medium">Ctrl + Alt + P</span> — <?= lang('Navigation.purchases') ?></li>
                     <li><span class="font-medium">Ctrl + Alt + O</span> — <?= lang('Navigation.products') ?></li>
@@ -1503,6 +1515,7 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
             const routes = {
                 dashboard: '<?= site_url('dashboard') ?>',
                 saleNew: '<?= site_url('sales/new') ?>',
+                saleTouch: '<?= site_url('sales/touch') ?>',
                 salesList: '<?= site_url('sales') ?>',
                 purchases: '<?= site_url('purchases') ?>',
                 products: '<?= site_url('products') ?>',
@@ -1550,6 +1563,10 @@ $isPurchasePage = ($segment1 === 'purchases' && $segment2 === 'create');
                     case 's':
                         e.preventDefault();
                         go(routes.saleNew);
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        go(routes.saleTouch);
                         break;
                     case 'l':
                         e.preventDefault();

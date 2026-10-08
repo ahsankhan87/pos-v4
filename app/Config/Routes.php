@@ -91,6 +91,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     // Create
     $routes->get('new', 'Sales::new', ['filter' => 'permission:sales.create']);
     $routes->get('distributor', 'Sales::distributor', ['filter' => 'permission:sales.create']);
+    $routes->get('touch', 'Sales::touch', ['filter' => 'permission:sales.create']);
 
     $routes->post('create', 'Sales::create', ['filter' => 'permission:sales.create']);
     $routes->post('save-cart', 'Sales::saveCart', ['filter' => 'permission:sales.create']);
