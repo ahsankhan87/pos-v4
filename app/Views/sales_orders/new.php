@@ -29,7 +29,7 @@
                 <select name="employee_id" class="form-control h-9 text-sm select2-employee so-top-input">
                     <option value="">-</option>
                     <?php foreach (($employees ?? []) as $e): ?>
-                        <option value="<?= (int)$e['id'] ?>" <?= ((int)($order['employee_id'] ?? 0) === (int)$e['id']) ? 'selected' : '' ?>><?= esc($e['name']) ?></option>
+                        <option value="<?= (int)$e['id'] ?>" <?= ((int)($order['employee_id'] ?? ($editing ? 0 : ($preselectedEmployeeId ?? 0))) === (int)$e['id']) ? 'selected' : '' ?>><?= esc($e['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -59,13 +59,13 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-2 py-2 text-left"><?= lang('SalesOrders.product') ?></th>
-                        <th class="px-2 py-2 text-right"><?= lang('SalesOrders.qty') ?></th>
-                        <th class="px-2 py-2 text-right"><?= lang('SalesOrders.unit_price') ?></th>
-                        <th class="px-2 py-2 text-right"><?= lang('SalesOrders.discount') ?></th>
+                        <th class="px-2 py-2 text-left"><?= lang('SalesOrders.qty') ?></th>
+                        <th class="px-2 py-2 text-left"><?= lang('SalesOrders.unit_price') ?></th>
+                        <th class="px-2 py-2 text-left"><?= lang('SalesOrders.discount') ?></th>
                         <?php if ($showDiscountType): ?>
                             <th class="px-2 py-2 text-left">Type</th>
                         <?php endif; ?>
-                        <th class="px-2 py-2 text-right"><?= lang('SalesOrders.line_total') ?></th>
+                        <th class="px-2 py-2 text-left"><?= lang('SalesOrders.line_total') ?></th>
                         <th class="px-2 py-2 text-center"><?= lang('SalesOrders.actions') ?></th>
                     </tr>
                 </thead>

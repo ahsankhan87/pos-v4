@@ -50,25 +50,28 @@ class PurchaseModel extends Model
 
     /**
      * Generate a unique invoice number for purchases.
-     * @param string $prefix Invoice prefix (default 'PUR-')
+     * Format: P{storeId}-{year}-{4digitYearlyCounter}
+     * Example: P1-2026-0001
+     * @param string $prefix Invoice prefix (default 'P')
      * @param string $field Invoice field name (default 'invoice_no')
-     * @param int $storeID Store ID to include in invoice number
      * @return string The generated invoice number
      */
     public static function generatePurchaseInvoiceNo($prefix = 'P', $field = 'invoice_no')
     {
         $model = new \App\Models\PurchaseModel();
         $storeID = session()->get('store_id') ?? 1;
-        $date = date('Ymd');
-        $like = $prefix . $storeID . '-' . $date . '%';
+        $year = date('Y');
+        $like = $prefix . $storeID . '-' . $year . '-%';
+        
         $lastRef = $model->selectMax($field)->where("$field LIKE", $like)->first();
         if ($lastRef && $lastRef[$field]) {
-            $lastNum = (int) substr($lastRef[$field], strlen($prefix . $storeID . '-' . $date . '-'));
+            $lastNum = (int) substr($lastRef[$field], strlen($prefix . $storeID . '-' . $year . '-'));
             $newNum = $lastNum + 1;
         } else {
             $newNum = 1;
         }
-        return $prefix . $storeID . '-' . $date . '-' . str_pad($newNum, 4, '0', STR_PAD_LEFT);
+        
+        return $prefix . $storeID . '-' . $year . '-' . str_pad($newNum, 4, '0', STR_PAD_LEFT);
     }
 
     public function getPurchases()

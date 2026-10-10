@@ -14,9 +14,14 @@ use App\Models\SalesOrderModel;
 
 class SalesOrders extends BaseController
 {
+    private $employeeModel;
+    private $roleModel;
+
     public function __construct()
     {
         helper(['url', 'form', 'permission']);
+        $this->employeeModel = new EmployeesModel();
+        $this->roleModel = new \App\Models\RoleModel();
     }
 
     private function parsePostedLines(): array
@@ -190,6 +195,7 @@ class SalesOrders extends BaseController
             'customers' => $customers,
             'employees' => $employees,
             'products' => $products,
+            'preselectedEmployeeId' => $this->getLinkedEmployeeId(),
             'salesShowDiscountType' => $this->getSalesShowDiscountType(),
         ]);
     }
@@ -705,5 +711,17 @@ class SalesOrders extends BaseController
 
         return redirect()->to(site_url('receipts/generate/' . $saleId))
             ->with('success', lang('SalesOrders.converted_completed_success'));
+    }
+
+    private function getLinkedEmployeeId(): int
+    {
+        $userId = (int) (session('user_id') ?? 0);
+        if ($userId <= 0) {
+            return 0;
+        }
+
+        $employee = $this->employeeModel->getEmployeeByUserId($userId);
+
+        return (int) ($employee['id'] ?? 0);
     }
 }

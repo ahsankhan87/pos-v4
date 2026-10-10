@@ -47,6 +47,9 @@ class Auth extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Your account is inactive');
             }
 
+            // Fetch role information
+            $role = $this->userModel->getRole($user['id']);
+            
             // Set user session
             $session->set([
                 'user_id' => $user['id'],
@@ -54,6 +57,7 @@ class Auth extends BaseController
                 'name' => $user['name'],
                 'is_logged_in' => true,
                 'role_id' => $user['role_id'],
+                'role_name' => $role ? $role['name'] : '',
             ]);
 
             $this->applyLocale($user['preferred_locale'] ?? null);
