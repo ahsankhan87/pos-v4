@@ -650,8 +650,6 @@ class Sales extends BaseController
                         throw new \Exception('Failed to create ledger entry for credit sale. ' . (!empty($ledgerErrors) ? json_encode($ledgerErrors) . ' ' : '') . (!empty($dbError) && ($dbError['code'] ?? 0) ? ('DB Error: ' . $dbError['message']) : ''));
                     }
 
-                    // Keep running balances consistent even for backdated entries.
-                    $ledgerModel->recalculateBalances((int)$customer_id);
                 }
                 // Log the sale creation/completion
                 logAction('sale_created', 'Sale ID: ' . $sale_id . ', Customer ID: ' . $customer_id . ', Total: ' . $total . ($isDraftCompletion ? ' (completed draft)' : ''));

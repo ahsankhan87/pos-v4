@@ -1303,7 +1303,6 @@ $currency            = session()->get('currency_symbol') ?? '$';
         position: fixed;
         inset: 0;
         background: rgba(15, 23, 42, .85);
-        backdrop-filter: blur(4px);
         z-index: 200;
         display: none;
         align-items: center;
@@ -1439,7 +1438,7 @@ $currency            = session()->get('currency_symbol') ?? '$';
 
         <div class="blink-top-search">
             <i class="fas fa-search"></i>
-            <input type="text" id="barcode-input" placeholder="Scan barcode or search product…" autofocus autocomplete="off">
+            <input type="text" id="barcode-input" placeholder="Scan barcode or search product…" autocomplete="off">
         </div>
 
         <button type="button" class="blink-top-btn" id="openHelp" title="Help"><i class="fas fa-question"></i></button>
@@ -2611,7 +2610,9 @@ $currency            = session()->get('currency_symbol') ?? '$';
             document.getElementById('f_draft').value = '0';
             document.getElementById('pos-form').action = '<?= site_url('sales/create') ?>';
             document.getElementById('saleLoader').classList.add('open');
-            setTimeout(() => document.getElementById('pos-form').submit(), 60);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => document.getElementById('pos-form').submit());
+            });
         });
 
         document.getElementById('saveDraftBtn').addEventListener('click', () => {
@@ -2738,7 +2739,11 @@ $currency            = session()->get('currency_symbol') ?? '$';
 
         loadProducts('all');
         renderCart();
-        barcodeInput.focus();
+        // Avoid opening the on-screen keyboard when the POS loads on a touch device.
+        // Cashiers can tap the barcode/search field when they need to type or scan.
+        if (!(('ontouchstart' in window) || navigator.maxTouchPoints > 0)) {
+            barcodeInput.focus();
+        }
 
     })();
 </script>
